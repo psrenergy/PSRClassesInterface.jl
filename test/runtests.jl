@@ -2,7 +2,7 @@ using PSRClassesInterface
 using Test
 const PSRI = PSRClassesInterface
 
-PATH_CASE_0 = joinpath(".", "data", "caso0\\")
+PATH_CASE_0 = joinpath(".", "data", "caso0")
 
 @testset "PSRClassesInterface" begin
     @testset "Read json parameters" begin 
