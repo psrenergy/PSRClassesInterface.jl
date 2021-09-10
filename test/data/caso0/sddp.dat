@@ -1,0 +1,98 @@
+Caso ejemplo - DHT - 2 etapa - 1 bloque
+IDIOMA                       0  0=ING; 1=ESP; 2=POR
+OBJETIVO                     1  1=POL; 2=SIM;
+OPCION                       1  1=AIS; 2=COO; 3=INT;
+ETAPA                        2  1=SEMANAL; 2=MENSUAL; 3=TRIM.
+CAUDALES                     2  0=LECT; 1=ARP; 2=SORT; 3=FORW&BACK
+USA CRON. MANTENIMIENTO      0  0=USA IP;  1=USA CRONOG;
+TIPO DE CONFIGURACION        1  0=ESTATICA;1=DINAMICA;
+REPRESENTACION DE LA RED     0  0=NO;     ; 1=SI;
+PERDAS TRANSMISION           0  0=NO;     ; 1=SI;
+HORIZONTE                    1  0=INFINITO;1=FINITO;
+SERIES A SIMULAR             0  0=TODAS;   1=SELECCIONADAS
+MES/SEMANA INICIAL           1
+ANO INICIAL               2013
+NUMERO DE ETAPAS             2
+MES  COND. INIC. HIDRO       1
+ANO COND. INIC. HIDRO     1957
+NUMERO DE SISTEMAS           1
+NUMERO DE SERIES             1
+NUMERO DE DISCRETIZ          1
+NUMERO DE BLOQUES DEMANDA    1 0
+NUMERO DE ANOS ADICIONAL     0 0 0
+NUMERO MAXIMO ITERACIONES   10
+CRITERIO CONVERGENCIA        0  det=%; est=#de desv;
+NIVEL INFORMES               0  0=NORMALES; 1=DETALLADOS;
+TASA DE DESCUENTO           0.
+PEN. DEFL. MINIMA        5000.  us$/hm3   vert            0.  k$/hm3
+------------------------- SISTEMAS ----------------------------
+   1 
+------------------------- SERIES A SIMULAR --------------------
+...# ...1 ...2 ...3 ...4 ...5 ...6 ...7 ...8 ...9 ..10 ..11
+   0
+------------------------- Costo Deficit --------------------------------
+.....% ......c1 .....% ......c2 .....% ......c3 .....% ......c4
+  100.     500.     0.       0.     0.       0.     0.       0. 
+------------------------- Funcion de Costo Futuro ----------------------
+Crea funcion costo futuro    0  0=no; 1=si
+Etapa                        4  ee
+Ano                       1998  19aa
+Nombre del archivo:     <arq04> Default teeaaxx.fcf
+Lee funcion costo futuro     0  0=no; 1=si
+Nombre del archivo:     <arq03>
+------------------------- Hot start ---------------------------------
+Usa archivo FCF              0  0=no; 1=si
+(N/A)
+------------------------- Cut Elimination ---------------------------
+Usa eliminacion de cortes    0   0=no; 1=si
+Frecuencia                   0
+------------------------- Stages Init and Finish to FCF -------------
+Etapa inicial de la FCF      0
+Etapa final de la FCF        0
+------------------------- Forward file -------------------------
+UMON $
+CCAR 0
+CMON 0
+SIMH 0
+DCHR BMAP 0
+DCHR LOAD 3
+DCHR RENW 4
+DCRO PMHI 1
+DCRO PMTR 1
+DCRO CARR 1
+DCRO VALE 1
+DCRO VMIN 1
+DCRO VESP 1
+DCRO MNSP 1
+DCRO RGER 1
+DCRO FCON 1
+DCRO FRAT 1
+DCRO MXTO 1
+DCRO MROD 1
+DCRO MNTO 1
+DCRO GMIN 1
+DCRO RESG 1
+DCRO DUVA 1
+DCRO RIEG 1
+DCRO CEMI 1
+DCRO CCMB 1
+DCRO CCST 1
+DCRO FCCR 1
+DCRO FRCI 1
+DCRO FRCR 1
+BALC 0
+AVRS 0
+CARP 0
+ARCV 0
+VNOC 0
+RGAS 0
+MNIT 0
+VIEX 0
+VBCK 0
+CIEX 0
+GSFI 0
+ITAL 3
+MXLS 6
+VCLA 0
+INFM 0
+----------------------------EOF----------------------------

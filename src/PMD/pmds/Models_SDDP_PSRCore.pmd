@@ -1,0 +1,389 @@
+DEFINE_MODEL MODL:PSRCore_Configuration
+	PARM INTEGER	MinSpillageUnit
+    // Genesys
+    VECTOR INTEGER InitialYears
+	VECTOR STRING OutputSelection
+END_MODEL
+
+//--------------------------------------------------------------------------------------------------
+// Modelo de Configuracao do SDDP para PSRCORE
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Psrcore_Keywords
+
+    // Hourly data
+    // -----------
+    PARM INTEGER DCHR_BMAP
+    PARM INTEGER DCHR_LOAD
+    PARM INTEGER DCHR_RENW
+
+    // Cronological data
+    // -----------------
+    PARM INTEGER DCRO_PMHI
+    PARM INTEGER DCRO_PMTR
+    PARM INTEGER DCRO_CARR
+    PARM INTEGER DCRO_VALE
+    PARM INTEGER DCRO_VMIN
+    PARM INTEGER DCRO_VESP
+    PARM INTEGER DCRO_MNSP
+    PARM INTEGER DCRO_RGER
+    PARM INTEGER DCRO_FCON
+    PARM INTEGER DCRO_FRAT
+    PARM INTEGER DCRO_MXTO
+    PARM INTEGER DCRO_MROD
+    PARM INTEGER DCRO_MNTO
+    PARM INTEGER DCRO_GMIN
+    PARM INTEGER DCRO_RESG
+    PARM INTEGER DCRO_DUVA
+    PARM INTEGER DCRO_RIEG
+    PARM INTEGER DCRO_CEMI
+    PARM INTEGER DCRO_CCMB
+    PARM INTEGER DCRO_CCST
+    PARM INTEGER DCRO_FCCR
+    PARM INTEGER DCRO_FRCI
+    PARM INTEGER DCRO_FRCR
+
+    // Execution options
+    // -----------------
+	PARM INTEGER SIMH
+	PARM INTEGER BINF
+	PARM INTEGER MNIT //min iter
+	PARM INTEGER VMOC //1 integer 0 = penalities
+	PARM INTEGER VIEX //init storage 0 = hydro conf, 1 = external file
+    PARM INTEGER VBCK // init backs - 0 = discretization
+
+    // oldies
+
+    PARM INTEGER FFUL
+    PARM INTEGER FTAB
+    PARM INTEGER FKMX
+    // DCRO
+    PARM INTEGER FCNF
+    PARM INTEGER WPTR
+    PARM INTEGER LMIT //PrintLogMit
+    PARM INTEGER TCND
+    PARM INTEGER CMON
+    PARM INTEGER CCAR
+    PARM INTEGER BALC
+    PARM INTEGER MACM
+    PARM STRING UMON
+    PARM INTEGER RSMP
+    PARM INTEGER PSER
+    PARM INTEGER TOLP
+    PARM INTEGER TOLD
+    PARM INTEGER SEED
+    PARM INTEGER PODP
+    PARM INTEGER AVRS
+    PARM INTEGER MIPP
+    PARM INTEGER CARP
+    PARM INTEGER VNOC
+    PARM INTEGER COMP
+    PARM INTEGER RGAS
+    PARM INTEGER ARCV
+    PARM INTEGER SABS
+    PARM INTEGER CGND
+    PARM INTEGER REQ2
+    PARM INTEGER SBCK
+    PARM INTEGER BARR
+    PARM INTEGER VNLE
+    PARM INTEGER RTAR
+    PARM INTEGER PRTC
+    PARM INTEGER SEDF
+    PARM REAL MIPR
+    PARM INTEGER VIEX
+    PARM INTEGER TPVD
+    PARM INTEGER VEFX
+    PARM INTEGER VEFB
+    PARM INTEGER BCSV
+    PARM INTEGER SAGR
+    PARM INTEGER RELC
+    PARM INTEGER PSLB
+    PARM INTEGER PSLD
+    PARM INTEGER VBCK
+    PARM INTEGER CMNC
+    PARM INTEGER CIEX
+    PARM INTEGER NSIF
+    PARM INTEGER DEMV
+    PARM INTEGER CMGB
+    PARM INTEGER NMET
+    PARM INTEGER RFLW
+    PARM INTEGER CFLW
+    PARM INTEGER PSLI
+    PARM INTEGER LOSS
+    PARM INTEGER REDE
+    PARM INTEGER RPOL
+    PARM INTEGER MXLS
+    PARM INTEGER SIMH
+    PARM INTEGER PENV
+    PARM INTEGER PLSS
+    PARM INTEGER ITAL
+    PARM INTEGER GSNP
+    PARM INTEGER GSFI
+    PARM INTEGER WMPS
+    PARM INTEGER WSVF
+    PARM INTEGER WRLP
+    PARM INTEGER CVCT
+    PARM INTEGER CCTA
+    PARM INTEGER CCTL
+    PARM INTEGER MAXT
+    PARM INTEGER RPK2
+    PARM INTEGER BINF
+    PARM INTEGER EXPN
+    PARM INTEGER MXAP
+    PARM INTEGER LSTG
+    // DCHR
+    PARM INTEGER NITH
+    PARM INTEGER MIPH
+    PARM INTEGER CHRB
+    PARM INTEGER BUNI
+    PARM INTEGER META
+    PARM INTEGER VCLA
+    PARM INTEGER RELI
+    PARM INTEGER ADLS
+    PARM INTEGER MUIT
+    PARM INTEGER RCTH
+    PARM INTEGER FLSL
+    PARM INTEGER BAGF
+    PARM INTEGER BAGR
+    PARM INTEGER GMET
+    PARM INTEGER RMIP
+    PARM INTEGER LBGT
+    PARM INTEGER FPCT
+    PARM INTEGER SVFI
+    PARM INTEGER S3FI
+    PARM INTEGER CASS
+
+    // NCPLITE attributes
+
+    PARM REAL NCPL_MIPR
+    PARM INTEGER NCPL_SLCE
+    PARM INTEGER NCPL_NMXT
+    PARM INTEGER NCPL_SCRS
+    PARM INTEGER NCPL_RALG
+    PARM INTEGER NCPL_RMIP
+    PARM INTEGER NCPL_WRLP
+    PARM INTEGER NCPL_NCSP
+    PARM INTEGER NCPL_DSLC
+    PARM INTEGER NCPL_CRSV
+    PARM INTEGER NCPL_CKDF
+    PARM INTEGER NCPL_TERF
+    PARM INTEGER NCPL_DEBG
+    PARM INTEGER NCPL_CCOS
+
+    // new options
+
+    PARM INTEGER VARN
+    PARM INTEGER PGBR
+    PARM INTEGER CSVF
+    PARM INTEGER STNW
+    PARM INTEGER EXPV
+    PARM INTEGER IINF
+    PARM INTEGER IGND
+    PARM INTEGER OPTG
+    PARM INTEGER DBMS
+    PARM INTEGER ERRM
+    PARM INTEGER CSVF
+    PARM INTEGER GENS
+    PARM INTEGER GTUP
+
+    PARM INTEGER AROrder
+
+    // Main
+    PARM INTEGER Restart //hotstart
+    PARM INTEGER Initialization
+    PARM INTEGER PrintCSV // CSVF
+    //PARM INTEGER PrintBIN
+    PARM INTEGER Optgen
+	PARM INTEGER MaxProcs
+
+    // Test options
+    // PARM INTEGER ErrorMessages
+    PARM INTEGER DebugMessages
+    PARM INTEGER StateNew
+    PARM INTEGER ProgressBar
+    PARM INTEGER CheckPoint
+    PARM INTEGER ImplicitInflow
+    PARM INTEGER GndFile
+    PARM INTEGER RiverRun
+
+    // Debug flags
+    PARM INTEGER PrintXPRSLog
+    PARM INTEGER PrintVarNames
+    //PARM INTEGER PrintClassesLog
+
+    // Genesys
+    PARM INTEGER NumberRenewableScenarios
+    PARM INTEGER GenesysGames
+    PARM REAL DayForecastError
+    PARM REAL HourForecastError
+    PARM INTEGER HistoricalCtr
+    PARM INTEGER GenerationOutages
+    PARM INTEGER DemandScenarios
+	PARM INTEGER NegativeInflow
+	
+
+END_MODEL
+//-------------------------------------------------------
+//--- Modelo para configuracao de acesso ao Cassandra ---
+//-------------------------------------------------------
+DEFINE_MODEL MODL:Cassandra_Configuration
+    PARM    STRING  ContactPoints
+    PARM    INTEGER ProtocolVersion
+    PARM    STRING  Keyspace
+    PARM    INTEGER TimeOut
+    PARM    INTEGER RetryWaitTime
+    PARM    INTEGER NumberBytesHighWaterMarkByResult
+    PARM    INTEGER MaxStatementsInBatch
+    PARM    STRING  ConsistencyLevelRead
+    PARM    STRING  ConsistencyLevelWrite
+END_MODEL
+//-------------------------------------------------------------
+//--- Modelo para configuracao cenario Cassandra do PSRCore ---
+//-------------------------------------------------------------
+DEFINE_MODEL MODL:PSRCore_Scenario
+    PARM    STRING  ClassName
+    PARM    INTEGER ClassType
+    PARM    STRING  ScenarioId
+    PARM    STRING  ScenarioAttribute
+    PARM    STRING  ElementAttribute
+    PARM    STRING  Keyspace
+    PARM    STRING  Table  
+    PARM    INTEGER IsHourly
+    PARM    INTEGER IsDaily
+    PARM    INTEGER StageType
+    PARM    DATE    InitialDate
+    PARM    INTEGER HasBlockDimension
+    PARM    INTEGER HasScenarioDimension
+    PARM    INTEGER NumberStages
+    PARM    INTEGER NumberScenarios
+    PARM    INTEGER NumberBlocks
+    PARM    INTEGER IsFilled
+    VETOR   STRING  AgentIds
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Segmento de Demanda
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:PSRCore_SegmentoDemanda	
+	VETOR DATE	DataHourPriceDemand
+	VETOR REAL 	HourPriceDemand INDEX DataHourPriceDemand	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Hydro
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:PSRCore_Hidro
+	DIMENSION         block 21
+	DIMENSION         point 5
+	PARM INTEGER		ComH									// Status Commitment
+	PARM INTEGER		RegulationType							// Run of River Regulation Type
+	PARM INTEGER		RegulationTime							// Run of River Regulation Time	
+	VETOR DATE		DataOperativeStorage
+	VETOR REAL		RoRMinOperativeStorage INDEX DataOperativeStorage		// Run of River Minimum Operative Storage
+	VETOR REAL		RoRMaxOperativeStorage INDEX DataOperativeStorage		// Run of River Maximum Operative Storage	
+	PARM INTEGER	MinSpillageUnit								// Minimum Spillage Unit
+	
+	PARM  REAL		MaxSpillagePenalty						// Maximum Spillage Penalty
+	VETOR DATE		DataMaxSpillage							// Maximum Spillage Data
+	VETOR REAL		MaxSpillage INDEX DataMaxSpillage		// Maximum Spillage	
+	
+	PARM  REAL      MinBioSpillagePenalty                       // Minimum Biologic Spillage Penalty
+	VETOR DATE      DataMinBioSpillage                          // Minimum Biologic Spillage Data
+	VETOR REAL      MinBioSpillage INDEX  DataMinBioSpillage    // Minimum Biologic Spillage
+	
+	VETOR DATE		DataGerMin									// Minimum Generation Data
+	VETOR REAL		GerMin			INDEX DataGerMin			// Minimum Generation
+	
+	VETOR DATE		DataTargetStorage							// Target Storage Data
+	VETOR REAL		TargetStorage	INDEX  DataTargetStorage	// Target Storage	
+	PARM REAL		TargetStorageTol	                        // Target Storage tolerance
+	PARM REAL		TargetStorageCstrPen                        // Target Storage penalty
+    
+	PARM  REAL		Power DIM(point)							// Power x Net Head Table
+	PARM  REAL		NetHead DIM(point)							// Power x Net Head Table
+    PARM  REAL      HxF_NetHead DIM(point)                      // ProductionFactor x Net Head Table
+    PARM  REAL      HxF_ProductionFactor DIM(point)             // ProductionFactor x Net Head Table
+   	PARM  REAL		OxT_Tail_Static DIM(point)					// Outflow x Tailwater Table (Static)
+	PARM  REAL		OxT_Outflow_Static DIM(point)				// Outflow x Tailwater Table (Static)
+
+	
+	VETOR DATE		DataTargetGeneration						// Target Generation Data
+	VETOR REAL		TargetGeneration INDEX  DataTargetGeneration			// Target Generation
+	
+	PARM  REAL		ForebayDrawdown							// Forebay Drawdown
+	PARM  REAL		ForebayFillup							// Forebay Fill Up
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para combustivel
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:PSRCore_Combustivel	
+	VETOR DATE			DataConsumptionMin					// Minimum Consumption Data
+	VETOR REAL			ConsumptionMin INDEX  DataConsumptionMin		// Minimum Consumption
+END_MODEL	
+//--------------------------------------------------------------------------------------------------
+// Modelo para consumo de combustivel
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:PSRCore_ConsumoCombustivel
+	VETOR DATE			DataConsumptionMin					// Minimum Consumption Data
+	VETOR REAL			ConsumptionMin INDEX  DataConsumptionMin		// Minimum Consumption
+	
+	VETOR DATE			DataConsumptionMax					// Maximum Consumption Data
+	VETOR REAL			ConsumptionMax INDEX  DataConsumptionMax		// Maximum Consumption
+        
+        DIMENSION        segment 3
+        VETOR DATE       DataCespSegment
+        VETOR REAL       CEsp DIM(segment) INDEX DataCespSegment	
+        
+	PARM  INTEGER       GasFuelLimit						// Gas Fueling Limitation
+	PARM  REAL      	GasFuelLimitMax						// Maximum Gas Fueling Limitation
+END_MODEL	
+//--------------------------------------------------------------------------------------------------
+// Modelo para injecao de potencia
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:PSRCore_InjecaoPotencia
+	VETOR REAL		HourPriceInjection						// Injection Price
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para barra
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:PSRCore_Bus
+	PARM INTEGER	MarketRegion							// Market Region
+END_MODEL	
+DEFINE_MODEL MODL:PSRCore_Circuit
+	PARM REAL	Km
+END_MODEL	
+//--------------------------------------------------------------------------------------------------
+// Modelo para balancing area
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:PSRCore_BalancingArea	
+	PARM  INTEGER       Region 
+	VETOR DATE		DateHourUpReserve
+	VETOR DATE		DateHourDownReserve
+	VETOR REAL		HourUpReserve    INDEX DateHourUpReserve
+	VETOR REAL		HourDownReserve  INDEX DateHourDownReserve
+	
+	VETOR STRING ElementsClassName
+	VETOR STRING ElementsAVId
+	VETOR REAL Share
+END_MODEL	
+//--------------------------------------------------------------------------------------------------
+// Modelo para restricao de contingencia
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:PSRCore_RestricaoContingencia
+	PARM  REAL	DemandReserve 
+	PARM  REAL	GenerationReserve
+	PARM  INTEGER	Active
+END_MODEL	
+DEFINE_MODEL MODL:PSRCore_BalancingAreaShare
+	PARM  REAL	Share 
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para DC Link
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:PSRCore_DCLink
+	VETOR DATE		DataMaxCapacityFromTo							// Maximum Capacity From->To Data
+	VETOR DATE		DataMaxCapacityToFrom							// Maximum Capacity To->From Data
+	VETOR DATE		DataWheelingCostFromTo							// Wheeling Cost From->To Data
+	VETOR DATE		DataWheelingCostToFrom							// Wheeling Cost To->From Data
+	VETOR REAL		MaxCapacityFromTo INDEX DataMaxCapacityFromTo	// Maximum Capacity From->To
+	VETOR REAL		MaxCapacityToFrom INDEX DataMaxCapacityToFrom	// Maximum Capacity To->From
+	VETOR REAL		WheelingCostFromTo INDEX DataWheelingCostFromTo	// Wheeling Cost From->To
+	VETOR REAL		WheelingCostToFrom INDEX DataWheelingCostToFrom	// Wheeling Cost To->From
+END_MODEL

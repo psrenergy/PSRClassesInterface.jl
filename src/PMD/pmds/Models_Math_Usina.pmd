@@ -1,0 +1,12 @@
+//--------------------------------------
+//--- Modelo Matematico de Carga     ---
+//--------------------------------------
+DEFINE_MODEL MODL:MatCarga
+	
+  DEFINE_MATH
+    SomaP = SOMA(P1,P2,P3,P4,P5)
+    MediaP = GANHO(SomaP,0.25)
+    RefP = GETENV('RefP')		
+  END  
+  		
+END_MODEL

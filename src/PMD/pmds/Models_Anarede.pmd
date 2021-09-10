@@ -1,0 +1,128 @@
+//--------------------------------------
+//--- Modelo de Area                 ---
+//--------------------------------------
+DEFINE_MODEL MODL:ANAREDE_Area
+	PARM	REAL	Xchg
+	PARM	REAL	Xmin
+	PARM	REAL	Xmax	
+END_MODEL
+//--------------------------------------
+//--- Modelo de Barra                ---
+//--------------------------------------
+DEFINE_MODEL MODL:ANAREDE_Bus
+	PARM	INTEGER	BusType
+	PARM	REAL	Kv
+	VETOR	REAL	V.mod
+	VETOR	REAL	V.ang	
+	VETOR	REAL	Vmin
+	VETOR 	REAL	Vmax
+	PARM    STRING  VoltGroup
+	PARM	INTEGER VoltLimitGroup
+END_MODEL
+//--------------------------------------
+//--- Modelo de Gerador              ---
+//--------------------------------------
+DEFINE_MODEL MODL:ANAREDE_Generation
+	VETOR	REAL	P
+	VETOR	REAL	Q
+	VETOR	REAL	Pmn
+	VETOR	REAL	Pmx
+	VETOR	REAL	Qmn
+	VETOR	REAL	Qmx
+	VETOR 	REAL	Fp
+END_MODEL
+//--------------------------------------
+//--- Modelo de Carga                ---
+//--------------------------------------
+DEFINE_MODEL MODL:ANAREDE_Load
+	VETOR	REAL	P
+	VETOR	REAL	Q
+END_MODEL
+//--------------------------------------
+//--- Modelo de Carga ZIP            ---
+//--------------------------------------
+DEFINE_MODEL MODL:ANAREDE_Load_Zip
+	VETOR	REAL	P
+	VETOR	REAL	Q
+	VETOR	REAL	A
+	VETOR	REAL	B	
+	VETOR	REAL	C	
+	VETOR	REAL	D
+	VETOR	REAL	Vmn
+END_MODEL
+//--------------------------------------
+//--- Modelo de Shunt Generico       ---
+//--------------------------------------
+DEFINE_MODEL MODL:ANAREDE_Shunt
+	VETOR	REAL	Q
+END_MODEL
+//------------------------------
+//--- Modelo para a Circuito ---
+//------------------------------
+DEFINE_MODEL MODL:ANAREDE_Circuit
+	VETOR INTEGER	Nc
+	VETOR STRING 	Status
+	VETOR REAL	R
+	VETOR REAL	X
+	VETOR REAL	MVAr
+	VETOR REAL	Tap
+	VETOR REAL	Tmn
+	VETOR REAL	Tmx
+	VETOR REAL	Phase
+	VETOR REAL	Rn
+	VETOR REAL	Re
+	PARM  INTEGER	FlagMonitored
+END_MODEL
+//--------------------------------------
+//--- Modelo de Banco de Capacitores ---
+//--------------------------------------
+DEFINE_MODEL MODL:ANAREDE_BancoCapacitores
+	VETOR   INTEGER G
+	VETOR   INTEGER UOp_capc
+	VETOR   INTEGER UOp_reat
+	VETOR   INTEGER Ucapc
+	VETOR   INTEGER Ureat
+	VETOR	REAL	Qcapc
+	VETOR	REAL	Qreat
+END_MODEL
+//-------------------------------
+//--- Modelo para Circuito DC ---
+//-------------------------------
+DEFINE_MODEL MODL:ANAREDE_CircuitDC
+	VETOR REAL	R
+	VETOR REAL	L
+	VETOR REAL	Cn
+END_MODEL
+//-------------------------------
+//--- Modelo para Conversor AC/DC ---
+//-------------------------------
+DEFINE_MODEL MODL:ANAREDE_ConversorDCAC
+	VETOR REAL	R
+	VETOR REAL	L
+	VETOR REAL	Rn
+	VETOR DATE 	Data	
+	VETOR STRING	Type
+	VETOR INTEGER	NumBridges
+	VETOR REAL	INom
+	VETOR REAL	Xc
+	VETOR REAL	Vfs
+	VETOR REAL	Snt
+	VETOR REAL	Rna
+	VETOR REAL	Lra
+	VETOR INTEGER	Nc
+	VETOR REAL	R
+	VETOR REAL	L
+	VETOR STRING	SlackType
+	VETOR STRING	ControlMode
+	VETOR REAL	Vmn
+	VETOR REAL	Vmx
+	VETOR REAL	Dsp
+	VETOR REAL	Dtn
+	VETOR REAL	Dtm
+	VETOR REAL	Tmn
+	VETOR REAL	Tmx
+	VETOR INTEGER	TapStep
+	VETOR DATE 	Data		
+END_MODEL
+
+

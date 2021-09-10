@@ -1,0 +1,116 @@
+//--------------------------------------------------------------------------------------------------
+// Modelo de Configuracao do Optgen
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Optgen_Configuration_Keywords
+
+    // Execution options
+    // -----------------
+    PARM INTEGER DEBG
+    PARM INTEGER WRLP
+    PARM INTEGER WMPS
+    PARM INTEGER WSVF
+    PARM INTEGER WRSL
+    PARM INTEGER CHNF
+    PARM INTEGER OPT1
+    PARM INTEGER RESR
+    PARM INTEGER XPLG
+    PARM INTEGER RLCM
+    PARM INTEGER REXS
+    PARM INTEGER EXPR
+    PARM INTEGER GENR
+    PARM INTEGER ROPE
+    PARM INTEGER MPSM
+    PARM INTEGER DELC
+    PARM INTEGER SORT
+    PARM INTEGER FORW
+    PARM INTEGER FRES
+    PARM INTEGER KIRC
+    PARM INTEGER TUBO
+    PARM INTEGER USCN
+    PARM INTEGER DUAL
+    PARM INTEGER SLLP
+    PARM INTEGER DAYT
+    PARM INTEGER PAYP        
+    PARM INTEGER HARD    
+    PARM INTEGER VERB
+    PARM INTEGER NETD         
+    PARM INTEGER CURT     
+    PARM INTEGER FMOC   
+    PARM REAL LAMB     
+    PARM INTEGER BATC      
+    PARM INTEGER SRPD    
+    PARM INTEGER SCRT    
+    PARM INTEGER OPTG    
+    PARM INTEGER DBUG     
+    PARM INTEGER HERA    
+    PARM INTEGER BSIN    
+    PARM INTEGER VINI    
+    PARM INTEGER VNCO
+    PARM INTEGER HBAL
+    PARM INTEGER BDOF
+    PARM INTEGER PHOF
+    PARM INTEGER LDRD
+    PARM INTEGER HEUR
+    PARM INTEGER RXMM
+    PARM INTEGER SKPS
+    PARM INTEGER OPTF
+    PARM INTEGER TCMO
+    PARM INTEGER FDPR
+    PARM INTEGER XMOD
+    PARM INTEGER AVGD
+END_MODEL
+
+
+//--------------------------------------------------------------------------------------------------
+// Controls do Xpress
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Xpress_Controls_Keywords
+
+    // Controls
+    // -----------------
+    PARM INTEGER BARTHREADS
+    PARM REAL BARGAPSTOP
+    PARM REAL BARGAPTARGET
+    PARM INTEGER DUALTHREADS
+    PARM INTEGER CROSSOVER
+    PARM INTEGER PREPROBING
+    PARM INTEGER PREDOMCOL
+    PARM INTEGER PREDOMROW
+    PARM INTEGER HEURSTRATEGY
+    PARM INTEGER MAXNODE
+    PARM REAL MIPTOL
+    PARM REAL MIPABSSTOP
+    PARM REAL MIPRELSTOP
+    PARM INTEGER DEFAULTALG
+    PARM INTEGER PRESOLVE
+    PARM INTEGER OUTPUTLOG
+    PARM INTEGER FORCEOUTPUT
+    PARM INTEGER MAXTIME
+    PARM INTEGER CONCURRENTTHREADS
+    PARM INTEGER CUTSTRATEGY
+    PARM INTEGER MAXMEMORY
+    PARM INTEGER THREADS
+    PARM INTEGER BARPRESOLVEOPS
+    PARM INTEGER CROSSOVEROPS
+    PARM INTEGER COVERCUTS 
+    PARM INTEGER REFINEOPS
+    PARM INTEGER SCALING
+    PARM INTEGER BARALG
+    PARM REAL PRECOMPONENTSEFFORT
+    PARM INTEGER BARREGULARIZE
+    PARM INTEGER BARCORES
+    PARM INTEGER BARITERLIMIT
+END_MODEL
+
+
+//--------------------------------------------------------------------------------------------------
+// Modelo de configuracao do modelo de dia tipico
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Typday_Configuration_Keywords
+
+    // Execution options
+    // -----------------
+    PARM INTEGER SEASON
+    PARM INTEGER CMTBLK    
+END_MODEL
+

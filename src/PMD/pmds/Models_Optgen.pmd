@@ -1,0 +1,229 @@
+//--------------------------------------------------------------------------------------------------
+// Modelo para Configuracao
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Optgen_Configuracao
+	PARM INTEGER		InitialYear
+	PARM INTEGER		InitialStage
+	PARM INTEGER		NumberIterations
+	PARM INTEGER		InvestmentStageStep
+	PARM INTEGER		OperationStageStep
+	PARM INTEGER		NumberStages
+	PARM INTEGER		NumberBlocks
+	PARM INTEGER		Restart
+	PARM REAL		DeficitCost
+	PARM REAL		AnnualDiscountFactor
+	PARM REAL		ConvergenceTolerance
+	PARM REAL		XPRESSRelativeMIP
+	PARM INTEGER		XPRESSLimitTime
+	PARM INTEGER		CutStrategy
+	PARM INTEGER		HorizonDuration
+	PARM INTEGER		HorizonInterval
+	PARM INTEGER		YearHorizon
+	PARM INTEGER		ReadExpansionPlan
+	PARM STRING		ExpansionPlanFileName
+	PARM INTEGER		DecisionType
+
+	//--- Atributos globais para restricoes de satisfacao ---
+	PARM REAL		SatisfactionGlobalBound
+	PARM REAL		SatisfactionGlobalLambda	
+	
+	//--- Mapeamento de dias tipicos
+	VETOR DATE	DateStageSeasonMap
+	VETOR INTEGER	StageSeasonMap INDEX DateStageSeasonMap
+	VETOR DATE	DateDayTypicalDayMap
+	VETOR INTEGER	DayTypicalDayMap INDEX DateDayTypicalDayMap
+	
+	DIMENSION typicalday 1
+	DIMENSION season 1	
+	VETOR DATE DateTypicalDay
+	VETOR INTEGER ExpansionBlock DIM(season,typicalday) INDEX DateTypicalDay
+	VETOR INTEGER CommitBlock DIM(season,typicalday) INDEX DateTypicalDay
+	
+	DIMENSION scenario
+	PARM REAL ScenarioWeight DIM(scenario)
+	
+	//--- Submodelos introduzidos pelo Optgen 2 ---
+	SUB_MODEL MODL:Optgen_Configuration_Keywords Keywords
+	SUB_MODEL MODL:Xpress_Controls_Keywords Xpress
+	SUB_MODEL MODL:Typday_Configuration_Keywords TypicalDay
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Estudo de Expansao
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Optgen_Estudo
+	VECTOR DATE		DataFatorEnergiaFirme
+	VECTOR REAL		FatorEnergiaFirme INDEX DataFatorEnergiaFirme	
+	
+	VECTOR DATE		DataFatorPotenciaFirme
+	VECTOR REAL		FatorPotenciaFirme INDEX DataFatorPotenciaFirme	
+END_MODEL
+
+
+//--------------------------------------------------------------------------------------------------
+// Modelo para Projeto de Expansao
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Optgen_Sistema
+	VECTOR DATE		DataFatorEnergiaFirme
+	VECTOR REAL		FatorEnergiaFirme INDEX DataFatorEnergiaFirme	
+	
+	VECTOR DATE		DataFatorPotenciaFirme
+	VECTOR REAL		FatorPotenciaFirme INDEX DataFatorPotenciaFirme	
+
+	PARM REAL		EnergiaFirmeHydro
+	PARM REAL		EnergiaFirmeThermal
+	PARM REAL		EnergiaFirmeGnd
+	PARM REAL		PotenciaFirmeHydro
+	PARM REAL		PotenciaFirmeThermal
+	PARM REAL		PotenciaFirmeGnd
+	PARM REAL		EnergiaFirmeBattery
+	PARM REAL		PotenciaFirmeBattery
+	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Usina
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Optgen_Usina
+        VECTOR DATE		DataEnergiaFirme
+	VECTOR REAL		EnergiaFirme	INDEX DataEnergiaFirme
+        VECTOR DATE		DataPotenciaFirme
+	VECTOR REAL		PotenciaFirme	INDEX DataPotenciaFirme	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Bateria
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Optgen_Bateria
+        VECTOR DATE		DataEnergiaFirme
+	VECTOR REAL		EnergiaFirme	INDEX DataEnergiaFirme
+        VECTOR DATE		DataPotenciaFirme
+	VECTOR REAL		PotenciaFirme	INDEX DataPotenciaFirme	
+END_MODEL
+
+//--------------------------------------------------------------------------------------------------
+// Modelo para Projeto de Expansao
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Optgen_ProjetoExpansao
+        DIMENSION index 10
+
+	VECTOR DATE		Data        
+	VECTOR REAL		InvestCost	INDEX Data
+	VECTOR REAL		FixedO&MCost	INDEX Data
+	
+	PARM DATE		DataMin
+	PARM DATE		DataMax
+	PARM INTEGER		DecisionType
+	PARM INTEGER		Belongs
+	PARM INTEGER		InvestCostUnit
+	PARM INTEGER		DecisionVar
+	PARM DATE		DecisionVarUntil
+	PARM INTEGER		LifeTime
+	PARM REAL		IntegrationCost
+	PARM REAL		FCapMed
+	PARM REAL		FCapGar
+	PARM INTEGER		NADp
+	PARM INTEGER		AnoIRPgF
+	PARM INTEGER		AnoFRPgF
+
+	PARM INTEGER            EntranceScheduleStage DIM(index)	
+	PARM INTEGER            EntranceScheduleUnits DIM(index)			
+	PARM REAL		CronogramaEntradaCapacidade DIM(index)	
+	PARM INTEGER		FlagDiscountRate
+	PARM REAL		DiscountRate
+	PARM INTEGER	OpeLifeTime
+	PARM INTEGER	MaxMods
+	PARM REAL		EmissionCost
+	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Cronograma de Desembolso
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Optgen_CronogramaDesembolso
+	PARM INTEGER		Year
+	VECTOR REAL		Disbursement	
+	VECTOR REAL		Capital
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Restricao de Capacidade
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Optgen_RestricaoCapacidade
+	PARM DATE		DataMin
+	PARM DATE		DataMax
+	PARM REAL		Capacity
+	PARM INTEGER	Type
+	PARM INTEGER	Unit
+	PARM INTEGER	LimitType
+	PARM INTEGER	FlagSelected
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Restricao de Precedencia
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Optgen_RestricaoPrecedencia
+	VECTOR INTEGER		Delay
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Restricao de projetos associados
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Optgen_RestricaoAssociados
+	PARM INTEGER		Delay
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Restricao Generica
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Optgen_RestricaoGenerica
+	PARM DATE		DataMin
+	PARM DATE		DataMax
+	PARM REAL		RHS
+	PARM STRING		Type
+	VECTOR REAL		Coefficients
+	PARM INTEGER	LimitType	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Restricao Generica
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Optgen_RestricaoSatisfacao
+	PARM DATE		DataMin
+	PARM DATE		DataMax
+	PARM REAL		MinValue
+	PARM REAL		MaxValue
+	PARM REAL		Weight
+	PARM STRING		Type
+	VECTOR REAL		Coefficients
+	PARM INTEGER	LimitType	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Decisao de Expansao
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Optgen_DecisaoExpansao
+	PARM DATE		DataMin
+	PARM DATE		DataMax
+	PARM REAL		Capacity
+	PARM INTEGER		DecisionType
+	PARM INTEGER		PlannedDecision
+	PARM REAL 		CapacityPu
+	PARM STRING		Label
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para no generico de rio
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Optgen_NoGenericoRio
+	PARM INTEGER		Type
+	PARM INTEGER		Code
+	PARM INTEGER		ConstraintId
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para ramo generico de rio
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Optgen_RamoGenericoRio
+	PARM REAL		Distance
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Restricao de Topologia de rio
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Optgen_RestricaoTopologiaRio
+	PARM REAL		RHS
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para dados adicionais de projetos no PSRCore
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:PSRCore_ExpansionProject	
+	PARM REAL		Premio
+END_MODEL

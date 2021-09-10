@@ -1,0 +1,666 @@
+//-----------------------------------------
+//--- Modelo de Configuracao do NETPLAN ---
+//-----------------------------------------
+DEFINE_MODEL MODL:NETPLAN_V2.6_Configuration
+	PARM	INTEGER	Version
+	PARM 	INTEGER	Idioma
+	VETOR	DATE	StageDate
+	VETOR	STRING	StageId
+	VETOR	STRING	BlockId
+	VETOR   STRING  ScenarioId
+	
+	//--------------------------------------
+	//--- Parametros comuns              ---
+	//--------------------------------------
+	PARM INTEGER NumberSimulations
+	PARM INTEGER NumberBlocks	
+
+	SUB_MODEL MODL:NETPLAN_V2.6_Constantes TransmissionConstants
+END_MODEL
+//-------------------------------------------------------------------
+//--- Modelo de Configuracao do NETPLAN (modo incremental ao SDDP ---
+//-------------------------------------------------------------------
+DEFINE_MODEL MODL:NETPLAN_ConfigurationIncremental
+	PARM	INTEGER	Version
+	VETOR	DATE	StageDate
+	VETOR	STRING	StageId
+	VETOR	STRING	BlockId
+	VETOR   STRING  ScenarioId
+END_MODEL
+
+DEFINE_MODEL MODL:NETPLAN_V2.6_Sistema
+        PARM INTEGER Ignored
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Duracao Variavel
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:NETPLAN_V2.6_DuracaoVariavel
+        DIMENSION block 21
+	VETOR DATE 	Data
+	VETOR REAL 	Duracao	DIM(block) INDEX Data	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Constantes Globais
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:NETPLAN_V2.6_Constantes
+	PARM REAL ZMIN
+	PARM REAL FTOL
+	PARM REAL CTOL
+	PARM REAL CRPF
+	PARM REAL RATE
+	PARM INTEGER LIFE
+END_MODEL
+//--------------------------------------
+//--- Modelo de Area                 ---
+//--------------------------------------
+DEFINE_MODEL MODL:NETPLAN_V2.6_Area
+        DIMENSION block
+
+	PARM	REAL	IPrg
+	PARM	REAL	IMin
+	PARM	REAL	IMax
+
+	//--- Importação da Area do  ---
+	VETOR DATE 	DataImportacao
+	VETOR REAL	Imp DIM(block) INDEX DataImportacao			
+
+	VETOR DATE 	DataExportacao
+	VETOR REAL	Exp DIM(block) INDEX DataExportacao
+END_MODEL
+//--------------------------------------
+//--- Modelo de Barra                ---
+//--------------------------------------
+DEFINE_MODEL MODL:NETPLAN_V2.6_Bus
+        DIMENSION scenario 1
+        DIMENSION block
+
+        PARM INTEGER Type
+
+	VETOR 	DATE 	Data		
+	VETOR	REAL	V.mod INDEX Data
+	VETOR	REAL	V.ang INDEX Data
+	PARM	REAL	Kv
+	VETOR   STRING  O  INDEX Data
+	VETOR   STRING  C  INDEX Data
+	VETOR   REAL	Cost INDEX Data
+	PARM    DATE    InitialDate	
+	
+	VETOR 	DATE 	DataVolt		
+	VETOR	REAL	Vmin DIM(block) INDEX DataVolt
+	VETOR 	REAL	Vmax DIM(block) INDEX DataVolt	
+	VETOR	REAL	Volt DIM(block) INDEX DataVolt
+	VETOR	REAL	Emin DIM(block) INDEX DataVolt
+	VETOR 	REAL	Emax DIM(block) INDEX DataVolt	
+
+	VETOR 	DATE 	DataAngle
+	VETOR	REAL	Angle DIM(scenario,block) INDEX DataAngle
+
+	VECTOR    REAL    Latitude	
+	VECTOR    REAL    Longitude	
+	PARM	INTEGER   Agr
+	PARM	INTEGER	  FlagMonitored
+	VECTOR	INTEGER   FlagLoadShedding
+	PARM	STRING	Name24
+	PARM INTEGER ControlMode
+END_MODEL
+//--------------------------------------
+//--- Modelo de Gerador              ---
+//--------------------------------------
+DEFINE_MODEL MODL:NETPLAN_V2.6_Generation
+        DIMENSION scenario 1
+        DIMENSION block
+
+	VETOR 	DATE 	Data		
+	PARM	STRING	Type
+	VETOR   STRING  O INDEX Data	
+	VETOR	REAL	P INDEX Data
+	VETOR	REAL	Pmn INDEX Data
+	VETOR	REAL	Pmx INDEX Data
+	VETOR	REAL	Qmn INDEX Data
+	VETOR	REAL	Qmx INDEX Data
+	VETOR 	REAL	Fp INDEX Data
+	VETOR   INTEGER    Unidades INDEX Data
+	VETOR	STRING	C INDEX Data	
+	VETOR   REAL	Prob INDEX Data	
+	VETOR INTEGER ControlType INDEX Data	
+	VETOR REAL ReactiveFactor INDEX Data
+	VETOR REAL GenDev INDEX Data
+	VETOR REAL MaxDev INDEX Data
+	VETOR INTEGER DevOpt INDEX Data
+
+	VETOR DATE 	DataScn
+	VETOR REAL	P DIM(scenario,block) INDEX DataScn	
+	VETOR REAL	Q DIM(scenario,block) INDEX DataScn	
+
+	//--- Custo
+	VETOR DATE 	DataUnitCost
+	VETOR REAL	UnitCost DIM(scenario,block) INDEX DataUnitCost
+
+	VETOR DATE 	DataQset
+	VETOR REAL	Qset DIM(block) INDEX DataQset	
+	
+END_MODEL
+//--------------------------------------
+//--- Modelo de Capacitor            ---
+//--------------------------------------
+DEFINE_MODEL MODL:NETPLAN_V2.6_BusShunt
+        DIMENSION block
+
+	VETOR 	DATE 	Data		
+	PARM	INTEGER    ControlType
+	VETOR   INTEGER    Unidades INDEX Data
+	VETOR   REAL	MVAr INDEX Data
+	VETOR   REAL	Cost INDEX Data
+	VETOR   STRING	C INDEX Data	
+	VETOR   STRING	O INDEX Data	
+
+	//--- Unidades do capacitor para cada serie,patamar ---
+	VETOR DATE 	DataUnidadesOperacao
+	VETOR INTEGER	UnidadesOperacao DIM(block) INDEX DataUnidadesOperacao	
+END_MODEL
+//---------------------------------------
+//--- Modelo de Compensador Sincrono  ---
+//---------------------------------------
+DEFINE_MODEL MODL:NETPLAN_V2.6_SyncronousCompensator
+        DIMENSION block
+
+	VETOR 	DATE 	Data		
+	PARM	STRING	Type	
+	VETOR	REAL	Pmn INDEX Data
+	VETOR	REAL	Pmx INDEX Data	
+	VETOR	REAL	Qmn INDEX Data
+	VETOR	REAL	Qmx INDEX Data
+	VETOR   STRING	O INDEX Data	
+	VETOR	STRING	C INDEX Data		
+	VETOR   INTEGER    Unidades INDEX Data
+	VETOR DATE 	DataQset
+	VETOR REAL	Qset DIM(block) INDEX DataQset		
+END_MODEL
+//------------------------------
+//--- Modelo para Circuito ---
+//------------------------------
+DEFINE_MODEL MODL:NETPLAN_V2.6_Circuit
+        DIMENSION block
+
+	VETOR DATE 	Data
+	PARM INTEGER	Nc
+	VETOR REAL	R INDEX Data
+	VETOR REAL	X INDEX Data
+	VETOR REAL	MVAr INDEX Data
+	VETOR REAL	Rn INDEX Data
+	VETOR REAL	Re INDEX Data
+	VETOR REAL	Prob INDEX Data
+	VETOR REAL	Cost INDEX Data
+	VETOR STRING	O INDEX Data
+	VETOR STRING	W INDEX Data
+	VETOR STRING	C INDEX Data
+	VETOR INTEGER	EF INDEX Data
+	VETOR REAL	Km INDEX Data
+	
+	//--- Status do circuito para cada patamar ---
+	VETOR DATE 	DataStatus
+	VETOR INTEGER	Status DIM(block) INDEX DataStatus
+	
+	//--- Marcado para monitoramento
+	PARM INTEGER    FlagMonitored
+	//--- Marcado para contigencia
+	PARM INTEGER    FlagContingency
+	//--- Marcado para contigencia
+	PARM INTEGER    FlagTariff
+	
+	//--- Ignorado no estudo
+	PARM INTEGER   Ignored
+
+	PARM INTEGER Type
+	PARM STRING Name24
+	
+END_MODEL
+//------------------------------
+//--- Modelo para Trafo      ---
+//------------------------------
+DEFINE_MODEL MODL:NETPLAN_V2.6_Trafo
+        DIMENSION block
+
+	MERGE_MODEL MODL:NETPLAN_V2.6_Circuit
+	VETOR REAL	Tmn INDEX Data
+	VETOR REAL	Tmx INDEX Data
+	VETOR REAL	Pmn INDEX Data
+	VETOR REAL	Pmx INDEX Data
+	VETOR INTEGER	Nt  INDEX Data
+
+	PARM  INTEGER    ControlType
+
+	VETOR REAL	Phsf INDEX Data
+	VETOR REAL	FMin INDEX Data
+	VETOR REAL	FMax INDEX Data
+	VETOR REAL	FMne INDEX Data
+	VETOR REAL	FMxe INDEX Data
+
+	//--- Tap do trafo para cada patamar ---
+	VETOR DATE 	DataTap
+	VETOR REAL	Tap DIM(block) INDEX DataTap
+
+	//--- Angulo do trafo para cada patamar ---
+	VETOR DATE 	DataPhase
+	VETOR REAL	Phase DIM(block) INDEX DataPhase
+
+	VETOR DATE 	DataMaxFlow
+	VETOR REAL	MaxFlow DIM(block) INDEX DataMaxFlow
+	VETOR DATE 	DataMinFlow
+	VETOR REAL	MinFlow DIM(block) INDEX DataMinFlow
+	VETOR DATE 	DataMaxFlowEmergency
+	VETOR REAL	MaxFlowEmergency DIM(block) INDEX DataMaxFlowEmergency
+	VETOR DATE 	DataMinFlowEmergency
+	VETOR REAL	MinFlowEmergency DIM(block) INDEX DataMinFlowEmergency
+	
+END_MODEL
+//-----------------------------------------------
+//--- Modelo para Transformador de 3 enrolamentos
+//-----------------------------------------------
+DEFINE_MODEL MODL:NETPLAN_Transformer3Winding
+	PARM INTEGER	Nc	
+	PARM INTEGER	W
+	VETOR DATE 	Data
+	VETOR STRING	O INDEX Data	
+	VETOR STRING	C INDEX Data	
+	VETOR REAL	RPS INDEX Data	
+	VETOR REAL	XPS INDEX Data	
+	VETOR REAL	SbPS INDEX Data	
+	VETOR REAL	RST INDEX Data	
+	VETOR REAL	XST INDEX Data	
+	VETOR REAL	SbST INDEX Data	
+	VETOR REAL	RPT INDEX Data	
+	VETOR REAL	XPT INDEX Data	
+	VETOR REAL	SbPT INDEX Data	
+	VETOR REAL	Cost INDEX Data	
+	VETOR REAL	Fp INDEX Data	
+END_MODEL
+//--------------------------------
+//--- Modelo para Reator Serie ---
+//--------------------------------
+DEFINE_MODEL MODL:NETPLAN_V2.6_LineReactor
+        DIMENSION block
+
+	VETOR DATE 	Data
+	VETOR REAL	MVAr INDEX Data
+	VETOR REAL	Cost INDEX Data
+	VETOR STRING	O INDEX Data
+	VETOR STRING	C INDEX Data
+
+	//--- Status do circuito para cada patamar ---
+	VETOR DATE 	DataStatus
+	VETOR INTEGER	Status DIM(block) INDEX DataStatus	
+END_MODEL
+//-----------------------------------
+//--- Modelo para Capacitor Serie ---
+//-----------------------------------
+DEFINE_MODEL MODL:NETPLAN_V2.6_SerieCapacitor
+		DIMENSION block
+
+	VETOR DATE 	Data
+	PARM INTEGER	Nc
+	VETOR STRING	O INDEX Data
+	VETOR STRING	C INDEX Data
+	VETOR REAL	XMn INDEX Data
+	VETOR REAL	XMx INDEX Data
+	VETOR REAL	XDe INDEX Data
+	VETOR REAL	VEsp INDEX Data
+	VETOR REAL	Rn INDEX Data
+	VETOR REAL	Re INDEX Data
+	VETOR REAL	Fp INDEX Data
+	VETOR REAL	Cost INDEX Data
+	VETOR INTEGER	TC INDEX Data
+	VETOR INTEGER	EF INDEX Data
+	VETOR REAL	Km INDEX Data
+	PARM  INTEGER	NumberSteps
+	PARM  INTEGER	ControlType
+	PARM  STRING	W
+	PARM  STRING	Measure
+	VETOR REAL	XDef INDEX Data
+	VETOR REAL	FMin INDEX Data
+	VETOR REAL	FMax INDEX Data
+	VETOR REAL	FMne INDEX Data
+	VETOR REAL	FMxe INDEX Data
+
+	//--- Status do circuito para cada patamar ---
+	VETOR DATE 	DataStatus
+	VETOR INTEGER	Status DIM(block) INDEX DataStatus
+
+	VETOR DATE 	DataBypass
+	VETOR INTEGER	Bypass DIM(block) INDEX DataBypass
+
+	VETOR DATE 	DataMaxFlow
+	VETOR REAL	MaxFlow DIM(block) INDEX DataMaxFlow
+	VETOR DATE 	DataMinFlow
+	VETOR REAL	MinFlow DIM(block) INDEX DataMinFlow
+	VETOR DATE 	DataXDe
+	VETOR REAL	XDe DIM(block) INDEX DataXDe
+	VETOR DATE 	DataFDe
+	VETOR REAL	FDe DIM(block) INDEX DataFDe
+	VETOR DATE 	DataMaxFlowEmergency
+	VETOR REAL	MaxFlowEmergency DIM(block) INDEX DataMaxFlowEmergency
+	VETOR DATE 	DataMinFlowEmergency
+	VETOR REAL	MinFlowEmergency DIM(block) INDEX DataMinFlowEmergency
+
+
+	PARM	INTEGER	  FlagMonitored
+	PARM	INTEGER   FlagContingency
+
+END_MODEL
+
+//-------------------------------------------------
+//--- Modelo para Controlador de Fluxo Generico ---
+//-------------------------------------------------
+DEFINE_MODEL MODL:NETPLAN_V2.6_FlowController
+        DIMENSION block
+
+	VETOR DATE   Data
+	VETOR STRING O INDEX Data
+	VETOR STRING C INDEX Data
+	VETOR REAL   Xmin INDEX Data
+	VETOR REAL   Xmax INDEX Data
+	VETOR REAL	Cost INDEX Data
+
+	VETOR REAL   DefaultSet INDEX Data
+	VETOR REAL   FMin INDEX Data
+	VETOR REAL   FMax INDEX Data
+	VETOR REAL   FMne INDEX Data
+	VETOR REAL   FMxe INDEX Data
+
+	PARM  STRING Location
+	PARM  STRING ControlType
+	PARM  STRING DeviceType
+
+	//--- Bypass do controlador para cada patamar ---
+	VETOR DATE     DataBypass
+	VETOR INTEGER  Bypass DIM(block) INDEX DataBypass
+
+	VETOR DATE  DataMaxFlow
+	VETOR REAL  MaxFlow DIM(block) INDEX DataMaxFlow
+	VETOR DATE  DataMinFlow
+	VETOR REAL  MinFlow DIM(block) INDEX DataMinFlow
+	VETOR DATE  DataSetpoint
+	VETOR REAL  Setpoint DIM(block) INDEX DataSetpoint
+	VETOR DATE  DataMaxFlowEmergency
+	VETOR REAL  MaxFlowEmergency DIM(block) INDEX DataMaxFlowEmergency
+	VETOR DATE  DataMinFlowEmergency
+	VETOR REAL  MinFlowEmergency DIM(block) INDEX DataMinFlowEmergency
+
+END_MODEL
+
+//--------------------------------------
+//--- Modelo de Shunt Generico       ---
+//--------------------------------------
+DEFINE_MODEL MODL:NETPLAN_V2.6_Shunt
+	VETOR	REAL	Q
+	VETOR	DATE 	Data		
+END_MODEL
+//--------------------------------------
+//--- Modelo de Barra DC             ---
+//--------------------------------------
+DEFINE_MODEL MODL:NETPLAN_V2.6_BusDC
+        DIMENSION block
+
+	PARM	INTEGER	VoltType
+	PARM	STRING	Polarity
+	PARM	REAL	Volt
+	PARM	REAL	Kv
+	PARM	REAL	Rneutral
+	VETOR DATE 	Data
+	VETOR   STRING  O  INDEX Data
+	VETOR   STRING  C  INDEX Data
+	VETOR	REAL	Cost INDEX Data	
+
+	VETOR 	DATE 	DataVolt		
+	VETOR	REAL	Volt DIM(block) INDEX DataVolt	
+END_MODEL
+//-------------------------------
+//--- Modelo para Circuito DC ---
+//-------------------------------
+DEFINE_MODEL MODL:NETPLAN_V2.6_CircuitDC
+        DIMENSION block
+
+	VETOR DATE 	Data	
+	PARM INTEGER	Nc	
+	VETOR REAL	R INDEX Data
+	VETOR REAL	L INDEX Data
+	VETOR REAL	Rn INDEX Data
+	VETOR REAL	Cost INDEX Data
+	VETOR STRING	W INDEX Data	
+
+	VETOR   STRING  O  INDEX Data
+	VETOR   STRING  C  INDEX Data
+
+	//--- Status do circuito para cada patamar ---
+	VETOR DATE 	DataStatus
+	VETOR INTEGER	Status DIM(block) INDEX DataStatus	
+END_MODEL
+//--------------------------------------
+//--- Modelo para a Carga de Barra   ---
+//--------------------------------------
+DEFINE_MODEL MODL:NETPLAN_V2.6_CargaBarra
+        DIMENSION block
+
+	VETOR DATE Data
+	VETOR REAL P DIM(block) INDEX Data
+	VETOR REAL Q DIM(block) INDEX Data
+END_MODEL
+//--------------------------------------
+//--- Modelo de LinkDC               ---
+//--------------------------------------
+DEFINE_MODEL MODL:NETPLAN_LinkDC
+	PARM	REAL	Vbelo
+	PARM	REAL	Pbelo
+	PARM    STRING	Type
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelos de Restricao
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:NETPLAN_ConstraintFlow
+        DIMENSION 		block 21
+	VETOR DATE		Data
+	VETOR REAL		LB DIM(block) INDEX Data
+	VETOR REAL		UB DIM(block) INDEX Data
+	VETOR REAL		Coefficients	
+END_MODEL
+DEFINE_MODEL MODL:NETPLAN_ConstraintAngle
+        DIMENSION 		block 21
+	VETOR DATE		Data
+	VETOR REAL		LB DIM(block) INDEX Data
+	VETOR REAL		UB DIM(block) INDEX Data
+	VETOR REAL		Coefficients	
+END_MODEL
+DEFINE_MODEL MODL:NETPLAN_ConstraintCorridor
+	VETOR DATE		Data
+	VETOR REAL		RHS INDEX Data
+	VETOR REAL		Coefficients	
+END_MODEL
+DEFINE_MODEL MODL:NETPLAN_ConstraintEnviromental
+	VETOR DATE		Data
+	VETOR REAL		RHS INDEX Data
+	VETOR REAL		Coefficients	
+END_MODEL
+DEFINE_MODEL MODL:NETPLAN_ConstraintBipole
+	VETOR DATE		Data
+	VETOR REAL		Coefficients
+	VETOR STRING	Mode INDEX Data
+END_MODEL
+//------------------------------------------
+//--- Modelo para Static Var Compensator ---
+//------------------------------------------
+DEFINE_MODEL MODL:NETPLAN_StaticVarCompensator
+        DIMENSION block
+	PARM  INTEGER	ControlType
+	VETOR DATE 	Data
+	VETOR STRING	O INDEX Data
+	VETOR STRING	C INDEX Data
+	VETOR REAL	CLin INDEX Data
+	VETOR REAL	Cost INDEX Data
+	VETOR REAL	Qmn INDEX Data
+	VETOR REAL	Qmx INDEX Data
+	VETOR INTEGER   Unidades INDEX Data
+	//--- Status do por patamar ---
+	VETOR DATE 	DataStatus
+	VETOR INTEGER	Status DIM(block) INDEX DataStatus
+
+	VETOR DATE 	DataQset
+	VETOR REAL	Qset DIM(block) INDEX DataQset
+END_MODEL
+//--------------------------------------
+//--- Modelo de bateria              ---
+//--------------------------------------
+DEFINE_MODEL MODL:NETPLAN_Battery
+        DIMENSION scenario 1
+        DIMENSION block
+
+	VETOR 	DATE 	Data		
+	VETOR   STRING  O INDEX Data	
+	VETOR	REAL	Pmx INDEX Data
+	VETOR	REAL	Qmn INDEX Data
+	VETOR	REAL	Qmx INDEX Data
+	VETOR   INTEGER    Unidades INDEX Data
+	VETOR	STRING	C INDEX Data	
+	VETOR   REAL	Prob INDEX Data	
+	VETOR INTEGER ControlType INDEX Data	
+	VETOR REAL ReactiveFactor INDEX Data
+
+	VETOR DATE 	DataScn
+	VETOR REAL	P DIM(scenario,block) INDEX DataScn	
+	VETOR REAL	Q DIM(scenario,block) INDEX DataScn	
+
+	//--- Unidades da bateria ---
+	VETOR DATE 	DataUnidadesOperacao
+	VETOR INTEGER	UnidadesOperacao DIM(block) INDEX DataUnidadesOperacao	
+	VETOR DATE 	DataQset
+	VETOR REAL	Qset DIM(block) INDEX DataQset
+END_MODEL
+//-------------------------
+//--- Modelo de injeção ---
+//-------------------------
+DEFINE_MODEL MODL:NETPLAN_Injection
+	DIMENSION scenario 1
+	DIMENSION block
+
+	VETOR DATE	DataScn
+	VETOR REAL	P DIM(scenario,block) INDEX DataScn
+	VETOR REAL	Q DIM(scenario,block) INDEX DataScn
+END_MODEL
+//---------------------------------
+//--- Modelo para Conversor LCC ---
+//---------------------------------
+DEFINE_MODEL MODL:NETPLAN_V2.6_ConversorDCAC
+        DIMENSION scenario 1
+        DIMENSION block
+
+	VETOR DATE 	Data
+	VETOR  STRING	Type INDEX Data
+	VETOR  STRING	W INDEX Data	
+	VETOR INTEGER	NumBridges INDEX Data
+	VETOR REAL	INom INDEX Data
+	VETOR REAL	Xc INDEX Data
+	VETOR REAL	Vfs INDEX Data
+	VETOR REAL	Snt INDEX Data
+	VETOR REAL	Smin INDEX Data
+	VETOR REAL	Smax INDEX Data
+	VETOR REAL	Rna INDEX Data
+	VETOR REAL	Lra INDEX Data
+	VETOR STRING	SlackType INDEX Data
+	VETOR STRING	ControlMode INDEX Data
+	VETOR REAL	Vmn INDEX Data
+	VETOR REAL	Vmx INDEX Data
+	VETOR REAL	Dsp INDEX Data
+	VETOR REAL	Dmn INDEX Data
+	VETOR REAL	Dmx INDEX Data
+	VETOR REAL	Tmn INDEX Data
+	VETOR REAL	Tmx INDEX Data
+	VETOR INTEGER	TapStep INDEX Data
+	VETOR   STRING  O  INDEX Data
+	VETOR   STRING  C  INDEX Data
+	VETOR REAL	Cost INDEX Data
+
+	VETOR 	DATE 	DataFlowLinkDC
+	VETOR	REAL	FlowLinkDC DIM(scenario,block) INDEX DataFlowLinkDC
+
+	// --- Tap do transformador conversor ---
+	VETOR 	DATE 	DataTap
+	VETOR	REAL	Tap DIM(block) INDEX DataTap
+
+	//--- Status do conversor ---
+	VETOR DATE 	DataStatus
+	VETOR INTEGER	Status DIM(block) INDEX DataStatus		
+		
+END_MODEL
+//--------------------------------------
+//--- Modelo de Conversor P2P        ---
+//--------------------------------------
+DEFINE_MODEL MODL:NETPLAN_Conversor_P2P
+        DIMENSION scenario 1
+        DIMENSION block
+	VETOR DATE 	Data
+	VETOR  STRING	Type INDEX Data
+	VETOR  STRING	W INDEX Data
+	VETOR INTEGER	NumBridges INDEX Data
+	VETOR REAL	Rc INDEX Data
+	VETOR REAL	Xc INDEX Data
+	VETOR REAL	Smin INDEX Data
+	VETOR REAL	Smax INDEX Data
+	VETOR REAL	DtnR INDEX Data
+	VETOR REAL	DtmR INDEX Data
+	VETOR REAL	DtnI INDEX Data
+	VETOR REAL	DtmI INDEX Data
+	VETOR REAL	Tmn INDEX Data
+	VETOR REAL	Tmx INDEX Data
+	VETOR INTEGER	TapStep INDEX Data
+	VETOR STRING	ControlMode INDEX Data
+	VETOR REAL	Capacitance INDEX Data
+	VETOR REAL	Cost INDEX Data
+	VETOR REAL	Ebase INDEX Data
+	VETOR REAL	Tr INDEX Data
+	VETOR INTEGER	Ic INDEX Data
+	VETOR INTEGER	If INDEX Data
+	VETOR INTEGER	It INDEX Data
+	VETOR STRING	Id INDEX Data
+	
+	VETOR   STRING  O  INDEX Data
+	VETOR   STRING  C  INDEX Data
+
+	VETOR 	DATE 	DataFlowLinkDC
+	VETOR	REAL	FlowLinkDC DIM(scenario,block) INDEX DataFlowLinkDC
+
+	VETOR 	DATE 	DataTap
+	VETOR	REAL	Tap DIM(block) INDEX DataTap
+
+	VETOR DATE 	DataStatus
+	VETOR INTEGER	Status DIM(block) INDEX DataStatus		
+END_MODEL
+//--------------------------------------
+//--- Modelo de Conversor VSC        ---
+//--------------------------------------
+DEFINE_MODEL MODL:NETPLAN_Conversor_VSC
+        DIMENSION scenario 1
+        DIMENSION block
+	VETOR DATE 	Data
+	VETOR  STRING	W INDEX Data
+	VETOR REAL	ALOSS INDEX Data
+	VETOR REAL	BLOSS INDEX Data
+	VETOR REAL	LOSMN INDEX Data
+	VETOR REAL	Smin INDEX Data
+	VETOR REAL	Smax INDEX Data
+	VETOR REAL	Imax INDEX Data
+	VETOR REAL	PWF INDEX Data
+	VETOR REAL	Qmn INDEX Data
+	VETOR REAL	Qmx INDEX Data
+	
+	VETOR STRING	ControlMode INDEX Data
+	VETOR STRING	VoltControlMode INDEX Data
+	VETOR REAL	Cost INDEX Data
+	
+	VETOR   STRING  O  INDEX Data
+	VETOR   STRING  C  INDEX Data
+
+	VETOR 	DATE 	DataFlowLinkDC
+	VETOR	REAL	FlowLinkDC DIM(scenario,block) INDEX DataFlowLinkDC
+
+	VETOR DATE 	DataStatus
+	VETOR INTEGER	Status DIM(block) INDEX DataStatus	
+END_MODEL

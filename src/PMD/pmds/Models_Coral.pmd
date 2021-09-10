@@ -1,0 +1,43 @@
+//--------------------------------------------------------------------------------------------------
+// Modelo de Configuracao para o estudo
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Coral_Configuration
+        PARM INTEGER	NumberContingencies
+        PARM INTEGER	NumberSamples
+        PARM INTEGER	HierarchicalLevel
+        PARM INTEGER    NetworkModel        
+        PARM INTEGER    BatteryModel
+        PARM INTEGER    HydroModel        
+        PARM INTEGER    FlagContingencyGenerators
+        PARM INTEGER    FlagContingencyCircuits
+        PARM INTEGER    FlagCommitment        
+        PARM INTEGER	PseudoSequential
+        PARM INTEGER	MaxInterval
+        PARM INTEGER	PrintStates
+        VECTOR INTEGER  SelectedBlocks
+        PARM REAL CVAR_Alpha
+        PARM REAL CVAR_Lambda
+
+        //--- Metodo de busca binaria ---
+        PARM INTEGER	BinarySearch     
+        PARM REAL	BinarySearchTol
+        PARM REAL	TargetLOLP
+        PARM REAL	TargetEPNS           
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo de Confiabilidade para Usinas
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Coral_Plants
+        PARM INTEGER	AvailableUnits        
+        PARM INTEGER    UniqueNode
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo de Confiabilidade para Circuitos
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Coral_Series
+        PARM INTEGER	Available
+END_MODEL
+DEFINE_MODEL MODL:Coral_Sequential
+        PARM REAL	FailureRate
+        PARM REAL	MeanTimeToRepair
+END_MODEL        

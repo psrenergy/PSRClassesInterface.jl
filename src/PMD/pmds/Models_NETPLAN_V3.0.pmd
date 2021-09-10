@@ -1,0 +1,67 @@
+//--------------------------------------
+//--- Modelo para a Carga de Barra   ---
+//--------------------------------------
+DEFINE_MODEL MODL:NETPLAN_V3.0_CargaBarra
+        DIMENSION scenario 1
+        DIMENSION block 1
+
+	VETOR DATE Data
+	VETOR INTEGER Unidades
+	
+	VETOR DATE DataUnidades
+	VETOR REAL Pp DIM(scenario,block) INDEX Data
+	VETOR REAL Pi DIM(scenario,block) INDEX Data
+	VETOR REAL Pz DIM(scenario,block) INDEX Data
+	VETOR REAL Qp DIM(scenario,block) INDEX Data
+	VETOR REAL Qi DIM(scenario,block) INDEX Data
+	VETOR REAL Qz DIM(scenario,block) INDEX Data
+
+	VETOR DATE DataUnidades
+	VETOR INTEGER Unidades DIM(block) INDEX DataUnidades		
+END_MODEL
+
+//--------------------------------------
+//--- Modelo para a conversor        ---
+//--------------------------------------
+DEFINE_MODEL MODL:NETPLAN_V3.0_ConversorDCAC
+        DIMENSION scenario 1
+        DIMENSION block
+	VETOR DATE 	Data
+	VETOR  STRING	Type INDEX Data
+	VETOR  STRING	W INDEX Data
+	VETOR INTEGER	NumBridges INDEX Data
+	VETOR REAL	INom INDEX Data
+	VETOR REAL	Xc INDEX Data
+	VETOR REAL	Vfs INDEX Data
+	VETOR REAL	Snt INDEX Data
+	VETOR REAL	Rna INDEX Data
+	VETOR REAL	Lra INDEX Data
+	VETOR REAL	Tmn INDEX Data
+	VETOR REAL	Tmx INDEX Data
+	VETOR INTEGER	TapStep INDEX Data
+	VETOR STRING	ControlMode INDEX Data
+	VETOR REAL	Smin INDEX Data
+	VETOR REAL	Smax INDEX Data
+	VETOR REAL	DspR INDEX Data
+	VETOR REAL	DtnR INDEX Data
+	VETOR REAL	DtmR INDEX Data
+	VETOR REAL	DspI INDEX Data
+	VETOR REAL	DtnI INDEX Data
+	VETOR REAL	DtmI INDEX Data
+	VETOR REAL	Capacitance INDEX Data
+	VETOR REAL	Frequency INDEX Data
+	VETOR REAL	Cost INDEX Data
+	
+	VETOR   STRING  O  INDEX Data
+	VETOR   STRING  C  INDEX Data
+
+	VETOR 	DATE 	DataFlowLinkDC
+	VETOR	REAL	FlowLinkDC DIM(scenario,block) INDEX DataFlowLinkDC
+
+	// --- Tap do transformador conversor ---
+	VETOR 	DATE 	DataTap
+	VETOR	REAL	Tap DIM(block) INDEX DataTap
+
+	VETOR DATE 	DataStatus
+	VETOR INTEGER	Status DIM(block) INDEX DataStatus	
+END_MODEL

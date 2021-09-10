@@ -1,0 +1,146 @@
+DEFINE_MODEL MODL:NCP_StudyConfiguration
+	VETOR DATE InitialDate
+    VETOR DATE EndDate INTERVAL InitialDate
+    VETOR REAL ShortTermDefictCost INDEX InitialDate
+	VETOR REAL ShortTermDefictPercent INDEX InitialDate
+	
+	VETOR DATE HourlyDate
+	VETOR REAL HourlyDuration INDEX HourlyDate
+	VETOR REAL HourlyNetworkFlag INDEX HourlyDate
+	
+	PARM INTEGER InitialDay
+	PARM INTEGER InitialHour
+	PARM INTEGER WeekDay
+	PARM INTEGER NumberOfDays
+END_MODEL
+
+DEFINE_MODEL MODL:NCP_HydroGaugingStation
+	VETOR DATE InitialDate
+    VETOR DATE EndDate INTERVAL InitialDate
+    VETOR REAL ShortTermInflow INDEX InitialDate
+	
+	PARM INTEGER StationType
+END_MODEL
+
+DEFINE_MODEL MODL:NCP_HydroPlant
+	VETOR DATE FloodControlInitialDate
+	VETOR DATE FloodControlEndDate INTERVAL FloodControlInitialDate
+	VETOR REAL ShortTermFloodControlStorage INDEX FloodControlInitialDate
+	
+	VETOR DATE WaterDiversionInitialDate
+	VETOR DATE WaterDiversionEndDate INTERVAL WaterDiversionInitialDate
+	VETOR REAL ShortTermDiversionTax INDEX WaterDiversionInitialDate
+	
+	VETOR DATE DfTotMinInitialDate
+	VETOR DATE DfTotMinEndDate INTERVAL DfTotMinInitialDate
+	VETOR REAL ShortTermDfTotMin INDEX DfTotMinInitialDate
+	
+	VETOR DATE DfTotMaxInitialDate
+	VETOR DATE DfTotMaxEndDate INTERVAL DfTotMaxInitialDate
+	VETOR REAL ShortTermDfTotMax INDEX DfTotMaxInitialDate
+	
+	VETOR DATE QInitialDate
+	VETOR DATE QEndDate INTERVAL QInitialDate
+	VETOR REAL ShortTermQMin INDEX QInitialDate
+	VETOR REAL ShortTermQMax INDEX QInitialDate
+END_MODEL
+
+DEFINE_MODEL MODL:NCP_ThermalPlant
+	VETOR DATE InitialDate
+	VETOR DATE EndDate INTERVAL InitialDate
+	
+	VETOR REAL ShortTermChroGerMin INDEX InitialDate
+	VETOR REAL ShortTermGerMax INDEX InitialDate	
+	
+	VETOR DATE OperationPointInitialDate
+	VETOR DATE OperationPointEndDate INTERVAL OperationPointInitialDate
+	VETOR REAL ShortTermOperationGerMin INDEX OperationPointInitialDate
+	VETOR REAL ShortTermOperationGerMax INDEX OperationPointInitialDate
+	
+	PARM INTEGER ConstraintUnity
+	
+	VETOR DATE ConstraintInitialDate
+	VETOR DATE ConstraintEndDate INTERVAL ConstraintInitialDate
+	
+	VETOR REAL RampUpConstraint INDEX ConstraintInitialDate
+	VETOR REAL RampDownConstraint INDEX ConstraintInitialDate
+	VETOR REAL ShortTermGenerationConstraint INDEX ConstraintInitialDate
+END_MODEL
+
+DEFINE_MODEL MODL:NCP_ThermalGeneratorUnity
+	PARM REAL InitalGeneration
+	PARM INTEGER Status
+	PARM INTEGER StatusTime
+	PARM REAL ColdStartCost
+	PARM REAL HotStartCost
+	
+	VETOR DATE UnityGeneratorInitialDate
+	VETOR DATE UnityGeneratorEndDate INTERVAL UnityGeneratorInitialDate
+	VETOR REAL ShortTermMaximumGeneration INDEX UnityGeneratorInitialDate
+	VETOR REAL ShortTermMinimumGeneration INDEX UnityGeneratorInitialDate
+END_MODEL
+
+DEFINE_MODEL MODL:NCP_RenewableStation
+	VETOR DATE InitialDate
+	VETOR DATE EndDate INTERVAL InitialDate
+	VETOR REAL ShortTermGeneration INDEX InitialDate
+END_MODEL
+
+DEFINE_MODEL MODL:NCP_DemandSegment
+	VETOR DATE InitialDate
+	VETOR DATE EndDate INTERVAL InitialDate
+	VETOR REAL ShortTermDemand INDEX InitialDate
+END_MODEL
+
+DEFINE_MODEL MODL:NCP_HydroGeneratorUnity
+	PARM INTEGER UnityGroup
+	PARM INTEGER UnityId
+	
+	VETOR DATE MaintenanceInitialDate
+	VETOR DATE MaintenanceEndDate INTERVAL MaintenanceInitialDate
+	VETOR REAL ShortTermMaintenance INDEX MaintenanceInitialDate
+END_MODEL
+
+DEFINE_MODEL MODL:NCP_ReserveGeneration
+	VETOR DATE InitialDate
+	VETOR DATE EndDate INTERVAL InitialDate
+	VETOR REAL ShortTermMinimumReserve INDEX InitialDate
+	VETOR REAL ShortTermLossFactor INDEX InitialDate
+END_MODEL
+
+DEFINE_MODEL MODL:NCP_ElectricalConstraint
+	VETOR DATE InitialDateUpperBound
+	VETOR DATE InitialDateLowerBound
+	VETOR DATE EndDateUpperBound INTERVAL InitialDateUpperBound
+	VETOR DATE EndDateLowerBound INTERVAL InitialDateLowerBound
+	VETOR REAL ShortTermUpperBound INDEX InitialDateUpperBound
+	VETOR REAL ShortTermLowerBound INDEX InitialDateLowerBound
+END_MODEL
+
+DEFINE_MODEL MODL:NCP_GenerationConstraint
+	VETOR DATE InitialDate
+	VETOR DATE EndDate INTERVAL InitialDate
+	VETOR REAL ShortTermLimit INDEX InitialDate
+END_MODEL
+
+DEFINE_MODEL MODL:NCP_PlantReserveGeneration
+	PARM INTEGER ReserveType
+	
+	VETOR DATE SingleReserveInitialDate
+	VETOR DATE SingleReserveDate INTERVAL SingleReserveInitialDate
+	VETOR REAL ShortTermMinimumReserve INDEX SingleReserveInitialDate
+END_MODEL
+
+DEFINE_MODEL MODL:NCP_HydroConnection
+	PARM INTEGER TravelType
+	PARM INTEGER TravelTime
+END_MODEL
+
+DEFINE_MODEL MODL:NCP_Interconnection
+	VETOR DATE InitialDate
+	VETOR DATE EndDate INTERVAL InitialDate
+	VETOR REAL ShortTermCapacity-> INDEX InitialDate
+	VETOR REAL ShortTermCapacity<- INDEX InitialDate
+	VETOR REAL ShortTermLossFactor-> INDEX InitialDate
+	VETOR REAL ShortTermLossFactor<- INDEX InitialDate
+END_MODEL

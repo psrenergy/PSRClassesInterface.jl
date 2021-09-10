@@ -1,0 +1,25 @@
+//--------------------------------------
+//--- Modelo de Avaliacao Economica  ---
+//--------------------------------------
+DEFINE_MODEL MODL:OPTVALUE_Economic_Evaluation
+	PARM REAL        TxJ
+    PARM REAL        PGm
+    PARM REAL        PLm
+    PARM REAL        IVA
+    PARM REAL        IR
+    PARM REAL        FSD
+END_MODEL
+//-------------------------------------------------
+//--- Modelo de Projeto de Avaliacao Economica  ---
+//-------------------------------------------------
+DEFINE_MODEL MODL:OPTVALUE_Project
+	PARM REAL        RAdc
+	VECTOR REAL Jur
+	VECTOR REAL Dpr
+END_MODEL
+//------------------------------------------------------------
+//--- Modelo de selecao de Projeto de Avaliacao Economica  ---
+//------------------------------------------------------------
+DEFINE_MODEL MODL:OPTVALUE_EconomicGroups
+	PARM INTEGER        group
+END_MODEL 

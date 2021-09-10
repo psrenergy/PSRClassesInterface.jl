@@ -1,0 +1,616 @@
+DEFINE_MODEL MODL:ePSR_Element
+	PARM  INTEGER		Id
+	PARM  STRING		IdX
+	PARM  INTEGER		IdC
+	PARM  DATE              DtE
+	PARM  DATE              DtS
+	PARM  INTEGER		Selected
+	PARM  INTEGER		Enabled	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo de Configuracao
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_CasoOperacao
+        DIMENSION block 20
+	MERGE_MODEL MODL:ePSR_Element
+	PARM INTEGER		Idi
+	PARM INTEGER		Opc
+	PARM INTEGER		Obj	
+	PARM STRING		TpV	
+	PARM INTEGER		InitialYear
+	PARM INTEGER		InitialStage	
+	PARM INTEGER		NumberBlocks
+	PARM INTEGER		NumberStages
+	PARM REAL		TxD
+	PARM STRING		TpS
+	PARM STRING		Man
+	PARM INTEGER		Exp
+	PARM INTEGER		Net	
+	PARM INTEGER		Prd
+	PARM STRING		CSFwd 	
+	PARM INTEGER		HIn	
+	PARM INTEGER		Frw
+	PARM INTEGER		Bkw
+	PARM INTEGER		PPO
+	PARM INTEGER		Adc
+	PARM INTEGER		SFn
+	PARM INTEGER		Crn	
+	PARM INTEGER		Itr	
+	PARM INTEGER		Cnv
+	PARM REAL		PMn
+	PARM REAL		PVt
+	PARM STRING             EtFCF
+	PARM DATE               EtI
+	PARM DATE               EtF
+	
+	//--- Configuracao de Manutencao ---
+	PARM DATE 		CenDesligamento_EtI
+	PARM DATE 		CenDesligamento_EtF
+	
+	//--- Configuracao de Manutencao ---
+	PARM STRING TipoInfoManutencao
+	PARM STRING TipoUnidadeManutencao
+
+	//--- Codigos dos Sistemas Listados ---
+	VECTOR INTEGER CodigoSistemas	
+	
+	//--- Index das series selecionadas ---
+	VECTOR INTEGER IndexSeriesSimulacao	
+
+	VECTOR REAL  Niv
+	VECTOR REAL  Cst	
+
+	//--- Duracao dos patamares ---
+	PARM  REAL   Duracao DIM(block)		
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo de Configuracao
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_CasoExpansao
+	MERGE_MODEL MODL:ePSR_Element
+	PARM INTEGER		TeI
+	PARM INTEGER		Rei
+	PARM INTEGER		NuI
+	PARM REAL		ToC
+	PARM REAL		ToX
+	PARM INTEGER		LTX
+	PARM INTEGER		EsC
+	PARM INTEGER		TpES	
+	PARM INTEGER		DuH
+	PARM INTEGER		InH
+	PARM INTEGER		NAn	
+	PARM INTEGER		AMx
+	PARM REAL 		FEH
+	PARM REAL 		FET
+	PARM REAL 		FER
+	PARM REAL 		FPH
+	PARM REAL 		FPT
+	PARM REAL 		FPR
+	PARM STRING		IdX_ExpansionPlanFileName	
+END_MODEL
+
+DEFINE_MODEL MODL:ePSR_CasoAvaliacaoEconomica
+	MERGE_MODEL MODL:ePSR_Element
+	PARM REAL		TxJ
+	PARM REAL		PGm
+	PARM REAL		PLm
+	PARM REAL		IVA
+	PARM REAL		IR
+	PARM REAL		FSD
+END_MODEL
+
+//--------------------------------------------------------------------------------------------------
+// Modelo de Sistema
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Sistema
+	MERGE_MODEL MODL:ePSR_Element
+
+	VETOR DATE		DataFatorEnergiaFirme
+	VETOR REAL		FatorEnergiaFirme INDEX DataFatorEnergiaFirme
+	
+	VECTOR DATE		DataFatorPotenciaFirme
+	VECTOR REAL		FatorPotenciaFirme INDEX DataFatorPotenciaFirme			
+	
+	PARM REAL 		FEH
+	PARM REAL 		FET
+	PARM REAL 		FER
+	PARM REAL 		FPH
+	PARM REAL 		FPT
+	PARM REAL 		FPR
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para a Demanda
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Demanda
+        DIMENSION block 20
+	PARM  INTEGER	Elastico
+	PARM  REAL	Duracao DIM(block)
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Segmento de Demanda
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_SegmentoDemanda
+        DIMENSION block 20
+
+	VETOR DATE 	Data
+	VETOR REAL 	Dem	DIM(block) INDEX Data	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo de Interconexao
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Interconexao
+	MERGE_MODEL MODL:ePSR_Element
+END_MODEL
+
+//--------------------------------------------------------------------------------------------------
+// Modelo de Usina
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Usina
+	VETOR DATE 	DtMan
+	VETOR REAL	Man	INDEX DtMan
+END_MODEL
+
+//--------------------------------------------------------------------------------------------------
+// Modelo de Termica
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_UsinaTermica
+	MERGE_MODEL MODL:ePSR_Element
+	MERGE_MODEL MODL:ePSR_Usina
+
+	VETOR DATE 	DtV
+	VETOR REAL	EnF	INDEX DtV
+	VETOR REAL	PtF	INDEX DtV
+	
+	VETOR REAL	Trn	INDEX DtV
+
+	PARM STRING		Lat
+	PARM STRING		Lng	
+
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo de Hydro
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_UsinaHydro
+	MERGE_MODEL MODL:ePSR_Element
+	MERGE_MODEL MODL:ePSR_Usina	
+	
+	VETOR DATE 	DtV
+	VETOR REAL	EnF	INDEX DtV
+	VETOR REAL	PtF	INDEX DtV
+	VETOR REAL	OMV	INDEX DtV
+		
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo de Gnd
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_UsinaRenovavel
+	MERGE_MODEL MODL:ePSR_Element
+	MERGE_MODEL MODL:ePSR_Usina
+
+	VETOR DATE 	DtV
+	VETOR REAL	EnF	INDEX DtV
+	VETOR REAL	PtF	INDEX DtV	
+
+	PARM STRING		Lat
+	PARM STRING		Lng	
+
+END_MODEL
+
+//--------------------------------------------------------------------------------------------------
+// Modelo de Gerador Hydro
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_GeradorHydro
+	MERGE_MODEL MODL:ePSR_Element
+	VETOR DATE DtV
+	
+	VETOR INTEGER  NGr	INDEX DtV
+	VETOR REAL  Pot	INDEX DtV
+	VETOR REAL  FIH	INDEX DtV
+	VETOR REAL  FIC	INDEX DtV
+	VETOR REAL  TMn	INDEX DtV
+	VETOR REAL  TMx	INDEX DtV
+	VETOR REAL  Prd	INDEX DtV
+	VETOR REAL  GMn	INDEX DtV
+		
+	
+	PARM REAL PontoFProd DIM(5)
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo de Gerador Thermal
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_GeradorThermal
+	MERGE_MODEL MODL:ePSR_Element
+
+	VETOR DATE DtV
+	
+	VETOR INTEGER  NGr	INDEX DtV
+	VETOR REAL  Pot		INDEX DtV
+	VETOR REAL  FIH		INDEX DtV
+	VETOR REAL  FIC		INDEX DtV
+	VETOR REAL  GMn		INDEX DtV
+	VETOR REAL  CREm	INDEX DtV
+	VETOR REAL  OMV		INDEX DtV
+	VETOR REAL  COV		INDEX DtV
+	VETOR REAL  COI		INDEX DtV
+
+	VETOR REAL Ope DIM(3) INDEX DtV
+	VETOR REAL Con DIM(3) INDEX DtV
+	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo de Posto Hidrologico
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_PostoHidrologico
+	MERGE_MODEL MODL:ePSR_Element
+	
+	PARM STRING	TpP
+
+	VETOR DATE		Data
+	VETOR REAL		Vaz INDEX Data
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Combustivel
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Combustivel
+	MERGE_MODEL MODL:ePSR_Element
+
+	PARM  STRING		Med
+	PARM  REAL		Cal
+	
+	VETOR DATE		Data
+	VETOR REAL		Custo INDEX Data
+
+	VETOR DATE		DataDisponib
+	VETOR REAL		Disponib INDEX DataDisponib	
+	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Reservatorio
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Reservatorio
+	MERGE_MODEL MODL:ePSR_Element
+
+	PARM  STRING	TpR
+	PARM  STRING	IVC
+	PARM  REAL	Reg
+	PARM  REAL	Are
+	PARM  REAL	Flt
+	PARM  REAL	Cot
+	PARM  INTEGER	RsVId
+	PARM  INTEGER	RsTId
+	PARM  INTEGER	RsCadEAId
+	VETOR DATE		DataCusto
+	VETOR REAL		Custo INDEX DataCusto	
+
+	VETOR DATE		DataDisponib
+	VETOR REAL		Disponib INDEX DataDisponib	
+	
+	VETOR DATE	DtV
+	VETOR REAL	VMn INDEX DtV
+	VETOR REAL	VMx INDEX DtV
+	PARM REAL	CsV 
+	PARM REAL	DTM 
+	
+	PARM REAL Niv DIM(6)
+	PARM REAL Evp DIM(12)
+	
+	PARM REAL PontoFNivel DIM(5)
+	PARM REAL PontoFArea DIM(5)
+	PARM REAL PontoFCota DIM(5)
+	PARM REAL PontoFFilt DIM(5)	
+	PARM REAL Evaporacao DIM(12)
+
+	PARM  REAL      SxH_Head       DIM(5)
+	PARM  REAL      SxH_Storage    DIM(5)
+	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Combustivel
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_RestricaoGeracao
+        DIMENSION block 20
+
+	MERGE_MODEL MODL:ePSR_Element
+	
+	VETOR DATE		Data
+	VETOR REAL		Restricao DIM(block) INDEX Data	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo de Barra
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Barra
+	MERGE_MODEL MODL:ePSR_Element
+	
+	PARM INTEGER 		Fic
+	PARM REAL		Tns
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo de Carga
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Load
+        DIMENSION block 20
+
+	MERGE_MODEL MODL:ePSR_Element
+	VETOR DATE		DtV	
+	VETOR REAL		CRf DIM(block) INDEX DtV
+	VETOR REAL		CFx DIM(block) INDEX DtV
+	VETOR REAL		Prd DIM(block) INDEX DtV
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo de Transformador
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Transformador
+	MERGE_MODEL MODL:ePSR_Element
+	
+	VETOR DATE		DtV	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo de Circuito de Transformador
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_CircuitoTrafo
+	MERGE_MODEL MODL:ePSR_Element
+	
+	VETOR DATE		DtV
+	
+	VETOR REAL		Res  INDEX DtV
+	VETOR REAL		Rea  INDEX DtV
+	VETOR REAL		CNr  INDEX DtV
+	VETOR REAL		CEm  INDEX DtV
+	VETOR REAL		Tap  INDEX DtV
+	VETOR REAL		TMn  INDEX DtV
+	VETOR REAL		TMx  INDEX DtV
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo de Linha
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Linha
+	MERGE_MODEL MODL:ePSR_Element
+	
+	VETOR DATE		DtV	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo de Circuito de Linha
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_CircuitoLinha
+	MERGE_MODEL MODL:ePSR_Element
+	
+	VETOR DATE		DtV
+	
+	VETOR REAL		Res  INDEX DtV
+	VETOR REAL		Rea  INDEX DtV
+	VETOR REAL		Sus  INDEX DtV
+	VETOR REAL		CNr  INDEX DtV
+	VETOR REAL		CEm  INDEX DtV
+	VETOR REAL		Flh  INDEX DtV
+	
+	VETOR DATE DtDsl
+	VETOR INTEGER		Dsl INDEX DtDsl
+END_MODEL
+
+//--------------------------------------------------------------------------------------------------
+// Modelo de Shunt
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Shunt
+	MERGE_MODEL MODL:ePSR_Element
+	
+	VETOR DATE		DtV
+	PARM STRING		TpSht
+	PARM STRING		TpCtl
+	VETOR REAL		Pot  INDEX DtV	
+	VETOR INTEGER		Num  INDEX DtV			
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo de Compensador Sincrono
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_CompensadorSincrono
+	MERGE_MODEL MODL:ePSR_Element
+	
+	VETOR DATE		DtV
+	VETOR REAL		GMn  INDEX DtV	
+	VETOR REAL		GMx  INDEX DtV			
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo de Reator de Linha
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_ReatorLinha
+	MERGE_MODEL MODL:ePSR_Element
+	
+	VETOR DATE		DtV
+	VETOR REAL		SuS  INDEX DtV	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Projeto de Expansao
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_ProjetoExpansao
+	MERGE_MODEL MODL:ePSR_Element
+
+	PARM DATE		DtMn
+	PARM DATE		DtMx
+	PARM INTEGER		TpD
+	PARM INTEGER		TpV
+	PARM DATE		DtTpV
+	PARM INTEGER		VUt
+	PARM REAL		CtI
+	PARM INTEGER		UCtI
+	PARM REAL		CtO
+	PARM REAL		CtIt
+	PARM INTEGER            Mes DIM(10)	
+	PARM INTEGER            NUn DIM(10)		
+	PARM REAL		FCapMed
+	PARM REAL		FCapGar
+	PARM INTEGER		BelongsStudy
+	VETOR REAL		Jur
+	VETOR REAL		Dpr
+	PARM INTEGER		NADp
+	PARM INTEGER		AnoIRPgF
+	PARM INTEGER		AnoFRPgF	
+	PARM REAL		RAdc	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Cronograma de Desembolso
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_CronogramaDesembolso
+	MERGE_MODEL MODL:ePSR_Element
+
+	PARM INTEGER		AnoE
+	VECTOR REAL		Dem
+	VECTOR REAL		CapP
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Restricao de Capacidade
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_RestricaoCapacidade
+	MERGE_MODEL MODL:ePSR_Element
+
+	PARM DATE		DtI
+	PARM DATE		DtF
+	PARM INTEGER		TpC
+	PARM REAL		Cap
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Restricao de Precedencia
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_RestricaoPrecedencia
+	MERGE_MODEL MODL:ePSR_Element
+
+	VECTOR INTEGER		Delay
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Intersecao
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Intersecao
+	MERGE_MODEL MODL:ePSR_Element
+
+	PARM STRING		Lat
+	PARM STRING		Lng
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Segmento de Transporte
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_SegmentoTransporte
+	MERGE_MODEL MODL:ePSR_Element
+	PARM STRING		MTr
+	VECTOR STRING		Lat
+	VECTOR STRING		Lng
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Duto
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Duto
+	MERGE_MODEL MODL:ePSR_Element
+
+	PARM INTEGER		IGs
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Navio
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Navio
+	MERGE_MODEL MODL:ePSR_Element
+
+	VECTOR STRING		Lat
+	VECTOR STRING		Lng	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Caminhao
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Caminhao
+	MERGE_MODEL MODL:ePSR_Element
+
+	VECTOR STRING		Lat
+	VECTOR STRING		Lng	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para UnidadeConsumo
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_UnidadeConsumo
+	MERGE_MODEL MODL:ePSR_Element
+
+	PARM STRING		Lat
+	PARM STRING		Lng	
+	PARM STRING		TpC
+	PARM INTEGER		Agg
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para UnidadeProducao
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_UnidadeProducao
+	MERGE_MODEL MODL:ePSR_Element
+
+	PARM STRING		Lat
+	PARM STRING		Lng	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Planta de Armazenamento
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_PlantaArmazenamento
+	MERGE_MODEL MODL:ePSR_Element
+        // Tipo -> 0 -> Isolada, 1 -> Refinaria, 2 -> Regaseificadora
+	PARM INTEGER		Type  
+	PARM STRING		Lat
+	PARM STRING		Lng
+	PARM REAL		CN
+	PARM REAL		CMx
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Refinaria
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Refinaria
+	MERGE_MODEL MODL:ePSR_Element
+
+	PARM STRING		Lat
+	PARM STRING		Lng
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Refinaria
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Regaseificadora
+	MERGE_MODEL MODL:ePSR_Element
+
+	PARM STRING		Lat
+	PARM STRING		Lng
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Porto
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Porto
+	MERGE_MODEL MODL:ePSR_Element
+
+	PARM STRING		Lat
+	PARM STRING		Lng
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Terminal
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Terminal
+	MERGE_MODEL MODL:ePSR_Element
+
+	PARM STRING		Lat
+	PARM STRING		Lng
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo de Manutencao
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_Manutencao
+	VETOR DATE		DtMan
+	VETOR REAL		Man INDEX DtMan	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para UnidadeConsumo
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_NoExtracao
+	MERGE_MODEL MODL:ePSR_Element
+	PARM REAL	Dst
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Modelo para Decisao de expansao
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:ePSR_PlanoExpansaoProjeto
+	MERGE_MODEL MODL:ePSR_Element
+	PARM DATE               EtI
+	PARM DATE               EtF
+        PARM INTEGER 		TpDD
+        PARM INTEGER		TpD
+        PARM REAL 		Cap
+        PARM INTEGER		IndDPl	
+END_MODEL
+

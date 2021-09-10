@@ -1,0 +1,21 @@
+DEFINE_MODEL MODL:Reliability_Generation
+	VETOR	INTEGER   Unidades	
+	VETOR	REAL      Pmn		
+	VETOR	REAL      Pmx		
+	VETOR	REAL      Qmn		
+	VETOR	REAL      Qmx		
+	VETOR	REAL      txfalha	
+	VETOR	REAL      txRetorno
+	VETOR   REAL      avail.Unidades
+END_MODEL
+DEFINE_MODEL MODL:Reliability_Load
+	VETOR	REAL      P
+	VETOR	REAL      Q
+	VETOR   REAL	  PBase
+	VETOR   REAL	  QBase
+END_MODEL
+DEFINE_MODEL MODL:Reliability_Serie
+	VETOR	REAL      Oper	
+	VETOR	REAL      txfalha	
+	VETOR	REAL      txRetorno
+END_MODEL

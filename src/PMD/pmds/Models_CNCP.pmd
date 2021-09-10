@@ -1,0 +1,737 @@
+//--------------------------------------------------------------------------------------------------
+// Configuracao do Estudo
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:CNCP_StudyConfiguration
+	PARM INTEGER	Presolve                                     // Presolve (0=No;1=Yes)								
+	PARM INTEGER	MaxTime                                      // Maximum execution time (minutes)							
+	PARM REAL	Tolerance	                             // Convergence Tolerance (k$)							
+	PARM INTEGER	SolutionMethod                               // Solution Method									
+	PARM INTEGER	OptimizationCriteria                         // Optimization Criteria								
+	PARM INTEGER	HydroRepresentationLevel                     // Hydro Representation Level							
+	PARM INTEGER	HeuristicEnfasis                             // Heuristics Enfasis								
+	PARM INTEGER	CutFileFormat                                // Cut's File Format								
+	PARM INTEGER	CommitmentRepresentation                     // Commitment representation							
+	PARM INTEGER	RepresentationHeadStorage                    // Represent the Head x Storage variation effect					
+	PARM REAL	RelativeTolerance                            // Relative Convergence Tolerance (%)						
+	PARM INTEGER	RepresentationGenerationZone                 // Represent allowed generation zone						
+	PARM INTEGER	UseDailyHydroProductionFactor	             // Use daily hydro variable production factor					
+	PARM INTEGER	UseHourlyHydroProductionFactor	             // Use hourly hydro variable production factor					
+	PARM INTEGER	UseGenerationDamping                         // Use generation damping								
+	PARM INTEGER	StageDuration                                // Stage duration (1=60 minutes;2=30 minutes;4=15  minutes)				
+	PARM INTEGER	SecondarySpinningSellOption                  // Secondary spinning reserve sell option						
+	PARM INTEGER	ExecutionType                                // Execution type (0=NCP; 1=NCP with Optflow; 2=Chronological NCP)			
+	PARM INTEGER	EnableRollingHorizon                         // Habilitar Horizonte Rolante? [0]: Não / 1: Sim					
+	PARM INTEGER	EnableLocalSearch                            // Habilitar Busca Local? [0]: Não / 1: Sim						
+	PARM INTEGER	EnableIntegerVariablesAgreggation            // Habilitar agregação intra-horária de variáveis inteiras? [0]: Não / 1: Sim	
+	PARM INTEGER	InitialHour                                  // Initial Hour									
+	PARM INTEGER	FinalHour                                    // Final Hour									
+	PARM INTEGER	StudyType                                    // Study Type (0=Deterministic; 1=Stochastic)					
+	PARM INTEGER	NumberSeries                                 // Number of series									
+END_MODEL	
+//--------------------------------------------------------------------------------------------------
+// Segmento de Demanda
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:CNCP_DemandSegment
+	PARM INTEGER BlockType
+	VETOR DATE InitialDate
+	VETOR DATE EndDate INTERVAL InitialDate
+	VETOR REAL ShortTermDemand INDEX InitialDate
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Sistema
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:CNCP_System    
+	PARM INTEGER UnitTypeGenerationConstraint    
+	PARM INTEGER BlockTypeGenerationConstraint   
+	
+	VETOR DATE InitialDateMarketPrice
+	VETOR DATE EndDateMarketPrice INTERVAL InitialDateMarketPrice
+	VETOR REAL ShortTermMarketPrice INDEX InitialDateMarketPrice
+	
+	VETOR DATE InitialDateSecondarySpinningPrice
+	VETOR DATE EndDateSecondarySpinningPrice INTERVAL InitialDateSecondarySpinningPrice
+	VETOR REAL SecondarySpinningReservePrice INDEX InitialDateSecondarySpinningPrice	
+	
+	PARM INTEGER UnitTypeColdReserve
+	PARM REAL    ConstantValueColdReserve
+	VETOR DATE   InitialDateColdReserve
+	VETOR DATE   EndDateColdReserve INTERVAL InitialDateColdReserve
+	VETOR REAL   ColdReserve INDEX InitialDateColdReserve
+	
+	PARM INTEGER ThermalPlant_MaintenanceValueType
+	PARM INTEGER ThermalPlant_MaintenanceValueUnit
+	
+	PARM INTEGER ThermalPlant_OperationalConstraints_UseMinimumUpTime
+	PARM INTEGER ThermalPlant_OperationalConstraints_UseMinimumDownTime
+	PARM INTEGER ThermalPlant_OperationalConstraints_UseMaximumRampUp
+	PARM INTEGER ThermalPlant_OperationalConstraints_UseMaximumRampDown
+	PARM INTEGER ThermalPlant_OperationalConstraints_UseMaximumUpTime
+	
+	//to-do: aqui há uma 'opção' entre dois tipos de arquivo. O que fazer com os outros valores, quando não estiverem sendo usados?
+	PARM INTEGER ThermalPlant_PrimaryReserveValueType
+	//unit: 1 = % generation; 2 = % nominal power; 3 = MW; 14 = % Avaiable Capacity
+	PARM INTEGER ThermalPlant_PrimaryReserveValueUnit
+	PARM REAL	 ThermalPlant_PrimaryReserveViolationPenalty
+	
+	PARM INTEGER	ThermalPlant_SecondarySpinningReserveUnit
+	
+	PARM INTEGER HydroPlant_MaintenanceValueType
+	PARM INTEGER HydroPlant_MaintenanceValueUnit
+	
+	PARM INTEGER HydroPlant_UseTargetStorage
+	PARM INTEGER HydroPlant_TargetStorageUnit
+	
+	PARM INTEGER HydroPlant_AutomaticRecoverTravelTimeInitialConditions
+	
+	PARM INTEGER HydroPlant_UseRampUpPowerConstraint
+	PARM INTEGER HydroPlant_UseRampDownPowerConstraint
+	PARM INTEGER HydroPlant_UseOutflowRampUpConstraint
+	PARM INTEGER HydroPlant_UseOutflowRampDownConstraint
+	PARM INTEGER HydroPlant_UseForebayFillUpConstraint
+	PARM INTEGER HydroPlant_UseForebayDrawDownConstraint
+	
+	PARM INTEGER HydroPlant_PrimaryReserveValueType
+	//unit: 1 = % generation; 2 = % nominal power; 3 = MW; 14 = % Avaiable Capacity
+	PARM INTEGER HydroPlant_PrimaryReserveValueUnit
+	PARM REAL	 HydroPlant_PrimaryReserveViolationPenalty
+	
+	PARM INTEGER HydroPlant_SecondarySpinningReserveUnit
+	
+	PARM INTEGER HydroUnit_SecondarySpinningReserveUnit
+	PARM INTEGER HydroUnit_UseRampUpPowerConstraint
+	PARM INTEGER HydroUnit_UseRampDownPowerConstraint
+	
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Restricao de Geracao
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:CNCP_GenerationConstraint
+	VETOR DATE InitialDate
+	VETOR DATE EndDate INTERVAL InitialDate
+	VETOR REAL ShortTermLimit INDEX InitialDate
+	PARM STRING	sign
+END_MODEL
+//--------------------------------------------------------------------------------------------------
+// Restricao dos Spinning Reserve Groups
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:CNCP_SpinningReserveGroup
+	PARM REAL InitialCondition
+	PARM INTEGER NumberOfLevels
+	
+	VETOR DATE InitialDateMinimumReserve
+	VETOR DATE EndDateMinimumReserve INTERVAL InitialDateMinimumReserve
+	VETOR REAL MinimumReserve INDEX InitialDateMinimumReserve
+	
+	VETOR DATE InitialDateMaximumReserve1
+	VETOR DATE EndDateMaximumReserve1 INTERVAL InitialDateMaximumReserve1
+	VETOR REAL MaximumReserve1 INDEX InitialDateMaximumReserve1
+	
+	VETOR DATE InitialDateBidPrice1
+	VETOR DATE EndDateBidPrice1 INTERVAL InitialDateBidPrice1
+	VETOR REAL BidPrice1 INDEX InitialDateBidPrice1
+	
+	VETOR DATE InitialDateMaximumReserve2
+	VETOR DATE EndDateMaximumReserve2 INTERVAL InitialDateMaximumReserve2
+	VETOR REAL MaximumReserve2 INDEX InitialDateMaximumReserve2
+	
+	VETOR DATE InitialDateBidPrice2
+	VETOR DATE EndDateBidPrice2 INTERVAL InitialDateBidPrice2
+	VETOR REAL BidPrice2 INDEX InitialDateBidPrice2
+	
+	
+END_MODEL
+
+//--------------------------------------------------------------------------------------------------
+// Usina Termica
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:CNCP_ThermalPlant    
+	
+	VETOR DATE InitialDateMaintenance
+	VETOR DATE EndDateMaintenance INTERVAL InitialDateMaintenance
+	VETOR REAL MaintenanceValue INDEX InitialDateMaintenance
+	
+	PARM INTEGER MinimumUptime
+	PARM INTEGER MinimumDownTime
+	PARM REAL    MaximumRampUp
+	PARM REAL    MaximumRampDown
+	PARM INTEGER MaximumUptime
+	
+	PARM INTEGER InitialStatus
+	PARM INTEGER NumberOfHours
+	PARM REAL	 PreviousGeneration
+	//period with constant power + previous load condition(sign)???
+	PARM INTEGER PeriodWithConstantPower
+	//MXAR,MXVC??
+	
+	//maximum number of startups
+	PARM INTEGER MaxStudyStartUps
+	PARM INTEGER MaxDailyStartUps
+	
+	//maximum number of shutdowns
+	PARM INTEGER MaxStudyShutdowns
+	PARM INTEGER MaxDailyShutdowns
+	
+	
+	VETOR DATE InitialDatePrimaryReserve
+	VETOR DATE EndDatePrimaryReserve INTERVAL InitialDatePrimaryReserve
+	VETOR REAL PrimaryReserveValue INDEX InitialDatePrimaryReserve
+	
+	PARM STRING PrimaryReserveDirection
+	
+	PARM REAL 		SecondarySpinningReserve_ControlRange
+	PARM REAL 		SecondarySpinningReserve_Minimum
+	PARM REAL 		SecondarySpinningReserve_Maximum
+	PARM REAL 		SecondarySpinningReserve_InitialCondition
+	PARM STRING 	SecondarySpinningReserve_Direction
+	PARM INTEGER 	SecondarySpinningReserve_NumberOfLevels
+	
+	VETOR DATE SSR_InitialDateMinimum
+	VETOR DATE SSR_EndDateMinimum INTERVAL SSR_InitialDateMinimum
+	VETOR REAL SSR_Minimum INDEX SSR_InitialDateMinimum
+	
+	VETOR DATE SSR_InitialDateMaximum
+	VETOR DATE SSR_EndDateMaximum INTERVAL SSR_InitialDateMaximum
+	VETOR REAL SSR_Maximum INDEX SSR_InitialDateMaximum
+	
+	VETOR DATE SSR_InitialDateBidPrice
+	VETOR DATE SSR_EndDateBidPrice INTERVAL SSR_InitialDateBidPrice
+	VETOR REAL SSR_BidPrice INDEX SSR_InitialDateBidPrice
+	
+	VETOR DATE SSR_InitialDateMaximum2
+	VETOR DATE SSR_EndDateMaximum2 INTERVAL SSR_InitialDateMaximum2
+	VETOR REAL SSR_Maximum2 INDEX SSR_InitialDateMaximum2
+	
+	VETOR DATE SSR_InitialDateBidPrice2
+	VETOR DATE SSR_EndDateBidPrice2 INTERVAL SSR_InitialDateBidPrice2
+	VETOR REAL SSR_BidPrice2 INDEX SSR_InitialDateBidPrice2
+	
+	
+	VETOR DATE InitialDateForcedGeneration
+	VETOR DATE EndDateForcedGeneration INTERVAL InitialDateForcedGeneration
+	VETOR REAL ForcedGeneration INDEX InitialDateForcedGeneration	
+	
+	PARM REAL SelfConsumption
+	
+	//infos associadas ao Temperature effects
+	PARM  REAL MinGenerationPercent
+	VETOR REAL Temperature
+	VETOR REAL MaxGeneration
+	VETOR REAL Segment1
+	VETOR REAL Segment2
+	VETOR REAL Segment3
+	
+	VETOR DATE InitialDateHourlyTemperature
+	VETOR DATE EndDateHourlyTemperature INTERVAL InitialDateHourlyTemperature
+	VETOR REAL HourlyTemperature INDEX InitialDateHourlyTemperature
+	
+	VETOR DATE InitialDateColdReserveAmount
+	VETOR DATE EndDateColdReserveAmount INTERVAL InitialDateColdReserveAmount
+	VETOR REAL ColdReserveAmount INDEX InitialDateColdReserveAmount
+	
+	VETOR DATE InitialDateColdReservePrice
+	VETOR DATE EndDateColdReservePrice INTERVAL InitialDateColdReservePrice
+	VETOR REAL ColdReservePrice INDEX InitialDateColdReservePrice
+	
+	//power inflection constraints
+	PARM INTEGER PowerIncreaseHours
+	PARM INTEGER PowerDecreaseHours
+	PARM INTEGER MaxLoadVariations
+	
+	//forbidden zone
+	PARM REAL ForbiddenZone_InferiorLimit
+	PARM REAL ForbiddenZone_SuperiorLimit
+	
+	//start-up minimum time (all fields in hours)
+	PARM REAL StartupMinimumTime_Hot
+	PARM REAL StartupMinimumTime_Warm
+	PARM REAL StartupMinimumTime_Cold
+	PARM REAL StartupMinimumTime_TotalCoolingTime
+	PARM REAL StartupMinimumTime_PartialCoolingTime
+	PARM REAL StartupMinimumTime_InitialConditionForSynchronism
+	
+	//consumption coefficients
+	PARM REAL ConsumptionCoefficient_A
+	PARM REAL ConsumptionCoefficient_B
+	PARM REAL ConsumptionCoefficient_C
+	
+	
+	//generation constraints
+	//less equal
+	VETOR DATE InitialDateGenConstraint_LE
+	VETOR DATE EndDateGenConstraint_LE INTERVAL InitialDateGenConstraint_LE
+	VETOR REAL GenConstraint_LE INDEX InitialDateGenConstraint_LE
+	
+	//equals
+	VETOR DATE InitialDateGenConstraint_EQ
+	VETOR DATE EndDateGenConstraint_EQ INTERVAL InitialDateGenConstraint_EQ
+	VETOR REAL GenConstraint_EQ INDEX InitialDateGenConstraint_EQ
+	
+	//greater equal
+	VETOR DATE InitialDateGenConstraint_GE
+	VETOR DATE EndDateGenConstraint_GE INTERVAL InitialDateGenConstraint_GE
+	VETOR REAL GenConstraint_GE INDEX InitialDateGenConstraint_GE
+	
+	//energy bid
+	// o numero maximo de levels para energy bid
+	DIMENSION EnergyBid_MaxLevel 5
+	
+	VETOR DATE EnergyBid_InitialDateAmount
+	VETOR DATE EnergyBid_EndDateAmount INTERVAL EnergyBid_InitialDateAmount
+	VETOR REAL EnergyBid_Amount DIM(EnergyBid_MaxLevel) INDEX EnergyBid_InitialDateAmount
+	
+	VETOR DATE EnergyBid_InitialDatePrice
+	VETOR DATE EnergyBid_EndDatePrice INTERVAL EnergyBid_InitialDatePrice
+	VETOR REAL EnergyBid_Price DIM(EnergyBid_MaxLevel) INDEX EnergyBid_InitialDatePrice
+	
+	
+	//consumption functions
+	VETOR REAL ConsumptionFuntion_Power
+	VETOR REAL ConsumptionFuntion_Consumption
+	
+END_MODEL
+
+
+
+
+//--------------------------------------------------------------------------------------------------
+// Usina Hidro
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:CNCP_HydroPlant
+	
+	//maintenance
+	VETOR DATE InitialDateMaintenance
+	VETOR DATE EndDateMaintenance INTERVAL InitialDateMaintenance
+	VETOR REAL MaintenanceValue INDEX InitialDateMaintenance
+	
+	//initial status
+	PARM INTEGER InitialStatus
+	PARM INTEGER NumberOfHours
+	PARM REAL	 PreviousGeneration
+	//mxar?
+	
+	//target storage
+	PARM REAL MinimumTargetStorage
+	PARM REAL MaximumTargetStorage
+	
+	
+	//reservoir operation
+	PARM REAL  MaximumTotalOutflowPenalty
+	
+	VETOR DATE InitialDateMaximumTotalOutflow
+	VETOR DATE EndDateMaximumTotalOutflow INTERVAL InitialDateMaximumTotalOutflow
+	VETOR REAL MaximumTotalOutflow INDEX InitialDateMaximumTotalOutflow
+	
+	PARM REAL  MinimumTotalOutflowPenalty
+	
+	VETOR DATE InitialDateMinimumTotalOutflow
+	VETOR DATE EndDateMinimumTotalOutflow INTERVAL InitialDateMinimumTotalOutflow
+	VETOR REAL MinimumTotalOutflow INDEX InitialDateMinimumTotalOutflow
+	
+	PARM REAL  IrrigationPenalty //pode ser um valor fixo, -1 se irrigacao eh prioridade, ou -2 se energia eh prioridade
+	
+	VETOR DATE InitialDateIrrigation
+	VETOR DATE EndDateIrrigation INTERVAL InitialDateIrrigation
+	VETOR REAL Irrigation INDEX InitialDateIrrigation
+	
+	PARM REAL  MinimumSpillagePenalty // ate onde entendi eh sempre -1
+	
+	VETOR DATE InitialDateMinimumSpillage
+	VETOR DATE EndDateMinimumSpillage INTERVAL InitialDateMinimumSpillage
+	VETOR REAL MinimumSpillage INDEX InitialDateMinimumSpillage
+	
+	PARM REAL  MaximumStoragePenalty
+	
+	VETOR DATE InitialDateMaximumStorage
+	VETOR DATE EndDateMaximumStorage INTERVAL InitialDateMaximumStorage
+	VETOR REAL MaximumStorage INDEX InitialDateMaximumStorage
+	
+	PARM REAL  MinimumStoragePenalty
+	
+	VETOR DATE InitialDateMinimumStorage
+	VETOR DATE EndDateMinimumStorage INTERVAL InitialDateMinimumStorage
+	VETOR REAL MinimumStorage INDEX InitialDateMinimumStorage
+	
+	//para estes dois proximos, foi necessario usar o prefixo NCP para diferenciar de um campo de mesmo nome em outro modelo
+	PARM REAL  NCPAlertStoragePenalty
+	
+	VETOR DATE InitialDateNCPAlertStorage
+	VETOR DATE EndDateNCPAlertStorage INTERVAL InitialDateNCPAlertStorage
+	VETOR REAL NCPAlertStorage INDEX InitialDateNCPAlertStorage
+	
+	VETOR DATE InitialDateNCPFloodControlStorage
+	VETOR DATE EndDateNCPFloodControlStorage INTERVAL InitialDateNCPFloodControlStorage
+	VETOR REAL NCPFloodControlStorage INDEX InitialDateNCPFloodControlStorage
+
+
+	//travel time(turbined)	
+	PARM INTEGER TurbinedTravelTime
+	VETOR REAL TurbinedOutflow
+	VETOR REAL TurbinedWavePropagationFactor
+	PARM INTEGER ValueWaterInTransit
+	
+	//travel time(spilled)
+	PARM INTEGER SpilledTravelTime
+	VETOR REAL SpilledOutflow
+	VETOR REAL SpilledWavePropagationFactor
+	
+	//ramps
+	PARM REAL RampUpPower
+	PARM REAL RampDownPower
+	PARM REAL OutflowRampUp
+	PARM REAL OutflowRampDown
+	PARM REAL ForebayFillUp
+	PARM REAL ForebayDrawDown
+	
+	//maximum number of shutdowns
+	PARM INTEGER HydroCommitment
+	PARM INTEGER MaxStudyStartUps
+	PARM INTEGER MaxDailyStartUps
+	
+	//primary reserve
+	VETOR DATE InitialDatePrimaryReserve
+	VETOR DATE EndDatePrimaryReserve INTERVAL InitialDatePrimaryReserve
+	VETOR REAL PrimaryReserveValue INDEX InitialDatePrimaryReserve
+	
+	//secondary spinning reserve
+	PARM REAL 		SecondarySpinningReserve_ControlRange
+	PARM REAL 		SecondarySpinningReserve_Minimum
+	PARM REAL 		SecondarySpinningReserve_Maximum
+	PARM REAL 		SecondarySpinningReserve_InitialCondition
+	PARM STRING 	SecondarySpinningReserve_Direction
+	PARM INTEGER 	SecondarySpinningReserve_NumberOfLevels
+	
+	VETOR DATE SSR_InitialDateMinimum
+	VETOR DATE SSR_EndDateMinimum INTERVAL SSR_InitialDateMinimum
+	VETOR REAL SSR_Minimum INDEX SSR_InitialDateMinimum
+	
+	VETOR DATE SSR_InitialDateMaximum
+	VETOR DATE SSR_EndDateMaximum INTERVAL SSR_InitialDateMaximum
+	VETOR REAL SSR_Maximum INDEX SSR_InitialDateMaximum
+	
+	VETOR DATE SSR_InitialDateBidPrice
+	VETOR DATE SSR_EndDateBidPrice INTERVAL SSR_InitialDateBidPrice
+	VETOR REAL SSR_BidPrice INDEX SSR_InitialDateBidPrice
+	
+	VETOR DATE SSR_InitialDateMaximum2
+	VETOR DATE SSR_EndDateMaximum2 INTERVAL SSR_InitialDateMaximum2
+	VETOR REAL SSR_Maximum2 INDEX SSR_InitialDateMaximum2
+	
+	VETOR DATE SSR_InitialDateBidPrice2
+	VETOR DATE SSR_EndDateBidPrice2 INTERVAL SSR_InitialDateBidPrice2
+	VETOR REAL SSR_BidPrice2 INDEX SSR_InitialDateBidPrice2
+	
+
+	//generation constraints
+	//less equal
+	VETOR DATE InitialDateGenConstraint_LE
+	VETOR DATE EndDateGenConstraint_LE INTERVAL InitialDateGenConstraint_LE
+	VETOR REAL GenConstraint_LE INDEX InitialDateGenConstraint_LE
+	
+	//equals
+	VETOR DATE InitialDateGenConstraint_EQ
+	VETOR DATE EndDateGenConstraint_EQ INTERVAL InitialDateGenConstraint_EQ
+	VETOR REAL GenConstraint_EQ INDEX InitialDateGenConstraint_EQ
+	
+	//greater equal
+	VETOR DATE InitialDateGenConstraint_GE
+	VETOR DATE EndDateGenConstraint_GE INTERVAL InitialDateGenConstraint_GE
+	VETOR REAL GenConstraint_GE INDEX InitialDateGenConstraint_GE
+	
+	PARM REAL SelfConsumption
+	
+	//energy bid
+	VETOR DATE InitialDateEnergyBid
+	VETOR DATE EndDateEnergyBid INTERVAL InitialDateEnergyBid
+	VETOR REAL EnergyBid INDEX InitialDateEnergyBid
+	
+	//cold reserve bid
+	VETOR DATE InitialDateColdReserveAmount
+	VETOR DATE EndDateColdReserveAmount INTERVAL InitialDateColdReserveAmount
+	VETOR REAL ColdReserveAmount INDEX InitialDateColdReserveAmount
+	
+	VETOR DATE InitialDateColdReservePrice
+	VETOR DATE EndDateColdReservePrice INTERVAL InitialDateColdReservePrice
+	VETOR REAL ColdReservePrice INDEX InitialDateColdReservePrice
+	
+	//null water value
+	VETOR DATE InitialDateNullWaterValue
+	VETOR DATE EndDateNullWaterValue INTERVAL InitialDateNullWaterValue
+	VETOR REAL NullWaterValue INDEX InitialDateNullWaterValue
+	
+	//cold ramp
+	PARM REAL	 MaximumRampUp
+	PARM INTEGER CoolingTime
+	
+	//discrete generation
+	VETOR REAL DiscreteGeneration
+	
+	//minimum turbining
+	VETOR DATE InitialDateMinimumTurbining
+	VETOR DATE EndDateMinimumTurbining INTERVAL InitialDateMinimumTurbining
+	VETOR REAL MinimumTurbining INDEX InitialDateMinimumTurbining
+	
+	
+	// parte de generator units: não tenho certeza se isso deveria estar aqui
+	PARM	INTEGER		IncludeInStudy	// por algum motivo: 0 para sim, 1 para não!
+	PARM	INTEGER 	NumberOfUnits
+	PARM	REAL		TotalInstalledCapacity
+	PARM 	REAL 		UnitMinimumTurbinedOutflow
+	PARM 	REAL		PlantMaximumTurbinedOutflow
+	PARM	REAL		MinimumTotalOutflow
+	PARM	REAL		OandMCost
+	PARM	REAL		MeanProductionCoefficient
+	PARM	REAL		OutageRate
+	PARM	REAL		MinimumGeneration
+	
+	//reservoir:
+	PARM 	REAL		MinimumStorage
+	PARM	REAL		MaximumStorage
+	PARM	INTEGER		ControlableSpillage
+	PARM	INTEGER		InitialConditionType
+	PARM 	REAL		InitialCondition
+	PARM 	REAL		SpillingCost
+	
+	//storage x production
+	VETOR	REAL	Storage1
+	VETOR	REAL	ProductionFactor
+	
+	//storage x area
+	VETOR	REAL	Storage2
+	VETOR	REAL	Area
+	
+	//storage x elevation
+	VETOR	REAL	Storage3
+	VETOR	REAL	Elevation1
+	
+	//outflow x tailwater elevation
+	VETOR	REAL	Outflow
+	VETOR	REAL	Elevation2
+	PARM	INTEGER	ConsiderSpillageInfluence
+		
+	
+END_MODEL
+
+//--------------------------------------------------------------------------------------------------
+// Gauging Station
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:CNCP_GaugingStation
+	
+	// o numero maximo de cenarios para inflow forecast
+	DIMENSION InflowForecast_MaxScenarios 5
+	
+	VETOR DATE InitialDateInflowForecast
+	VETOR DATE EndDateInflowForecast INTERVAL InitialDateInflowForecast
+	VETOR REAL InflowForecast DIM(InflowForecast_MaxScenarios) INDEX InitialDateInflowForecast
+	
+	
+END_MODEL
+
+
+//--------------------------------------------------------------------------------------------------
+// Hydro Unit
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:CNCP_HydroUnit
+	
+	PARM REAL 		MinimumGeneration
+	PARM REAL 		MaximumGeneration
+	PARM REAL 		LossCoefficient
+	//PARM REAL 	Power ???
+	PARM INTEGER	Commitment    // 1 for yes, 0 for no
+	PARM REAL 		StartupCost
+	PARM INTEGER 	PumpedStorage // 1 for yes, 0 for no
+	PARM INTEGER	PlantTurbiningDiscretization
+	PARM INTEGER	UnitTurbiningDiscretization
+	
+	PARM REAL		ConstantForebayElevation
+	PARM REAL		ConstantTailwaterElevation
+	
+	//parte da table:
+	VETOR REAL		FlowThroughTurbine
+	VETOR REAL		Efficiency
+	
+	VETOR DATE InitialDateMaintenance
+	VETOR DATE EndDateMaintenance INTERVAL InitialDateMaintenance
+	VETOR REAL Maintenance INDEX InitialDateMaintenance
+	
+	// secondary spinning reserve (SSR)
+	
+	//table fields
+	PARM REAL 		SSR_ControlRange
+	PARM REAL 		SSR_Minimum
+	PARM REAL 		SSR_Maximum
+	PARM STRING		SSR_Direction
+	PARM INTEGER	SSR_NumberOfLevels
+	
+	//chronological fields
+	VETOR DATE InitialDateSSR_MinimumReserve
+	VETOR DATE EndDateSSR_MinimumReserve INTERVAL InitialDateSSR_MinimumReserve
+	VETOR REAL SSR_MinimumReserve INDEX InitialDateSSR_MinimumReserve
+	
+	VETOR DATE InitialDateSSR_MaximumReserve
+	VETOR DATE EndDateSSR_MaximumReserve INTERVAL InitialDateSSR_MaximumReserve
+	VETOR REAL SSR_MaximumReserve INDEX InitialDateSSR_MaximumReserve
+	
+	VETOR DATE InitialDateSSR_BidPrice
+	VETOR DATE EndDateSSR_BidPrice INTERVAL InitialDateSSR_BidPrice
+	VETOR REAL SSR_BidPrice INDEX InitialDateSSR_BidPrice
+	
+	VETOR DATE InitialDateSSR_MaximumReserve2
+	VETOR DATE EndDateSSR_MaximumReserve2 INTERVAL InitialDateSSR_MaximumReserve2
+	VETOR REAL SSR_MaximumReserve2 INDEX InitialDateSSR_MaximumReserve2
+	
+	VETOR DATE InitialDateSSR_BidPrice2
+	VETOR DATE EndDateSSR_BidPrice2 INTERVAL InitialDateSSR_BidPrice2
+	VETOR REAL SSR_BidPrice2 INDEX InitialDateSSR_BidPrice2
+	
+	//generation constraints
+	//less equal
+	VETOR DATE InitialDateGenConstraint_LE
+	VETOR DATE EndDateGenConstraint_LE INTERVAL InitialDateGenConstraint_LE
+	VETOR REAL GenConstraint_LE INDEX InitialDateGenConstraint_LE
+	
+	//equals
+	VETOR DATE InitialDateGenConstraint_EQ
+	VETOR DATE EndDateGenConstraint_EQ INTERVAL InitialDateGenConstraint_EQ
+	VETOR REAL GenConstraint_EQ INDEX InitialDateGenConstraint_EQ
+	
+	//greater equal
+	VETOR DATE InitialDateGenConstraint_GE
+	VETOR DATE EndDateGenConstraint_GE INTERVAL InitialDateGenConstraint_GE
+	VETOR REAL GenConstraint_GE INDEX InitialDateGenConstraint_GE
+	
+	//initial status:
+	PARM INTEGER InitialCondition //1 for on, 0 for off
+	PARM INTEGER NumberOfHours
+	PARM REAL	 PreviousGeneration
+	
+	//ramps
+	PARM REAL MaximumRampUp
+	PARM REAL MaximumRampDown
+	
+	//maximum number of startups
+	PARM INTEGER MaxStartups_StudyHorizon
+	PARM INTEGER MaxStartups_Daily
+	
+	//forbidden zone?
+	
+	//generation limits per elevation?
+	
+	//cold ramp
+	PARM REAL		ColdRamp_MaximumRampUp
+	PARM INTEGER	ColdRamp_CoolingTime
+	
+	
+END_MODEL
+
+
+//--------------------------------------------------------------------------------------------------
+// Fuels
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:CNCP_Fuel
+	//fuel price
+
+
+END_MODEL
+
+
+//--------------------------------------------------------------------------------------------------
+// Bus
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:CNCP_Bus
+
+	// o numero maximo de cenarios para demand by bus	
+	DIMENSION Demand_MaxScenarios 5
+
+	//demand by bus
+	VETOR DATE InitialDateDemand
+	VETOR DATE EndDateDemand INTERVAL InitialDateDemand
+	VETOR REAL Demand DIM(Demand_MaxScenarios) INDEX InitialDateDemand
+	
+	// o numero maximo de cenarios para energy price by bus
+	DIMENSION Price_MaxScenarios 5
+
+	//demand by bus
+	VETOR DATE InitialDatePrice
+	VETOR DATE EndDatePrice INTERVAL InitialDatePrice
+	VETOR REAL Price DIM(Price_MaxScenarios) INDEX InitialDatePrice
+	
+	
+END_MODEL
+
+
+//--------------------------------------------------------------------------------------------------
+// Serie
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:CNCP_Serie
+
+	//losses representation: 
+	VETOR DATE InitialDateLossesRepresentation
+	VETOR DATE EndDateLossesRepresentation INTERVAL InitialDateLossesRepresentation
+	VETOR REAL LossesRepresentation INDEX InitialDateLossesRepresentation
+	
+	VETOR DATE InitialDateLossesPenalty
+	VETOR DATE EndDateLossesPenalty INTERVAL InitialDateLossesPenalty
+	VETOR REAL LossesPenalty INDEX InitialDateLossesPenalty
+	
+	VETOR DATE InitialDateMaintenance
+	VETOR DATE EndDateMaintenance INTERVAL InitialDateMaintenance
+	VETOR REAL Maintenance INDEX InitialDateMaintenance
+	
+END_MODEL
+
+
+
+//--------------------------------------------------------------------------------------------------
+// Usina Hidro
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:CNCP_GndPlant
+	
+	// o numero maximo de cenarios para ncp generation
+	DIMENSION NCPGeneration_MaxScenarios 5
+	
+	PARM INTEGER NCPGenerationValueType // (0 for MW, 1 for p.u.)
+	
+	//generation scenarios
+	VETOR DATE InitialDateNCPGeneration
+	VETOR DATE EndDateNCPGeneration INTERVAL InitialDateNCPGeneration
+	VETOR REAL NCPGeneration DIM(NCPGeneration_MaxScenarios) INDEX InitialDateNCPGeneration
+	
+	
+END_MODEL
+
+
+//--------------------------------------------------------------------------------------------------
+// Fuel Contract
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:CNCP_FuelContract
+	
+	
+	PARM INTEGER Type // 0 for daily, 1 for integral
+	PARM INTEGER NumberOfLevels
+	
+	DIMENSION MaxLevels 10
+	
+	//fuel contract: avaiability X price
+	//caso daily:
+	VETOR DATE InitialDateDailyAvaiability
+	VETOR DATE EndDateDailyAvaiability INTERVAL InitialDateDailyAvaiability
+	VETOR REAL DailyAvaiability DIM(MaxLevels) INDEX InitialDateDailyAvaiability
+	
+	VETOR DATE InitialDateDailyPrice
+	VETOR DATE EndDateDailyPrice INTERVAL InitialDateDailyPrice
+	VETOR REAL DailyPrice DIM(MaxLevels) INDEX InitialDateDailyPrice
+	
+	//caso integral
+	PARM REAL AvaiabilityIntegral DIM(MaxLevels)
+	PARM REAL PriceIntegral DIM(MaxLevels)
+	
+	
+END_MODEL
+
+
+
+
+
+
+
+

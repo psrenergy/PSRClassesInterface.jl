@@ -1,0 +1,211 @@
+
+//--------------------------------------
+//--- Modelo de Barra                ---
+//--------------------------------------
+DEFINE_MODEL MODL:Optfolio_Bus
+	DIMENSION	block 5
+	MERGE_MODEL MODL:SDDP_V10.2_Bus
+	VECTOR	REAL SpotPrice	DIM(block)
+END_MODEL
+
+
+//--------------------------------------
+// --- Modelo de contrato            ---
+//--------------------------------------
+DEFINE_MODEL MODL:Optfolio_Contract
+  
+  // -- Dynamic data -- //
+  DIMENSION    block 5
+  VETOR DATE   DataPrice
+  VETOR DATE   DataQt
+  VETOR REAL   PriceTS    DIM(block) INDEX DataPrice
+  VETOR REAL   QuantityTS DIM(block) INDEX DataQt
+  
+  // -- Static data -- //
+  PARM STRING  Name
+  PARM REAL    Price 
+  PARM REAL    Quantity
+  PARM DATE    Start
+  PARM DATE    End
+  PARM INTEGER Structure
+  PARM INTEGER Category
+  PARM DATE    Decision
+  PARM STRING  Type 
+  PARM STRING  Position
+  PARM STRING  PSRSystemAVId
+  PARM INTEGER Included
+
+  // -- TODO -- //
+  PARM REAL	   AuctionAmount
+  PARM REAL	   EnergyAccountInterval
+  PARM REAL	   EnergyAmountFlag
+  PARM REAL	   EnergyAccountLowerBound
+  PARM REAL	   EnergyAccountUpperBound
+
+
+END_MODEL
+
+//--------------------------------------
+//--- Modelo de Desembolso	     ---
+//--------------------------------------
+DEFINE_MODEL MODL:Optfolio_CronogramaDesembolso
+	MERGE_MODEL MODL:Optgen_CronogramaDesembolso
+	VECTOR	REAL	Equity
+	VECTOR	REAL	Interest
+	VECTOR	REAL	DebtAmortization
+	VECTOR	REAL	Depreciation
+END_MODEL
+
+//--------------------------------------
+//--- Modelo para Hidro		     ---
+//--------------------------------------
+DEFINE_MODEL MODL:Optfolio_Hidro
+	DIMENSION	block 5
+	VECTOR	REAL 	FixedOEM
+	VECTOR  REAL	CapRevenue
+	PARM    INTEGER Included
+	PARM	REAL	Percentage
+	
+// See later:	VECTOR	REAL	FixedOEMCost	DIM(block)
+END_MODEL
+
+//-------------------------------------
+//--- Modelo para Geração Termica   ---
+//-------------------------------------
+DEFINE_MODEL MODL:Optfolio_Termica
+	DIMENSION	block 5
+	VECTOR 	REAL	OEMCost 
+	VECTOR	REAL 	FixedOEM
+	VECTOR  REAL	CapRevenue
+        PARM    INTEGER Included
+	PARM	REAL	Percentage
+
+// See later:	VECTOR	REAL	FixedOEMCost	DIM(block)
+END_MODEL
+
+//-------------------------------------
+//--- Modelo para  Renovavel ---
+//-------------------------------------
+DEFINE_MODEL MODL:Optfolio_Gnd
+	DIMENSION	block 5
+	VECTOR 	REAL	OEMCost 
+	VECTOR	REAL 	FixedOEM
+	VECTOR  REAL	CapRevenue
+	PARM    INTEGER Included
+	PARM	REAL	Percentage
+
+// See later:	VECTOR	REAL	FixedOEMCost	DIM(block)
+END_MODEL
+
+
+//--------------------------------------
+//--- Modelo de Investimento         ---
+//--------------------------------------
+DEFINE_MODEL MODL:Optfolio_Investment
+	MERGE_MODEL MODL:Optgen_ProjetoExpansao
+	PARM	INTEGER	HasVariableSize
+	PARM	STRING	PSRLoanAVId
+	PARM	INTEGER	UsefulLife
+	PARM	REAL	InitialValue
+	PARM	REAL	SalvageValue
+	PARM	INTEGER	ProjectType
+	PARM	STRING	PSRProjectAVId
+	PARM	STRING	PSRDisbursementAVId
+END_MODEL
+
+//--------------------------------------
+//--- Modelo de Emprestimo           ---
+//--------------------------------------
+DEFINE_MODEL MODL:Optfolio_Loan
+	PARM	REAL	InterestRate
+	PARM	INTEGER	Maturity
+	PARM	INTEGER	MaturityUnit 
+	PARM	INTEGER	Repayment
+	PARM	REAL	Equity
+END_MODEL
+
+
+//------------------------------------------
+//--- Modelo de Configuracao do Optfolio ---
+//------------------------------------------
+DEFINE_MODEL MODL:Optfolio_ConfiguracaoEstudo
+	MERGE_MODEL MODL:Optfolio_Tree
+	MERGE_MODEL MODL:Optfolio_GoalSeek
+
+	PARM    INTEGER ExecutionMode
+	PARM	REAL	DiscountRate
+	PARM	REAL	ConfidenceLevel
+    	PARM	REAL	RiskAversity
+	PARM	INTEGER	LimitSpotPrice
+   	PARM	REAL	Cap
+	PARM	REAL	Floor
+	PARM	INTEGER Delay
+	PARM 	INTEGER Overcost
+	PARM	REAL	Vat
+	PARM	REAL	IncomeTax
+	PARM	REAL	DscrIndex
+	PARM	STRING	DecisionType
+	PARM	INTEGER	ConstraintShortSelling
+	PARM	INTEGER	ConstraintBudget
+	PARM	INTEGER	ConstraintDebtServiceCoverage
+	PARM	INTEGER	ConstraintExclusive
+	PARM	INTEGER	ConstraintAssociative
+	PARM	INTEGER	ConstraintCashFlow
+END_MODEL
+
+
+//-------------------------------------------
+// Modelo para Restricao de Exclusividade ---
+//-------------------------------------------
+DEFINE_MODEL MODL:Optfolio_RestricaoExclusividade
+	VECTOR	STRING	PSRExpansionProjectAVIdList
+END_MODEL
+
+//-------------------------------------------
+// Modelo para Restricao de Associacao    ---
+//-------------------------------------------
+DEFINE_MODEL MODL:Optfolio_RestricaoAssociacao
+	VECTOR	STRING	PSRExpansionProjectAVIdList
+END_MODEL
+
+//---------------------------------------
+// Modelo para Restricao do Orcamento ---
+//---------------------------------------
+DEFINE_MODEL MODL:Optfolio_RestricaoOrcamento
+	VECTOR	DATE	InitialDecision
+	VECTOR	DATE	FinalDecision
+	VECTOR	REAL	Budget
+END_MODEL
+
+//-------------------------------------------
+//--- Modelo para Restricoes do Portfolio ---
+//-------------------------------------------
+DEFINE_MODEL MODL:Optfolio_RestricaoPortfolio
+	VECTOR	STRING	Statistic
+	VECTOR	DATE	Decision
+	VECTOR	REAL	Value
+END_MODEL
+
+//-------------------------------------------
+//--- Modelo para Árvore de decisões      ---
+//-------------------------------------------
+DEFINE_MODEL MODL:Optfolio_Tree
+	PARM	INTEGER	treeType
+	PARM	INTEGER	initialSplit
+	PARM	INTEGER	numNodeSons
+	PARM	INTEGER	splitStep
+	PARM	INTEGER	maxSplits
+	PARM    STRING  PSRSystemAVId
+END_MODEL
+
+//-------------------------------------------
+//--- Modelo para Goal Seek               ---
+//-------------------------------------------
+DEFINE_MODEL MODL:Optfolio_GoalSeek
+	PARM	INTEGER	useGoalSeek
+	PARM	INTEGER gsType
+	PARM	REAL	gsTarget
+	PARM	REAL	gsPrecision
+	PARM	INTEGER	gsMetricEval
+	PARM    STRING  PSRContractAVId
+END_MODEL
