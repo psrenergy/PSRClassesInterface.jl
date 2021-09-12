@@ -1,4 +1,4 @@
-using PSRClassesInterface
+import PSRClassesInterface
 using Test
 const PSRI = PSRClassesInterface
 

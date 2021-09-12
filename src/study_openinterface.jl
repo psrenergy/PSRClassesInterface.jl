@@ -262,7 +262,7 @@ function initialize_study(
     )
 end
 
-function collection(
+function _collection(
     data::Data,
     str::String,
     remove_redundant = true,

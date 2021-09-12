@@ -1,12 +1,12 @@
 FILE_GERTER = joinpath(".", "gerter")
 
-STAGES = 15
+STAGES = 3
 SCENARIOS = 2
 AGENTS = ["X", "Y", "Z"]
 UNIT = "MW"
 
 gerter = PSRI.write(
-    OpenCSV(),
+    PSRI.OpenCSV(),
     FILE_GERTER,
     is_hourly = true,
     scenarios = SCENARIOS,
@@ -20,7 +20,7 @@ gerter = PSRI.write(
 
 # Loop de gravacao
 for t = 1:STAGES, s = 1:SCENARIOS
-    for b in 1:blocks_in_stage(gerter, t)
+    for b in 1:PSRI.blocks_in_stage(gerter, t)
         X = 10_000. * t + 1000. * s + b
         Y = b + 0.
         Z = 10. * t + s
@@ -38,7 +38,7 @@ end
 PSRI.close(gerter)
 
 ior = PSRI.read(
-    OpenCSV(),
+    PSRI.OpenCSV(),
     FILE_GERTER,
     is_hourly = true
 )
@@ -54,7 +54,7 @@ ior = PSRI.read(
 
 for t = 1:1
     for s = 1:1
-        for b = 1:blocks_in_stage(ior, t)
+        for b = 1:PSRI.blocks_in_stage(ior, t)
             @test PSRI.current_stage(ior) == t
             @test PSRI.current_scenario(ior) == s
             @test PSRI.current_block(ior) == b
@@ -68,7 +68,7 @@ for t = 1:1
                 @test ior[agent] == ref[agent]
             end
 
-            next_registry(ior)
+            PSRI.next_registry(ior)
         end
     end
 end
