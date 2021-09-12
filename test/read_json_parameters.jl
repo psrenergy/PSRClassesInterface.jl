@@ -1,5 +1,5 @@
 data = PSRI.initialize_study(
-    OpenInterface(),
+    PSRI.OpenInterface(),
     data_path = PATH_CASE_0
 )
 

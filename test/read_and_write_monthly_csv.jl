@@ -1,7 +1,7 @@
 # Stage monthly
 FILE_PATH = joinpath(".", "example_2")
 iow = PSRI.write(
-    OpenCSV(),
+    PSRI.OpenCSV(),
     FILE_PATH,
     blocks = 3,
     scenarios = 10,
@@ -35,27 +35,27 @@ end
 PSRI.close(iow)
 
 ior = PSRI.read(
-    OpenCSV(),
+    PSRI.OpenCSV(),
     FILE_PATH
 )
 
-@test max_stages(ior) == 12
-@test max_scenarios(ior) == 10
-@test max_blocks(ior) == 3
-@test stage_type(ior) == STAGE_MONTH
-@test initial_stage(ior) == 1
-@test initial_year(ior) == 2006
-@test data_unit(ior) == "MW"
+@test PSRI.max_stages(ior) == 12
+@test PSRI.max_scenarios(ior) == 10
+@test PSRI.max_blocks(ior) == 3
+@test PSRI.stage_type(ior) == PSRI.STAGE_MONTH
+@test PSRI.initial_stage(ior) == 1
+@test PSRI.initial_year(ior) == 2006
+@test PSRI.data_unit(ior) == "MW"
 
 # obtem número de colunas
-@test agent_names(ior) == ["X", "Y", "Z"]
+@test PSRI.agent_names(ior) == ["X", "Y", "Z"]
 
 for estagio = 1:12
     for serie = 1:10
         for bloco = 1:3
-            @test current_stage(ior) == estagio
-            @test current_scenario(ior) == serie
-            @test current_block(ior) == bloco
+            @test PSRI.current_stage(ior) == estagio
+            @test PSRI.current_scenario(ior) == serie
+            @test PSRI.current_block(ior) == bloco
             
             X = estagio + serie
             Y = serie - estagio
@@ -65,7 +65,7 @@ for estagio = 1:12
             for agent in 1:3
                 @test ior[agent] == ref[agent]
             end
-            next_registry(ior)
+            PSRI.next_registry(ior)
         end
     end
 end
