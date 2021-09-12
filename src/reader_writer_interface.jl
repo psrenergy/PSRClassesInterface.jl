@@ -16,9 +16,9 @@ function file_to_array end
 function file_to_array_and_header end
 
 """
-    read
+    open
 """
-function read end
+function open end
 
 """
     is_hourly
@@ -116,7 +116,7 @@ function close end
 function convert_file end
 
 """
-        convert
+    convert
 """
 function convert end
 
@@ -133,16 +133,6 @@ function add_reader! end
 function write_registry end
 
 """
-    write
-"""
-function write end
-
-"""
     array_to_file
 """
 function array_to_file end
-
-"""
-    configuration_parameter
-"""
-function configuration_parameter end

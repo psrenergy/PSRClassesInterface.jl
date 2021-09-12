@@ -24,17 +24,29 @@ function _delete_or_error(path::AbstractString)
     return
 end
 
-function blocks_in_stage(io, t)::Int
-    if io.is_hourly
-        if io.stage_type == STAGE_WEEK
+function blocks_in_stage(is_hourly, stage_type, initial_stage, t)::Int
+    if is_hourly
+        if stage_type == STAGE_WEEK
             return 168
-        elseif io.stage_type == STAGE_MONTH
-            return DAYS_IN_MONTH[mod1(t - 1 + io.initial_stage, 12)] * 24
+        elseif stage_type == STAGE_MONTH
+            return DAYS_IN_MONTH[mod1(t - 1 + initial_stage, 12)] * 24
         else
-            error("Unknown stage_type = $(io.stage_type)")
+            error("Unknown stage_type = $(stage_type)")
         end
     end
     return io.blocks
+end
+function blocks_in_stage(io, t)::Int
+    if is_hourly(io)
+        if stage_type(io) == STAGE_WEEK
+            return 168
+        elseif stage_type(io) == STAGE_MONTH
+            return DAYS_IN_MONTH[mod1(t - 1 + initial_stage(io), 12)] * 24
+        else
+            error("Unknown stage_type = $(stage_type(io))")
+        end
+    end
+    return max_blocks(io)
 end
 
 function _date_from_stage(t::Int, stage_type::StageType, first_date::Dates.Date)

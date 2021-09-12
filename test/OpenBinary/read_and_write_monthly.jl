@@ -1,7 +1,7 @@
 # Stage monthly
 FILE_PATH = joinpath(".", "example_2")
-iow = PSRI.write(
-    PSRI.OpenCSV(),
+iow = PSRI.open(
+    PSRI.OpenBinary.Writer,
     FILE_PATH,
     blocks = 3,
     scenarios = 10,
@@ -34,9 +34,10 @@ end
 # Finaliza gravacao
 PSRI.close(iow)
 
-ior = PSRI.read(
-    PSRI.OpenCSV(),
-    FILE_PATH
+ior = PSRI.open(
+    PSRI.OpenBinary.Reader,
+    FILE_PATH,
+    use_header = false
 )
 
 @test PSRI.max_stages(ior) == 12
@@ -72,6 +73,6 @@ end
 
 PSRI.close(ior)
 ior = nothing
-GC.gc();GC.gc()
 
-rm(FILE_PATH * ".csv")
+rm(FILE_PATH * ".bin")
+rm(FILE_PATH * ".hdr")
