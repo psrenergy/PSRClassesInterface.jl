@@ -5,8 +5,8 @@ SCENARIOS = 2
 AGENTS = ["X", "Y", "Z"]
 UNIT = "MW"
 
-gerter = PSRI.write(
-    PSRI.OpenCSV(),
+gerter = PSRI.open(
+    PSRI.OpenCSV.Writer,
     FILE_GERTER,
     is_hourly = true,
     scenarios = SCENARIOS,
@@ -37,8 +37,8 @@ end
 # Finaliza gravacao
 PSRI.close(gerter)
 
-ior = PSRI.read(
-    PSRI.OpenCSV(),
+ior = PSRI.open(
+    PSRI.OpenCSV.Reader,
     FILE_GERTER,
     is_hourly = true
 )
