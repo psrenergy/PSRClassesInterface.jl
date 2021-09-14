@@ -1,6 +1,7 @@
 Base.@kwdef mutable struct ReaderMapper{T}
     list::Vector{T} = T[]
     default::Vector{Int} = Int[]
+    name::Dict{String, Int} = Dict{String, Int}()
     dict::Dict{String, Vector{Int}} = Dict{String, Vector{Int}}()
     first_date::Dates.Date = Dates.Date(1900, 1, 1)
     blocks::Int = 0
@@ -26,8 +27,13 @@ function add_reader!(
     path::String,
     header::Vector{String},
     filter::Vector{String} = String[];
-    default::Bool = true
+    default::Bool = true,
+    name = "",
 ) where T
+
+    if !isempty(name) && haskey(mapper.name, name)
+        error("Name $name is already taken.")
+    end
 
     graf = open(
         T,
@@ -73,7 +79,15 @@ function add_reader!(
         println("Total scenario $(mapper.scenarios) != file $(max_scenarios(graf))")
     end
 
+    if !isempty(name)
+        mapper.name[name] = Int(current)
+    end
+
     return graf.data
+end
+
+function Base.getindex(mapper::ReaderMapper, name::String)
+    return mapper.list[mapper.name[name]].data
 end
 
 function goto(mapper::ReaderMapper, t::Int, s::Int = 1, b::Int = 1)
@@ -84,8 +98,13 @@ function goto(mapper::ReaderMapper, t::Int, s::Int = 1, b::Int = 1)
 end
 
 function goto(mapper::ReaderMapper, key::String, t::Int, s::Int = 1, b::Int = 1)
-    for ind in mapper.dict[key]
-        goto(mapper.list[ind], t, s, b)
+    if haskey(mapper.dict, key)
+        for ind in mapper.dict[key]
+            goto(mapper.list[ind], t, s, b)
+        end
+    end
+    if haskey(mapper.name, key)
+        goto(mapper.list[mapper.name[key]], t, s, b)
     end
     return nothing
 end
@@ -97,5 +116,6 @@ function close(mapper::ReaderMapper)
     empty(mapper.list)
     empty(mapper.default)
     empty(mapper.dict)
+    empty(mapper.name)
     return nothing
 end
