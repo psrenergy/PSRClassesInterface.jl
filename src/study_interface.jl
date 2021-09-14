@@ -1,3 +1,6 @@
+"""
+    AbstractStudyInterface
+"""
 abstract type AbstractStudyInterface end
 
 """

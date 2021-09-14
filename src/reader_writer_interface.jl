@@ -1,6 +1,21 @@
+"""
+    AbstractReader
+"""
 abstract type AbstractReader end
+
+"""
+    AbstractWriter
+"""
 abstract type AbstractWriter end
+
+"""
+    AbstractReaderMapper
+"""
 abstract type AbstractReaderMapper end
+
+"""
+    AbstractFileType
+"""
 abstract type AbstractFileType end
 
 # Reader functions
