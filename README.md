@@ -8,6 +8,6 @@
 
 | **Build Status** | **Coverage** | **Documentation** |
 |:-----------------:|:-----------------:|:-----------------:|
-| [![Build Status][build-img]][build-url] | [![Codecov branch][codecov-img]][codecov-url] |[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://psrenergy.github.io/PSRClassesInterface.jl/latest/)
+| [![Build Status][build-img]][build-url] | [![Codecov branch][codecov-img]][codecov-url] |[![](https://img.shields.io/badge/docs-latest-blue.svg)](https://psrenergy.github.io/PSRClassesInterface.jl/dev/)
 
 Repository to read and write open-source formats for PSR models.
