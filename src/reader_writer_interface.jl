@@ -1,6 +1,5 @@
 abstract type AbstractReader end
 abstract type AbstractWriter end
-abstract type AbstractReaderMapper end
 abstract type AbstractFileType end
 
 # Reader functions
