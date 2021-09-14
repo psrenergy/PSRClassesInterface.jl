@@ -9,11 +9,6 @@ abstract type AbstractReader end
 abstract type AbstractWriter end
 
 """
-    AbstractReaderMapper
-"""
-abstract type AbstractReaderMapper end
-
-"""
     AbstractFileType
 """
 abstract type AbstractFileType end

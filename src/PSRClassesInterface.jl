@@ -9,6 +9,7 @@ using CSV
 # simple and generic interface
 include("study_interface.jl")
 include("reader_writer_interface.jl")
+include("reader_mapper.jl")
 include("utils.jl")
 
 include("OpenStudy/study_openinterface.jl")
