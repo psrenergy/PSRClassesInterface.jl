@@ -69,11 +69,12 @@ function reader_mapper_test()
         AGENTS,
     )
 
-    gerhid_vec = PSRI.add_reader!(
+    PSRI.add_reader!(
         mapper,
         FILE2_PATH,
         AGENTS,
         ["hid_only"],
+        name = "hid",
     )
 
     for t = 1:STAGES, s = 1:SCENARIOS, b = 1:BLOCKS
@@ -83,16 +84,20 @@ function reader_mapper_test()
         Z = t + s + b * 100.
         ref = [X, Y, Z]
         @test gerter_vec == ref
-        @test gerhid_vec == ref .+ 1
+        @test mapper["hid"] == ref .+ 1
     end
     for t = 1:(STAGES-1), s = 1:SCENARIOS, b = 1:BLOCKS
-        PSRI.goto(mapper, "hid_only", t, s, b)
+        if iseven(b)
+            PSRI.goto(mapper, "hid_only", t, s, b)
+        else
+            PSRI.goto(mapper, "hid", t, s, b)
+        end
         X = t + s + 0.
         Y = s - t + 0.
         Z = t + s + b * 100.
         ref = [X, Y, Z]
         @test gerter_vec != ref
-        @test gerhid_vec == ref .+ 1
+        @test mapper["hid"] == ref .+ 1
     end
 
     PSRI.close(mapper)
