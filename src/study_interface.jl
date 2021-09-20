@@ -24,6 +24,11 @@ function max_elements end
 function get_map end
 
 """
+    get_map
+"""
+function get_vector_map end
+
+"""
     get_parms
 """
 function get_parms end
@@ -107,3 +112,13 @@ function stage_block_duration end
     get_nonempty_vector
 """
 function get_nonempty_vector end
+
+"""
+    MainTypes = Union{Float64, Int32, String, Dates.Date}
+"""
+const MainTypes = Union{Float64, Int32, String, Dates.Date}
+
+"""
+    configuration_parameter
+"""
+function configuration_parameter end

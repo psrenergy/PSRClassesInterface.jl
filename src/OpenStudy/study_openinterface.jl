@@ -22,6 +22,7 @@ mutable struct VectorCache{T}
 end
 
 # TODO: rebuild "raw" stabilizing data types
+# TODO fuel consumption updater
 
 Base.@kwdef mutable struct Data{T}
     raw::T
@@ -58,6 +59,8 @@ Base.@kwdef mutable struct Data{T}
         Dict{String, Vector{Tuple{String, String}}}()
     map_filter_integer::Dict{String, Vector{Tuple{String, String}}} =
         Dict{String, Vector{Tuple{String, String}}}()
+
+    extra_config::Dict{String, Any} = Dict{String, Any}()
 
     # TODO: cache importante data
 end
@@ -176,11 +179,25 @@ end
 _raw(data::Data) = data.raw
 
 function _simple_data(str::String)
-    # str = "01/01/1900" # DD/MM/AAA
-    triplet = split(str, "/")
-    day   = parse(Int, triplet[1])
-    month = parse(Int, triplet[2])
-    year  = parse(Int, triplet[3])
+
+    # possible formats
+    # "31/12/1900" # DD/MM/AAAA
+    # "1900-12-31" # AAAA/MM/DD
+    if length(str) != 10
+        error("Baddly defined date, should have 10 digitis got" * str)
+    end
+
+    third_digit = str[3]
+    if isnumeric(third_digit) # "1900-12-31" # AAAA/MM/DD
+        day   = parse(Int, str[9:10])
+        month = parse(Int, str[6:7])
+        year  = parse(Int, str[1:4])
+        return Dates.Date(year, month, day)
+    end
+    # "31/12/1900" # DD/MM/AAAA
+    day   = parse(Int, str[1:2])
+    month = parse(Int, str[4:5])
+    year  = parse(Int, str[7:10])
     return Dates.Date(year, month, day)
 end
 
@@ -214,6 +231,7 @@ function initialize_study(
     path_pmds = PMD._PMDS_BASE_PATH,
     log_file = "",
     verbose = true,
+    extra_config_file::String = "",
 )
     if !isdir(data_path)
         error("$data_path is not a valid directory")
@@ -247,7 +265,7 @@ function initialize_study(
         error("No Model definition (.pmd) file found")
     end
 
-    return Data(
+    data = Data(
         raw = raw,
         data_struct = data_struct,
         model_files_added = model_files_added,
@@ -260,6 +278,16 @@ function initialize_study(
         log_file = file,
         verbose = verbose,
     )
+
+    if !isempty(extra_config_file)
+        if isfile(extra_config_file)
+            data.extra_config = TOML.parsefile(extra_config_file)
+        else
+            error("Files $extra_config_file not found")
+        end
+    end
+
+    return data
 end
 
 function _collection(
@@ -294,75 +322,6 @@ function max_elements(data::Data, str::String)
     else
         return 0
     end
-end
-
-# TODO fuel consumption updater
-
-const _RELATIONS = Dict(
-    "PSRThermalPlant" => Dict(
-        "PSRFuel" => ("fuels", true),
-        "PSRSystem" => ("system", false),
-    ),
-    "PSRHydroPlant" => Dict(
-        "PSRGaugingStation" => ("station", false),
-        "PSRSystem" => ("system", false),
-    ),
-    # "PSRFuel" => Dict(
-    #     "PSRSystem" => ("system", false),
-    # ),
-    "PSRDemandSegment" => Dict(
-        "PSRDemand" => ("demand", false),
-        "PSRSystem" => ("system", false),
-    ),
-    "PSRDemand" => Dict(
-        "PSRSystem" => ("system", false),
-    ),
-)
-
-function get_map(
-    data::Data,
-    lst_from::String,
-    lst_to::String,
-    # TYPE = PSR_RELATIONSHIP_1TO1, # TODO I think we don't need that in this interface
-)
-    # @assert TYPE == PSR_RELATIONSHIP_1TO1 # TODO I think we don't need that in this interface
-    raw = _raw(data)
-    n_from = max_elements(data, lst_from)
-    if n_from == 0
-        return zeros(Int32, 0)
-    end
-    n_to = max_elements(data, lst_to)
-    if n_to == 0
-        # TODO warn no field
-        return zeros(Int32, n_from)
-    end
-
-    (raw_field, is_multi) = _RELATIONS[lst_from][lst_to]
-
-    out = zeros(Int32, n_from)
-
-    @assert !is_multi
-
-    vec_from = raw[lst_from]
-    vec_to = raw[lst_to]
-
-    for (idx_from, el_from) in enumerate(vec_from)
-        id_to = el_from[raw_field]
-
-        found = false
-        for (idx,el) in enumerate(vec_to)
-            id = el["reference_id"]
-            if id_to == id
-                out[idx_from] = idx
-                found = true
-                break
-            end
-        end
-        if !found
-            error("No $lst_to element matching $lst_from of index $idx_from")
-        end
-    end
-    return out
 end
 
 _default_value(::Type{T}) where T = zero(T)
@@ -754,3 +713,27 @@ function _need_update(data::Data, cache)
         return false
     end
 end
+
+configuration_parameter(data::Data, name::String, default::Integer) =
+    configuration_parameter(data, name, Int32(default))
+function configuration_parameter(
+    data::Data,
+    name::String,
+    default::T
+) where T <: MainTypes
+    if haskey(data.extra_config, name)
+        val = dict[name]
+        return _cast(T, val)
+    end
+    raw = _raw(data)
+    study_data = raw["PSRStudy"][1]
+    pre_out = get(study_data, name, default)
+    out = _cast(T, pre_out)
+    return out
+end
+
+_cast(::Type{T}, val::T) where T = val
+function _cast(::Type{T}, val::String) where T
+    return parse(T, val)
+end
+_cast(::Type{Int32}, val::Integer) = Int32(val)

@@ -3,6 +3,14 @@ data = PSRI.initialize_study(
     data_path = PATH_CASE_0
 )
 
+@test 0.0 == PSRI.configuration_parameter(data, "TaxaDesconto", 0.0)
+@test 10 == PSRI.configuration_parameter(data, "MaximoIteracoes", 0)
+@test 10 == PSRI.configuration_parameter(data, "MaximoIteracoes", 0)
+@test 5000.0 == PSRI.configuration_parameter(data, "MinOutflowPenalty", 0.0)
+@test_broken 0 == PSRI.configuration_parameter(data, "BMAP", 1)
+@test_broken 1 == PSRI.configuration_parameter(data, "VALE", 0)
+@test_broken 0 == PSRI.configuration_parameter(data, "MNIT", 10)
+
 #       --------------------------------------------
 #       Parte 3 - Obtem lista de entidades desejadas
 #       --------------------------------------------
