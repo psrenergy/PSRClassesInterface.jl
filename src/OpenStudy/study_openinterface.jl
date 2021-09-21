@@ -714,7 +714,7 @@ function _need_update(data::Data, cache)
     end
 end
 
-const _get_dict = Dict{String, Any}()
+const _GET_DICT = Dict{String, Any}()
 configuration_parameter(data::Data, name::String, default::Integer) =
     configuration_parameter(data, name, Int32(default))
 function configuration_parameter(
