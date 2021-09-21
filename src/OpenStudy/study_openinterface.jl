@@ -728,9 +728,9 @@ function configuration_parameter(
     end
     raw = _raw(data)
     study_data = raw["PSRStudy"][1]
-    exec = get(study_data, "ExecutionParameters", _get_dict)
-    chro = get(study_data, "ChronologicalData", _get_dict)
-    hour = get(study_data, "HourlyData", _get_dict)
+    exec = get(study_data, "ExecutionParameters", _GET_DICT)
+    chro = get(study_data, "ChronologicalData", _GET_DICT)
+    hour = get(study_data, "HourlyData", _GET_DICT)
     if haskey(exec, name)
         pre_out = exec[name]
         return _cast(T, pre_out)
