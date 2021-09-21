@@ -3,6 +3,10 @@ data = PSRI.initialize_study(
     data_path = joinpath(".", "data", "caso2")
 )
 
+@test 1 == PSRI.configuration_parameter(data, "BMAP", 2)
+@test 1 == PSRI.configuration_parameter(data, "VALE", 1)
+@test 0 == PSRI.configuration_parameter(data, "MNIT", 1)
+
 @test PSRI.get_map(data, "PSRGaugingStation", "PSRGaugingStation") == Int32[0, 1]
 
 @test PSRI.get_map(data, "PSRHydroPlant", "PSRHydroPlant", relation_type = PSRI.RELATION_TURBINE_TO) == Int32[2, 0]

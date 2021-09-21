@@ -1,7 +1,7 @@
 {
     "PSRStudy": [
         {
-            "reference_id": 8155224,
+            "reference_id": 21721176,
             "modeldimensions": [
                 {
                     "id": "deficit_segment",
@@ -17600,12 +17600,87 @@
             ],
             "ChroDeficitCost(1)": [
                 500.0
-            ]
+            ],
+            "ExecutionParameters": {
+                "VBCK": 0,
+                "CMON": 0,
+                "CCAR": 0,
+                "BALC": 0,
+                "UMON": "$",
+                "AVRS": 0,
+                "CARP": 0,
+                "VNOC": 0,
+                "RGAS": 0,
+                "ARCV": 0,
+                "MNIT": 0,
+                "VIEX": 0,
+                "CIEX": 0,
+                "MXLS": 6,
+                "SIMH": 0,
+                "ITAL": 3,
+                "GSFI": 0,
+                "VCLA": 0,
+                "NCPL_MIPR": 0.005,
+                "NCPL_SLCE": 1,
+                "NCPL_NMXT": 300,
+                "NCPL_SCRS": 1,
+                "NCPL_RMIP": 1,
+                "NCPL_NCSP": 1,
+                "NCPL_DSLC": 168,
+                "NCPL_TERF": 0,
+                "NCPL_CCOS": 1,
+                "NCPL_SCRT": 0,
+                "NCPL_RAMP": 1,
+                "NCPL_INCO": 0,
+                "NCPL_BINS": 0,
+                "RBAT": 0,
+                "EMFO": 1,
+                "HCHR": 0,
+                "MTHR": 1,
+                "LTHR": 1,
+                "INFM": 0,
+                "FOUT": 1,
+                "NETP": 0
+            },
+            "ChronologicalData": {
+                "PMHI": 1,
+                "PMTR": 1,
+                "CARR": 1,
+                "VALE": 1,
+                "VMIN": 1,
+                "VESP": 1,
+                "MNSP": 1,
+                "RGER": 1,
+                "FCON": 1,
+                "FRAT": 1,
+                "MXTO": 1,
+                "MROD": 1,
+                "MNTO": 1,
+                "GMIN": 1,
+                "RESG": 1,
+                "DUVA": 1,
+                "RIEG": 1,
+                "CEMI": 1,
+                "CCMB": 1,
+                "CCST": 1,
+                "FCCR": 1,
+                "FRCI": 1,
+                "FRCR": 1,
+                "VMXO": 1
+            },
+            "HourlyData": {
+                "BMAP": 1,
+                "LOAD": 3,
+                "RENW": 4,
+                "CLOD": 3,
+                "PINJ": 3,
+                "CINJ": 3
+            }
         }
     ],
     "PSRDemand": [
         {
-            "reference_id": 6151456,
+            "reference_id": 18930976,
             "classType": 25,
             "code": 1,
             "name": "System 1",
@@ -17617,12 +17692,12 @@
             ],
             "generic_id": "1-System 1-s1",
             "Elastico": 0,
-            "system": 26669856
+            "system": 33288992
         }
     ],
     "PSRDemandSegment": [
         {
-            "reference_id": 26486328,
+            "reference_id": 33105464,
             "classType": 36,
             "modeldimensions": [
                 {
@@ -17659,27 +17734,27 @@
                 12.17,
                 12.57
             ],
-            "system": 26669856,
-            "demand": 6151456
+            "system": 33288992,
+            "demand": 18930976
         }
     ],
     "PSRElectrificationNetwork": [
         {
-            "reference_id": 26025656,
+            "reference_id": 32644848,
             "classType": 93,
             "generic_id": ""
         }
     ],
     "PSRElement": [
         {
-            "reference_id": 26486088,
+            "reference_id": 33105224,
             "classType": 57,
             "generic_id": ""
         }
     ],
     "PSRFuel": [
         {
-            "reference_id": 8144112,
+            "reference_id": 21707688,
             "classType": 24,
             "code": 1,
             "name": "Fuel 1",
@@ -17693,10 +17768,10 @@
             "Custo": [
                 0.8
             ],
-            "system": 26669856
+            "system": 33288992
         },
         {
-            "reference_id": 8144200,
+            "reference_id": 21706984,
             "classType": 24,
             "code": 2,
             "name": "Fuel 2",
@@ -17710,12 +17785,12 @@
             "Custo": [
                 1.2
             ],
-            "system": 26669856
+            "system": 33288992
         }
     ],
     "PSRFuelConsumption": [
         {
-            "reference_id": 26488632,
+            "reference_id": 33107720,
             "classType": 50,
             "modeldimensions": [
                 {
@@ -17758,11 +17833,11 @@
             "CEsp(3,1)": [
                 null
             ],
-            "plant": 26394640,
-            "fuel": 8144112
+            "plant": 33013776,
+            "fuel": 21707688
         },
         {
-            "reference_id": 26488344,
+            "reference_id": 33107864,
             "classType": 50,
             "modeldimensions": [
                 {
@@ -17805,11 +17880,11 @@
             "CEsp(3,1)": [
                 null
             ],
-            "plant": 7199176,
-            "fuel": 8144112
+            "plant": 20765128,
+            "fuel": 21707688
         },
         {
-            "reference_id": 26487480,
+            "reference_id": 33107384,
             "classType": 50,
             "modeldimensions": [
                 {
@@ -17852,13 +17927,13 @@
             "CEsp(3,1)": [
                 null
             ],
-            "plant": 26000752,
-            "fuel": 8144200
+            "plant": 32619888,
+            "fuel": 21706984
         }
     ],
     "PSRGasEmission": [
         {
-            "reference_id": 27174640,
+            "reference_id": 33793696,
             "classType": 73,
             "code": 1,
             "name": "e1",
@@ -17907,20 +17982,20 @@
                 3.0
             ],
             "plants": [
-                26394640
+                33013776
             ]
         }
     ],
     "PSRGasNetwork": [
         {
-            "reference_id": 26486136,
+            "reference_id": 33105608,
             "classType": 28,
             "generic_id": ""
         }
     ],
     "PSRGaugingStation": [
         {
-            "reference_id": 5335664,
+            "reference_id": 18114248,
             "classType": 32,
             "code": 101,
             "name": "Hydro 1",
@@ -19037,7 +19112,7 @@
             ]
         },
         {
-            "reference_id": 5334224,
+            "reference_id": 18115184,
             "classType": 32,
             "code": 102,
             "name": "Hydro 2",
@@ -20152,12 +20227,12 @@
                 1.0,
                 1.0
             ],
-            "downstream": 5335664
+            "downstream": 18114248
         }
     ],
     "PSRGenerationConstraintData": [
         {
-            "reference_id": 8148496,
+            "reference_id": 21714176,
             "classType": 52,
             "code": 1,
             "name": "GenCon1",
@@ -20198,18 +20273,18 @@
                 1.0,
                 2.0
             ],
-            "system": 26669856,
+            "system": 33288992,
             "usinas": [
-                26394640,
-                8151272,
-                26000752
+                33013776,
+                21719304,
+                32619888
             ],
             "batteries": []
         }
     ],
     "PSRHydroPlant": [
         {
-            "reference_id": 8152832,
+            "reference_id": 21718992,
             "classType": 17,
             "code": 1,
             "name": "Hydro 1",
@@ -20431,15 +20506,15 @@
                 0.0,
                 0.0
             ],
-            "system": 26669856,
-            "station": 5335664,
-            "turbinning": 8151272,
-            "spilling": 8151272,
-            "filtration": 8151272,
-            "storedenergy": 8151272
+            "system": 33288992,
+            "station": 18114248,
+            "turbinning": 21719304,
+            "spilling": 21719304,
+            "filtration": 21719304,
+            "storedenergy": 21719304
         },
         {
-            "reference_id": 8151272,
+            "reference_id": 21719304,
             "classType": 17,
             "code": 2,
             "name": "Hydro 2",
@@ -20661,61 +20736,61 @@
                 0.0,
                 0.0
             ],
-            "system": 26669856,
-            "station": 5334224
+            "system": 33288992,
+            "station": 18115184
         }
     ],
     "PSRHydrologicalNetwork": [
         {
-            "reference_id": 26486904,
+            "reference_id": 33105992,
             "classType": 30,
             "generic_id": ""
         }
     ],
     "PSRHydrologicalPlantConnection": [
         {
-            "reference_id": 26487000,
+            "reference_id": 33105416,
             "classType": 54,
             "generic_id": "",
             "IsVertimento": 1,
-            "plant1": 8152832,
-            "plant2": 8151272
+            "plant1": 21718992,
+            "plant2": 21719304
         },
         {
-            "reference_id": 26488584,
+            "reference_id": 33107912,
             "classType": 54,
             "generic_id": "",
             "IsTurbinamento": 1,
-            "plant1": 8152832,
-            "plant2": 8151272
+            "plant1": 21718992,
+            "plant2": 21719304
         },
         {
-            "reference_id": 26488536,
+            "reference_id": 33106808,
             "classType": 54,
             "generic_id": "",
             "IsFiltration": 1,
-            "plant1": 8152832,
-            "plant2": 8151272
+            "plant1": 21718992,
+            "plant2": 21719304
         },
         {
-            "reference_id": 26488008,
+            "reference_id": 33107576,
             "classType": 54,
             "generic_id": "",
             "IsStoredEnergy": 1,
-            "plant1": 8152832,
-            "plant2": 8151272
+            "plant1": 21718992,
+            "plant2": 21719304
         }
     ],
     "PSRHydrologicalPlantNetwork": [
         {
-            "reference_id": 26486712,
+            "reference_id": 33106232,
             "classType": 31,
             "generic_id": ""
         }
     ],
     "PSRInterconnection": [
         {
-            "reference_id": 26479048,
+            "reference_id": 33101064,
             "classType": 34,
             "modeldimensions": [
                 {
@@ -20755,20 +20830,20 @@
             "DataLossFactor<-": [
                 "1900-01-01"
             ],
-            "no1": 26669856,
-            "no2": 26688432
+            "no1": 33288992,
+            "no2": 33307568
         }
     ],
     "PSRInterconnectionNetwork": [
         {
-            "reference_id": 26486472,
+            "reference_id": 33106040,
             "classType": 40,
             "generic_id": ""
         }
     ],
     "PSRInterconnectionSumData": [
         {
-            "reference_id": 8142616,
+            "reference_id": 21708656,
             "classType": 61,
             "code": 1,
             "name": "IntSum1",
@@ -20798,13 +20873,13 @@
                 "1900-01-01"
             ],
             "elements": [
-                26479048
+                33101064
             ]
         }
     ],
     "PSRMaintenanceData": [
         {
-            "reference_id": 5336672,
+            "reference_id": 18116840,
             "classType": 29,
             "type": 2,
             "actiontype": 1,
@@ -20837,27 +20912,27 @@
                 98.0,
                 97.0
             ],
-            "system": 26669856,
-            "plant": 8152832
+            "system": 33288992,
+            "plant": 21718992
         }
     ],
     "PSRNetwork": [
         {
-            "reference_id": 6286240,
+            "reference_id": 19065760,
             "classType": 7,
             "generic_id": ""
         }
     ],
     "PSRNetworkDC": [
         {
-            "reference_id": 5645784,
+            "reference_id": 18425304,
             "classType": 37,
             "generic_id": ""
         }
     ],
     "PSRReserveGenerationConstraintData": [
         {
-            "reference_id": 26505928,
+            "reference_id": 33111080,
             "classType": 53,
             "code": 1,
             "name": "ResCon1",
@@ -20902,11 +20977,11 @@
                 9.0,
                 9.0
             ],
-            "system": 26669856,
+            "system": 33288992,
             "usinas": [
-                8152832,
-                26394640,
-                7199176
+                21718992,
+                33013776,
+                20765128
             ],
             "batteries": [],
             "backed": []
@@ -20914,7 +20989,7 @@
     ],
     "PSRReservoirSet": [
         {
-            "reference_id": 27174400,
+            "reference_id": 33792096,
             "classType": 82,
             "code": 1,
             "name": "JCAlert1",
@@ -20949,14 +21024,14 @@
                 9.0
             ],
             "reservoirs": [
-                8152832,
-                8151272
+                21718992,
+                21719304
             ]
         }
     ],
     "PSRSystem": [
         {
-            "reference_id": 26669856,
+            "reference_id": 33288992,
             "classType": 2,
             "code": 1,
             "name": "System 1",
@@ -20968,27 +21043,53 @@
             "TipoUnidadeReservaGeracao": 3,
             "UnM": "$",
             "Ignored": 0,
+            "MOD:Demanda": {
+                "MOD:Demanda1Pat": {},
+                "MOD:Demanda2Pat": {},
+                "MOD:Demanda3Pat": {},
+                "MOD:Demanda4Pat": {},
+                "MOD:Demanda5Pat": {},
+                "MOD:Demanda-Modificacoes": {}
+            },
+            "MOD:Resultados": {
+                "MOD:SDDP": {
+                    "RESULT:Demanda": {}
+                }
+            },
             "restricao": [
-                8148496
+                21714176
             ],
             "reserveGeneration": [
-                26505928
+                33111080
             ]
         },
         {
-            "reference_id": 26688432,
+            "reference_id": 33307568,
             "classType": 2,
             "code": 2,
             "name": "System 2",
             "_id": "s2",
             "generic_id": "s2",
             "UnM": "$",
-            "Ignored": 1
+            "Ignored": 1,
+            "MOD:Demanda": {
+                "MOD:Demanda1Pat": {},
+                "MOD:Demanda2Pat": {},
+                "MOD:Demanda3Pat": {},
+                "MOD:Demanda4Pat": {},
+                "MOD:Demanda5Pat": {},
+                "MOD:Demanda-Modificacoes": {}
+            },
+            "MOD:Resultados": {
+                "MOD:SDDP": {
+                    "RESULT:Demanda": {}
+                }
+            }
         }
     ],
     "PSRThermalPlant": [
         {
-            "reference_id": 26394640,
+            "reference_id": 33013776,
             "classType": 16,
             "code": 1,
             "ThermalType": 0,
@@ -21060,13 +21161,13 @@
             "CoefE": [
                 0.0
             ],
-            "system": 26669856,
+            "system": 33288992,
             "fuels": [
-                8144112
+                21707688
             ]
         },
         {
-            "reference_id": 7199176,
+            "reference_id": 20765128,
             "classType": 16,
             "code": 2,
             "ThermalType": 0,
@@ -21138,13 +21239,13 @@
             "CoefE": [
                 0.0
             ],
-            "system": 26669856,
+            "system": 33288992,
             "fuels": [
-                8144112
+                21707688
             ]
         },
         {
-            "reference_id": 26000752,
+            "reference_id": 32619888,
             "classType": 16,
             "code": 3,
             "ThermalType": 0,
@@ -21216,9 +21317,9 @@
             "CoefE": [
                 0.0
             ],
-            "system": 26669856,
+            "system": 33288992,
             "fuels": [
-                8144200
+                21706984
             ]
         }
     ]
