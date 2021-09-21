@@ -714,6 +714,7 @@ function _need_update(data::Data, cache)
     end
 end
 
+const _get_dict = Dict{String, Any}()
 configuration_parameter(data::Data, name::String, default::Integer) =
     configuration_parameter(data, name, Int32(default))
 function configuration_parameter(
@@ -727,6 +728,19 @@ function configuration_parameter(
     end
     raw = _raw(data)
     study_data = raw["PSRStudy"][1]
+    exec = get(study_data, "ExecutionParameters", _get_dict)
+    chro = get(study_data, "ChronologicalData", _get_dict)
+    hour = get(study_data, "HourlyData", _get_dict)
+    if haskey(exec, name)
+        pre_out = exec[name]
+        return _cast(T, pre_out)
+    elseif haskey(chro, name)
+        pre_out = chro[name]
+        return _cast(T, pre_out)
+    elseif haskey(hour, name)
+        pre_out = hour[name]
+        return _cast(T, pre_out)
+    end
     pre_out = get(study_data, name, default)
     out = _cast(T, pre_out)
     return out
