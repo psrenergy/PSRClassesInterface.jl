@@ -39,10 +39,10 @@ PSRClassesInterface.get_nonempty_vector
 PSRClassesInterface.AbstractReader
 PSRClassesInterface.AbstractWriter
 PSRClassesInterface.AbstractReaderMapper
-PSRClassesInterface.AbstractFileType
 PSRClassesInterface.file_to_array
 PSRClassesInterface.file_to_array_and_header
-PSRClassesInterface.open
+PSRClassesInterface.read
+PSRClassesInterface.write
 PSRClassesInterface.is_hourly
 PSRClassesInterface.max_stages
 PSRClassesInterface.max_scenarios

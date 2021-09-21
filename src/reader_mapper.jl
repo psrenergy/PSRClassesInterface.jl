@@ -35,7 +35,7 @@ function add_reader!(
         error("Name $name is already taken.")
     end
 
-    graf = open(
+    graf = read(
         T,
         path,
         header = header,

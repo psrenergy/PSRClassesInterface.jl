@@ -26,7 +26,7 @@ function _build_agents_str(agents::Vector{String})
     return agents_str
 end
 
-function PSRI.open(
+function PSRI.write(
     ::Type{Writer},
     path::String;
     # mandatory

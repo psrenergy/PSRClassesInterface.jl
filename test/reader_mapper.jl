@@ -8,7 +8,7 @@ function reader_mapper_test()
     SCENARIOS = 10
     BLOCKS = 3
 
-    ioh = PSRI.open(
+    ioh = PSRI.write(
         PSRI.OpenBinary.Writer,
         FILE1_PATH,
         blocks = BLOCKS,
@@ -19,7 +19,7 @@ function reader_mapper_test()
         initial_stage = 1,
         initial_year = 2006,
     )
-    iot = PSRI.open(
+    iot = PSRI.write(
         PSRI.OpenBinary.Writer,
         FILE2_PATH,
         blocks = BLOCKS,

@@ -41,7 +41,7 @@ Base.@kwdef mutable struct Writer <: PSRI.AbstractWriter
 
 end
 
-function PSRI.open(
+function PSRI.write(
     ::Type{Writer},
     path::String;
     # mandatory

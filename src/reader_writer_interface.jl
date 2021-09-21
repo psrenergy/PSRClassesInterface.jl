@@ -8,11 +8,6 @@ abstract type AbstractReader end
 """
 abstract type AbstractWriter end
 
-"""
-    AbstractFileType
-"""
-abstract type AbstractFileType end
-
 # Reader functions
 
 """
@@ -26,9 +21,14 @@ function file_to_array end
 function file_to_array_and_header end
 
 """
-    open
+    read
 """
-function open end
+function read end
+
+"""
+    write
+"""
+function write end
 
 """
     is_hourly

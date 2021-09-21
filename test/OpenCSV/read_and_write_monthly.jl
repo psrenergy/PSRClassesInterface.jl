@@ -3,7 +3,7 @@ function read_write_csv_test()
 
     # Stage monthly
     FILE_PATH = joinpath(".", "example_2")
-    iow = PSRI.open(
+    iow = PSRI.write(
         PSRI.OpenCSV.Writer,
         FILE_PATH,
         blocks = 3,
@@ -37,7 +37,7 @@ function read_write_csv_test()
     # Finaliza gravacao
     PSRI.close(iow)
 
-    ior = PSRI.open(
+    ior = PSRI.read(
         PSRI.OpenCSV.Reader,
         FILE_PATH
     )

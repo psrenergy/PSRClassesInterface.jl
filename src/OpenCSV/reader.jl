@@ -75,8 +75,8 @@ function _read_last_line(file)
     end
 end
 
-function PSRI.open(
-    reader::Type{Reader},
+function PSRI.read(
+    ::Type{Reader},
     path::String;
     is_hourly::Bool = false,
     stage_type::PSRI.StageType = PSRI.STAGE_MONTH

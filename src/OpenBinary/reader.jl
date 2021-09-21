@@ -49,7 +49,7 @@ function Base.show(io::IO, ptr::Reader)
     print(io, "   Data File = $(ptr.io.name)")
 end
 
-function PSRI.open(
+function PSRI.read(
     ::Type{Reader},
     path::String;
     header::Vector{String} = String[],
