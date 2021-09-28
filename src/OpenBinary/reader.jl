@@ -52,14 +52,20 @@ end
 function PSRI.open(
     ::Type{Reader},
     path::String;
+    is_hourly::Union{Bool, Nothing} = nothing, 
+
     header::Vector{String} = String[],
     use_header::Bool = true,
     allow_empty::Bool = false,
     first_stage::Dates.Date = Dates.Date(1900, 1, 1),
-    # try_convert = T == GrafBinary
     verbose_header = false,
-    # ignore_names = false
 )
+
+
+    # TODO
+    if is_hourly !== nothing
+        error("is_hourly not supported")
+    end
 
     PATH_HDR = path * ".hdr"
     PATH_BIN = path * ".bin"
@@ -203,7 +209,6 @@ function PSRI.open(
     end
     @assert name_length > 0
 
-
     _stage_type = if stage_type == 2#PSR_STAGETYPE_MONTHLY
         PSRI.STAGE_MONTH
     elseif stage_type == 1#PSR_STAGETYPE_WEEKLY
@@ -228,7 +233,7 @@ function PSRI.open(
             push!(index, ret)
         end
         if !allow_empty && isempty(index)
-            error("no agents found")
+            error("no agents found" * ifelse(length(header) == 0, ", empty header inserted. If you do not want to pass a header use: use_header = false option.", "."))
         end
     else
         index = collect(1:total_agents)

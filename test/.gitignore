@@ -1,3 +1,6 @@
 *.csv
 *.bin
 *.hdr
+/example_2.csv
+/example_array_1.csv
+/example_convert_1.csv

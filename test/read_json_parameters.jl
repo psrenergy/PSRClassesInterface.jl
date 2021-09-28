@@ -40,10 +40,6 @@ thermCode = PSRI.get_code(data, "PSRThermalPlant")
 thermFut = PSRI.mapped_vector(data, "PSRThermalPlant", "Existing", Int32) # remove list?
 thermCap = PSRI.mapped_vector(data, "PSRThermalPlant", "PotInst", Float64) # remove list?
 @test thermCap == [10.0, 5.0, 20.0]
-# fcs: thermCost = PSRI.mapped_vector(data, "PSRThermalPlant", "O&MCost", Float64) # remove list?
-# thermCTransp = PSRI.mapped_vector(data, "PSRThermalPlant", "CTransp", Float64) # remove list?
-# TODO: add fuel consumption updater
-# @show thermCVaria = PSRI.mapped_vector(data, "PSRFuelConsumption", "CEsp", Float64, "segment", "block") # remove list?
 thermCVaria = PSRI.mapped_vector(data, "PSRThermalPlant", "CEsp", Float64, "segment", "block") # remove list?
 @test thermCVaria == [10, 15, 12.5]
 

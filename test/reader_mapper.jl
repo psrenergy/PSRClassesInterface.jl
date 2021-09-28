@@ -1,4 +1,3 @@
-using Dates
 function reader_mapper_test()
     FILE1_PATH = joinpath(".", "example_map_h")
     FILE2_PATH = joinpath(".", "example_map_t")
