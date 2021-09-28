@@ -1,6 +1,6 @@
 module PMD
 
-using Dates
+import Dates
 
 const _PMDS_BASE_PATH = joinpath(@__DIR__(), "pmds")
 

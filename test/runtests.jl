@@ -31,4 +31,7 @@ PATH_CASE_0 = joinpath(".", "data", "caso0")
     @testset "ReaderMapper" begin
         @time include("reader_mapper.jl")
     end
+    @testset "TS Utils" begin
+        @time include("time_series_utils.jl")
+    end
 end

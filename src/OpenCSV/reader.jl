@@ -79,8 +79,25 @@ function PSRI.open(
     reader::Type{Reader},
     path::String;
     is_hourly::Bool = false,
-    stage_type::PSRI.StageType = PSRI.STAGE_MONTH
+    stage_type::PSRI.StageType = PSRI.STAGE_MONTH, # TODO remove
+    header::Vector{String} = String[],
+    use_header::Bool = false, # default to true
+    first_stage::Dates.Date = Dates.Date(1900, 1, 1),
+    verbose_header = false,
 )
+    # TODO
+    if verbose_header
+        error("verbose_header not supported by OpenCSV")
+    end
+    if first_stage != Dates.Date(1900, 1, 1)
+        error("first_stage not supported by OpenCSV")
+    end
+    if !isempty(header)
+        error("header not supported by OpenCSV")
+    end
+    if use_header
+        error("use_header not supported by OpenCSV")
+    end
 
     PATH_CSV = path
     if !endswith(path, ".csv")

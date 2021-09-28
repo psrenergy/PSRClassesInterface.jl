@@ -37,13 +37,25 @@ function PSRI.open(
     unit::Union{Nothing, String} = nothing,
     # optional
     is_hourly::Bool = false,
+    name_length::Integer = 24,
     block_type::Integer = 1,
     scenarios_type::Integer = 1,
     stage_type::PSRI.StageType = PSRI.STAGE_MONTH, # important for header
     initial_stage::Integer = 1, #month or week
     initial_year::Integer = 1900,
     sequential_model::Bool = true,
+    # addtional
+    allow_unsafe_name_length::Bool = false,
 )
+
+    # TODO: consider name length
+    if !allow_unsafe_name_length
+        if name_length != 24 && name_length != 12
+            error("name_length should be either 24 or 11. " *
+                "To use a different value at your own risk enable: " *
+                "allow_unsafe_name_length = true.")
+        end
+    end
     if !(0 <= block_type <= 3)
         error("block_type must be between 0 and 3, got $block_type")
     end

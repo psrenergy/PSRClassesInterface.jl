@@ -74,9 +74,14 @@ function read_write_csv_test()
     end
 
     PSRI.close(ior)
+
+    @test_throws ErrorException PSRI.convert_file(
+        PSRI.OpenCSV.Reader,
+        PSRI.OpenCSV.Writer,
+        FILE_PATH,
+    )
+
     ior = nothing
-    GC.gc()
-    GC.gc()
 
     try
         rm(FILE_PATH * ".csv")

@@ -75,7 +75,6 @@ end
 
 PSRI.close(ior)
 ior = nothing
-GC.gc();GC.gc()
 
 rm(FILE_GERTER * ".bin")
 rm(FILE_GERTER * ".hdr")

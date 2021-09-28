@@ -77,4 +77,7 @@ PSRI.close(ior)
 ior = nothing
 GC.gc();GC.gc()
 
-rm(FILE_GERTER * ".csv")
+try
+    rm(FILE_GERTER * ".csv")
+catch
+end

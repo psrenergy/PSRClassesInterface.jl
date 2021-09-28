@@ -1,8 +1,8 @@
 module PSRClassesInterface
 
-using Dates
-using JSON
-using CSV
+import Dates
+import JSON
+import CSV
 
 @enum StageType STAGE_MONTH=2 STAGE_WEEK=1
 
@@ -14,6 +14,7 @@ end
 include("study_interface.jl")
 include("reader_writer_interface.jl")
 include("reader_mapper.jl")
+include("time_series_utils.jl")
 include("utils.jl")
 
 include("OpenStudy/study_openinterface.jl")

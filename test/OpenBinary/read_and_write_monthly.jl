@@ -74,5 +74,11 @@ end
 PSRI.close(ior)
 ior = nothing
 
+@test_throws ErrorException PSRI.convert_file(
+    PSRI.OpenBinary.Reader,
+    PSRI.OpenBinary.Writer,
+    FILE_PATH,
+)
+
 rm(FILE_PATH * ".bin")
 rm(FILE_PATH * ".hdr")
