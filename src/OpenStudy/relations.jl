@@ -132,13 +132,106 @@ function validate_reation(lst_from::String, lst_to::String, type::RelationType)
     return nothing
 end
 
+function get_reverse_map(
+    data::Data,
+    lst_from::String,
+    lst_to::String;
+    allow_empty::Bool = true,
+    original_relation_type::RelationType = RELATION_1_TO_1, # type of the direct relation
+)
+    n_to = max_elements(data, lst_to)
+    if n_to == 0
+        # TODO warn no field
+        return zeros(Int32, 0)
+    end
+    out = zeros(Int32, n_to)
+    if is_vector_relation(original_relation_type)
+        vector_map = get_vector_map(
+            data,
+            lst_from,
+            lst_to,
+            allow_empty = allow_empty,
+            relation_type = original_relation_type
+        )
+        for (f,vector_to) in enumerate(vector_map)
+            for t in vector_to
+                if out[t] == 0
+                    out[t] = f
+                else
+                    error("The element $t maps to two elements ($(out[t]) and $f), use get_reverse_vector_map instead.")
+                end
+            end
+        end
+    end
+    map = get_map(
+        data,
+        lst_from,
+        lst_to,
+        allow_empty = allow_empty,
+        relation_type = original_relation_type
+    )
+    for (f,t) in enumerate(map)
+        if t == 0
+            continue
+        end
+        if out[t] == 0
+            out[t] = f
+        else
+            error("The element $t maps to two elements ($(out[t]) and $f), use get_reverse_vector_map instead.")
+        end
+    end
+    return out
+end
+
+function get_reverse_vector_map(
+    data::Data,
+    lst_from::String,
+    lst_to::String;
+    allow_empty::Bool = true,
+    original_relation_type::RelationType = RELATION_1_TO_N,
+)
+    n_to = max_elements(data, lst_to)
+    if n_to == 0
+        # TODO warn no field
+        return Vector{Int32}[]
+    end
+    out = Vector{Int32}[zeros(Int32, 0) for _ in 1:n_to]
+    if is_vector_relation(original_relation_type)
+        vector_map = get_vector_map(
+            data,
+            lst_from,
+            lst_to,
+            allow_empty = allow_empty,
+            relation_type = original_relation_type
+        )
+        for (f,vector_to) in enumerate(vector_map)
+            for t in vector_to
+                push!(out[t], f)
+            end
+        end
+    end
+    map = get_map(
+        data,
+        lst_from,
+        lst_to,
+        allow_empty = allow_empty,
+        relation_type = original_relation_type
+    )
+    for (f,t) in enumerate(map)
+        if t == 0
+            continue
+        end
+        push!(out[t], f)
+    end
+    return out
+end
+
 function get_map(
     data::Data,
     lst_from::String,
     lst_to::String;
     allow_empty::Bool = true,
-    relation_type::RelationType = RELATION_1_TO_1,
-    # TODO I think we don't need that in this interface
+    relation_type::RelationType = RELATION_1_TO_1, # type of the direct relation
 )
 
     if is_vector_relation(relation_type)
@@ -191,7 +284,6 @@ function get_vector_map(
     lst_to::String;
     allow_empty::Bool = true,
     relation_type::RelationType = RELATION_1_TO_N,
-    # TODO I think we don't need that in this interface
 )
 
     if !is_vector_relation(relation_type)

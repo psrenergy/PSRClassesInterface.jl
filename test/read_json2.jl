@@ -26,3 +26,16 @@ capacity = PSRI.mapped_vector(data, "PSRThermalPlant", "PotInst", Float64)
 @test fcs2fue = PSRI.get_map(data, "PSRFuelConsumption", "PSRFuel") == Int32[1, 2, 3, 4, 5]
 @test_throws ErrorException PSRI.get_map(data, "PSRThermalPlant", "PSRFuel")
 @test ter2fue = PSRI.get_vector_map(data, "PSRThermalPlant", "PSRFuel") == Vector{Int32}[[1], [2], [3], [4], [5]]
+
+#=
+    reverse relations
+=#
+
+# for each thermal, return its generator
+@test PSRI.get_reverse_map(data, "PSRGenerator", "PSRThermalPlant") == Int32[9, 2, 6, 3, 4]
+
+# same for gnd
+@test PSRI.get_reverse_map(data, "PSRGenerator", "PSRGndPlant") == Int32[1, 5, 7, 8]
+
+# for each bus, return all generators there
+@test PSRI.get_reverse_vector_map(data, "PSRGenerator", "PSRBus", original_relation_type = PSRI.RELATION_1_TO_1) == Vector{Int32}[[], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [1], [], [], [], [], [], [], [], [], [], [], [], [], [2], [], [], [], [], [], [3], [], [], [], [], [], [], [], [], [], [], [], [4], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [5], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [6], [], [], [], [], [], [], [7], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [8], [], [], [], [], [], [], [], [9], [], [], [], [], [], [], [], [], [], [], [], []]

@@ -29,6 +29,16 @@ function get_map end
 function get_vector_map end
 
 """
+    get_reverse_map
+"""
+function get_reverse_map end
+
+"""
+    get_reverse_map
+"""
+function get_reverse_vector_map end
+
+"""
     get_parms
 """
 function get_parms end
