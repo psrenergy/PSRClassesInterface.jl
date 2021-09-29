@@ -39,3 +39,18 @@ data = PSRI.initialize_study(
 @test PSRI.get_vector_map(data, "PSRReserveGenerationConstraintData", "PSRGndPlant", relation_type = PSRI.RELATION_BACKED) == Vector{Int32}[[]]
 
 @test PSRI.get_vector_map(data, "PSRReservoirSet", "PSRHydroPlant") == Vector{Int32}[[1, 2]]
+
+
+# reverse relations
+
+# upstream turbining hydros
+@test PSRI.get_reverse_vector_map(data, "PSRHydroPlant", "PSRHydroPlant", original_relation_type = PSRI.RELATION_TURBINE_TO) == Vector{Int32}[[], [1]]
+
+# for each hydro - return its maintenance data
+# both work for this one
+@test PSRI.get_reverse_map(data, "PSRMaintenanceData", "PSRHydroPlant") == Int32[1, 0]
+@test PSRI.get_reverse_vector_map(data, "PSRMaintenanceData", "PSRHydroPlant", original_relation_type = PSRI.RELATION_1_TO_1) == Vector{Int32}[[1], []]
+
+# for each thermal - return all Gen Ctr it belongs
+# might be many so it fails (in this case)
+@test_throws ErrorException PSRI.get_map(data, "PSRGenerationConstraintData", "PSRThermalPlant")
