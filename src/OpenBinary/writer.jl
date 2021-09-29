@@ -88,16 +88,8 @@ function PSRI.open(
     if unit === nothing
         error("Please provide a unit string: unit = \"MW\"")
     end
-    if stage_type == PSRI.STAGE_MONTH
-        if !(0 < initial_stage <= 12)
-            error("initial_stage must be between 1 and 12 for monthly files, got: $initial_stage")
-        end
-    elseif stage_type == PSRI.STAGE_WEEK
-        if !(0 < initial_stage <= 52)
-            error("initial_stage must be between 1 and 52 for monthly files, got: $initial_stage")
-        end
-    else
-        error("Unknown stage_type")
+    if !(0 < initial_stage <= PSRI.STAGES_IN_YEAR[stage_type])
+        error("initial_stage must be between 1 and $(PSRI.STAGES_IN_YEAR[stage_type]) for $stage_type files, got: $initial_stage")
     end
     if !(0 < initial_year <= 1_000_000_000)
         error("initial_year must be a positive integer, got: $initial_year")
@@ -169,7 +161,7 @@ function PSRI.open(
     # const PSR_STAGETYPE_TRIANNUALLY = 8
     # const PSR_STAGETYPE_SEMIANNUALLY = 9
     # const PSR_STAGETYPE_YEARLY = 10
-    write(ioh, Int32(stage_type == PSRI.STAGE_MONTH ? 2 : 1))
+    write(ioh, Int32(stage_type))
     write(ioh, Int32(initial_stage))
     write(ioh, Int32(initial_year))
     if unit === nothing

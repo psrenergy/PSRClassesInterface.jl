@@ -22,7 +22,7 @@ PATH_CASE_0 = joinpath(".", "data", "caso0")
     end
     @testset "OpenBinary file format" begin
         @testset "Read and write with monthlydata" begin
-            @time include("OpenBinary/read_and_write_monthly.jl")
+            @time include("OpenBinary/read_and_write_blocks.jl")
         end
         @testset "Read and write with hourlydata" begin
             @time include("OpenBinary/read_and_write_hourly.jl")

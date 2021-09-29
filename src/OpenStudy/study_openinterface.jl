@@ -257,6 +257,7 @@ function initialize_study(
     first_date = Dates.Date(first_year, 1, 1) +
             ifelse(stage_type == STAGE_MONTH,
                 Dates.Month(first_stage-1), Dates.Week(first_stage-1))
+    # TODO daily study
 
     data_struct = Dict{String, Dict{String, Attribute}}()
     model_files_added = Set{String}()
