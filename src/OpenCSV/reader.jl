@@ -45,9 +45,7 @@ function _parse_scenarios(last_line)
 end
 function _parse_blocks(last_line, stages::Int, is_hourly::Bool, stage_type::PSRI.StageType, initial_stage::Int)
     if is_hourly
-        if stage_type == PSRI.STAGE_WEEK
-            return 168
-        elseif stage_type == PSRI.STAGE_MONTH
+        if stage_type == PSRI.STAGE_MONTH
             blocks = 0
             for t in initial_stage:initial_stage + stages
                 blocks_month = PSRI.DAYS_IN_MONTH[mod1(t - 1 + initial_stage, 12)] * 24
@@ -57,7 +55,8 @@ function _parse_blocks(last_line, stages::Int, is_hourly::Bool, stage_type::PSRI
             end
             return blocks
         else
-            error("Unknown stage_type = $(io.stage_type)")
+            return PSRI.HOURS_IN_STAGE[stage_type]
+            # error("Unknown stage_type = $(io.stage_type)")
         end
     end
     last_line_splitted = split(last_line, ',')

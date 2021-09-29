@@ -213,6 +213,8 @@ function PSRI.open(
         PSRI.STAGE_MONTH
     elseif stage_type == 1#PSR_STAGETYPE_WEEKLY
         PSRI.STAGE_WEEK
+    elseif stage_type == 5#PSR_STAGETYPE_DAILY
+        PSRI.STAGE_DAY
     else
         error("Stage type with code $stage_type is no known")
     end
@@ -251,6 +253,13 @@ function PSRI.open(
         elseif _stage_type == PSRI.STAGE_WEEK
             @assert 1 <= _first_stage <= 52
             Dates.Date(_year, 1, 1) + Dates.Week(_first_stage-1)
+        elseif _stage_type == PSRI.STAGE_DAY
+            @assert 1 <= _first_stage <= 365
+            ret = Dates.Date(_year, 1, 1) + Dates.Day(_first_stage-1)
+            if Dates.isleapyear(_year) && _first_stage > 24 * (31 + 28)
+                ret += Dates.Day(1)
+            end
+            ret
         else
             error("Stage Type $_stage_type not currently supported")
         end
