@@ -3,6 +3,7 @@ module PSRClassesInterface
 import Dates
 import JSON
 import CSV
+import Random
 
 @enum StageType begin
     STAGE_WEEK=1
@@ -33,12 +34,15 @@ include("reader_mapper.jl")
 include("time_series_utils.jl")
 include("utils.jl")
 
-include("OpenStudy/study_openinterface.jl")
-include("OpenStudy/relations.jl")
-
 # submodules
 include("OpenCSV/OpenCSV.jl")
-include("OpenBinary/OpenBinary.jl")
 include("PMD/PMD.jl")
+include("OpenBinary/OpenBinary.jl")
+
+include("OpenStudy/pmd.jl")
+include("OpenStudy/study_openinterface.jl")
+include("OpenStudy/duration.jl")
+include("OpenStudy/relations.jl")
+
 
 end

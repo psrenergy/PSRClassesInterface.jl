@@ -12,6 +12,9 @@ PATH_CASE_0 = joinpath(".", "data", "caso0")
         @time include("read_json2.jl")
         @time include("read_json_relations_3.jl")
     end
+    @testset "Read json durations" begin
+        @time include("duration.jl")
+    end
     @testset "OpenCSV file format" begin
         @testset "Read and write with monthlydata" begin
             @time include("OpenCSV/read_and_write_monthly.jl")

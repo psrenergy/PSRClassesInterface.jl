@@ -304,6 +304,14 @@ function PSRI.open(
 
         io = open(PATH_BIN, "r")
     )
+
+    finalizer(ret) do x
+        if x.is_open
+            Base.close(x.io)
+        end
+        x
+    end
+
     # iob = open(PATH_BIN, "r")
     # check total len
 

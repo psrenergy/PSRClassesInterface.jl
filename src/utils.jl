@@ -25,6 +25,12 @@ const HOURS_IN_STAGE = Dict{StageType, Int}(
     STAGE_DAY => 24,
 )
 
+@enum BlockDurationMode begin
+    FIXED_DURATION
+    VARIABLE_DURATION
+    HOUR_BLOCK_MAP
+end
+
 function _delete_or_error(path::AbstractString)
     if isfile(path)
         try
@@ -131,6 +137,10 @@ function _year_day(date::Dates.Date, go_back_if_needed = false)
     return y, dd
 end
 
+function _year_month(date::Dates.Date)
+    return Dates.yearmonth(date)
+end
+
 function _stage_distance(year1, stage1, year2, stage2, cycle)
     # current(1) = reference(2)
     abs_stage1 = (year1 - 1) * cycle + stage1
@@ -143,18 +153,21 @@ function _stage_from_date(
     stage_type::StageType,
     first_date::Dates.Date
 )
+    fy, fm = _year_stage(first_date, stage_type)
+    y, m = _year_stage(date, stage_type)
+    return _stage_distance(y, m, fy, fm, STAGES_IN_YEAR[stage_type]) + 1
+end
+
+function _year_stage(
+    date::Dates.Date,
+    stage_type::StageType,
+)
     if stage_type == STAGE_MONTH
-        fy, fm = Dates.yearmonth(first_date)
-        y, m = Dates.yearmonth(date)
-        return _stage_distance(y, m, fy, fm, 12) + 1
+        return _year_month(date)
     elseif stage_type == STAGE_WEEK
-        fy, fw = _year_week(first_date)
-        y, w = _year_week(date)
-        return _stage_distance(y, w, fy, fw, 52) + 1
+        return _year_week(date)
     elseif stage_type == STAGE_DAY
-        fy, fd = _year_day(first_date)
-        y, d = _year_day(date)
-        return _stage_distance(y, d, fy, fd, 365) + 1
+        return _year_day(date)
     end
     error("Undefined stage_type")
 end

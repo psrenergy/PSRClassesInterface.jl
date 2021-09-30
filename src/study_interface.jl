@@ -114,9 +114,9 @@ function get_complex_map end
 function stage_duration end
 
 """
-    stage_block_duration
+    block_duration
 """
-function stage_block_duration end
+function block_duration end
 
 """
     get_nonempty_vector

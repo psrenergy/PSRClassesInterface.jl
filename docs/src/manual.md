@@ -29,7 +29,8 @@ PSRClassesInterface.total_openings
 PSRClassesInterface.total_stages_per_year
 PSRClassesInterface.get_complex_map
 PSRClassesInterface.stage_duration
-PSRClassesInterface.stage_block_duration
+PSRClassesInterface.block_duration
+PSRClassesInterface.block_from_stage_hour
 PSRClassesInterface.get_nonempty_vector
 ```
 
@@ -39,7 +40,6 @@ PSRClassesInterface.get_nonempty_vector
 PSRClassesInterface.AbstractReader
 PSRClassesInterface.AbstractWriter
 PSRClassesInterface.AbstractReaderMapper
-PSRClassesInterface.AbstractFileType
 PSRClassesInterface.file_to_array
 PSRClassesInterface.file_to_array_and_header
 PSRClassesInterface.open
