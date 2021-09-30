@@ -44,7 +44,14 @@ function get_reverse_vector_map end
 function get_parms end
 
 """
-    get_code
+    get_code(data::AbstractData, collection::String)
+
+Returns a Vector{Int32} containing the code of each element in `collection`.
+
+Example:
+```
+get_code(data, "PSRThermalPlant")
+```
 """
 function get_code end
 
