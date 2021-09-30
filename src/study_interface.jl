@@ -14,7 +14,14 @@ function initialize_study end
 function get_vector end
 
 """
-    max_elements
+    max_elements(data::AbstractData, collection::String)
+
+Returns a Int32 with the maximum number of elements for a given `collection`.
+
+Example:
+```
+max_elements(data, "PSRThermalPlant")
+```
 """
 function max_elements end
 
@@ -56,7 +63,14 @@ get_code(data, "PSRThermalPlant")
 function get_code end
 
 """
-    get_name
+    get_name(data::AbstractData, collection::String)
+
+Returns a Vector{String} containing the name of each element in `collection`.
+
+Example:
+```
+get_name(data, "PSRThermalPlant")
+```
 """
 function get_name end
 
