@@ -3,7 +3,6 @@ module PSRClassesInterface
 import Dates
 import JSON
 import CSV
-import Random
 
 @enum StageType begin
     STAGE_WEEK=1

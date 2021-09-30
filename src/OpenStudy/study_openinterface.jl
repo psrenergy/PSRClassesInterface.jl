@@ -32,8 +32,6 @@ Base.@kwdef mutable struct Data{T}
 
     data_path::String
 
-    rng::Random.MersenneTwister = Random.MersenneTwister(0)
-
     duration_mode::BlockDurationMode = FIXED_DURATION
     number_blocks::Int = 1
 
