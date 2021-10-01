@@ -269,15 +269,24 @@ function get_parms(
 
     if check_type
         if name == "name" || name == "AVId" # TODO? protect spelling
-            @assert String == T
+            if String != T
+                error("Attribute code is of type String.")
+            end
         elseif name == "code"
-            @assert Int32 == T
+            if Int32 != T
+                error("Attribute code is of type Int32.")
+            end
         else
-            @assert !data.data_struct[col][name].type == T
+            _type = data.data_struct[col][name].type
+            if _type != T
+                error("Attribute $name of collection $col is a of type $(_type) not $T.")
+            end
         end
     end
     if check_parm && !(name in ["name", "code", "AVId"])
-        @assert !data.data_struct[col][name].is_vector
+        if data.data_struct[col][name].is_vector
+            error("Attribute $name of collection $col is a of type vector. Use `mapped_vector` instead.")
+        end
     end
 
     out = T[default for _ in 1:n]
@@ -382,8 +391,12 @@ function mapped_vector(
     attr_data = collection_struct[name]
 
     # validate type and shape
-    @assert attr_data.type == T
-    @assert attr_data.is_vector
+    if attr_data.type != T
+        error("Attribute $name of collection $col is a of type $(attr_data.type) not $T.")
+    end
+    if !attr_data.is_vector
+        error("Attribute $name of collection $col is a of type parm. Use `get_parms` instead.")
+    end
 
     # validate dimensions
     dim = attr_data.dim
