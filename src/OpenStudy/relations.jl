@@ -1,16 +1,3 @@
-
-@enum RelationType begin
-    RELATION_1_TO_1
-    RELATION_1_TO_N
-    RELATION_FROM
-    RELATION_TO
-    RELATION_TURBINE_TO
-    RELATION_SPILL_TO
-    RELATION_INFILTRATE_TO
-    RELATION_STORED_ENERGY_DONWSTREAM
-    RELATION_BACKED
-end
-
 function is_vector_relation(relation)
     return relation == RELATION_1_TO_N || relation == RELATION_BACKED
 end

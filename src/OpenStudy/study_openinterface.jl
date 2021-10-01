@@ -1,7 +1,5 @@
 struct OpenInterface <: AbstractStudyInterface end
 
-
-
 struct Attribute
     name::String
     is_vector::Bool
@@ -26,7 +24,7 @@ end
 # TODO: rebuild "raw" stabilizing data types
 # TODO fuel consumption updater
 
-Base.@kwdef mutable struct Data{T}
+Base.@kwdef mutable struct Data{T} <: AbstractData
     raw::T
     stage_type::StageType
 

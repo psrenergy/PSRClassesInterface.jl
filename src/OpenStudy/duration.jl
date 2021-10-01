@@ -1,20 +1,20 @@
 function _raw_stage_duration(data::Data, date::Dates.Date)::Int
     if data.stage_type == STAGE_WEEK
-        return 168
+        return 168.0
     elseif data.stage_type == STAGE_DAY
-        return 24
+        return 24.0
     end
-    return DAYS_IN_MONTH[Dates.month(date)] * 24
+    return DAYS_IN_MONTH[Dates.month(date)] * 24.0
 end
 
 function _raw_stage_duration(data::Data, t::Int)::Int
     if data.stage_type == STAGE_WEEK
-        return 168
+        return 168.0
     elseif data.stage_type == STAGE_DAY
-        return 24
+        return 24.0
     end
     return DAYS_IN_MONTH[Dates.month(
-        _date_from_stage(t, data.stage_type, data.first_date))] * 24
+        _date_from_stage(t, data.stage_type, data.first_date))] * 24.0
 end
 
 function stage_duration(data::Data, date::Dates.Date)
@@ -25,7 +25,7 @@ function stage_duration(data::Data, date::Dates.Date)
     return _variable_stage_duration(data, t)
 end
 
-function stage_duration(data::Data, t::Int)
+function stage_duration(data::Data, t::Int = data.controller_stage)
     if data.duration_mode != VARIABLE_DURATION
         return _raw_stage_duration(data, t)
     end
@@ -38,11 +38,15 @@ function block_duration(data::Data, date::Dates.Date, b::Int)
     end
     if data.duration_mode == FIXED_DURATION
         raw = _raw(data)
-        percent = raw["PSRStudy"][1]["Duracao($b)"] / 100
+        percent = raw["PSRStudy"][1]["Duracao($b)"] / 100.0
         return percent * _raw_stage_duration(data, date)
     end# elseif data.duration_mode == VARIABLE_DURATION # OR HOUR_BLOCK_MAP
     t = _stage_from_date(date, data.stage_type, data.first_date)
     return _variable_stage_duration(data, t, b)
+end
+
+function block_duration(data::Data, b::Int)
+    return block_duration(data, data.controller_stage, b)
 end
 
 function block_duration(data::Data, t::Int, b::Int)
@@ -51,7 +55,7 @@ function block_duration(data::Data, t::Int, b::Int)
     end
     if data.duration_mode == FIXED_DURATION
         raw = _raw(data)
-        percent = raw["PSRStudy"][1]["Duracao($b)"] / 100
+        percent = raw["PSRStudy"][1]["Duracao($b)"] / 100.0
         return percent * _raw_stage_duration(data, t)
     end# elseif data.duration_mode == VARIABLE_DURATION # OR HOUR_BLOCK_MAP
     return _variable_stage_duration(data, t, b)
@@ -248,8 +252,3 @@ function _hour_block_map_to_file!(data::Data)
 
     return
 end
-
-
-
-
-

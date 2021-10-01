@@ -25,12 +25,6 @@ const HOURS_IN_STAGE = Dict{StageType, Int}(
     STAGE_DAY => 24,
 )
 
-@enum BlockDurationMode begin
-    FIXED_DURATION
-    VARIABLE_DURATION
-    HOUR_BLOCK_MAP
-end
-
 function _delete_or_error(path::AbstractString)
     if isfile(path)
         try

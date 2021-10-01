@@ -376,8 +376,8 @@ function PSRI.goto(graf::Reader, t::Integer, s::Integer = 1, b::Integer = 1)
     if t != graf.stage_current ||
             ss != graf.scenario_current ||
             bb != graf.block_current
-        @assert tt <= graf.stage_total
-        @assert bb <= block_total_current
+        @assert 1 <= tt <= graf.stage_total
+        @assert 1 <= bb <= block_total_current
         # move to position
         current_pos = position(graf.io)
         next_pos = _get_position(graf, tt, ss, bb)

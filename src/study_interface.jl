@@ -1,3 +1,45 @@
+@enum StageType begin
+    STAGE_WEEK=1
+    STAGE_MONTH=2
+    STAGE_DAY=5
+end
+
+# "PSR_STAGETYPE_UNKNOWN" => 0,
+# "PSR_STAGETYPE_WEEKLY" => 1,
+# "PSR_STAGETYPE_MONTHLY" => 2,
+# "PSR_STAGETYPE_QUARTERLY" => 3,
+# "PSR_STAGETYPE_HOURLY" => 4,
+# "PSR_STAGETYPE_DAILY" => 5,
+# "PSR_STAGETYPE_13MONTHLY" => 6,
+# "PSR_STAGETYPE_BIMONTHLY" => 7,
+# "PSR_STAGETYPE_TRIANNUALLY" => 8,
+# "PSR_STAGETYPE_SEMIANNUALLY" => 9,
+# "PSR_STAGETYPE_YEARLY" => 10,
+
+@enum BlockDurationMode begin
+    FIXED_DURATION
+    VARIABLE_DURATION
+    HOUR_BLOCK_MAP
+end
+
+@enum RelationType begin
+    RELATION_1_TO_1
+    RELATION_1_TO_N
+    RELATION_FROM
+    RELATION_TO
+    RELATION_TURBINE_TO
+    RELATION_SPILL_TO
+    RELATION_INFILTRATE_TO
+    RELATION_STORED_ENERGY_DONWSTREAM
+    RELATION_BACKED
+end
+
+"""
+    AbstractData
+"""
+abstract type AbstractData end
+
+
 """
     AbstractStudyInterface
 """
@@ -114,7 +156,17 @@ function get_complex_map end
 function stage_duration end
 
 """
-    block_duration
+    block_duration(data::AbstractData, date::Dates.Date, b::Int)
+
+Returns the duration, in hours, of the block `b` at stage `date`.
+
+    block_duration(data::AbstractData, t::Int, b::Int)
+
+Returns the duration, in hours, of the block `b` at stage `t`.
+
+    block_duration(data::AbstractData, b::Int)
+
+Returns the duration, in hours, of the block `b` at the current stage, set by `go_to_stage`.
 """
 function block_duration end
 
