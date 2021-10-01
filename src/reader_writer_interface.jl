@@ -8,11 +8,6 @@ abstract type AbstractReader end
 """
 abstract type AbstractWriter end
 
-"""
-    AbstractFileType
-"""
-abstract type AbstractFileType end
-
 # Reader functions
 
 """
