@@ -171,6 +171,11 @@ Returns the duration, in hours, of the block `b` at the current stage, set by `g
 function block_duration end
 
 """
+    block_from_stage_hour
+"""
+function block_from_stage_hour end
+
+"""
     get_nonempty_vector
 """
 function get_nonempty_vector end

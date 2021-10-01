@@ -39,7 +39,6 @@ PSRClassesInterface.get_nonempty_vector
 ```@docs
 PSRClassesInterface.AbstractReader
 PSRClassesInterface.AbstractWriter
-PSRClassesInterface.AbstractReaderMapper
 PSRClassesInterface.file_to_array
 PSRClassesInterface.file_to_array_and_header
 PSRClassesInterface.open
