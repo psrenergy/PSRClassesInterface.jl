@@ -6,6 +6,12 @@ The PSRClassesInterface module provides interfaces to access data structured by 
 
 Both interfaces are defined as a set of methods that need to be implemented to make a different file format work. In this manual we will describe the abstract methods and give concrete examples of code to perform the work needed.
 
+When using the PSRClassesInterface package in your codebase we strongly advise you to create a constant `PSRI` to keep the code concise and explicitly declare that a certain function came from PSRClassesInterface. This can be done by adding the following code to the top of the code
+```julia
+using PSRClassesInterface
+const PSRI = PSRClassesInterface
+```
+
 ## Abstract study interface
 
 ```@docs

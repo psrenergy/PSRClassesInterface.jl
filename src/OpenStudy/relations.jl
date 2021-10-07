@@ -106,7 +106,7 @@ const _RELATIONS = Dict{String, _INNER_DICT}(
     ),
 )
 
-function validate_reation(lst_from::String, lst_to::String, type::RelationType)
+function validate_relation(lst_from::String, lst_to::String, type::RelationType)
     if haskey(_RELATIONS, lst_from)
         if !haskey(_RELATIONS[lst_from], (lst_to, type))
             error("No relation from $lst_from to $lst_to with type $type \n" *
@@ -224,7 +224,7 @@ function get_map(
     if is_vector_relation(relation_type)
         error("For relation relation_type = $relation_type use get_vector_map")
     end
-    validate_reation(lst_from, lst_to, relation_type)
+    validate_relation(lst_from, lst_to, relation_type)
 
     # @assert TYPE == PSR_RELATIONSHIP_1TO1 # TODO I think we don't need that in this interface
     raw = _raw(data)
@@ -276,7 +276,7 @@ function get_vector_map(
     if !is_vector_relation(relation_type)
         error("For relation relation_type = $relation_type use get_map")
     end
-    validate_reation(lst_from, lst_to, relation_type)
+    validate_relation(lst_from, lst_to, relation_type)
 
     # @assert TYPE == PSR_RELATIONSHIP_1TO1 # TODO I think we don't need that in this interface
     raw = _raw(data)
