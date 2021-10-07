@@ -76,7 +76,7 @@ function get_vector end
 """
     max_elements(data::AbstractData, collection::String)
 
-Returns an Int32 with the maximum number of elements for a given `collection`.
+Returns an `Int32` with the maximum number of elements for a given `collection`.
 
 Example:
 ```
@@ -94,9 +94,7 @@ function max_elements end
         relation_type::RelationType = RELATION_1_TO_1, # type of the direct relation
     )
 
-Returns a Vector{Int32} with the map between collections given a certain relation_type
-
-relation_type
+Returns a `Vector{Int32}` with the map between collections given a certain [`RelationType`](@ref).
 
 Examples:
 ```
@@ -137,7 +135,7 @@ function get_parms end
 """
     get_code(data::AbstractData, collection::String)
 
-Returns a Vector{Int32} containing the code of each element in `collection`.
+Returns a `Vector{Int32}` containing the code of each element in `collection`.
 
 Example:
 ```
@@ -149,11 +147,12 @@ function get_code end
 """
     get_name(data::AbstractData, collection::String)
 
-Returns a Vector{String} containing the name of each element in `collection`.
+Returns a `Vector{String}` containing the name of each element in `collection`.
 
 Example:
 ```
 PSRI.get_name(data, "PSRThermalPlant")
+PSRI.get_name(data, "PSRGaugingStation")
 ```
 """
 function get_name end
