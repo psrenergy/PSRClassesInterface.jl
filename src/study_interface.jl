@@ -22,6 +22,24 @@ end
     HOUR_BLOCK_MAP
 end
 
+"""
+    RelationType
+
+Possible relation types used in mapping function such as [`get_map`](@ref), [`get_reverse_map`](@ref), etc.
+
+The current possible relation types are:
+```
+RELATION_1_TO_1
+RELATION_1_TO_N
+RELATION_FROM
+RELATION_TO
+RELATION_TURBINE_TO
+RELATION_SPILL_TO
+RELATION_INFILTRATE_TO
+RELATION_STORED_ENERGY_DONWSTREAM
+RELATION_BACKED
+```
+"""
 @enum RelationType begin
     RELATION_1_TO_1
     RELATION_1_TO_N
@@ -58,22 +76,44 @@ function get_vector end
 """
     max_elements(data::AbstractData, collection::String)
 
-Returns a Int32 with the maximum number of elements for a given `collection`.
+Returns an `Int32` with the maximum number of elements for a given `collection`.
 
 Example:
 ```
-max_elements(data, "PSRThermalPlant")
+PSRI.max_elements(data, "PSRThermalPlant")
 ```
 """
 function max_elements end
 
 """
-    get_map
+    get_map(
+        data::AbstractData,
+        lst_from::String,
+        lst_to::String;
+        allow_empty::Bool = true,
+        relation_type::RelationType = RELATION_1_TO_1, # type of the direct relation
+    )
+
+Returns a `Vector{Int32}` with the map between collections given a certain [`RelationType`](@ref).
+
+Examples:
+```
+PSRI.get_map(data, "PSRBattery", "PSRSystem")
+PSRI.get_map(data, "PSRMaintenanceData", "PSRThermalPlant")
+
+PSRI.get_map(data, "PSRHydroPlant", "PSRHydroPlant", relation_type = PSRI.RELATION_TURBINE_TO)
+PSRI.get_map(data, "PSRHydroPlant", "PSRHydroPlant", relation_type = PSRI.RELATION_SPILL_TO)
+PSRI.get_map(data, "PSRHydroPlant", "PSRHydroPlant", relation_type = PSRI.RELATION_INFILTRATE_TO)
+PSRI.get_map(data, "PSRHydroPlant", "PSRHydroPlant", relation_type = PSRI.RELATION_STORED_ENERGY_DONWSTREAM)
+
+@test PSRI.get_map(data, "PSRInterconnection", "PSRSystem", relation_type = PSRI.RELATION_FROM)
+@test PSRI.get_map(data, "PSRInterconnection", "PSRSystem", relation_type = PSRI.RELATION_TO)
+```
 """
 function get_map end
 
 """
-    get_map
+    get_vector_map
 """
 function get_vector_map end
 
@@ -95,11 +135,11 @@ function get_parms end
 """
     get_code(data::AbstractData, collection::String)
 
-Returns a Vector{Int32} containing the code of each element in `collection`.
+Returns a `Vector{Int32}` containing the code of each element in `collection`.
 
 Example:
 ```
-get_code(data, "PSRThermalPlant")
+PSRI.get_code(data, "PSRThermalPlant")
 ```
 """
 function get_code end
@@ -107,11 +147,12 @@ function get_code end
 """
     get_name(data::AbstractData, collection::String)
 
-Returns a Vector{String} containing the name of each element in `collection`.
+Returns a `Vector{String}` containing the name of each element in `collection`.
 
 Example:
 ```
-get_name(data, "PSRThermalPlant")
+PSRI.get_name(data, "PSRThermalPlant")
+PSRI.get_name(data, "PSRGaugingStation")
 ```
 """
 function get_name end

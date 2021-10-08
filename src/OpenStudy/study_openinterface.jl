@@ -305,14 +305,13 @@ function get_code(
     data::Data,
     col::String
 )
-    get_parms(data, col, "code", Int32)
+    return get_parms(data, col, "code", Int32)
 end
 function get_name(
     data::Data,
-    col::String;
-    strlen = 12
+    col::String
 )
-    get_parms(data, col, "name", String)
+    return get_parms(data, col, "name", String)
 end
 
 function description(data::Data)
