@@ -57,7 +57,6 @@ end
 """
 abstract type AbstractData end
 
-
 """
     AbstractStudyInterface
 """
@@ -123,7 +122,7 @@ function get_vector_map end
 function get_reverse_map end
 
 """
-    get_reverse_map
+    get_reverse_vector_map
 """
 function get_reverse_vector_map end
 
@@ -183,27 +182,62 @@ function update_vectors! end
 function description end
 
 """
-    total_stages
+    total_stages(data::AbstractData)
+
+Returns the total number of stages of the case.
+
+Example:
+```
+PSRI.total_stages(data)
+```
 """
 function total_stages end
 
 """
-    total_scenarios
+    total_scenarios(data::AbstractData)
+
+Returns the total number of scenarios of the case.
+
+Example:
+```
+PSRI.total_scenarios(data)
+```
 """
 function total_scenarios end
 
 """
-    total_blocks
+    total_blocks(data::AbstractData)
+
+Returns the total number of blocks of the case.
+
+Example:
+```
+PSRI.total_blocks(data)
+```
 """
 function total_blocks end
 
 """
-    total_openings
+    total_openings(data::AbstractData)
+
+Returns the total number of openings of the case.
+
+Example:
+```
+PSRI.total_openings(data)
+```
 """
 function total_openings end
 
 """
-    total_stages_per_year
+    total_stages_per_year(data::AbstractData)
+
+Returns the total number of stages per year of the case.
+
+Example:
+```
+PSRI.total_stages_per_year(data)
+```
 """
 function total_stages_per_year end
 
