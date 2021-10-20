@@ -362,6 +362,56 @@ end
 
 # TODO CEsp: many time does nto have the second dim
 
+function get_nonempty_vector(
+    data::Data,
+    col::String,
+    name::String,
+)
+
+    n = max_elements(data, col)
+    if n == 0
+        return Bool[]
+    end
+
+    out = zeros(Bool, n)
+
+    collection_struct = data.data_struct[col]
+
+    # check attribute existence
+    if !haskey(collection_struct, name)
+        error("Attribute $name not found in collection $col")
+    end
+    attr_data = collection_struct[name]
+
+    if !attr_data.is_vector
+        error("Attribute $name of collection $col is a of type parm. This method is not valid")
+    end
+
+    dim = attr_data.dim
+
+    query_name = if dim == 0
+        name
+    elseif dim == 1
+        name * "(1)"
+    elseif dim == 2
+        name * "(1,1)"
+    end
+
+    raw = _raw(data)
+
+    for (idx, el) in enumerate(raw[col])
+        if haskey(el, query_name)
+            len = length(el[query_name])
+            if (len == 1 && el[query_name][] !== nothing) || len > 1
+                out[idx] = true
+            end
+        end
+    end
+
+    return out
+end
+
+
 function mapped_vector(
     data::Data,
     col::String,
@@ -432,9 +482,9 @@ function mapped_vector(
     end
 
     out = T[_default_value(T) for _ in 1:n] #zeros(T, n)
-    
+
     date_cache = get!(data.map_cache_data_idx, col, Dict{String, Vector{Int32}}())
-    
+
     need_up_dates = false
     if isempty(index)
         error("Vector Attribute is not indexed, cannot be mapped")
