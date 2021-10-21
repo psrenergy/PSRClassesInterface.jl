@@ -85,7 +85,9 @@ number_blocks = PSRI.total_blocks(data)
 #       -------------------------------------------------------------
 for stage = 1:5, block = 1:number_blocks 
     println(string("Configuracao: ", stage, " bloco: ", block))
-    
+    println("Stage duration: ", PSRI.stage_duration(data, stage))
+    println("Block duration: ", PSRI.block_duration(data, stage, block))
+
     #       Seta o estagio
     #       --------------
     PSRI.go_to_stage(data, stage)
@@ -113,9 +115,12 @@ for stage = 1:5, block = 1:number_blocks
             sys_names[ipthermsys[iterm]], " ",
             thermFut[iterm], " ",
             thermCap[iterm], " ",
-            #   thermCost[iterm], " ",
-                thermCVaria[iterm], " ",
+            # thermCost[iterm], " ",
+            thermCVaria[iterm], " ",
             # thermCTransp[iterm]
             ))
     end
 end
+
+@test PSRI.get_nonempty_vector(data, "PSRThermalPlant", "ChroGerMin") == Bool[0, 0, 0]
+@test PSRI.get_nonempty_vector(data, "PSRThermalPlant", "SpinningReserve") == Bool[0, 0, 0]

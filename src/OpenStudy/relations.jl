@@ -120,7 +120,7 @@ function validate_relation(lst_from::String, lst_to::String, type::RelationType)
 end
 
 function get_reverse_map(
-    data::Data,
+    data::AbstractData,
     lst_from::String,
     lst_to::String;
     allow_empty::Bool = true,
@@ -171,7 +171,7 @@ function get_reverse_map(
 end
 
 function get_reverse_vector_map(
-    data::Data,
+    data::AbstractData,
     lst_from::String,
     lst_to::String;
     allow_empty::Bool = true,

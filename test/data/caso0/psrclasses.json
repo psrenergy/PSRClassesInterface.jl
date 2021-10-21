@@ -47,6 +47,7 @@
          "FlagUseHotStart":0,
          "InitialStageFutureCost":0,
          "FinalStageFutureCost":0,
+         "Duracao(1)": 100.0,
          "MinSpillageUnit":null,
          "SubHourlyDiscretization":null,
          "DeficitSegment":[
@@ -3251,7 +3252,7 @@
             
          ],
          "SpinningReserve(1)":[
-            
+            null
          ],
          "DataMaxSecondaryReserve":[
             

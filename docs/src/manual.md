@@ -21,6 +21,9 @@ PSRClassesInterface.initialize_study
 PSRClassesInterface.get_vector
 PSRClassesInterface.max_elements
 PSRClassesInterface.get_map
+PSRClassesInterface.get_vector_map
+PSRClassesInterface.get_reverse_map
+PSRClassesInterface.get_reverse_vector_map
 PSRClassesInterface.get_parms
 PSRClassesInterface.get_code
 PSRClassesInterface.get_name
@@ -34,7 +37,6 @@ PSRClassesInterface.total_scenarios
 PSRClassesInterface.total_blocks
 PSRClassesInterface.total_openings
 PSRClassesInterface.total_stages_per_year
-PSRClassesInterface.get_complex_map
 PSRClassesInterface.stage_duration
 PSRClassesInterface.block_duration
 PSRClassesInterface.block_from_stage_hour
