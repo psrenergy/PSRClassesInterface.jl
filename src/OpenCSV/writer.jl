@@ -166,7 +166,7 @@ function PSRI.open(
 end
 
 # TODO check next entry is in the correct order
-@docs"""
+@doc """
 
     write_registry(
         writer::Writer,
@@ -216,7 +216,7 @@ function PSRI.write_registry(
     return nothing
 end
 
-@docs"""
+@doc """
 
     close(writer::Writer)
 

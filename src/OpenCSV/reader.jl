@@ -166,7 +166,7 @@ function Base.getindex(opencsvreader::Reader, args...)
     return Base.getindex(opencsvreader.data, args...)
 end
 
-@docs"""
+@doc """
 
     next_registry(ocr::Reader)
 
@@ -208,7 +208,7 @@ function PSRI.agent_names(opencsvreader::Reader)
     return opencsvreader.agent_names
 end
 
-@docs"""
+@doc """
 
     close(opencsvreader::Reader)
 
