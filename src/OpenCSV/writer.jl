@@ -26,7 +26,7 @@ function _build_agents_str(agents::Vector{String})
     return agents_str
 end
 
-@doc """
+"""
     open(
         ::Type{Writer},
         path::String;
@@ -166,7 +166,7 @@ function PSRI.open(
 end
 
 # TODO check next entry is in the correct order
-@doc """
+"""
 
     write_registry(
         writer::Writer,
@@ -216,7 +216,7 @@ function PSRI.write_registry(
     return nothing
 end
 
-@doc """
+"""
 
     close(writer::Writer)
 

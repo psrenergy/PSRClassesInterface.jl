@@ -73,7 +73,7 @@ function _read_last_line(file)
         Base.read(io, String)
     end
 end
-@doc """
+"""
     function PSRI.open(
         reader::Type{Reader},
         path::String;
@@ -166,7 +166,7 @@ function Base.getindex(opencsvreader::Reader, args...)
     return Base.getindex(opencsvreader.data, args...)
 end
 
-@doc """
+"""
 
     next_registry(ocr::Reader)
 
@@ -208,7 +208,7 @@ function PSRI.agent_names(opencsvreader::Reader)
     return opencsvreader.agent_names
 end
 
-@doc """
+"""
 
     close(opencsvreader::Reader)
 
