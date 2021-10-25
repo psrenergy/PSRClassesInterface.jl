@@ -26,6 +26,33 @@ function _build_agents_str(agents::Vector{String})
     return agents_str
 end
 
+@doc """
+    open(
+        ::Type{Writer},
+        path::String;
+        # mandatory
+        blocks::Integer = 0,
+        scenarios::Integer = 0,
+        stages::Integer = 0,
+        agents::Vector{String} = String[],
+        unit::Union{Nothing, String} = nothing,
+        # optional
+        is_hourly::Bool = false,
+        name_length::Integer = 24,
+        block_type::Integer = 1,
+        scenarios_type::Integer = 1,
+        stage_type::PSRI.StageType = PSRI.STAGE_MONTH, # important for header
+        initial_stage::Integer = 1, #month or week
+        initial_year::Integer = 1900,
+        sequential_model::Bool = true,
+        # addtional
+        allow_unsafe_name_length::Bool = false,
+    )
+
+Method of `open` function for opening CSV file and registering study results.
+If specified file doesn't exist, the method will create it, otherwise, the previous one will be overwritten.
+Returns updated `Writer` instance.
+"""
 function PSRI.open(
     ::Type{Writer},
     path::String;
@@ -139,6 +166,19 @@ function PSRI.open(
 end
 
 # TODO check next entry is in the correct order
+@docs"""
+
+    write_registry(
+        writer::Writer,
+        data::Vector{Float64},
+        stage::Integer,
+        scenario::Integer = 1,
+        block::Integer = 1,
+    )
+
+Iterative method for writing data row into opened CSV file through `Writer` instance.
+Returns updated `Writer`.
+"""
 function PSRI.write_registry(
     writer::Writer,
     data::Vector{Float64},
@@ -176,6 +216,12 @@ function PSRI.write_registry(
     return nothing
 end
 
+@docs"""
+
+    close(writer::Writer)
+
+Closes CSV file from `Writer` instance.
+"""
 function PSRI.close(writer::Writer)
     Base.close(writer.io)
     writer.isopen = false

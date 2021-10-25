@@ -1,5 +1,6 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+PSRClassesInterface = "1eab49e5-27d8-4905-b9f6-327b6ea666c4"
 
 [compat]
 Documenter = "0.27"

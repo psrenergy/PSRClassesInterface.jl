@@ -73,7 +73,21 @@ function _read_last_line(file)
         Base.read(io, String)
     end
 end
+@doc """
+    function PSRI.open(
+        reader::Type{Reader},
+        path::String;
+        is_hourly::Bool = false,
+        stage_type::PSRI.StageType = PSRI.STAGE_MONTH, # TODO remove
+        header::Vector{String} = String[],
+        use_header::Bool = false, # default to true
+        first_stage::Dates.Date = Dates.Date(1900, 1, 1),
+        verbose_header = false,
+    )
 
+Method of `open` function for opening CSV file and reading study result.
+Returns updated `Reader` instance.
+"""
 function PSRI.open(
     reader::Type{Reader},
     path::String;
@@ -152,6 +166,13 @@ function Base.getindex(opencsvreader::Reader, args...)
     return Base.getindex(opencsvreader.data, args...)
 end
 
+@docs"""
+
+    next_registry(ocr::Reader)
+
+Iterative method for reading data row into opened CSV file through `Reader` instance.
+Returns updated `Reader`.
+"""
 function PSRI.next_registry(ocr::Reader)
     next = iterate(ocr.rows_iterator, ocr.current_row_state)
     if next === nothing
@@ -187,6 +208,12 @@ function PSRI.agent_names(opencsvreader::Reader)
     return opencsvreader.agent_names
 end
 
+@docs"""
+
+    close(opencsvreader::Reader)
+
+Closes CSV file from `Reader` instance.
+"""
 function PSRI.close(opencsvreader::Reader)
     return nothing
 end
