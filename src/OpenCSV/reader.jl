@@ -91,10 +91,10 @@ Returns updated `Reader` instance. Arguments:
 * `path`: path to CSV file.
 * `is_hourly`: if data to be read is hourly, other than blockly.
 * `stage_type`: how the data is temporally staged, defaults to monthly stages.
-* `header`:
-* `use_header`:
+* `header`: if file has a header with metadata.
+* `use_header`: if data from header should be retrieved.
 * `first_stage`: stage at which start reading.
-* `verbose_header`:
+* `verbose_header`: if data from header should be displayed during execution.
 """
 function PSRI.open(
     reader::Type{Reader},
