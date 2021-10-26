@@ -41,11 +41,11 @@ end
         name_length::Integer = 24,
         block_type::Integer = 1,
         scenarios_type::Integer = 1,
-        stage_type::PSRI.StageType = PSRI.STAGE_MONTH, # important for header
-        initial_stage::Integer = 1, #month or week
+        stage_type::PSRI.StageType = PSRI.STAGE_MONTH,
+        initial_stage::Integer = 1,
         initial_year::Integer = 1900,
         sequential_model::Bool = true,
-        # addtional
+        # additional
         allow_unsafe_name_length::Bool = false,
     )
 
@@ -176,8 +176,13 @@ end
         block::Integer = 1,
     )
 
-Iterative method for writing data row into opened CSV file through `Writer` instance.
-Returns updated `Writer`.
+Method for writing data row into opened CSV file through `Writer` instance.
+Returns updated `Writer`. Arguments:
+* `writer`: `Writer` instance to be used for accessing file.
+* `data`: elements data to be written in the row.
+* `stage`: stage at row to be written.
+* `scenario`: at which scenario the row belongs to.
+* `block`: at which block the row belongs to.
 """
 function PSRI.write_registry(
     writer::Writer,
