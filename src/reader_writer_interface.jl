@@ -21,7 +21,30 @@ function file_to_array end
 function file_to_array_and_header end
 
 """
-    open
+    function PSRI.open(
+        reader::Type{Reader},
+        path::String;
+        kwargs...
+    )
+
+Method of `open` function for opening file and reading study result.
+Returns updated `Reader` instance. Arguments:
+* `reader`: `Reader` instance to be used for opening file.
+* `path`: path to file.
+
+---------
+
+    open(
+            ::Type{Writer},
+            path::String;
+            kwargs...
+        )
+
+Method of `open` function for opening file and registering study results.
+If specified file doesn't exist, the method will create it, otherwise, the previous one will be overwritten.
+Returns updated `Writer` instance. Arguments:
+* `writer`: `Writer` instance to be used for opening file.
+* `path`: path to file.
 """
 function open end
 
@@ -106,12 +129,25 @@ function agent_names end
 function goto end
 
 """
-    next_registry
+
+    next_registry(reader::Reader)
+
+Method for reading data row into opened file through `Reader` instance.
+`Reader` from input is updated inplace.
 """
 function next_registry end
 
 """
-    close
+
+    close(reader::Reader)
+
+Closes file from `Reader` instance.
+
+-------
+
+    close(writer::Writer)
+
+Closes CSV file from `Writer` instance.
 """
 function close end
 
@@ -133,7 +169,22 @@ function add_reader! end
 # Write methods
 
 """
-    write_registry
+
+    write_registry(
+        writer::Writer,
+        data::Vector{Float64},
+        stage::Integer,
+        scenario::Integer = 1,
+        block::Integer = 1,
+    )
+
+Method for writing data row into opened file through `Writer` instance.
+Returns updated `Writer`. Arguments:
+* `writer`: `Writer` instance to be used for accessing file.
+* `data`: elements data to be written in the row.
+* `stage`: stage at row to be written.
+* `scenario`: at which scenario the row belongs to.
+* `block`: at which block the row belongs to.
 """
 function write_registry end
 
