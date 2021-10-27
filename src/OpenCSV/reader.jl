@@ -174,13 +174,6 @@ function Base.getindex(opencsvreader::Reader, args...)
     return Base.getindex(opencsvreader.data, args...)
 end
 
-"""
-
-    next_registry(ocr::Reader)
-
-Method for reading data row into opened CSV file through `Reader` instance.
-`Reader` from input is updated inplace.
-"""
 function PSRI.next_registry(ocr::Reader)
     next = iterate(ocr.rows_iterator, ocr.current_row_state)
     if next === nothing
@@ -216,12 +209,6 @@ function PSRI.agent_names(opencsvreader::Reader)
     return opencsvreader.agent_names
 end
 
-"""
-
-    close(opencsvreader::Reader)
-
-Closes CSV file from `Reader` instance.
-"""
 function PSRI.close(opencsvreader::Reader)
     return nothing
 end

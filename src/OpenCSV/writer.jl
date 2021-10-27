@@ -181,24 +181,7 @@ function PSRI.open(
 end
 
 # TODO check next entry is in the correct order
-"""
 
-    write_registry(
-        writer::Writer,
-        data::Vector{Float64},
-        stage::Integer,
-        scenario::Integer = 1,
-        block::Integer = 1,
-    )
-
-Method for writing data row into opened CSV file through `Writer` instance.
-Returns updated `Writer`. Arguments:
-* `writer`: `Writer` instance to be used for accessing file.
-* `data`: elements data to be written in the row.
-* `stage`: stage at row to be written.
-* `scenario`: at which scenario the row belongs to.
-* `block`: at which block the row belongs to.
-"""
 function PSRI.write_registry(
     writer::Writer,
     data::Vector{Float64},
