@@ -97,7 +97,7 @@ Returns updated `Reader` instance. Arguments:
 * `verbose_header`: if data from header should be displayed during execution.
 """
 function PSRI.open(
-    reader::Type{Reader},
+    ::Type{Reader},
     path::String;
     is_hourly::Bool = false,
     stage_type::PSRI.StageType = PSRI.STAGE_MONTH, # TODO remove

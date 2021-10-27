@@ -53,7 +53,7 @@ function PSRI.open(
     ::Type{Reader},
     path::String;
     is_hourly::Union{Bool, Nothing} = nothing, 
-
+    stage_type::Union{PSRI.StageType, Nothing} = nothing,
     header::Vector{String} = String[],
     use_header::Bool = true,
     allow_empty::Bool = false,
@@ -61,10 +61,9 @@ function PSRI.open(
     verbose_header = false,
 )
 
-
     # TODO
-    if is_hourly !== nothing
-        error("is_hourly not supported")
+    if !isnothing(is_hourly) || !isnothing(stage_type)
+        error("is_hourly and stage_type are not supported by OpenBinary.")
     end
 
     PATH_HDR = path * ".hdr"
