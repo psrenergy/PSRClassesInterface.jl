@@ -130,7 +130,7 @@ function goto end
 
 """
 
-    next_registry(ocr::Reader)
+    next_registry(reader::Reader)
 
 Method for reading data row into opened file through `Reader` instance.
 `Reader` from input is updated inplace.
@@ -139,7 +139,7 @@ function next_registry end
 
 """
 
-    close(opencsvreader::Reader)
+    close(reader::Reader)
 
 Closes file from `Reader` instance.
 
