@@ -228,7 +228,7 @@ function is_equal(
 
     @assert str == "" str
 
-    for est = 1:max_stages(ior1), scen = 1:max_scenarios(ior1), blk = 1:max_blocks(ior1, est)
+    for est = 1:max_stages(ior1), scen = 1:max_scenarios(ior1), blk = 1:max_blocks(ior1)
         @assert ior1[:] == ior2[:] "Different values on stage $est, scenario: $scen, block: $blk"
         next_registry(ior1)
         next_registry(ior2)
