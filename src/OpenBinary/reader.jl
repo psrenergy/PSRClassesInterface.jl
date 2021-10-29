@@ -160,7 +160,7 @@ function PSRI.open(
     end
     agent_names = String[]
     agent_name_buffer = Vector{Cchar}(undef, name_length)
-    for i in 1:total_agents
+    for _ in 1:total_agents
         skip(ioh, 4)
         skip(ioh, 4)
         read!(ioh, agent_name_buffer)

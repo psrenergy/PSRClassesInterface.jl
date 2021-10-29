@@ -188,3 +188,37 @@ function file_to_array_and_header(
     close(io)
     return out, names
 end
+
+function is_equal(
+    ior1::T1,
+    ior2::T2;
+    atol::Real = 1e-5,
+    rtol::Real = 1e-4
+) where {T1 <: AbstractReader, T2 <: AbstractReader}
+    # Assert have the same stage_type and is_hourly
+    @assert is_hourly(ior1) == is_hourly(ior2) "erro"
+    @assert stage_type(ior1) == stage_type(ior2) "erro"
+
+    # Assert same initial_year and initial_stage
+    @assert initial_stage(ior1) == initial_stage(ior2) "erro"
+    @assert initial_year(ior1) == initial_year(ior2) "erro"
+
+    # Assert same unit
+    @assert data_unit(ior1) == data_unit(ior2) "erro"
+    
+    # Assert dimensions
+    @assert max_stages(ior1) == max_stages(ior2) "erro"
+    @assert max_scenarios(ior1) == max_scenarios(ior2) "erro"
+    @assert max_blocks(ior1) == max_blocks(ior2) "erro"
+
+    # Assert the agents are the same in both files
+    @assert agent_names(ior1) == agent_names(ior2)
+
+    for estagio = 1:max_stages(ior1), _ = 1:max_scenarios(ior1), _ = 1:max_blocks(ior1)
+        @assert ior1[:] == ior2[:] "erro"
+        next_registry(ior1)
+        next_registry(ior2)
+    end
+
+    return true
+end
