@@ -1,3 +1,8 @@
+function rm_bin_hdr(file::String)
+    rm(file * ".bin")
+    rm(file * ".hdr")
+end
+
 function test_convert_twice()
 
     BLOCKS = 3
@@ -126,10 +131,8 @@ function test_convert_twice()
 
     PSRI.close(ior)
 
-    rm(FILE_PATH * ".bin")
-    rm(FILE_PATH * ".hdr")
-    rm(FILE_PATH_2 * ".bin")
-    rm(FILE_PATH_2 * ".hdr")
+    rm_bin_hdr(FILE_PATH)
+    rm_bin_hdr(FILE_PATH_2)
     try
         rm(FILE_PATH * ".csv")
     catch
