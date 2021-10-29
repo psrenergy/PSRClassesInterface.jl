@@ -195,27 +195,41 @@ function is_equal(
     atol::Real = 1e-5,
     rtol::Real = 1e-4
 ) where {T1 <: AbstractReader, T2 <: AbstractReader}
+
+    str = ""
     # Assert have the same stage_type and is_hourly
-    @assert is_hourly(ior1) == is_hourly(ior2) "erro"
-    @assert stage_type(ior1) == stage_type(ior2) "erro"
+    str *= is_hourly(ior1) == is_hourly(ior2) ? "" : 
+    "is_hourly assertion error, file 1: $(is_hourly(ior1)), file 2: $(is_hourly(ior2))\n"
+
+    str *= stage_type(ior1) == stage_type(ior2) ? "" : 
+    "stage_type assertion error, file 1: $(stage_type(ior1)), file 2: $(stage_type(ior2))\n"
 
     # Assert same initial_year and initial_stage
-    @assert initial_stage(ior1) == initial_stage(ior2) "erro"
-    @assert initial_year(ior1) == initial_year(ior2) "erro"
+    str *= initial_stage(ior1) == initial_stage(ior2) ? "" : 
+    "initial_stage assertion error, file 1: $(initial_stage(ior1)), file 2: $(initial_stage(ior2))\n"
+    str *= initial_year(ior1) == initial_year(ior2) ? "" : 
+    "initial_year assertion error, file 1: $(initial_year(ior1)), file 2: $(initial_year(ior2))\n"
 
     # Assert same unit
-    @assert data_unit(ior1) == data_unit(ior2) "erro"
+    str *= data_unit(ior1) == data_unit(ior2) ? "" : 
+    "data_unit assertion error, file 1: $(data_unit(ior1)), file 2: $(data_unit(ior2))\n"
     
     # Assert dimensions
-    @assert max_stages(ior1) == max_stages(ior2) "erro"
-    @assert max_scenarios(ior1) == max_scenarios(ior2) "erro"
-    @assert max_blocks(ior1) == max_blocks(ior2) "erro"
+    str *= max_stages(ior1) == max_stages(ior2) ? "" : 
+    "max_stages assertion error, file 1: $(max_stages(ior1)), file 2: $(max_stages(ior2))\n"
+    str *= max_scenarios(ior1) == max_scenarios(ior2) ? "" : 
+    "max_scenarios assertion error, file 1: $(max_scenarios(ior1)), file 2: $(max_scenarios(ior2))\n"
+    str *= max_blocks(ior1) == max_blocks(ior2) ? "" : 
+    "max_blocks assertion error, file 1: $(max_blocks(ior1)), file 2: $(max_blocks(ior2))\n"
 
     # Assert the agents are the same in both files
-    @assert agent_names(ior1) == agent_names(ior2)
+    str *= agent_names(ior1) == agent_names(ior2) ? "" : 
+    "agent_names assertion error, file 1: $(agent_names(ior1)), file 2: $(agent_names(ior2))\n"
 
-    for estagio = 1:max_stages(ior1), _ = 1:max_scenarios(ior1), _ = 1:max_blocks(ior1)
-        @assert ior1[:] == ior2[:] "erro"
+    @assert str == "" str
+
+    for est = 1:max_stages(ior1), scen = 1:max_scenarios(ior1), blk = 1:max_blocks(ior1, est)
+        @assert ior1[:] == ior2[:] "Different values on stage $est, scenario: $scen, block: $blk"
         next_registry(ior1)
         next_registry(ior2)
     end
