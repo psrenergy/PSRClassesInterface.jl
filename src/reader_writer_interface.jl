@@ -21,30 +21,35 @@ function file_to_array end
 function file_to_array_and_header end
 
 """
-    function PSRI.open(
-        reader::Type{Reader},
-        path::String;
-        kwargs...
-    )
+    PSRI.open(reader::Type{<:AbstractReader}, path::String; kwargs...)
 
 Method of `open` function for opening file and reading study result.
-Returns updated `Reader` instance. Arguments:
-* `reader`: `Reader` instance to be used for opening file.
+Returns updated `AbstractReader` instance. Arguments:
+* `reader`: `AbstractReader` instance to be used for opening file.
 * `path`: path to file.
+
+kwargs:
+* `reader`: `AbstractReader` instance to be used for opening file.
+* `path`: path to file.
+* `is_hourly`: if data to be read is hourly, other than blockly.
+* `stage_type`: how the data is temporally staged, defaults to monthly stages.
+* `header`: if file has a header with metadata.
+* `use_header`: if data from header should be retrieved.
+* `first_stage`: stage at which start reading.
+* `verbose_header`: if data from header should be displayed during execution.
 
 ---------
 
-    open(
-            ::Type{Writer},
-            path::String;
-            kwargs...
-        )
+    open(::Type{Writer}, path::String; kwargs...)
 
 Method of `open` function for opening file and registering study results.
 If specified file doesn't exist, the method will create it, otherwise, the previous one will be overwritten.
 Returns updated `Writer` instance. Arguments:
 * `writer`: `Writer` instance to be used for opening file.
 * `path`: path to file.
+
+Examples: 
+ * [Opening CSV file, registering study data, and then closing it](@ref)
 """
 function open end
 
