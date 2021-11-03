@@ -226,10 +226,12 @@ function is_equal(
     str *= agent_names(ior1) == agent_names(ior2) ? "" : 
     "agent_names assertion error, file 1: $(agent_names(ior1)), file 2: $(agent_names(ior2))\n"
 
-    @assert str == "" str
+    !isempty(str) && error("The files are not equal:\n"*str)
 
-    for est = 1:max_stages(ior1), scen = 1:max_scenarios(ior1), blk = 1:max_blocks(ior1)
-        @assert ior1[:] == ior2[:] "Different values on stage $est, scenario: $scen, block: $blk"
+    for est = 1:max_stages(ior1), scen = 1:max_scenarios(ior1), blk = 1:max_blocks_current(ior1)
+        if ior1[:] != ior2[:] 
+            error("Different values on stage $est, scenario: $scen, block: $blk")
+        end
         next_registry(ior1)
         next_registry(ior2)
     end
