@@ -53,7 +53,7 @@ function PSRI.open(
     ::Type{Reader},
     path::String;
     is_hourly::Union{Bool, Nothing} = nothing, 
-
+    stage_type::PSRI.StageType = PSRI.STAGE_MONTH, # TODO remove
     header::Vector{String} = String[],
     use_header::Bool = true,
     allow_empty::Bool = false,
@@ -63,8 +63,8 @@ function PSRI.open(
 
 
     # TODO
-    if is_hourly !== nothing
-        error("is_hourly not supported")
+    if is_hourly !== nothing || stage_type !== nothing
+        error("is_hourly and stage_type arguments not supported")
     end
 
     PATH_HDR = path * ".hdr"
