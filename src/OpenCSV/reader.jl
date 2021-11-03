@@ -108,7 +108,7 @@ function PSRI.open(
     verbose_header = false,
 )
     # TODO
-    if verbose_header || !isempty(header) || use_header || allow_empty !== nothing
+    if verbose_header || !isempty(header) || use_header || allow_empty
         error("verbose_header, header, use_header and allow_empty arguments not supported by OpenCSV")
     end
     if first_stage != Dates.Date(1900, 1, 1)
