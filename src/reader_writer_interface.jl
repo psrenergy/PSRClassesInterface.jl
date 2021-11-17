@@ -11,7 +11,9 @@ abstract type AbstractWriter end
 # Reader functions
 
 """
-    file_to_array
+    file_to_array(::Type{T}, path::String) where T <: AbstractReader
+
+Write a file to an array
 """
 function file_to_array end
 
@@ -21,40 +23,82 @@ function file_to_array end
 function file_to_array_and_header end
 
 """
-    PSRI.open(reader::Type{<:AbstractReader}, path::String; kwargs...)
+    open(::Type{<:AbstractWriter}, path::String; kwargs...)
 
-Method of `open` function for opening file and reading study result.
-Returns updated `AbstractReader` instance. Arguments:
-* `reader`: `AbstractReader` instance to be used for opening file.
-* `path`: path to file.
-
-kwargs:
-* `reader`: `AbstractReader` instance to be used for opening file.
-* `path`: path to file.
-* `is_hourly`: if data to be read is hourly, other than blockly.
-* `stage_type`: how the data is temporally staged, defaults to monthly stages.
-* `header`: if file has a header with metadata.
-* `use_header`: if data from header should be retrieved.
-* `first_stage`: stage at which start reading.
-* `verbose_header`: if data from header should be displayed during execution.
-
----------
-
-    open(::Type{Writer}, path::String; kwargs...)
-
-Method of `open` function for opening file and registering study results.
+Method for opening file and registering time series data.
 If specified file doesn't exist, the method will create it, otherwise, the previous one will be overwritten.
-Returns updated `Writer` instance. Arguments:
-* `writer`: `Writer` instance to be used for opening file.
-* `path`: path to file.
+Returns updated `AbstractWriter` instance. 
+
+### Arguments:
+
+- `writer`: `AbstractWriter` instance to be used for opening file.
+
+- `path`: path to file.
+
+### Keyword arguments:
+
+- `blocks`: case's number of blocks.
+
+- `scenarios`: case's number of scenarios.
+
+- `stages`: case's number of stages.
+
+- `agents`: list of element names.
+
+- `unit`: dimension of the elements' data.
+
+- `is_hourly`: if data is hourly. If yes, block dimension will be ignored.
+
+- `name_length`: length of element names.
+
+- `block_type`: case's type of block.
+
+- `scenarios_type`: case's type of scenario.
+
+- `stage_type`: case's type of stage.
+
+- `initial_stage`: stage at which to start registry.
+
+- `initial_year`: year at which to start registry.
+
+- `allow_unsafe_name_length`: allow element names outside safety bounds.
 
 Examples: 
- * [Opening CSV file, registering study data, and then closing it](@ref)
+ * [Writing and reading a time series into a file](@ref)
+
+ ---------
+
+    PSRI.open(reader::Type{<:AbstractReader}, path::String; kwargs...)
+
+Method for opening file and reading time series data.
+Returns updated `AbstractReader` instance.
+
+### Arguments:
+
+- `reader::Type{<:AbstractReader}`: `AbstractReader` instance to be used for opening file.
+
+- `path::String`: path to file.
+
+### Keyword arguments:
+
+- `is_hourly::Bool`: if data to be read is hourly, other than blockly.
+
+- `stage_type::PSRI.StageType`: the [`PSRI.StageType`](@ref) of the data, defaults to `PSRI.STAGE_MONTH`.
+
+- `header::Vector{String}`: if file has a header with metadata.
+
+- `use_header::Bool`: if data from header should be retrieved.
+
+- `first_stage::Dates.Date`: stage at which start reading.
+
+- `verbose_header::Bool`: if data from header should be displayed during execution.
 """
 function open end
 
 """
     is_hourly
+
+1+1+1
 """
 function is_hourly end
 
@@ -194,6 +238,25 @@ Returns updated `Writer`. Arguments:
 function write_registry end
 
 """
-    array_to_file
+    PSRI.array_to_file
+
+    function array_to_file(
+        ::Type{T},
+        path::String,
+        data::Array{Float64,4}; #[a,b,s,t]
+        # mandatory
+        agents::Vector{String} = String[],
+        unit::Union{Nothing, String} = nothing,
+        # optional
+        # is_hourly::Bool = false,
+        name_length::Integer = 24,
+        block_type::Integer = 1,
+        scenarios_type::Integer = 1,
+        stage_type::StageType = STAGE_MONTH, # important for header
+        initial_stage::Integer = 1, #month or week
+        initial_year::Integer = 1900,
+        # addtional
+        allow_unsafe_name_length::Bool = false,
+    ) where T <: AbstractWriter
 """
 function array_to_file end
