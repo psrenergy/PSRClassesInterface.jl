@@ -105,7 +105,7 @@ function PSRI.open(
     use_header::Bool = false, # default to true
     allow_empty::Bool = false,
     first_stage::Dates.Date = Dates.Date(1900, 1, 1),
-    verbose_header = false,
+    verbose_header::Bool = false,
 )
     # TODO
     if verbose_header || !isempty(header) || use_header || allow_empty

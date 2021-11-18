@@ -80,9 +80,6 @@ function convert_file(
     return nothing
 end
 
-"""
-    array_to_file
-"""
 function array_to_file(
     ::Type{T},
     path::String,
@@ -147,9 +144,6 @@ function array_to_file(
     return nothing
 end
 
-"""
-    file_to_array
-"""
 function file_to_array(
     ::Type{T},
     path::String,
@@ -157,9 +151,6 @@ function file_to_array(
     return file_to_array_and_header(T, path)[1]
 end
 
-"""
-    file_to_array_and_header
-"""
 function file_to_array_and_header(
     ::Type{T},
     path::String,

@@ -28,7 +28,7 @@ end
 Possible relation types used in mapping function such as [`get_map`](@ref), [`get_reverse_map`](@ref), etc.
 
 The current possible relation types are:
-```
+```julia
 RELATION_1_TO_1
 RELATION_1_TO_N
 RELATION_FROM
@@ -78,7 +78,7 @@ function get_vector end
 Returns an `Int32` with the maximum number of elements for a given `collection`.
 
 Example:
-```
+```julia
 PSRI.max_elements(data, "PSRThermalPlant")
 ```
 """
@@ -96,7 +96,7 @@ function max_elements end
 Returns a `Vector{Int32}` with the map between collections given a certain [`RelationType`](@ref).
 
 Examples:
-```
+```julia
 PSRI.get_map(data, "PSRBattery", "PSRSystem")
 PSRI.get_map(data, "PSRMaintenanceData", "PSRThermalPlant")
 
@@ -137,7 +137,7 @@ function get_parms end
 Returns a `Vector{Int32}` containing the code of each element in `collection`.
 
 Example:
-```
+```julia
 PSRI.get_code(data, "PSRThermalPlant")
 ```
 """
@@ -149,7 +149,7 @@ function get_code end
 Returns a `Vector{String}` containing the name of each element in `collection`.
 
 Example:
-```
+```julia
 PSRI.get_name(data, "PSRThermalPlant")
 PSRI.get_name(data, "PSRGaugingStation")
 ```

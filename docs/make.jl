@@ -1,5 +1,6 @@
 using Documenter
 using PSRClassesInterface
+const PSRI = PSRClassesInterface
 
 makedocs(;
     modules=[PSRClassesInterface],
