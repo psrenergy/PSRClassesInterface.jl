@@ -9,8 +9,8 @@ include("reader.jl")
 include("writer.jl")
 
 function PSRI.convert_file(
-    from::Type{Reader},
-    to::Type{Writer},
+    ::Type{Reader},
+    ::Type{Writer},
     path_from::String;
     path_to::String = "",
 )

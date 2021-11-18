@@ -73,29 +73,7 @@ function _read_last_line(file)
         Base.read(io, String)
     end
 end
-"""
-    function PSRI.open(
-        reader::Type{Reader},
-        path::String;
-        is_hourly::Bool = false,
-        stage_type::PSRI.StageType = PSRI.STAGE_MONTH,
-        header::Vector{String} = String[],
-        use_header::Bool = false,
-        first_stage::Dates.Date = Dates.Date(1900, 1, 1),
-        verbose_header = false,
-    )
 
-Method of `open` function for opening CSV file and reading study result.
-Returns updated `Reader` instance. Arguments:
-* `reader`: `Reader` instance to be used for opening file.
-* `path`: path to CSV file.
-* `is_hourly`: if data to be read is hourly, other than blockly.
-* `stage_type`: how the data is temporally staged, defaults to monthly stages.
-* `header`: if file has a header with metadata.
-* `use_header`: if data from header should be retrieved.
-* `first_stage`: stage at which start reading.
-* `verbose_header`: if data from header should be displayed during execution.
-"""
 function PSRI.open(
     ::Type{Reader},
     path::String;

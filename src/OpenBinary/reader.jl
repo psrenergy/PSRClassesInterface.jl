@@ -340,7 +340,7 @@ PSRI.max_stages(graf::Reader) = graf.stage_total - graf.relative_stage_skip
 PSRI.max_scenarios(graf::Reader) = graf.scenario_total
 PSRI.max_blocks(graf::Reader) = graf.block_total
 PSRI.max_blocks_current(graf::Reader) = graf.block_total_current
-PSRI.max_blocks_stage(graf::Reader, t) = Int(graf.blocks_per_stage[t])
+PSRI.max_blocks_stage(graf::Reader, t::Integer) = Int(graf.blocks_per_stage[t])
 PSRI.max_agents(graf::Reader) = length(graf.index)
 
 PSRI.stage_type(graf::Reader) = graf.stage_type
@@ -397,7 +397,7 @@ function PSRI.goto(graf::Reader, t::Integer, s::Integer = 1, b::Integer = 1)
     return nothing
 end
 
-function _get_position(graf, t, s, b)
+function _get_position(graf, t::Integer, s::Integer, b::Integer)
     if PSRI.is_hourly(graf)
         # hours in weekly = 52 * 168 = 8736
         # hours in monthly = 8760
