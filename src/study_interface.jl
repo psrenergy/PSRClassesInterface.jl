@@ -233,18 +233,30 @@ function total_stages_per_year end
 function get_complex_map end
 
 """
-    stage_duration
+    stage_duration(data::AbstractData, t::Int = data.controller_stage)
+
+Returns the duration, in hours, of the stage `t`.
+
+---------
+
+    stage_duration(data::AbstractData, date::Dates.Date)
+
+Returns the duration, in hours, at the stage corresponding to `date`.
 """
 function stage_duration end
 
 """
     block_duration(data::AbstractData, date::Dates.Date, b::Int)
 
-Returns the duration, in hours, of the block `b` at stage `date`.
+Returns the duration, in hours, of the block `b` at the stage corresponding to `date`.
+
+---------
 
     block_duration(data::AbstractData, t::Int, b::Int)
 
 Returns the duration, in hours, of the block `b` at stage `t`.
+
+---------
 
     block_duration(data::AbstractData, b::Int)
 
