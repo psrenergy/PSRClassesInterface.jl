@@ -4,14 +4,8 @@
 
 In this example we will demonstrate how to save a time series into a csv or binary file. 
 The first step is to obtain the data that you wish to save
-```@setup rw_file
-using Test
-import PSRClassesInterface
-const PSRI = PSRClassesInterface
-```
 
-```@example rw_file 
-using Test
+```@example rw_file
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
 
@@ -22,6 +16,8 @@ n_stages = 4
 n_agents = 5
 
 time_series_data = rand(Float64, n_agents, n_blocks, n_scenarios, n_stages)
+
+nothing #hide
 ```
 
 There are two ways of saving the data to a file, save the data in the file directly or iteratively.
@@ -78,12 +74,14 @@ data_from_file = PSRI.file_to_array(
         FILE_PATH
     )
 
-
+@assert data_from_file_and_header == time_series_data
 
 data_from_file_and_header, header = PSRI.file_to_array_and_header(
         PSRI.OpenBinary.Reader, 
         FILE_PATH
     )
+
+@assert data_from_file_and_header == time_series_data
 ```
 
 To read the data iteractively use the function [`PSRI.open`](@ref) to create an [`PSRI.AbstractReader`](@ref) and
@@ -105,4 +103,48 @@ end
 PSRI.close(ior)
 
 rm(FILE_PATH; force = true)
+```
+
+## Reading basic thermal generator parameters
+
+In this example we will map parameters of thermal generators at each stage of the study to a struct.
+Suppose in this case that our thermal generators has the following attributes:
+```@example thermal_gens_pars
+Base.@kwdef mutable struct ThermalGenerators
+    names::Vector{String} = String[]
+    codes::Vector{Int32} = Int32[]
+    generation_capacities::Vector{Float64} = Float64[]
+    therm2sys::Vector{Int32} = Int32[]
+end
+```
+
+The first thing we must do is to initialize the reading procedure with the following commands:
+```@example thermal_gens_pars
+import PSRClassesInterface
+const PSRI = PSRClassesInterface
+
+PATH_CASE_EXAMPLE_THERMALS = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "caso0")
+
+data = PSRI.initialize_study(
+    PSRI.OpenInterface(),
+    data_path = PATH_CASE_EXAMPLE_THERMALS
+)
+```
+
+We can initialize the struct with the parameters of the first stage.
+```@example thermal_gens_pars
+therm_gen = ThermalGenerators()
+therm_gen.names = PSRI.get_name(data, "PSRThermalPlant")
+therm_gen.codes = PSRI.get_code(data, "PSRThermalPlant")
+therm_gen.generation_capacities = PSRI.mapped_vector(data, "PSRThermalPlant", "PotInst", Float64)
+therm_gen.therm2sys = PSRI.get_map(data, "PSRThermalPlant", "PSRSystem")
+```
+
+And afterwards we can update the parameters for each stage as follows.
+```@example thermal_gens_pars
+for stage in 1:PSRI.total_stages(data)
+    PSRI.go_to_stage(data, stage)
+    PSRI.update_vectors!(data)
+    println("Thermal generator 2 generation capacity at stage $stage $(therm_gen.generation_capacities[2])")
+end
 ```

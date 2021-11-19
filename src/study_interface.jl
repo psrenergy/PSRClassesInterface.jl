@@ -144,7 +144,9 @@ function get_name end
 function mapped_vector end
 
 """
-    go_to_stage
+    go_to_stage(data::AbstractData, stage::Integer)
+
+Goes to the `stage` in the `data` time controller. 
 """
 function go_to_stage end
 
@@ -154,7 +156,9 @@ function go_to_stage end
 function go_to_dimension end
 
 """
-    update_vectors!
+    update_vectors!(data::AbstractData)
+
+Update all mapped vectors according to the time controller inside `data`.
 """
 function update_vectors! end
 
