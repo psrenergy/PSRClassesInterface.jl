@@ -1,9 +1,6 @@
-"""
-    convert_file
-"""
 function convert_file(
-    from::Type{R},
-    to::Type{W},
+    ::Type{R},
+    ::Type{W},
     path_from::String;
     path_to::String = "",
 ) where {
@@ -42,37 +39,26 @@ function convert_file(
         stages = stages,
         agents = agents,
         unit = data_unit(reader),
-        # optional:
         is_hourly = is_hourly(reader),
         name_length = name_length,
-        # block_type = 
-        # scenarios_type = 
         stage_type = stage_type(reader),
         initial_stage = initial_stage(reader),
         initial_year = initial_year(reader),
     )
 
     cache = zeros(Float64, n_agents)
-    for t = 1:stages
-        for s = 1:scenarios
-            for b = 1:blocks_in_stage(reader, t)
-                # @test current_stage(ior) == estagio
-                # @test current_scenario(ior) == serie
-                # @test current_block(ior) == bloco
-
-                for agent in 1:n_agents
-                    cache[agent] = reader[agent]
-                end
-                write_registry(
-                    writer,
-                    cache,
-                    t,
-                    s,
-                    b
-                )
-                next_registry(reader)
-            end
+    for t = 1:stages, s = 1:scenarios, b = 1:blocks_in_stage(reader, t)
+        for agent in 1:n_agents
+            cache[agent] = reader[agent]
         end
+        write_registry(
+            writer,
+            cache,
+            t,
+            s,
+            b
+        )
+        next_registry(reader)
     end
     close(reader)
     close(writer)

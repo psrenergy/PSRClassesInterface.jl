@@ -26,48 +26,6 @@ function _build_agents_str(agents::Vector{String})
     return agents_str
 end
 
-"""
-    open(
-        ::Type{Writer},
-        path::String;
-        # mandatory
-        blocks::Integer = 0,
-        scenarios::Integer = 0,
-        stages::Integer = 0,
-        agents::Vector{String} = String[],
-        unit::Union{Nothing, String} = nothing,
-        # optional
-        is_hourly::Bool = false,
-        name_length::Integer = 24,
-        block_type::Integer = 1,
-        scenarios_type::Integer = 1,
-        stage_type::PSRI.StageType = PSRI.STAGE_MONTH,
-        initial_stage::Integer = 1,
-        initial_year::Integer = 1900,
-        sequential_model::Bool = true,
-        # additional
-        allow_unsafe_name_length::Bool = false,
-    )
-
-Method of `open` function for opening CSV file and registering study results.
-If specified file doesn't exist, the method will create it, otherwise, the previous one will be overwritten.
-Returns updated `Writer` instance. Arguments:
-* `writer`: `Writer` instance to be used for opening file.
-* `path`: path to CSV file.
-* `blocks`: case's number of blocks.
-* `scenarios`: case's number of scenarios.
-* `stages`: case's number of stages.
-* `agents`: list of element names.
-* `unit`: dimension of the elements' data.
-* `is_hourly`: if data is hourly. If yes, block dimension will be ignored.
-* `name_length`: length of element names.
-* `block_type`: case's type of block.
-* `scenarios_type`: case's type of scenario.
-* `stage_type`: case's type of stage.
-* `initial_stage`: stage at which to start registry.
-* `initial_year`: year at which to start registry.
-* `allow_unsafe_name_length`: allow element names outside safety bounds.
-"""
 function PSRI.open(
     ::Type{Writer},
     path::String;

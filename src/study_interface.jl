@@ -1,21 +1,3 @@
-@enum StageType begin
-    STAGE_WEEK=1
-    STAGE_MONTH=2
-    STAGE_DAY=5
-end
-
-# "PSR_STAGETYPE_UNKNOWN" => 0,
-# "PSR_STAGETYPE_WEEKLY" => 1,
-# "PSR_STAGETYPE_MONTHLY" => 2,
-# "PSR_STAGETYPE_QUARTERLY" => 3,
-# "PSR_STAGETYPE_HOURLY" => 4,
-# "PSR_STAGETYPE_DAILY" => 5,
-# "PSR_STAGETYPE_13MONTHLY" => 6,
-# "PSR_STAGETYPE_BIMONTHLY" => 7,
-# "PSR_STAGETYPE_TRIANNUALLY" => 8,
-# "PSR_STAGETYPE_SEMIANNUALLY" => 9,
-# "PSR_STAGETYPE_YEARLY" => 10,
-
 @enum BlockDurationMode begin
     FIXED_DURATION
     VARIABLE_DURATION
@@ -162,7 +144,9 @@ function get_name end
 function mapped_vector end
 
 """
-    go_to_stage
+    go_to_stage(data::AbstractData, stage::Integer)
+
+Goes to the `stage` in the `data` time controller. 
 """
 function go_to_stage end
 
@@ -172,7 +156,9 @@ function go_to_stage end
 function go_to_dimension end
 
 """
-    update_vectors!
+    update_vectors!(data::AbstractData)
+
+Update all mapped vectors according to the time controller inside `data`.
 """
 function update_vectors! end
 
@@ -247,18 +233,30 @@ function total_stages_per_year end
 function get_complex_map end
 
 """
-    stage_duration
+    stage_duration(data::AbstractData, t::Int = data.controller_stage)
+
+Returns the duration, in hours, of the stage `t`.
+
+---------
+
+    stage_duration(data::AbstractData, date::Dates.Date)
+
+Returns the duration, in hours, at the stage corresponding to `date`.
 """
 function stage_duration end
 
 """
     block_duration(data::AbstractData, date::Dates.Date, b::Int)
 
-Returns the duration, in hours, of the block `b` at stage `date`.
+Returns the duration, in hours, of the block `b` at the stage corresponding to `date`.
+
+---------
 
     block_duration(data::AbstractData, t::Int, b::Int)
 
 Returns the duration, in hours, of the block `b` at stage `t`.
+
+---------
 
     block_duration(data::AbstractData, b::Int)
 

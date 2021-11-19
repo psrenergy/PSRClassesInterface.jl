@@ -56,7 +56,7 @@ Base.@kwdef mutable struct Data{T} <: AbstractData
     # cache to only in data reference once (per element)
     map_cache_data_idx::Dict{String, Dict{String, Vector{Int32}}} =
         Dict{String, Dict{String, Vector{Int32}}}()
-    # vectors returned tu user
+    # vectors returned to user
     map_cache_real::Dict{String, Dict{String, VectorCache{Float64}}} =
         Dict{String, Dict{String, VectorCache{Float64}}}()
     map_cache_integer::Dict{String, Dict{String, VectorCache{Int32}}} =
@@ -599,7 +599,7 @@ end
 
 function update_vectors!(data::Data, filter::String)
 
-    # TODO improve this witha a DataCache
+    # TODO improve this with a DataCache
     _update_all_dates!(data)
 
     raw = _raw(data)
