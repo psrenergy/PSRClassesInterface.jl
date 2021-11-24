@@ -381,3 +381,31 @@ function test_is_equal()
 end
 
 test_is_equal()
+
+function test_non_unique_agents()
+    FILE_PATH = joinpath(".", "example_non_unique_agents")
+    @test_throws ErrorException iow = PSRI.open(
+        PSRI.OpenBinary.Writer,
+        FILE_PATH,
+        blocks = BLOCKS,
+        scenarios = SCENARIOS,
+        stages = STAGES,
+        agents = ["X", "Y", "X"],
+        unit = "MW",
+        # optional:
+        initial_stage = 1,
+        initial_year = 2006,
+    )
+    @test_throws ErrorException iow = PSRI.open(
+        PSRI.OpenCSV.Writer,
+        FILE_PATH,
+        blocks = BLOCKS,
+        scenarios = SCENARIOS,
+        stages = STAGES,
+        agents = ["X", "Y", "X"],
+        unit = "MW",
+        # optional:
+        initial_stage = 1,
+        initial_year = 2006,
+    )
+end

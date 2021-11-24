@@ -98,6 +98,9 @@ function PSRI.open(
     if isempty(agents)
         error("empty agents vector")
     end
+    if !allunique(agents)
+        error("agents must be unique.")
+    end
 
     dir = dirname(path)
     if !isdir(dir)
