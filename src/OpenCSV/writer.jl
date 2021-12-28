@@ -180,12 +180,6 @@ function PSRI.write_registry(
     return nothing
 end
 
-"""
-
-    close(writer::Writer)
-
-Closes CSV file from `Writer` instance.
-"""
 function PSRI.close(writer::Writer)
     Base.close(writer.io)
     writer.isopen = false

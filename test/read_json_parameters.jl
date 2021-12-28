@@ -47,9 +47,9 @@ thermCVaria = PSRI.mapped_vector(data, "PSRThermalPlant", "CEsp", Float64, "segm
 #       ------------------------------------------------------------
 PSRI.go_to_stage(data, 1)
 
-#       Posiciona os vetores com as dimens�es informadas
-#       Vetores que foram mapeados com a dimens�o "segment" ser�o posicionados em segment=1
-#       Vetores que foram mapeados com a dimens�o "block" ser�o posicionados em block=1
+#       Posiciona os vetores com as dimensões informadas
+#       Vetores que foram mapeados com a dimensão "segment" serão posicionados em segment=1
+#       Vetores que foram mapeados com a dimensão "block" serão posicionados em block=1
 #       -----------------------------------------------------------------------------------
 PSRI.go_to_dimension(data, "segment", 1)
 PSRI.go_to_dimension(data, "block", 1)
@@ -81,7 +81,7 @@ number_blocks = PSRI.total_blocks(data)
 
 @test number_stages == 2
 @test number_blocks == 1
-#       Loops de configura��es (percorrer todos os est�gios e blocos)
+#       Loops de configuraçõees (percorrer todos os estágios e blocos)
 #       -------------------------------------------------------------
 for stage = 1:5, block = 1:number_blocks 
     println(string("Configuracao: ", stage, " bloco: ", block))

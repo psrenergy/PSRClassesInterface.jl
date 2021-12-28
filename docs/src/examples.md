@@ -114,6 +114,7 @@ Base.@kwdef mutable struct ThermalGenerators
     names::Vector{String} = String[]
     codes::Vector{Int32} = Int32[]
     generation_capacities::Vector{Float64} = Float64[]
+    generation_cost_per_segment::Vector{Float64} = Float64[]
     therm2sys::Vector{Int32} = Int32[]
 end
 ```
@@ -137,14 +138,28 @@ therm_gen = ThermalGenerators()
 therm_gen.names = PSRI.get_name(data, "PSRThermalPlant")
 therm_gen.codes = PSRI.get_code(data, "PSRThermalPlant")
 therm_gen.generation_capacities = PSRI.mapped_vector(data, "PSRThermalPlant", "PotInst", Float64)
+therm_gen.generation_cost_per_segment = PSRI.mapped_vector(data, "PSRThermalPlant", "CEsp", Float64, "segment", "block")
 therm_gen.therm2sys = PSRI.get_map(data, "PSRThermalPlant", "PSRSystem")
 ```
 
 And afterwards we can update the parameters for each stage as follows.
 ```@example thermal_gens_pars
-for stage in 1:PSRI.total_stages(data)
+# Put the study time controller at stage 1
+PSRI.go_to_stage(data, 1)
+
+# Put the study time controller at the initial position for blocks and segments at collections
+# that have those dimensions
+PSRI.go_to_dimension(data, "segment", 1)
+PSRI.go_to_dimension(data, "block", 1)
+
+# Updates the vectors values at the current `stage`, `segment` and `block`
+PSRI.update_vectors!(data)
+
+# Print the values of generation capacity at each stage and block
+for stage in 1:PSRI.total_stages(data), block in 1:PSRI.total_blocks(data)
     PSRI.go_to_stage(data, stage)
+    PSRI.go_to_dimension(data, "block", block)
     PSRI.update_vectors!(data)
-    println("Thermal generator 2 generation capacity at stage $stage $(therm_gen.generation_capacities[2])")
+    println("Thermal generator 2 generation capacity at stage $stage and block $block $(therm_gen.generation_capacities[2])")
 end
 ```
