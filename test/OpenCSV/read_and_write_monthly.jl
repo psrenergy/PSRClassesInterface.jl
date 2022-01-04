@@ -61,10 +61,10 @@ function read_write_csv_test()
     @test PSRI.agent_names(ior) == ["X", "Y", "Z"]
 
     for stage = 1:STAGES
-        for scenarios = 1:SCENARIOS
+        for scenario = 1:SCENARIOS
             for block = 1:BLOCKS
                 @test PSRI.current_stage(ior) == stage
-                @test PSRI.current_scenario(ior) == scenarios
+                @test PSRI.current_scenario(ior) == scenario
                 @test PSRI.current_block(ior) == block
                 
                 X = stage + scenario
