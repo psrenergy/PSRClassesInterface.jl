@@ -17,12 +17,14 @@ const STAGES_IN_YEAR = Dict{StageType, Int}(
     STAGE_WEEK => 52,
     STAGE_MONTH => 12,
     STAGE_DAY => 365,
+    STAGE_YEAR => 1
 )
 
 const HOURS_IN_STAGE = Dict{StageType, Int}(
     STAGE_WEEK => 168,
     # STAGE_MONTH => 744,
     STAGE_DAY => 24,
+    STAGE_YEAR => 8760
 )
 
 function _delete_or_error(path::AbstractString)
@@ -86,6 +88,8 @@ function _date_from_stage(t::Int, stage_type::StageType, first_date::Dates.Date)
             current_date += Dates.Day(1)
         end
         return current_date
+    else
+        error("Stage type $stage_type not currently supported")   
     end
     return date
 end
@@ -162,6 +166,7 @@ function _year_stage(
         return _year_week(date)
     elseif stage_type == STAGE_DAY
         return _year_day(date)
+    else
+        error("Stage type $stage_type not currently supported")
     end
-    error("Undefined stage_type")
 end
