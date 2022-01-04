@@ -8,12 +8,14 @@ The current possible stage types are:
 STAGE_WEEK
 STAGE_MONTH
 STAGE_DAY
+STAGE_YEAR
 ```
 """
 @enum StageType begin
     STAGE_WEEK=1
     STAGE_MONTH=2
     STAGE_DAY=5
+    STAGE_YEAR=10
 end
 
 # "PSR_STAGETYPE_UNKNOWN" => 0,
