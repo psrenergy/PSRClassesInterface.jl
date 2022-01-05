@@ -1,5 +1,4 @@
 mutable struct Reader <: PSRI.AbstractReader
-
     rows_iterator::CSV.Rows
     current_row::CSV.Row2
     current_row_state
@@ -27,13 +26,17 @@ function _parse_unit(header)
     first_line_splitted = split(header[1], ',')
     return first_line_splitted[4]
 end
+function _parse_stage_type(header)
+    first_line_splitted = split(header[1], ',')
+    return PSRI.StageType(parse(Int, first_line_splitted[5]))
+end
 function _parse_initial_stage(header)
     first_line_splitted = split(header[1], ',')
-    return parse(Int, first_line_splitted[5])
+    return parse(Int, first_line_splitted[6])
 end
 function _parse_initial_year(header)
     first_line_splitted = split(header[1], ',')
-    return parse(Int, first_line_splitted[6])
+    return parse(Int, first_line_splitted[7])
 end
 function _parse_stages(last_line)
     last_line_splitted = split(last_line, ',')
@@ -78,7 +81,6 @@ function PSRI.open(
     ::Type{Reader},
     path::String;
     is_hourly::Bool = false,
-    stage_type::PSRI.StageType = PSRI.STAGE_MONTH, # TODO remove
     header::Vector{String} = String[],
     use_header::Bool = false, # default to true
     allow_empty::Bool = false,
@@ -113,6 +115,7 @@ function PSRI.open(
 
     header = readuntil(PATH_CSV, "Stag") |> x -> split(x, "\n")
     unit = _parse_unit(header)
+    stage_type = _parse_stage_type(header)
     initial_stage = _parse_initial_stage(header)
     initial_year = _parse_initial_year(header)
     last_line = _read_last_line(PATH_CSV)

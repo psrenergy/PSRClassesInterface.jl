@@ -1,5 +1,4 @@
 function read_write_binary_block()
-
     BLOCKS = 3
     SCENARIOS = 5
     STAGES = 12

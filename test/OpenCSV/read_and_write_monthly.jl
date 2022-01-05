@@ -1,19 +1,26 @@
 function read_write_csv_test()
-    SCENARIOS = 4
-
-    # Stage monthly
     FILE_PATH = joinpath(".", "example_2")
+
+    STAGES = 12
+    BLOCKS = 3
+    SCENARIOS = 4
+    STAGE_TYPE = PSRI.STAGE_MONTH
+    INITIAL_STAGE = 1
+    INITIAL_YEAR = 2006
+    UNIT = "MW"
+
     iow = PSRI.open(
         PSRI.OpenCSV.Writer,
         FILE_PATH,
-        blocks = 3,
+        blocks = BLOCKS,
         scenarios = SCENARIOS,
-        stages = 12,
+        stages = STAGES,
         agents = ["X", "Y", "Z"],
-        unit = "MW",
+        unit = UNIT,
         # optional:
-        initial_stage = 1,
-        initial_year = 2006,
+        stage_type = STAGE_TYPE,
+        initial_stage = INITIAL_STAGE,
+        initial_year = INITIAL_YEAR
     )
 
     # ---------------------------------------------
@@ -21,16 +28,16 @@ function read_write_csv_test()
     # ---------------------------------------------
 
     # Loop de gravacao
-    for estagio = 1:12, serie = 1:SCENARIOS, bloco = 1:3
-        X = estagio + serie + 0.
-        Y = serie - estagio + 0.
-        Z = estagio + serie + bloco * 100.
+    for stage = 1:STAGES, scenario = 1:SCENARIOS, block = 1:BLOCKS
+        X = stage + scenario + 0.
+        Y = scenario - stage + 0.
+        Z = stage + scenario + block * 100.
         PSRI.write_registry(
             iow,
             [X, Y, Z],
-            estagio,
-            serie,
-            bloco
+            stage,
+            scenario,
+            block
         )
     end
 
@@ -42,27 +49,27 @@ function read_write_csv_test()
         FILE_PATH
     )
 
-    @test PSRI.max_stages(ior) == 12
+    @test PSRI.max_stages(ior) == STAGES
     @test PSRI.max_scenarios(ior) == SCENARIOS
-    @test PSRI.max_blocks(ior) == 3
-    @test PSRI.stage_type(ior) == PSRI.STAGE_MONTH
-    @test PSRI.initial_stage(ior) == 1
-    @test PSRI.initial_year(ior) == 2006
-    @test PSRI.data_unit(ior) == "MW"
+    @test PSRI.max_blocks(ior) == BLOCKS
+    @test PSRI.stage_type(ior) == STAGE_TYPE
+    @test PSRI.initial_stage(ior) == INITIAL_STAGE
+    @test PSRI.initial_year(ior) == INITIAL_YEAR
+    @test PSRI.data_unit(ior) == UNIT
 
     # obtem número de colunas
     @test PSRI.agent_names(ior) == ["X", "Y", "Z"]
 
-    for estagio = 1:12
-        for serie = 1:SCENARIOS
-            for bloco = 1:3
-                @test PSRI.current_stage(ior) == estagio
-                @test PSRI.current_scenario(ior) == serie
-                @test PSRI.current_block(ior) == bloco
+    for stage = 1:STAGES
+        for scenario = 1:SCENARIOS
+            for block = 1:BLOCKS
+                @test PSRI.current_stage(ior) == stage
+                @test PSRI.current_scenario(ior) == scenario
+                @test PSRI.current_block(ior) == block
                 
-                X = estagio + serie
-                Y = serie - estagio
-                Z = estagio + serie + bloco * 100
+                X = stage + scenario
+                Y = scenario - stage
+                Z = stage + scenario + block * 100
                 ref = [X, Y, Z]
                 
                 for agent in 1:3

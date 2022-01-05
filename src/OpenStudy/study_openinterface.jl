@@ -331,7 +331,13 @@ function total_blocks(data::Data)
     _raw(data)["PSRStudy"][1]["NumberBlocks"]
 end
 function total_stages_per_year(data::Data)
-    data.stage_type == STAGE_MONTH ? 12 : 52
+    if data.stage_type == STAGE_MONTH
+        return 12
+    elseif data.stage_type == STAGE_WEEK
+        return 52
+    else
+        error("Stage type $(data.stage_type) not currently supported")
+    end
 end
 
 function _add_filter(data, filter, collection, attr, ::Type{Int32})
