@@ -121,10 +121,10 @@ function PSRI.open(
     agents_with_name_length = _build_agents_str(agents)
     # save header
     io = open(FILE_PATH * ".csv", "w")
-    Base.write(io, "Varies per block?       ,$block_type,Unit,$unit,$(Integer(stage_type)),$initial_stage,$initial_year\n")
-    Base.write(io, "Varies per sequence?    ,$scenarios_type\n")
-    Base.write(io, "# of agents             ,$(length(agents))\n")
-    Base.write(io, "Stag,Seq.,Blck,$agents_with_name_length\n")
+    Base.write(io, "Varies per block?       ,$block_type,Unit,$unit,$(Integer(stage_type)),$initial_stage,$initial_year\r\n")
+    Base.write(io, "Varies per sequence?    ,$scenarios_type\r\n")
+    Base.write(io, "# of agents             ,$(length(agents))\r\n")
+    Base.write(io, "Stag,Seq.,Blck,$agents_with_name_length\r\n")
     
     return Writer(
         io,
@@ -175,7 +175,7 @@ function PSRI.write_registry(
         str *= string(d) * ','
     end
     str = chop(str; tail = 1) # remove last comma
-    str *= '\n'
+    str *= "\r\n" # currently the psrclasses only reads grafs with \r\n line ending
     Base.write(writer.io, str)
     return nothing
 end
