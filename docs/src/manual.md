@@ -17,6 +17,7 @@ const PSRI = PSRClassesInterface
 ```@docs
 PSRClassesInterface.AbstractStudyInterface
 PSRClassesInterface.RelationType
+PSRClassesInterface.StageType
 PSRClassesInterface.initialize_study
 PSRClassesInterface.get_vector
 PSRClassesInterface.max_elements

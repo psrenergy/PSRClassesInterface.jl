@@ -1,87 +1,150 @@
 # Examples
 
-## Opening CSV file, registering study data, and then closing it
+## Writing and reading a time series into a file
 
-This example will be using the `open`, `write_registry` and `close` methods for handling CSV files.
+In this example we will demonstrate how to save a time series into a csv or binary file. 
+The first step is to obtain the data that you wish to save
 
-```julia
-
-
+```@example rw_file
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
 
 #Creates dummy data
-n_blocks = 3
-n_scenarios = 1000
-n_stages = 10
-n_elements = 4
-#Data is an (n_stages*n_scenarios*n_blocks) X n_elements ordered numeric structure
-data = rand(Float64, (n_stages*n_scenarios*n_blocks, n_elements))
+n_blocks = 2
+n_scenarios = 3
+n_stages = 4
+n_agents = 5
 
-#Sets CSV file path
+time_series_data = rand(Float64, n_agents, n_blocks, n_scenarios, n_stages)
+
+nothing #hide
+```
+
+There are two ways of saving the data to a file, save the data in the file directly or iteratively.
+To save the data directly use the function [`PSRI.array_to_file`](@ref) by calling:
+```@example rw_file
 FILE_PATH = joinpath(".", "example")
 
-#Opens or creates file and writes header
+PSRI.array_to_file(
+    PSRI.OpenBinary.Writer,
+    FILE_PATH,
+    time_series_data,
+    agents = ["Agent 1", "Agent 2", "Agent 3", "Agent 4", "Agent 5"],
+    unit = "MW";
+    initial_stage = 3,
+    initial_year = 2006,
+)
+```
+
+To save the data iteractively use the function [`PSRI.open`](@ref) to create an [`PSRI.AbstractWriter`](@ref).
+Save the data of each registry to the file using the function [`PSRI.write_registry`](@ref) and then close the data stream
+calling the function [`PSRI.close`](@ref).
+
+```@example rw_file 
 iow = PSRI.open(
-    PSRI.OpenCSV.Writer,
+    PSRI.OpenBinary.Writer,
     FILE_PATH,
     blocks = n_blocks,
     scenarios = n_scenarios,
     stages = n_stages,
-    agents = ["Element 1", "Element 2", "Element 3", "Element 4"],
+    agents = ["Agent 1", "Agent 2", "Agent 3", "Agent 4", "Agent 5"],
     unit = "MW",
     initial_stage = 1,
     initial_year = 2006,
 )
 
-#Data registry loop
-row = 1
-for stage = 1:10, scenario = 1:1000, block = 1:3
-    
-    #Writes row to CSV file opened at iow instance
+for stage = 1:n_stages, scenario = 1:n_scenarios, block = 1:n_blocks
     PSRI.write_registry(
         iow,
-        data[row,:],
+        time_series_data[:, block, scenario, stage],
         stage,
         scenario,
         block
     )
-    row += 1
 end
 
-#Closes file
 PSRI.close(iow)
 ```
 
-## Opening CSV file, reading study data, and then closing it
+A similar logic can be used to read the data from a file. You can read it directly or iteratively.
+To read the data directly use the function [`PSRI.file_to_array`](@ref) or [`PSRI.file_to_array_and_header`](@ref)
+```@example rw_file
+data_from_file = PSRI.file_to_array(
+        PSRI.OpenBinary.Reader, 
+        FILE_PATH
+    )
 
-This example will be using the `open`, `next_registry` and `close` methods for handling CSV files.
+@assert data_from_file_and_header == time_series_data
 
-```julia
+data_from_file_and_header, header = PSRI.file_to_array_and_header(
+        PSRI.OpenBinary.Reader, 
+        FILE_PATH
+    )
+
+@assert data_from_file_and_header == time_series_data
+```
+
+To read the data iteractively use the function [`PSRI.open`](@ref) to create an [`PSRI.AbstractReader`](@ref) and
+read each registry iteratively. At the end you should close the [`PSRI.AbstractReader`](@ref) by calling [`PSRI.close`](@ref)
+```@example rw_file
+ior = PSRI.open(
+    PSRI.OpenBinary.Reader, 
+    FILE_PATH;
+    use_header = false
+)
+
+data_from_file = zeros(n_agents, n_blocks, n_scenarios, n_stages)
+
+for stage = 1:n_stages, scenario = 1:n_scenarios, block = 1:n_blocks
+    PSRI.next_registry(ior)
+    data_from_file[:, block, scenario, stage] = ior.data
+end
+
+PSRI.close(ior)
+
+rm(FILE_PATH; force = true)
+```
+
+## Reading basic thermal generator parameters
+
+In this example we will map parameters of thermal generators at each stage of the study to a struct.
+Suppose in this case that our thermal generators has the following attributes:
+```@example thermal_gens_pars
+Base.@kwdef mutable struct ThermalGenerators
+    names::Vector{String} = String[]
+    codes::Vector{Int32} = Int32[]
+    generation_capacities::Vector{Float64} = Float64[]
+    therm2sys::Vector{Int32} = Int32[]
+end
+```
+
+The first thing we must do is to initialize the reading procedure with the following commands:
+```@example thermal_gens_pars
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
 
-#Sets CSV file path
-FILE_PATH = joinpath(".", "example")
+PATH_CASE_EXAMPLE_THERMALS = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "caso0")
 
-#Creates Reader instance
-ior = PSRI.OpenCSV.Reader
+data = PSRI.initialize_study(
+    PSRI.OpenInterface(),
+    data_path = PATH_CASE_EXAMPLE_THERMALS
+)
+```
 
-#Opens file
-ior = PSRI.open(ocr, FILE_PATH)
+We can initialize the struct with the parameters of the first stage.
+```@example thermal_gens_pars
+therm_gen = ThermalGenerators()
+therm_gen.names = PSRI.get_name(data, "PSRThermalPlant")
+therm_gen.codes = PSRI.get_code(data, "PSRThermalPlant")
+therm_gen.generation_capacities = PSRI.mapped_vector(data, "PSRThermalPlant", "PotInst", Float64)
+therm_gen.therm2sys = PSRI.get_map(data, "PSRThermalPlant", "PSRSystem")
+```
 
-#Creates data destination structure according to metadata stored in the Reader
-n_rows = ior.stages*ior.scenarios*ior.blocks
-data = zeros(Float64, (n_rows, ior.num_agents))
-
-#Data reading loop
-for row = 1:n_rows
-    
-    #Reads CSV row into data structure
-    PSRI.next_registry(ior)
-    data[row,:] = ior.data
+And afterwards we can update the parameters for each stage as follows.
+```@example thermal_gens_pars
+for stage in 1:PSRI.total_stages(data)
+    PSRI.go_to_stage(data, stage)
+    PSRI.update_vectors!(data)
+    println("Thermal generator 2 generation capacity at stage $stage $(therm_gen.generation_capacities[2])")
 end
-
-#Closes file
-PSRI.close(ior)
 ```

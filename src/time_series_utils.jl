@@ -1,9 +1,6 @@
-"""
-    convert_file
-"""
 function convert_file(
-    from::Type{R},
-    to::Type{W},
+    ::Type{R},
+    ::Type{W},
     path_from::String;
     path_to::String = "",
 ) where {
@@ -42,37 +39,26 @@ function convert_file(
         stages = stages,
         agents = agents,
         unit = data_unit(reader),
-        # optional:
         is_hourly = is_hourly(reader),
         name_length = name_length,
-        # block_type = 
-        # scenarios_type = 
         stage_type = stage_type(reader),
         initial_stage = initial_stage(reader),
         initial_year = initial_year(reader),
     )
 
     cache = zeros(Float64, n_agents)
-    for t = 1:stages
-        for s = 1:scenarios
-            for b = 1:blocks_in_stage(reader, t)
-                # @test current_stage(ior) == estagio
-                # @test current_scenario(ior) == serie
-                # @test current_block(ior) == bloco
-
-                for agent in 1:n_agents
-                    cache[agent] = reader[agent]
-                end
-                write_registry(
-                    writer,
-                    cache,
-                    t,
-                    s,
-                    b
-                )
-                next_registry(reader)
-            end
+    for t = 1:stages, s = 1:scenarios, b = 1:blocks_in_stage(reader, t)
+        for agent in 1:n_agents
+            cache[agent] = reader[agent]
         end
+        write_registry(
+            writer,
+            cache,
+            t,
+            s,
+            b
+        )
+        next_registry(reader)
     end
     close(reader)
     close(writer)
@@ -80,9 +66,6 @@ function convert_file(
     return nothing
 end
 
-"""
-    array_to_file
-"""
 function array_to_file(
     ::Type{T},
     path::String,
@@ -147,9 +130,6 @@ function array_to_file(
     return nothing
 end
 
-"""
-    file_to_array
-"""
 function file_to_array(
     ::Type{T},
     path::String,
@@ -157,9 +137,6 @@ function file_to_array(
     return file_to_array_and_header(T, path)[1]
 end
 
-"""
-    file_to_array_and_header
-"""
 function file_to_array_and_header(
     ::Type{T},
     path::String,
@@ -187,4 +164,54 @@ function file_to_array_and_header(
     names = copy(agent_names(io)) # hold data after close
     close(io)
     return out, names
+end
+
+function is_equal(
+    ior1::T1,
+    ior2::T2;
+    atol::Real = 1e-5,
+    rtol::Real = 1e-4
+) where {T1 <: AbstractReader, T2 <: AbstractReader}
+
+    str = ""
+    # Assert have the same stage_type and is_hourly
+    str *= is_hourly(ior1) == is_hourly(ior2) ? "" : 
+    "is_hourly assertion error, file 1: $(is_hourly(ior1)), file 2: $(is_hourly(ior2))\n"
+
+    str *= stage_type(ior1) == stage_type(ior2) ? "" : 
+    "stage_type assertion error, file 1: $(stage_type(ior1)), file 2: $(stage_type(ior2))\n"
+
+    # Assert same initial_year and initial_stage
+    str *= initial_stage(ior1) == initial_stage(ior2) ? "" : 
+    "initial_stage assertion error, file 1: $(initial_stage(ior1)), file 2: $(initial_stage(ior2))\n"
+    str *= initial_year(ior1) == initial_year(ior2) ? "" : 
+    "initial_year assertion error, file 1: $(initial_year(ior1)), file 2: $(initial_year(ior2))\n"
+
+    # Assert same unit
+    str *= data_unit(ior1) == data_unit(ior2) ? "" : 
+    "data_unit assertion error, file 1: $(data_unit(ior1)), file 2: $(data_unit(ior2))\n"
+    
+    # Assert dimensions
+    str *= max_stages(ior1) == max_stages(ior2) ? "" : 
+    "max_stages assertion error, file 1: $(max_stages(ior1)), file 2: $(max_stages(ior2))\n"
+    str *= max_scenarios(ior1) == max_scenarios(ior2) ? "" : 
+    "max_scenarios assertion error, file 1: $(max_scenarios(ior1)), file 2: $(max_scenarios(ior2))\n"
+    str *= max_blocks(ior1) == max_blocks(ior2) ? "" : 
+    "max_blocks assertion error, file 1: $(max_blocks(ior1)), file 2: $(max_blocks(ior2))\n"
+
+    # Assert the agents are the same in both files
+    str *= agent_names(ior1) == agent_names(ior2) ? "" : 
+    "agent_names assertion error, file 1: $(agent_names(ior1)), file 2: $(agent_names(ior2))\n"
+
+    !isempty(str) && error("The files are not equal:\n"*str)
+
+    for est = 1:max_stages(ior1), scen = 1:max_scenarios(ior1), blk = 1:max_blocks_current(ior1)
+        if ior1[:] != ior2[:] 
+            error("Different values on stage $est, scenario: $scen, block: $blk")
+        end
+        next_registry(ior1)
+        next_registry(ior2)
+    end
+
+    return true
 end

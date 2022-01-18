@@ -1,5 +1,4 @@
 mutable struct Reader <: PSRI.AbstractReader
-
     rows_iterator::CSV.Rows
     current_row::CSV.Row2
     current_row_state
@@ -27,13 +26,17 @@ function _parse_unit(header)
     first_line_splitted = split(header[1], ',')
     return first_line_splitted[4]
 end
+function _parse_stage_type(header)
+    first_line_splitted = split(header[1], ',')
+    return PSRI.StageType(parse(Int, first_line_splitted[5]))
+end
 function _parse_initial_stage(header)
     first_line_splitted = split(header[1], ',')
-    return parse(Int, first_line_splitted[5])
+    return parse(Int, first_line_splitted[6])
 end
 function _parse_initial_year(header)
     first_line_splitted = split(header[1], ',')
-    return parse(Int, first_line_splitted[6])
+    return parse(Int, first_line_splitted[7])
 end
 function _parse_stages(last_line)
     last_line_splitted = split(last_line, ',')
@@ -73,39 +76,16 @@ function _read_last_line(file)
         Base.read(io, String)
     end
 end
-"""
-    function PSRI.open(
-        reader::Type{Reader},
-        path::String;
-        is_hourly::Bool = false,
-        stage_type::PSRI.StageType = PSRI.STAGE_MONTH,
-        header::Vector{String} = String[],
-        use_header::Bool = false,
-        first_stage::Dates.Date = Dates.Date(1900, 1, 1),
-        verbose_header = false,
-    )
 
-Method of `open` function for opening CSV file and reading study result.
-Returns updated `Reader` instance. Arguments:
-* `reader`: `Reader` instance to be used for opening file.
-* `path`: path to CSV file.
-* `is_hourly`: if data to be read is hourly, other than blockly.
-* `stage_type`: how the data is temporally staged, defaults to monthly stages.
-* `header`: if file has a header with metadata.
-* `use_header`: if data from header should be retrieved.
-* `first_stage`: stage at which start reading.
-* `verbose_header`: if data from header should be displayed during execution.
-"""
 function PSRI.open(
     ::Type{Reader},
     path::String;
     is_hourly::Bool = false,
-    stage_type::PSRI.StageType = PSRI.STAGE_MONTH, # TODO remove
     header::Vector{String} = String[],
     use_header::Bool = false, # default to true
     allow_empty::Bool = false,
     first_stage::Dates.Date = Dates.Date(1900, 1, 1),
-    verbose_header = false,
+    verbose_header::Bool = false,
 )
     # TODO
     if verbose_header || !isempty(header) || use_header || allow_empty
@@ -135,6 +115,7 @@ function PSRI.open(
 
     header = readuntil(PATH_CSV, "Stag") |> x -> split(x, "\n")
     unit = _parse_unit(header)
+    stage_type = _parse_stage_type(header)
     initial_stage = _parse_initial_stage(header)
     initial_year = _parse_initial_year(header)
     last_line = _read_last_line(PATH_CSV)

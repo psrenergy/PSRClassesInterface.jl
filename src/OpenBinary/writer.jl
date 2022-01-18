@@ -121,6 +121,9 @@ function PSRI.open(
             end
         end
     end
+    if !allunique(agents)
+        error("agents must be unique.")
+    end
 
     dir = dirname(path)
     if !isdir(dir)
