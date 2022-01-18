@@ -148,3 +148,45 @@ for stage in 1:PSRI.total_stages(data)
     println("Thermal generator 2 generation capacity at stage $stage $(therm_gen.generation_capacities[2])")
 end
 ```
+
+## Determining subsystem from a certain gauging station
+
+In this example we will demonstrate how to chain different relationship maps. That will be achieved by determining a subsystem from a certain gauging station through HydroPlants parameters. The program will initiate by the standard reading procedure:
+```@example sys_by_gaug
+import PSRClassesInterface
+const PSRI = PSRClassesInterface
+
+PATH_CASE_EXAMPLE_GAUGING = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "caso2")
+
+data = PSRI.initialize_study(
+    PSRI.OpenInterface(),
+    data_path = PATH_CASE_EXAMPLE_GAUGING
+)
+```
+
+Next, the maps between hydroplants and systems, and hydroplants and gauging stations are retrieved by the `get_map` method:
+```@example sys_by_gaug
+hyd2sys = PSRI.get_map(data, "PSRHydroPlant","PSRSystem")
+hyd2gau = PSRI.get_map(data, "PSRHydroPlant","PSRGaugingStation")
+```
+
+Since those relationships are known to be 1-to-1, we can deduce a gauging station and systems map quite directly by:
+```@example sys_by_gaug
+n_gau = maximum(hyd2gau)
+gau2sys = zeros(Int32, n_gau)
+for i in hyd2gau
+    gau2sys[i] = hyd2sys[i]
+end
+```
+
+Now, we are able to determine the target system index by getting the `gau2sys` value at the desired gauging station index.
+```@example sys_by_gaug
+gauStation = GAUGING_CODE
+gauStations = PSRI.get_code(data, "PSRGaugingStation")
+gauidx = findall( x -> x == gauStation, gauStations)[1]
+
+sysidx = gau2sys[gauidx]
+```
+
+
+
