@@ -149,9 +149,9 @@ for stage in 1:PSRI.total_stages(data)
 end
 ```
 
-## Determining subsystem from a certain gauging station
+## Determining subsystem from a certain hydro plant
 
-In this example we will demonstrate how to chain different relationship maps. That will be achieved by determining a subsystem from a certain gauging station through HydroPlants parameters. The program will initiate by the standard reading procedure:
+In this example we will demonstrate how to make a simple use of a relationship map. That will be achieved by determining a subsystem from a certain hydro plant through its parameters. The program will initiate by the standard reading procedure:
 ```@example sys_by_gaug
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
@@ -164,28 +164,21 @@ data = PSRI.initialize_study(
 )
 ```
 
-Next, the maps between hydroplants and systems, and hydroplants and gauging stations are retrieved by the `get_map` method:
+Next, the maps between hydroplants and systems is retrieved by the `get_map` method:
 ```@example sys_by_gaug
 hyd2sys = PSRI.get_map(data, "PSRHydroPlant","PSRSystem")
-hyd2gau = PSRI.get_map(data, "PSRHydroPlant","PSRGaugingStation")
 ```
 
-Since those relationships are known to be 1-to-1, we can deduce a gauging station and systems map quite directly by:
+The mapping is determined in accordance to the indexing of elements in the `.JSON` structure. Therefore, given that we only the code of our target hydro plant, we must find its index inside its section at the file. That can be done as:
 ```@example sys_by_gaug
-n_gau = maximum(hyd2gau)
-gau2sys = zeros(Int32, n_gau)
-for i in hyd2gau
-    gau2sys[i] = hyd2sys[i]
-end
+hydCode = 1
+hydPlants = PSRI.get_code(data, "PSRHydroPlant")
+hydidx = findall( x -> x == hydCode, hydPlants)[1]
 ```
 
-Now, we are able to determine the target system index by getting the `gau2sys` value at the desired gauging station index.
+Finally, we are able to determine the subsystem index using the relationship map and hydro plant index:
 ```@example sys_by_gaug
-gauStation = GAUGING_CODE
-gauStations = PSRI.get_code(data, "PSRGaugingStation")
-gauidx = findall( x -> x == gauStation, gauStations)[1]
-
-sysidx = gau2sys[gauidx]
+sysidx = hyd2sys[hydidx]
 ```
 
 
