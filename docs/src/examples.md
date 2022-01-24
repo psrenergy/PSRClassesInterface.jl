@@ -181,5 +181,33 @@ Finally, we are able to determine the subsystem index using the relationship map
 sysidx = hyd2sys[hydidx]
 ```
 
+## Determining buses from a certain thermal plant
+This case consists of a more advanced use of a relationship map. We'll determine which buses are linked to a given target thermal plant, while there is no direct relationship between both. Firstly, the study data is read:
+```@example the_by_bus
+import PSRClassesInterface
+const PSRI = PSRClassesInterface
 
+PATH_CASE_EXAMPLE_BUS = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "caso1")
 
+data = PSRI.initialize_study(
+    PSRI.OpenInterface(),
+    data_path = PATH_CASE_EXAMPLE_BUS
+)
+```
+
+Whereas there is no direct link between buses and thermal plants, both are indirectly related through generators. Therefore, we must identify those relationships by calling `get_map` for each:
+```@example the_by_bus
+gen2the = PSRI.get_map(data, "PSRGenerator","PSRThermalPlant")
+gen2bus = PSRI.get_map(data, "PSRGenerator", "PSRBus")
+```
+
+Next, we can find which generators are linked to our target thermal plant by the indexes of `gen2the`:
+```@example the_by_bus
+targetThe = TARGET_THERMAL_PLANT_INDEX
+targetGen = findall(x->x==targetThe,gen2the)
+```
+
+`targetGen` now holds the indexes of generators that are linked to the buses we are trying to identify. With those at hand, the indexes of the buses are easily identifiable by:
+```@example the_by_bus
+targetBus = gen2bus[targetGen]
+```
