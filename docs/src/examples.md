@@ -148,3 +148,38 @@ for stage in 1:PSRI.total_stages(data)
     println("Thermal generator 2 generation capacity at stage $stage $(therm_gen.generation_capacities[2])")
 end
 ```
+
+## Determining subsystem from a certain hydro plant
+
+In this example we will demonstrate how to make a simple use of a relationship map. That will be achieved by determining a subsystem from a certain hydro plant through its parameters. The program will initiate by the standard reading procedure:
+```@example sys_by_gaug
+import PSRClassesInterface
+const PSRI = PSRClassesInterface
+
+PATH_CASE_EXAMPLE_GAUGING = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "caso2")
+
+data = PSRI.initialize_study(
+    PSRI.OpenInterface(),
+    data_path = PATH_CASE_EXAMPLE_GAUGING
+)
+```
+
+Next, the maps between hydroplants and systems is retrieved by the `get_map` method:
+```@example sys_by_gaug
+hyd2sys = PSRI.get_map(data, "PSRHydroPlant","PSRSystem")
+```
+
+The mapping is determined in accordance to the indexing of elements in the `.JSON` structure. Therefore, given that we only the code of our target hydro plant, we must find its index inside its section at the file. That can be done as:
+```@example sys_by_gaug
+hydCode = 1
+hydPlants = PSRI.get_code(data, "PSRHydroPlant")
+hydidx = findall( x -> x == hydCode, hydPlants)[1]
+```
+
+Finally, we are able to determine the subsystem index using the relationship map and hydro plant index:
+```@example sys_by_gaug
+sysidx = hyd2sys[hydidx]
+```
+
+
+
