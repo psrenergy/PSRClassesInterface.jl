@@ -10,6 +10,7 @@ mutable struct Writer <: PSRI.AbstractWriter
     stage_type::PSRI.StageType
     initial_stage::Int
     initial_year::Int
+    row_separator::String
 end
 
 PSRI.is_hourly(graf::Writer) = graf.is_hourly
@@ -125,7 +126,10 @@ function PSRI.open(
     Base.write(io, "Varies per sequence?    ,$scenarios_type\r\n")
     Base.write(io, "# of agents             ,$(length(agents))\r\n")
     Base.write(io, "Stag,Seq.,Blck,$agents_with_name_length\r\n")
-    
+
+    #Line breaker to be used
+    row_separator = Sys.iswindows() ? "\r\n" : "\n"
+
     return Writer(
         io,
         stages,
@@ -137,7 +141,8 @@ function PSRI.open(
         path,
         stage_type,
         initial_stage,
-        initial_year
+        initial_year,
+        row_separator,
     )
 end
 
@@ -175,7 +180,7 @@ function PSRI.write_registry(
         str *= string(d) * ','
     end
     str = chop(str; tail = 1) # remove last comma
-    str *= "\r\n" # currently the psrclasses only reads grafs with \r\n line ending
+    str *= writer.row_separator
     Base.write(writer.io, str)
     return nothing
 end
