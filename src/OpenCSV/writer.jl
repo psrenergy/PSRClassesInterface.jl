@@ -45,7 +45,6 @@ function PSRI.open(
     initial_stage::Integer = 1,
     initial_year::Integer = 1900,
     sequential_model::Bool = true,
-    row_separator::String = "\r\n",
     # addtional
     allow_unsafe_name_length::Bool = false,
 )
@@ -127,7 +126,10 @@ function PSRI.open(
     Base.write(io, "Varies per sequence?    ,$scenarios_type\r\n")
     Base.write(io, "# of agents             ,$(length(agents))\r\n")
     Base.write(io, "Stag,Seq.,Blck,$agents_with_name_length\r\n")
-    
+
+    #Line breaker to be used
+    row_separator = Sys.iswindows() ? "\r\n" : "\n"
+
     return Writer(
         io,
         stages,
