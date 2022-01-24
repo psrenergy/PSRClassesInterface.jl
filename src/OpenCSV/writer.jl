@@ -10,6 +10,7 @@ mutable struct Writer <: PSRI.AbstractWriter
     stage_type::PSRI.StageType
     initial_stage::Int
     initial_year::Int
+    row_separator::String
 end
 
 PSRI.is_hourly(graf::Writer) = graf.is_hourly
@@ -44,6 +45,7 @@ function PSRI.open(
     initial_stage::Integer = 1,
     initial_year::Integer = 1900,
     sequential_model::Bool = true,
+    row_separator::String = "\r\n",
     # addtional
     allow_unsafe_name_length::Bool = false,
 )
@@ -137,7 +139,8 @@ function PSRI.open(
         path,
         stage_type,
         initial_stage,
-        initial_year
+        initial_year,
+        row_separator,
     )
 end
 
@@ -175,7 +178,7 @@ function PSRI.write_registry(
         str *= string(d) * ','
     end
     str = chop(str; tail = 1) # remove last comma
-    str *= "\r\n" # currently the psrclasses only reads grafs with \r\n line ending
+    str *= writer.row_separator
     Base.write(writer.io, str)
     return nothing
 end
