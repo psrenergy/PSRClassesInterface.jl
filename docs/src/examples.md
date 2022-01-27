@@ -149,6 +149,49 @@ for stage in 1:PSRI.total_stages(data)
 end
 ```
 
+## Reading basic battery parameters
+
+This example is very alike "Reading basic thermal generator parameters", but it is necessary to be cautious about the diffence between elements. For instance, batteries have different parameters than thermal generators, therefore, our data structure must be defined accordingly:
+```@example batteries_pars
+Base.@kwdef mutable struct Batteries
+    names::Vector{String} = String[]
+    codes::Vector{Int32} = Int32[]
+    charge::Vector{Float64} = Float64[]
+    bat2sys::Vector{Int32} = Int32[]
+end
+```
+
+Stardard proceadure of reading data from file:
+```@example batteries_pars
+import PSRClassesInterface
+const PSRI = PSRClassesInterface
+
+PATH_CASE_EXAMPLE_BATTERIES = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "caso1")
+
+data = PSRI.initialize_study(
+    PSRI.OpenInterface(),
+    data_path = PATH_CASE_EXAMPLE_BATTERIES
+)
+```
+
+And now the struct may be instantiated by setting its appropriate parameters:
+```@example batteries_pars
+batteries = Batteries()
+batteries.names = PSRI.get_name(data, "PSRBatteries")
+batteries.codes = PSRI.get_code(data, "PSRBatteries")
+batteries.charge = PSRI.mapped_vector(data, "PSRBatteries", "Existing", Float64)
+batteries.bat2sys = PSRI.get_map(data, "PSRBatteries", "PSRSystem")
+```
+
+Finally, we are able to navigate parameters along different stages:
+```@example batteries_pars
+for stage in 1:PSRI.total_stages(data)
+    PSRI.go_to_stage(data, stage)
+    PSRI.update_vectors!(data)
+    println("Battery 2 charge at stage $stage $(batteries.charge[2])")
+end
+```
+
 ## Determining subsystem from a certain hydro plant
 
 In this example we will demonstrate how to make a simple use of a relationship map. That will be achieved by determining a subsystem from a certain hydro plant through its parameters. The program will initiate by the standard reading procedure:
