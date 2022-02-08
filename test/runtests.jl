@@ -32,6 +32,14 @@ PATH_CASE_0 = joinpath(".", "data", "caso0")
             @time include("OpenBinary/read_and_write_hourly.jl")
         end
     end
+    @testset "SingleBinary file format" begin
+        @testset "Read and write with monthlydata" begin
+            @time include("SingleBinary/read_and_write_blocks.jl")
+        end
+        @testset "Read and write with hourlydata" begin
+            # @time include("SingleBinary/read_and_write_hourly.jl")
+        end
+    end
     @testset "ReaderMapper" begin
         @time include("reader_mapper.jl")
     end
