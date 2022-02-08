@@ -21,6 +21,7 @@ include("utils.jl")
 include("OpenCSV/OpenCSV.jl")
 include("PMD/PMD.jl")
 include("OpenBinary/OpenBinary.jl")
+include("SingleBinary/SingleBinary.jl")
 
 # main interface
 include("OpenStudy/pmd.jl")
