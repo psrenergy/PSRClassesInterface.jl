@@ -74,7 +74,7 @@ function read_write_binary_block()
 
     end
 
-    # rm(FILE_PATH * ".bin")
+    rm(FILE_PATH * ".bin")
 
     return
 end

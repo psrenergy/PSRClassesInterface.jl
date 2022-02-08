@@ -77,6 +77,7 @@ function read_write_binary_hourly()
     end
 
     rm(FILE_GERTER * ".bin")
+    
     return
 end
 
