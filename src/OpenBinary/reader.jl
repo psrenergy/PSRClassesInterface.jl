@@ -58,7 +58,8 @@ function PSRI.open(
     use_header::Bool = true,
     allow_empty::Bool = false,
     first_stage::Dates.Date = Dates.Date(1900, 1, 1),
-    verbose_header = false,
+    verbose_header::Bool = false,
+    single_binary::Bool = false
 )
 
     # TODO
@@ -66,18 +67,25 @@ function PSRI.open(
         error("is_hourly and stage_type are not supported by OpenBinary.")
     end
 
-    PATH_HDR = path * ".hdr"
-    PATH_BIN = path * ".bin"
-    if !isfile(PATH_BIN)
-        error("file not found: $PATH_BIN")
+    if single_binary
+        PATH_BIN = path * ".bin"
+        if !isfile(PATH_BIN)
+            error("file not found: $PATH_BIN")
+        end
+        ioh = open(PATH_BIN, "r")
+    else
+        PATH_HDR = path * ".hdr"
+        PATH_BIN = path * ".bin"
+        if !isfile(PATH_BIN)
+            error("file not found: $PATH_BIN")
+        end
+        if !isfile(PATH_HDR)
+            error("file not found: $PATH_HDR")
+        end
+        ioh = open(PATH_HDR, "r")
     end
-    if !isfile(PATH_HDR)
-        error("file not found: $PATH_HDR")
-    end
-
-    ioh = open(PATH_HDR, "r")
+    
     seek(ioh, 0) # absolute position
-
     skip(ioh, 4)
     version = read(ioh, Int32)
 
@@ -171,7 +179,11 @@ function PSRI.open(
         @show agent_names
     end
 
-    close(ioh)
+    if single_binary
+        # nothing
+    else
+        close(ioh)
+    end
 
     BAD = "Bad header: "
 
@@ -271,6 +283,12 @@ function PSRI.open(
         relative_stage_skip = 0
     end
 
+    if single_binary
+        io = ioh
+    else
+        io = open(PATH_BIN, "r")
+    end
+
     ret = Reader(
         stage_total = Int(stage_total),
         scenario_total = Int(scenario_total),
@@ -301,18 +319,17 @@ function PSRI.open(
 
         relative_stage_skip = relative_stage_skip,
 
-        io = open(PATH_BIN, "r")
+        io = io
     )
 
-    finalizer(ret) do x
-        if x.is_open
-            Base.close(x.io)
+    if !single_binary
+        finalizer(ret) do x
+            if x.is_open
+                Base.close(x.io)
+            end
+            x
         end
-        x
     end
-
-    # iob = open(PATH_BIN, "r")
-    # check total len
 
     # check total file size
     last = _get_position(

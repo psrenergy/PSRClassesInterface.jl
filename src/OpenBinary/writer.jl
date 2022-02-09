@@ -63,7 +63,8 @@ function PSRI.open(
     allow_unsafe_name_length::Bool = false,
     # pre_ext::String = "", for part-bin
     reopen_mode::Bool = false,
-    verbose_hour_block_check::Bool = true
+    verbose_hour_block_check::Bool = true,
+    single_binary::Bool = false
 )
 
     if !allow_unsafe_name_length
@@ -134,12 +135,17 @@ function PSRI.open(
         error("file path must be provided with no extension")
     end
 
-    PATH_HDR = path * ".hdr"
-    PSRI._delete_or_error(PATH_HDR)
-    PATH_BIN = path * ".bin"
-    PSRI._delete_or_error(PATH_BIN)
-
-    ioh = open(PATH_HDR, "w")
+    if single_binary
+        PATH_BIN = path * ".bin"
+        PSRI._delete_or_error(PATH_BIN)
+        ioh = open(PATH_BIN, "w")
+    else
+        PATH_HDR = path * ".hdr"
+        PSRI._delete_or_error(PATH_HDR)
+        PATH_BIN = path * ".bin"
+        PSRI._delete_or_error(PATH_BIN)
+        ioh = open(PATH_HDR, "w")
+    end
 
     write(ioh, Int32(0))
     write(ioh, Int32(2)) # version
@@ -226,11 +232,14 @@ function PSRI.open(
         end
     end
 
-    close(ioh)
-
-    io = open(PATH_BIN, "w")
-    if reopen_mode
-        close(io)
+    if single_binary
+        io = ioh
+    else
+        close(ioh)
+        io = open(PATH_BIN, "w")
+        if reopen_mode
+            close(io)
+        end
     end
 
     return Writer(
