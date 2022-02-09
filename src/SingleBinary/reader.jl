@@ -126,7 +126,7 @@ function PSRI.open(
         _first_stage = read(ioh, Int32) # initial_stage (month or week)
         first_year = read(ioh, Int32)   # initial_year
         #
-        unit_buffer = Vector{Int32}(undef, 7)
+        unit_buffer = Vector{Cchar}(undef, 7)
         read!(ioh, unit_buffer)
         unit_str = strip(join(Char.(unit_buffer)))
 
@@ -162,7 +162,7 @@ function PSRI.open(
     end
 
     agent_names = String[]
-    agent_name_buffer = Vector{Int32}(undef, name_length)
+    agent_name_buffer = Vector{Cchar}(undef, name_length)
     for _ in 1:total_agents
         skip(ioh, 4)
         skip(ioh, 4)

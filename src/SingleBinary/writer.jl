@@ -174,7 +174,7 @@ function PSRI.open(
 
     if unit === nothing
         for i in 1:7
-            write(ioh, Int32(0))
+            write(ioh, Cchar(0))
         end
     else
         len = length(unit)
@@ -183,9 +183,9 @@ function PSRI.open(
         end
         for i in 1:7
             if i <= len
-                write(ioh, Int32(unit[i]))
+                write(ioh, Cchar(unit[i]))
             else
-                write(ioh, Int32(' '))
+                write(ioh, Cchar(' '))
             end
         end
     end
@@ -229,9 +229,9 @@ function PSRI.open(
 
         for i in 1:name_length
             if i <= len
-                write(ioh, Int32(ag[i]))
+                write(ioh, Cchar(ag[i]))
             else
-                write(ioh, Int32(' '))
+                write(ioh, Cchar(' '))
             end
         end
     end
