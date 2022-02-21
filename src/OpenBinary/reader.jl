@@ -36,6 +36,7 @@ Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
     is_open::Bool = true
 
     relative_stage_skip::Int
+    hs::Int = 0 # Header size
 
 end
 function Base.show(io::IO, ptr::Reader)
@@ -67,12 +68,14 @@ function PSRI.open(
         error("is_hourly and stage_type are not supported by OpenBinary.")
     end
 
+    hs = 0
     if single_binary
         PATH_BIN = path * ".bin"
         if !isfile(PATH_BIN)
             error("file not found: $PATH_BIN")
         end
         ioh = open(PATH_BIN, "r")
+        hs = Int(read(ioh, Int32)) # Header Size
     else
         PATH_HDR = path * ".hdr"
         PATH_BIN = path * ".bin"
@@ -83,9 +86,9 @@ function PSRI.open(
             error("file not found: $PATH_HDR")
         end
         ioh = open(PATH_HDR, "r")
+        seek(ioh, 0) # absolute position
     end
     
-    seek(ioh, 0) # absolute position
     skip(ioh, 4)
     version = read(ioh, Int32)
 
@@ -172,8 +175,8 @@ function PSRI.open(
         skip(ioh, 4)
         skip(ioh, 4)
         read!(ioh, agent_name_buffer)
-        agente_name = strip(join(Char.(agent_name_buffer)))
-        push!(agent_names, agente_name)
+        agent_name = strip(join(Char.(agent_name_buffer)))
+        push!(agent_names, agent_name)
     end
     if verbose_header
         @show agent_names
@@ -319,7 +322,8 @@ function PSRI.open(
 
         relative_stage_skip = relative_stage_skip,
 
-        io = io
+        io = io,
+        hs = hs,
     )
 
     if !single_binary
@@ -342,7 +346,11 @@ function PSRI.open(
     @assert last == position(ret.io)
 
     # go back to begning and initialize
-    seek(ret.io, 0)
+    if single_binary
+        seek(ret.io, ret.hs)
+    else
+        seek(ret.io, 0)
+    end
     PSRI.goto(ret, 1, 1, 1)
     return ret
 end
@@ -422,13 +430,13 @@ function _get_position(graf, t::Integer, s::Integer, b::Integer)
             graf.blocks_until_stage[t] * graf.agents_total * graf.scenario_total +
             (s - 1) * graf.agents_total * graf.blocks_per_stage[t] +
             (b - 1) * graf.agents_total)
-        return pos
+        return pos + graf.hs
     else
         pos = 4 * (
             (t - 1) * graf.agents_total * graf.block_total * graf.scenario_total +
             (s - 1) * graf.agents_total * graf.block_total +
             (b - 1) * graf.agents_total)
-        return pos
+        return pos + graf.hs
     end
 end
 
@@ -436,7 +444,11 @@ function PSRI.next_registry(graf::Reader)
     if graf.stage_current == graf.stage_total &&
         graf.scenario_current == graf.scenario_total &&
         graf.block_current == graf.block_total
-        seek(graf.io, 0)
+        if graf.hs != 0 # single binary
+            seek(graf.io, graf.hs)
+        else
+            seek(graf.io, 0)
+        end
     end
     read!(graf.io, graf.data_buffer)
     for (index, value) in enumerate(graf.index)

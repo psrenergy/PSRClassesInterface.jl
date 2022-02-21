@@ -38,6 +38,7 @@ Base.@kwdef mutable struct Writer <: PSRI.AbstractWriter
     FILE_PATH::String
 
     # relative_stage_skip::Int
+    hs::Int # Header size
 
 end
 
@@ -138,7 +139,8 @@ function PSRI.open(
     if single_binary
         PATH_BIN = path * ".bin"
         PSRI._delete_or_error(PATH_BIN)
-        ioh = open(PATH_BIN, "w")
+        ioh = IOBuffer()
+        write(ioh, Int32(0)) # Header size
     else
         PATH_HDR = path * ".hdr"
         PSRI._delete_or_error(PATH_HDR)
@@ -220,8 +222,8 @@ function PSRI.open(
         end
     end
     for ag in agents
-        skip(ioh, 4)
-        skip(ioh, 4)
+        write(ioh, Int32(0))
+        write(ioh, Int32(0))
         len = length(ag)
         for i in 1:name_length
             if i <= len
@@ -233,10 +235,16 @@ function PSRI.open(
     end
 
     if single_binary
-        io = ioh
+        io = open(PATH_BIN, "w")
+        seek(ioh, 0) # Return to the first byte
+        hs = write(io, read(ioh))
+        seek(io, 0) # Return to the first byte
+        write(io, Int32(hs)) # Write the header size on the correcy byte
+        seek(io, hs) # Go to the first byte of data
     else
         close(ioh)
         io = open(PATH_BIN, "w")
+        hs = 0
         if reopen_mode
             close(io)
         end
@@ -244,6 +252,7 @@ function PSRI.open(
 
     return Writer(
         io = io,
+        hs = hs,
         stage_total = stages,
         scenario_total = scenarios,
         block_total = blocks,
