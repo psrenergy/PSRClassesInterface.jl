@@ -86,8 +86,8 @@ function PSRI.open(
             error("file not found: $PATH_HDR")
         end
         ioh = open(PATH_HDR, "r")
-        seek(ioh, 0) # absolute position
     end
+    # seek(ioh, 0) # absolute position
     
     skip(ioh, 4)
     version = read(ioh, Int32)
@@ -326,13 +326,11 @@ function PSRI.open(
         hs = hs,
     )
 
-    if !single_binary
-        finalizer(ret) do x
-            if x.is_open
-                Base.close(x.io)
-            end
-            x
+    finalizer(ret) do x
+        if x.is_open
+            Base.close(x.io)
         end
+        x
     end
 
     # check total file size
@@ -346,11 +344,7 @@ function PSRI.open(
     @assert last == position(ret.io)
 
     # go back to begning and initialize
-    if single_binary
-        seek(ret.io, ret.hs)
-    else
-        seek(ret.io, 0)
-    end
+    seek(ret.io, ret.hs)
     PSRI.goto(ret, 1, 1, 1)
     return ret
 end
@@ -444,11 +438,7 @@ function PSRI.next_registry(graf::Reader)
     if graf.stage_current == graf.stage_total &&
         graf.scenario_current == graf.scenario_total &&
         graf.block_current == graf.block_total
-        if graf.hs != 0 # single binary
-            seek(graf.io, graf.hs)
-        else
-            seek(graf.io, 0)
-        end
+        seek(graf.io, graf.hs)
     end
     read!(graf.io, graf.data_buffer)
     for (index, value) in enumerate(graf.index)
