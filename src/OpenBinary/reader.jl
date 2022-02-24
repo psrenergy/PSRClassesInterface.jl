@@ -70,7 +70,7 @@ function PSRI.open(
 
     hs = 0
     if single_binary
-        PATH_BIN = path * ".bin"
+        PATH_BIN = path * ".dat"
         if !isfile(PATH_BIN)
             error("file not found: $PATH_BIN")
         end

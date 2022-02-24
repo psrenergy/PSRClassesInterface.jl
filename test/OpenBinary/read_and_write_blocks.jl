@@ -160,7 +160,7 @@ function read_write_binary_block_single_binary()
 
     end
 
-    rm(FILE_PATH * ".bin")
+    rm(FILE_PATH * ".dat")
 
     return
 end

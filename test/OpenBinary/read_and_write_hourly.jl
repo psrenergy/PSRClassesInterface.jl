@@ -163,7 +163,7 @@ function read_write_binary_hourly_single_binary()
 
     end
 
-    rm(FILE_GERTER * ".bin")
+    rm(FILE_GERTER * ".dat")
     return
 end
 
