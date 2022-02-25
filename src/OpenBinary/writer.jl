@@ -38,6 +38,7 @@ Base.@kwdef mutable struct Writer <: PSRI.AbstractWriter
     FILE_PATH::String
 
     # relative_stage_skip::Int
+    hs::Int # Header size
 
 end
 
@@ -63,7 +64,8 @@ function PSRI.open(
     allow_unsafe_name_length::Bool = false,
     # pre_ext::String = "", for part-bin
     reopen_mode::Bool = false,
-    verbose_hour_block_check::Bool = true
+    verbose_hour_block_check::Bool = true,
+    single_binary::Bool = false
 )
 
     if !allow_unsafe_name_length
@@ -134,12 +136,18 @@ function PSRI.open(
         error("file path must be provided with no extension")
     end
 
-    PATH_HDR = path * ".hdr"
-    PSRI._delete_or_error(PATH_HDR)
-    PATH_BIN = path * ".bin"
-    PSRI._delete_or_error(PATH_BIN)
-
-    ioh = open(PATH_HDR, "w")
+    if single_binary
+        PATH_BIN = path * ".dat"
+        PSRI._delete_or_error(PATH_BIN)
+        ioh = IOBuffer()
+        # write(ioh, Int32(0)) # Header size
+    else
+        PATH_HDR = path * ".hdr"
+        PSRI._delete_or_error(PATH_HDR)
+        PATH_BIN = path * ".bin"
+        PSRI._delete_or_error(PATH_BIN)
+        ioh = open(PATH_HDR, "w")
+    end
 
     write(ioh, Int32(0))
     write(ioh, Int32(2)) # version
@@ -214,8 +222,8 @@ function PSRI.open(
         end
     end
     for ag in agents
-        skip(ioh, 4)
-        skip(ioh, 4)
+        write(ioh, Int32(0))
+        write(ioh, Int32(0))
         len = length(ag)
         for i in 1:name_length
             if i <= len
@@ -226,15 +234,26 @@ function PSRI.open(
         end
     end
 
-    close(ioh)
-
-    io = open(PATH_BIN, "w")
-    if reopen_mode
-        close(io)
+    if single_binary
+        write(ioh, Int32(0)) #!!!
+        io = open(PATH_BIN, "w")
+        seek(ioh, 0) # Return to the first byte
+        hs = write(io, read(ioh))
+        seek(io, 0) # Return to the first byte
+        write(io, Int32(hs)) # Write the header size on the correcy byte
+        seek(io, hs) # Go to the first byte of data
+    else
+        close(ioh)
+        io = open(PATH_BIN, "w")
+        hs = 0
+        if reopen_mode
+            close(io)
+        end
     end
 
     return Writer(
         io = io,
+        hs = hs,
         stage_total = stages,
         scenario_total = scenarios,
         block_total = blocks,
