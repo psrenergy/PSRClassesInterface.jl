@@ -1,3 +1,10 @@
+function skipx(io, x)
+    p₀ = position(io) + 1
+    y = skip(io, x)
+    print("($(p₀), $(x)),")
+    return y
+end
+
 Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
 
     io::IOStream
@@ -75,7 +82,7 @@ function PSRI.open(
             error("file not found: $PATH_BIN")
         end
         ioh = open(PATH_BIN, "r")
-        hs = Int(read(ioh, Int32)) # Header Size
+        # hs = Int(read(ioh, Int32)) # Header Size
     else
         PATH_HDR = path * ".hdr"
         PATH_BIN = path * ".bin"
@@ -89,7 +96,8 @@ function PSRI.open(
     end
     # seek(ioh, 0) # absolute position
     
-    skip(ioh, 4)
+    # skipx(ioh, 4)
+    skipx(ioh, 4)
     version = read(ioh, Int32)
 
     if verbose_header
@@ -99,8 +107,8 @@ function PSRI.open(
     @assert 1 <= version <= 9
 
     if version == 1
-        skip(ioh, 4)
-        skip(ioh, 4)
+        skipx(ioh, 4)
+        skipx(ioh, 4)
         first_relative_stage = read(ioh, Int32)
         stage_total = read(ioh, Int32)
         scenario_total = read(ioh, Int32)
@@ -122,8 +130,8 @@ function PSRI.open(
         variable_by_hour = 0
         number_blocks = Int32[]
     else
-        skip(ioh, 4)
-        skip(ioh, 4)
+        skipx(ioh, 4)
+        skipx(ioh, 4)
         first_relative_stage = read(ioh, Int32)
         stage_total = read(ioh, Int32)
         scenario_total = read(ioh, Int32)
@@ -142,16 +150,16 @@ function PSRI.open(
         name_length = read(ioh, Int32)
 
         if variable_by_hour == 0
-            skip(ioh, 4)
-            skip(ioh, 4)
+            skipx(ioh, 4)
+            skipx(ioh, 4)
             offset1 = read(ioh, Int32)
             offset2 = read(ioh, Int32)
             block_total = offset2 - offset1
-            skip(ioh, 4 * (stage_total - first_relative_stage))
+            skipx(ioh, 4 * (stage_total - first_relative_stage))
             number_blocks = Int32[]
         elseif variable_by_hour == 1
-            skip(ioh, 4)
-            skip(ioh, 4)
+            skipx(ioh, 4)
+            skipx(ioh, 4)
             number_blocks = zeros(Int32, stage_total + 1 - first_relative_stage)
             offsets = zeros(Int32, 1 + stage_total + 1 - first_relative_stage)
             for i in first_relative_stage:stage_total+1
@@ -172,8 +180,8 @@ function PSRI.open(
     agent_names = String[]
     agent_name_buffer = Vector{Cchar}(undef, name_length)
     for _ in 1:total_agents
-        skip(ioh, 4)
-        skip(ioh, 4)
+        skipx(ioh, 4)
+        skipx(ioh, 4)
         read!(ioh, agent_name_buffer)
         agent_name = strip(join(Char.(agent_name_buffer)))
         push!(agent_names, agent_name)
@@ -287,7 +295,9 @@ function PSRI.open(
     end
 
     if single_binary
+        skipx(ioh, 4)
         io = ioh
+        hs = position(io)
     else
         io = open(PATH_BIN, "r")
     end

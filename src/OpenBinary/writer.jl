@@ -140,7 +140,7 @@ function PSRI.open(
         PATH_BIN = path * ".dat"
         PSRI._delete_or_error(PATH_BIN)
         ioh = IOBuffer()
-        write(ioh, Int32(0)) # Header size
+        # write(ioh, Int32(0)) # Header size
     else
         PATH_HDR = path * ".hdr"
         PSRI._delete_or_error(PATH_HDR)
@@ -235,6 +235,7 @@ function PSRI.open(
     end
 
     if single_binary
+        write(ioh, Int32(0)) #!!!
         io = open(PATH_BIN, "w")
         seek(ioh, 0) # Return to the first byte
         hs = write(io, read(ioh))
