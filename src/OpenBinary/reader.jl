@@ -110,7 +110,7 @@ function PSRI.open(
         ioh = open(PATH_HDR, "r")
     end
     
-    skip_store(ioh, 4; skips)
+    skip_store(ioh, 4; skips=skips)
     version = read(ioh, Int32)
 
     if verbose_header
@@ -347,6 +347,8 @@ function PSRI.open(
 
         io = io,
         hs = hs,
+
+        skips = Vector{Tuple{Int, Int}}[],
     )
 
     finalizer(ret) do x
