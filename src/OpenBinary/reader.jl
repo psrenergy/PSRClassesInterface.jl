@@ -348,7 +348,7 @@ function PSRI.open(
         io = io,
         hs = hs,
 
-        skips = Vector{Tuple{Int, Int}}[],
+        skips = skips,
     )
 
     finalizer(ret) do x
