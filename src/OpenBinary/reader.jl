@@ -55,7 +55,7 @@ Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
     # Lists reading skips as pairs
     #   (position, skip length)
     # in bytes
-    skips::Vector{Tuple{Int, Int}}
+    skips::Union{Nothing, Vector{Tuple{Int, Int}}} = nothing
 end
 
 function Base.show(io::IO, ptr::Reader)
