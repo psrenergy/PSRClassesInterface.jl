@@ -1,14 +1,12 @@
-function skip_store(io::IO, s::Int; skips::Union{Nothing, Vector{Tuple{Int, Int}}}=nothing)
-    if skips === nothing
-        return skip(io, s)
-    else
+function skip_store(io::IO, s::Int, skips::Vector{Tuple{Int, Int}}, store_skips::Bool)
+    if store_skips
         p = position(io)
-        
-        ret = skip(io, s)
-        
+        skip(io, s)
         push!(skips, (p, s))
-
-        return ret
+        return nothing
+    else
+        skip(io, s)
+        return nothing
     end
 end
 
@@ -55,7 +53,7 @@ Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
     # Lists reading skips as pairs
     #   (position, skip length)
     # in bytes
-    skips::Union{Nothing, Vector{Tuple{Int, Int}}} = nothing
+    skips::Vector{Tuple{Int, Int}} = Tuple{Int, Int}[]
 end
 
 function Base.show(io::IO, ptr::Reader)
@@ -88,7 +86,7 @@ function PSRI.open(
         error("is_hourly and stage_type are not supported by OpenBinary.")
     end
 
-    skips = store_skips ? Tuple{Int, Int}[] : nothing
+    skips = Tuple{Int, Int}[]
 
     hs = 0
     if single_binary
@@ -110,7 +108,7 @@ function PSRI.open(
         ioh = open(PATH_HDR, "r")
     end
     
-    skip_store(ioh, 4; skips=skips)
+    skip_store(ioh, 4, skips, store_skips)
     version = read(ioh, Int32)
 
     if verbose_header
@@ -120,8 +118,8 @@ function PSRI.open(
     @assert 1 <= version <= 9
 
     if version == 1
-        skip_store(ioh, 4; skips=skips)
-        skip_store(ioh, 4; skips=skips)
+        skip_store(ioh, 4, skips, store_skips)
+        skip_store(ioh, 4, skips, store_skips)
         first_relative_stage = read(ioh, Int32)
         stage_total = read(ioh, Int32)
         scenario_total = read(ioh, Int32)
@@ -143,8 +141,8 @@ function PSRI.open(
         variable_by_hour = 0
         number_blocks = Int32[]
     else
-        skip_store(ioh, 4; skips=skips)
-        skip_store(ioh, 4; skips=skips)
+        skip_store(ioh, 4, skips, store_skips)
+        skip_store(ioh, 4, skips, store_skips)
         first_relative_stage = read(ioh, Int32)
         stage_total = read(ioh, Int32)
         scenario_total = read(ioh, Int32)
@@ -163,16 +161,16 @@ function PSRI.open(
         name_length = read(ioh, Int32)
 
         if variable_by_hour == 0
-            skip_store(ioh, 4; skips=skips)
-            skip_store(ioh, 4; skips=skips)
+            skip_store(ioh, 4, skips, store_skips)
+            skip_store(ioh, 4, skips, store_skips)
             offset1 = read(ioh, Int32)
             offset2 = read(ioh, Int32)
             block_total = offset2 - offset1
-            skip_store(ioh, 4 * (stage_total - first_relative_stage); skips=skips)
+            skip_store(ioh, 4 * (stage_total - first_relative_stage), skips, store_skips)
             number_blocks = Int32[]
         elseif variable_by_hour == 1
-            skip_store(ioh, 4; skips=skips)
-            skip_store(ioh, 4; skips=skips)
+            skip_store(ioh, 4, skips, store_skips)
+            skip_store(ioh, 4, skips, store_skips)
             number_blocks = zeros(Int32, stage_total + 1 - first_relative_stage)
             offsets = zeros(Int32, 1 + stage_total + 1 - first_relative_stage)
             for i in first_relative_stage:stage_total+1
@@ -193,8 +191,8 @@ function PSRI.open(
     agent_names = String[]
     agent_name_buffer = Vector{Cchar}(undef, name_length)
     for _ in 1:total_agents
-        skip_store(ioh, 4; skips=skips)
-        skip_store(ioh, 4; skips=skips)
+        skip_store(ioh, 4, skips, store_skips)
+        skip_store(ioh, 4, skips, store_skips)
         read!(ioh, agent_name_buffer)
         agent_name = strip(join(Char.(agent_name_buffer)))
         push!(agent_names, agent_name)
@@ -308,7 +306,7 @@ function PSRI.open(
     end
 
     if single_binary
-        skip_store(ioh, 4; skips=skips)
+        skip_store(ioh, 4, skips, store_skips)
         io = ioh
         hs = position(io)
     else
