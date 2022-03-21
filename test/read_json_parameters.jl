@@ -7,6 +7,8 @@ data = PSRI.initialize_study(
 @test 10 == PSRI.configuration_parameter(data, "MaximoIteracoes", 0)
 @test 10 == PSRI.configuration_parameter(data, "MaximoIteracoes", 0)
 @test 5000.0 == PSRI.configuration_parameter(data, "MinOutflowPenalty", 0.0)
+@test [500.0] == PSRI.configuration_parameter(data, "DeficitCost", [0.0])
+@test [100.0] == PSRI.configuration_parameter(data, "DeficitSegment", [0.0])
 
 #       --------------------------------------------
 #       Parte 3 - Obtem lista de entidades desejadas
