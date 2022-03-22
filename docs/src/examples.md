@@ -149,6 +149,49 @@ for stage in 1:PSRI.total_stages(data)
 end
 ```
 
+## Reading basic battery parameters
+
+This example is very alike "Reading basic thermal generator parameters", but it is necessary to be cautious about the diffence between elements. For instance, batteries have different parameters than thermal generators, therefore, our data structure must be defined accordingly:
+```@example batteries_pars
+Base.@kwdef mutable struct Batteries
+    names::Vector{String} = String[]
+    codes::Vector{Int32} = Int32[]
+    charge::Vector{Float64} = Float64[]
+    bat2sys::Vector{Int32} = Int32[]
+end
+```
+
+Stardard proceadure of reading data from file:
+```@example batteries_pars
+import PSRClassesInterface
+const PSRI = PSRClassesInterface
+
+PATH_CASE_EXAMPLE_BATTERIES = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "caso1")
+
+data = PSRI.initialize_study(
+    PSRI.OpenInterface(),
+    data_path = PATH_CASE_EXAMPLE_BATTERIES
+)
+```
+
+And now the struct may be instantiated by setting its appropriate parameters:
+```@example batteries_pars
+batteries = Batteries()
+batteries.names = PSRI.get_name(data, "PSRBatteries")
+batteries.codes = PSRI.get_code(data, "PSRBatteries")
+batteries.charge = PSRI.mapped_vector(data, "PSRBatteries", "Existing", Float64)
+batteries.bat2sys = PSRI.get_map(data, "PSRBatteries", "PSRSystem")
+```
+
+Finally, we are able to navigate parameters along different stages:
+```@example batteries_pars
+for stage in 1:PSRI.total_stages(data)
+    PSRI.go_to_stage(data, stage)
+    PSRI.update_vectors!(data)
+    println("Battery 2 charge at stage $stage $(batteries.charge[2])")
+end
+```
+
 ## Determining subsystem from a certain hydro plant
 
 In this example we will demonstrate how to make a simple use of a relationship map. That will be achieved by determining a subsystem from a certain hydro plant through its parameters. The program will initiate by the standard reading procedure:
@@ -169,4 +212,33 @@ Next, the maps between hydroplants and systems is retrieved by the `get_map` met
 hyd2sys = PSRI.get_map(data, "PSRHydroPlant","PSRSystem")
 ```
 
-The `hyd2sys` variable shows us that the first and second hydroplants belong to subsystem 1.
+## Determining buses from a certain thermal plant
+This case consists of a more advanced use of a relationship map. We'll determine which buses are linked to a given target thermal plant, while there is no direct relationship between both. Firstly, the study data is read:
+```@example the_by_bus
+import PSRClassesInterface
+const PSRI = PSRClassesInterface
+
+PATH_CASE_EXAMPLE_BUS = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "caso1")
+
+data = PSRI.initialize_study(
+    PSRI.OpenInterface(),
+    data_path = PATH_CASE_EXAMPLE_BUS
+)
+```
+
+Whereas there is no direct link between buses and thermal plants, both are indirectly related through generators. Therefore, we must identify those relationships by calling `get_map` for each:
+```@example the_by_bus
+gen2the = PSRI.get_map(data, "PSRGenerator","PSRThermalPlant")
+gen2bus = PSRI.get_map(data, "PSRGenerator", "PSRBus")
+```
+
+Next, we can find which generators are linked to our target thermal plant by the indexes of `gen2the`:
+```@example the_by_bus
+targetThe = TARGET_THERMAL_PLANT_INDEX
+targetGen = findall(x->x==targetThe,gen2the)
+```
+
+`targetGen` now holds the indexes of generators that are linked to the buses we are trying to identify. With those at hand, the indexes of the buses are easily identifiable by:
+```@example the_by_bus
+targetBus = gen2bus[targetGen]
+```
