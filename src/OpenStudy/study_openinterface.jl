@@ -739,6 +739,35 @@ function configuration_parameter(
     return out
 end
 
+function configuration_parameter(
+    data::Data,
+    name::String,
+    default::Vector{T}
+) where T <: MainTypes
+    if haskey(data.extra_config, name)
+        val = dict[name]
+        return _cast.(T, val)
+    end
+    raw = _raw(data)
+    study_data = raw["PSRStudy"][1]
+    exec = get(study_data, "ExecutionParameters", _GET_DICT)
+    chro = get(study_data, "ChronologicalData", _GET_DICT)
+    hour = get(study_data, "HourlyData", _GET_DICT)
+    if haskey(exec, name)
+        pre_out = exec[name]
+        return _cast.(T, pre_out)
+    elseif haskey(chro, name)
+        pre_out = chro[name]
+        return _cast.(T, pre_out)
+    elseif haskey(hour, name)
+        pre_out = hour[name]
+        return _cast.(T, pre_out)
+    end
+    pre_out = get(study_data, name, default)
+    out = _cast.(T, pre_out)
+    return out
+end
+
 _cast(::Type{T}, val::T) where T = val
 function _cast(::Type{T}, val::String) where T
     return parse(T, val)

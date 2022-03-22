@@ -212,18 +212,6 @@ Next, the maps between hydroplants and systems is retrieved by the `get_map` met
 hyd2sys = PSRI.get_map(data, "PSRHydroPlant","PSRSystem")
 ```
 
-The mapping is determined in accordance to the indexing of elements in the `.JSON` structure. Therefore, given that we only the code of our target hydro plant, we must find its index inside its section at the file. That can be done as:
-```@example sys_by_gaug
-hydCode = 1
-hydPlants = PSRI.get_code(data, "PSRHydroPlant")
-hydidx = findall( x -> x == hydCode, hydPlants)[1]
-```
-
-Finally, we are able to determine the subsystem index using the relationship map and hydro plant index:
-```@example sys_by_gaug
-sysidx = hyd2sys[hydidx]
-```
-
 ## Determining buses from a certain thermal plant
 This case consists of a more advanced use of a relationship map. We'll determine which buses are linked to a given target thermal plant, while there is no direct relationship between both. Firstly, the study data is read:
 ```@example the_by_bus
