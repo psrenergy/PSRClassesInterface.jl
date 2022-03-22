@@ -105,6 +105,29 @@ PSRI.close(ior)
 rm(FILE_PATH; force = true)
 ```
 
+## Reading configuration parameters 
+
+Most cases have configuration parameters such as the maximum number of iterations, the discount rate, the deficit cost etc. The
+function [`PSRI.configuration_parameter`](@ref) reads all the parameters from the cases.
+
+```@example thermal_gens_pars
+import PSRClassesInterface
+const PSRI = PSRClassesInterface
+
+PATH_CASE_EXAMPLE_CONFIGS = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "caso0")
+
+data = PSRI.initialize_study(
+    PSRI.OpenInterface(),
+    data_path = PATH_CASE_EXAMPLE_CONFIGS
+)
+
+PSRI.configuration_parameter(data, "TaxaDesconto", 0.0)
+PSRI.configuration_parameter(data, "MaximoIteracoes", 0)
+PSRI.configuration_parameter(data, "MaximoIteracoes", 0)
+PSRI.configuration_parameter(data, "MinOutflowPenalty", 0.0)
+PSRI.configuration_parameter(data, "DeficitCost", [0.0])
+```
+
 ## Reading basic thermal generator parameters
 
 In this example we will map parameters of thermal generators at each stage of the study to a struct.
@@ -177,19 +200,10 @@ data = PSRI.initialize_study(
 And now the struct may be instantiated by setting its appropriate parameters:
 ```@example batteries_pars
 batteries = Batteries()
-batteries.names = PSRI.get_name(data, "PSRBatteries")
-batteries.codes = PSRI.get_code(data, "PSRBatteries")
-batteries.charge = PSRI.mapped_vector(data, "PSRBatteries", "Existing", Float64)
-batteries.bat2sys = PSRI.get_map(data, "PSRBatteries", "PSRSystem")
-```
-
-Finally, we are able to navigate parameters along different stages:
-```@example batteries_pars
-for stage in 1:PSRI.total_stages(data)
-    PSRI.go_to_stage(data, stage)
-    PSRI.update_vectors!(data)
-    println("Battery 2 charge at stage $stage $(batteries.charge[2])")
-end
+batteries.names = PSRI.get_name(data, "PSRBattery")
+batteries.codes = PSRI.get_code(data, "PSRBattery")
+batteries.charge = PSRI.mapped_vector(data, "PSRBattery", "Existing", Int32)
+batteries.bat2sys = PSRI.get_map(data, "PSRBattery", "PSRSystem")
 ```
 
 ## Determining subsystem from a certain hydro plant
@@ -213,6 +227,7 @@ hyd2sys = PSRI.get_map(data, "PSRHydroPlant","PSRSystem")
 ```
 
 ## Determining buses from a certain thermal plant
+
 This case consists of a more advanced use of a relationship map. We'll determine which buses are linked to a given target thermal plant, while there is no direct relationship between both. Firstly, the study data is read:
 ```@example the_by_bus
 import PSRClassesInterface
@@ -228,17 +243,17 @@ data = PSRI.initialize_study(
 
 Whereas there is no direct link between buses and thermal plants, both are indirectly related through generators. Therefore, we must identify those relationships by calling `get_map` for each:
 ```@example the_by_bus
-gen2the = PSRI.get_map(data, "PSRGenerator","PSRThermalPlant")
+gen2thermal = PSRI.get_map(data, "PSRGenerator","PSRThermalPlant")
 gen2bus = PSRI.get_map(data, "PSRGenerator", "PSRBus")
 ```
 
 Next, we can find which generators are linked to our target thermal plant by the indexes of `gen2the`:
 ```@example the_by_bus
-targetThe = TARGET_THERMAL_PLANT_INDEX
-targetGen = findall(x->x==targetThe,gen2the)
+target_thermal = 1
+target_generator = findall(isequal(target_thermal), gen2thermal)
 ```
 
-`targetGen` now holds the indexes of generators that are linked to the buses we are trying to identify. With those at hand, the indexes of the buses are easily identifiable by:
+`target_generator` now holds the indexes of generators that are linked to the buses we are trying to identify. With those at hand, the indexes of the buses are easily identifiable by:
 ```@example the_by_bus
-targetBus = gen2bus[targetGen]
+targetBus = gen2bus[target_generator]
 ```

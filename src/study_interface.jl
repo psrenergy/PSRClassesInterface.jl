@@ -280,6 +280,32 @@ function get_nonempty_vector end
 const MainTypes = Union{Float64, Int32, String, Dates.Date}
 
 """
-    configuration_parameter
+    configuration_parameter(
+        data::AbstractData,
+        name::String,
+        default::T
+    ) where T <: MainTypes
+
+Returns the required configuration parameter from the case. If the parameter is not registered returns the default value.
+
+Example:
+```
+PSRI.configuration_parameter(data, "MaximoIteracoes", 0)
+PSRI.configuration_parameter(data, "MinOutflowPenalty", 0.0)
+```
+---------
+
+    configuration_parameter(
+        data::Data,
+        name::String,
+        default::Vector{T}
+    ) where T <: MainTypes
+
+Returns the rquired configuration parameters from the case that are vectors that are vectors. If the parameter is not registered returns the default value.
+
+Example:
+```
+PSRI.configuration_parameter(data, "DeficitCost", [0.0])
+```
 """
 function configuration_parameter end
