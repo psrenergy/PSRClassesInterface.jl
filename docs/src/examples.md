@@ -71,14 +71,16 @@ To read the data directly use the function [`PSRI.file_to_array`](@ref) or [`PSR
 ```@example rw_file
 data_from_file = PSRI.file_to_array(
         PSRI.OpenBinary.Reader, 
-        FILE_PATH
+        FILE_PATH,
+        false,
     )
 
 @assert data_from_file_and_header == time_series_data
 
 data_from_file_and_header, header = PSRI.file_to_array_and_header(
         PSRI.OpenBinary.Reader, 
-        FILE_PATH
+        FILE_PATH,
+        false,
     )
 
 @assert data_from_file_and_header == time_series_data

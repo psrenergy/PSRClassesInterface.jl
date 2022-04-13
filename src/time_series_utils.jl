@@ -133,18 +133,23 @@ end
 function file_to_array(
     ::Type{T},
     path::String,
+    use_header::Bool = true,
+    header::Vector{String} = String[],
 ) where T <: AbstractReader
-    return file_to_array_and_header(T, path)[1]
+    return file_to_array_and_header(T, path, use_header, header)[1]
 end
 
 function file_to_array_and_header(
     ::Type{T},
     path::String,
+    use_header::Bool = true,
+    header::Vector{String} = String[],
 ) where T <: AbstractReader
     io = open(
         T,
         path,
-        use_header = false,
+        use_header = use_header,
+        header = header,
     )
     stages = max_stages(io)
     scenarios = max_scenarios(io)

@@ -182,11 +182,13 @@ function test_file_to_array()
     data, header = PSRI.file_to_array_and_header(
         PSRI.OpenBinary.Reader,
         FILE_PATH,
+        false,
     )
 
     @test data == PSRI.file_to_array(
         PSRI.OpenBinary.Reader,
         FILE_PATH,
+        false,
     )
 
     PSRI.array_to_file(
