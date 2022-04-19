@@ -181,28 +181,28 @@ function test_file_to_array()
 
     data, header = PSRI.file_to_array_and_header(
         PSRI.OpenBinary.Reader,
-        FILE_PATH,
-        use_header=false,
+        FILE_PATH;
+        use_header=false
     )
 
     data_order, header_order = PSRI.file_to_array_and_header(
         PSRI.OpenBinary.Reader,
-        FILE_PATH,
+        FILE_PATH;
         use_header=true,
-        header=["Y", "Z", "X"],
+        header=["Y", "Z", "X"]
     )
 
     @test data == PSRI.file_to_array(
         PSRI.OpenBinary.Reader,
-        FILE_PATH,
-        use_header=false,
+        FILE_PATH;
+        use_header=false
     )
 
     @test data_order == PSRI.file_to_array(
         PSRI.OpenBinary.Reader,
-        FILE_PATH,
+        FILE_PATH;
         use_header=true,
-        header=["Y", "Z", "X"],
+        header=["Y", "Z", "X"]
     )
 
     @test data_order[1] == data[2] # "Y"

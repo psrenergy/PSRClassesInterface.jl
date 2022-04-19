@@ -71,15 +71,15 @@ To read the data directly use the function [`PSRI.file_to_array`](@ref) or [`PSR
 ```@example rw_file
 data_from_file = PSRI.file_to_array(
         PSRI.OpenBinary.Reader, 
-        FILE_PATH,
-        use_header=false,
+        FILE_PATH;
+        use_header=false
     )
 
 @assert maximum(abs.(data_from_file - time_series_data)) < 1E-7
 
 data_from_file_and_header, header = PSRI.file_to_array_and_header(
         PSRI.OpenBinary.Reader, 
-        FILE_PATH,
+        FILE_PATH;
         use_header=false
     )
 @assert all(isapprox.(data_from_file_and_header, time_series_data, atol=1E-7))
@@ -111,7 +111,7 @@ To choose the agents order use `use_header` and `header`
 ```@example rw_file
 data_from_file = PSRI.file_to_array(
         PSRI.OpenBinary.Reader, 
-        FILE_PATH,
+        FILE_PATH;
         use_header=true,
         header=["Agent 5", "Agent 2", "Agent 3", "Agent 4", "Agent 1"]
     )
