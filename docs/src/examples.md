@@ -82,8 +82,7 @@ data_from_file_and_header, header = PSRI.file_to_array_and_header(
         FILE_PATH,
         use_header=false
     )
-
-@assert maximum(abs.(data_from_file_and_header - time_series_data)) < 1E-7
+@assert all(isapprox.(data_from_file_and_header, time_series_data, atol=1E-7))
 ```
 
 To read the data iteractively use the function [`PSRI.open`](@ref) to create an [`PSRI.AbstractReader`](@ref) and
@@ -116,9 +115,8 @@ data_from_file = PSRI.file_to_array(
         use_header=true,
         header=["Agent 5", "Agent 2", "Agent 3", "Agent 4", "Agent 1"]
     )
-
-@assert maximum(abs.(data_from_file[1] - time_series_data[end])) < 1E-7
-@assert maximum(abs.(data_from_file[end] - time_series_data[1])) < 1E-7
+@assert all(isapprox.(data_from_file[1], time_series_data[end], atol=1E-7))
+@assert all(isapprox.(data_from_file[end], time_series_data[1], atol=1E-7))
 '''
 
 ## Reading configuration parameters 
