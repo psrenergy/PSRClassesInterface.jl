@@ -43,14 +43,14 @@ abstract type AbstractWriter end
 # Reader functions
 
 """
-    PSRI.file_to_array(::Type{T}, path::String, use_header::Bool = true, header::Vector{String} = String[]) where T <: AbstractReader
+    PSRI.file_to_array(::Type{T}, path::String; use_header::Bool = true, header::Vector{String} = String[]) where T <: AbstractReader
 
 Write a file to an array
 """
 function file_to_array end
 
 """
-    PSRI.file_to_array_and_header(::Type{T}, path::String, use_header::Bool = true, header::Vector{String} = String[]) where T <: AbstractReader
+    PSRI.file_to_array_and_header(::Type{T}, path::String; use_header::Bool = true, header::Vector{String} = String[]) where T <: AbstractReader
 
 Write a file to an array and header
 """
