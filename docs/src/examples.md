@@ -154,7 +154,7 @@ data = PSRI.initialize_study(
 )
 ```
 
-We can initialize the struct with the parameters of the first stage.
+We can initialize the struct with the parameters of the first stage using the function [`PSRI.mapped_vector`](@ref)
 ```@example thermal_gens_pars
 therm_gen = ThermalGenerators()
 therm_gen.names = PSRI.get_name(data, "PSRThermalPlant")
@@ -174,12 +174,12 @@ end
 
 ## Reading basic battery parameters
 
-This example is very alike "Reading basic thermal generator parameters", but it is necessary to be cautious about the diffence between elements. For instance, batteries have different parameters than thermal generators, therefore, our data structure must be defined accordingly:
+This example is very similar to "Reading basic thermal generator parameters", but it is necessary to be cautious about the diffence between elements. For instance, batteries have different parameters than thermal generators, therefore, our data structure must be defined accordingly:
 ```@example batteries_pars
 Base.@kwdef mutable struct Batteries
     names::Vector{String} = String[]
     codes::Vector{Int32} = Int32[]
-    charge::Vector{Float64} = Float64[]
+    charge_eff::Vector{Float64} = Float64[]
     bat2sys::Vector{Int32} = Int32[]
 end
 ```
@@ -202,7 +202,7 @@ And now the struct may be instantiated by setting its appropriate parameters:
 batteries = Batteries()
 batteries.names = PSRI.get_name(data, "PSRBattery")
 batteries.codes = PSRI.get_code(data, "PSRBattery")
-batteries.charge = PSRI.mapped_vector(data, "PSRBattery", "Existing", Int32)
+batteries.charge_eff = PSRI.mapped_vector(data, "PSRBattery", "ChargeEffic", Int32)
 batteries.bat2sys = PSRI.get_map(data, "PSRBattery", "PSRSystem")
 ```
 

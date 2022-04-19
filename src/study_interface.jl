@@ -45,7 +45,21 @@ abstract type AbstractData end
 abstract type AbstractStudyInterface end
 
 """
-    initialize_study
+    initialize_study(::AbstractStudyInterface; kwargs...)
+
+Initialize all data structures of the study.
+
+!!! note "Differences between the OpenInterface and ClassicInterface"
+    Each study interface has its own set of kwargs... The easiest way to inspect the current
+    available options is searching for this function on the Github repo of the desired interface.
+
+Example:
+```julia
+data = PSRI.initialize_study(
+    PSRI.OpenInterface(),
+    data_path = PATH_CASE_EXAMPLE_BATTERIES
+)
+```
 """
 function initialize_study end
 
@@ -109,7 +123,26 @@ function get_reverse_map end
 function get_reverse_vector_map end
 
 """
-    get_parms
+    get_parms(
+        data::AbstractData,
+        col::String,
+        name::String,
+        ::Type{T};
+        check_type::Bool = true,
+        check_parm::Bool = true,
+        ignore::Bool = false,
+        default::T = _default_value(T),
+    ) where T
+
+Returns a `Vector{T}` containing the elements in `col` to a vector in julia. This function is
+used to get data from collections that don't vary over time
+
+Example:
+```julia
+PSRI.get_parms(data, "PSRBattery", "Einic", Float64)
+PSRI.get_parms(data, "PSRBattery", "ChargeRamp", Float64)
+PSRI.get_parms(data, "PSRBattery", "DischargeRamp", Float64)
+```
 """
 function get_parms end
 
@@ -139,7 +172,34 @@ PSRI.get_name(data, "PSRGaugingStation")
 function get_name end
 
 """
-    mapped_vector
+    mapped_vector(
+        data::AbstractData,
+        col::String,
+        name::String,
+        ::Type{T},
+        dim1::String="",
+        dim2::String="";
+        ignore::Bool=false,
+        map_key = col, # reference for PSRMap pointer, if empty use class name
+        filters = String[], # for calling just within a subset instead of the full call
+    ) where T
+
+Maps a `Vector{T}` containing the elements in `col` to a vector in julia. When the function [`update_vectors!`](@ref) 
+is called the elements of the vector will be updated to the according elements registered at the current `data.time_controller`.
+
+Example:
+```julia
+existing = PSRI.mapped_vector(data, "PSRThermalPlant", "Existing", Int32)
+pot_inst = PSRI.mapped_vector(data, "PSRThermalPlant", "PotInst", Float64)
+```
+
+For more information please read the example [Reading basic thermal generator parameters](@ref)
+
+!!! note "Differences between the OpenInterface and ClassicInterface"
+    When using `mapped_vector` in the `OpenInterface` mode the vector will be mapped 
+    with the correct values at first hand. When using `mapped_vector` in the 
+    `ClassicInterface` mode you should call [`update_vectors!`](@ref) to get the 
+    good values for the collection, otherwise you might only get a vector of zeros.
 """
 function mapped_vector end
 
@@ -159,6 +219,12 @@ function go_to_dimension end
     update_vectors!(data::AbstractData)
 
 Update all mapped vectors according to the time controller inside `data`.
+
+---------
+
+    update_vectors!(data::Data, filters::Vector{String})
+
+Update filtered classes of mapped vectors according to the time controller inside `data`.
 """
 function update_vectors! end
 
