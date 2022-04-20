@@ -50,7 +50,7 @@ abstract type AbstractStudyInterface end
 Initialize all data structures of the study.
 
 !!! note "Differences between the OpenInterface and ClassicInterface"
-    Each study interface has its own set of kwargs... The easiest way to inspect the current
+    Each study interface has its own set of `kwargs...` The easiest way to inspect the current
     available options is searching for this function on the Github repo of the desired interface.
 
 Example:
@@ -342,6 +342,8 @@ function get_nonempty_vector end
 
 """
     MainTypes = Union{Float64, Int32, String, Dates.Date}
+
+All the data from the databases must have one of these types.
 """
 const MainTypes = Union{Float64, Int32, String, Dates.Date}
 
