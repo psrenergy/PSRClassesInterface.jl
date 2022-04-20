@@ -31,12 +31,12 @@ end
 # "PSR_STAGETYPE_YEARLY" => 10,
 
 """
-    AbstractReader
+    PSRI.AbstractReader
 """
 abstract type AbstractReader end
 
 """
-    AbstractWriter
+    PSRI.AbstractWriter
 """
 abstract type AbstractWriter end
 
