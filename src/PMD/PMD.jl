@@ -1,6 +1,8 @@
 module PMD
 
-import Dates
+import PSRClassesInterface
+# Load packages defined in the upper module PSRClassesInterface
+import PSRClassesInterface.Dates
 
 const _PMDS_BASE_PATH = joinpath(@__DIR__(), "pmds")
 

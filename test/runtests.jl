@@ -2,6 +2,7 @@ import PSRClassesInterface
 import Dates
 using Test
 const PSRI = PSRClassesInterface
+using CSV
 
 PATH_CASE_0 = joinpath(".", "data", "caso0")
 

@@ -1,8 +1,9 @@
 module OpenCSV
 
 import PSRClassesInterface
-import Dates
-import CSV
+# Load packages defined in the upper module PSRClassesInterface
+import PSRClassesInterface.Dates
+import PSRClassesInterface.CSV
 
 const PSRI = PSRClassesInterface
 

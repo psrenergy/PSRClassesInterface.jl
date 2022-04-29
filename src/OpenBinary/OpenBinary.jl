@@ -1,7 +1,8 @@
 module OpenBinary
 
 import PSRClassesInterface
-import Dates
+# Load packages defined in the upper module PSRClassesInterface
+import PSRClassesInterface.Dates
 
 const PSRI = PSRClassesInterface
 
