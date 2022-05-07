@@ -1,6 +1,6 @@
 import PSRClassesInterface
 import Dates
-import GrafCSV
+# import GrafCSV
 using Test
 const PSRI = PSRClassesInterface
 
@@ -29,6 +29,6 @@ PATH_CASE_0 = joinpath(".", "data", "caso0")
         @time include("reader_mapper.jl")
     end
     @testset "TS Utils" begin
-        @time include("time_series_utils.jl")
+        # @time include("time_series_utils.jl")
     end
 end

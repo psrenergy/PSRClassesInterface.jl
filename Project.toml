@@ -12,7 +12,6 @@ julia = "1.6"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-GrafCSV = "070ba913-1d04-4147-8b30-d43c8af0fb3e"
 
 [targets]
-test = ["Test", "GrafCSV"]
+test = ["Test"]
