@@ -1,5 +1,6 @@
 import PSRClassesInterface
 import Dates
+import GrafCSV
 using Test
 const PSRI = PSRClassesInterface
 
@@ -15,14 +16,6 @@ PATH_CASE_0 = joinpath(".", "data", "caso0")
     end
     @testset "Read json durations" begin
         @time include("duration.jl")
-    end
-    @testset "OpenCSV file format" begin
-        @testset "Read and write with monthlydata" begin
-            @time include("OpenCSV/read_and_write_monthly.jl")
-        end
-        @testset "Read and write with hourlydata" begin
-            @time include("OpenCSV/read_and_write_hourly.jl")
-        end
     end
     @testset "OpenBinary file format" begin
         @testset "Read and write with monthlydata" begin

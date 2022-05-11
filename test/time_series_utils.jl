@@ -41,12 +41,12 @@ function test_convert_twice()
 
     PSRI.convert_file(
         PSRI.OpenBinary.Reader,
-        PSRI.OpenCSV.Writer,
+        GrafCSV.Writer,
         FILE_PATH,
     )
 
     ior = PSRI.open(
-        PSRI.OpenCSV.Reader,
+        GrafCSV.Reader,
         FILE_PATH,
         use_header = false
     )
@@ -88,7 +88,7 @@ function test_convert_twice()
     FILE_PATH_2 = joinpath(".", "example_convert_2")
 
     PSRI.convert_file(
-        PSRI.OpenCSV.Reader,
+        GrafCSV.Reader,
         PSRI.OpenBinary.Writer,
         FILE_PATH,
         path_to = FILE_PATH_2,
@@ -210,7 +210,7 @@ function test_file_to_array()
     @test data_order[3] == data[1] # "X"
 
     PSRI.array_to_file(
-        PSRI.OpenCSV.Writer,
+        GrafCSV.Writer,
         FILE_PATH,
         data,
         agents = header,
@@ -219,7 +219,7 @@ function test_file_to_array()
     )
 
     ior = PSRI.open(
-        PSRI.OpenCSV.Reader,
+        GrafCSV.Reader,
         FILE_PATH,
         use_header = false
     )
@@ -417,7 +417,7 @@ function test_non_unique_agents()
         initial_year = 2006,
     )
     @test_throws ErrorException iow = PSRI.open(
-        PSRI.OpenCSV.Writer,
+        GrafCSV.Writer,
         FILE_PATH,
         blocks = BLOCKS,
         scenarios = SCENARIOS,
