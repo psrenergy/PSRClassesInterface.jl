@@ -122,6 +122,17 @@ end
 # TODO: preprocess date vectors
 # TODO: informs about empty slots (beyond classes)
 
+function _merge_collections!(data::Data)
+    raw = _raw(data)
+    #PSRSerie <= PSRTransformer
+    if haskey(raw, "PSRSerie") && haskey(raw, "PSRTransformer") 
+        append!(raw["PSRSerie"], raw["PSRTransformer"])
+    elseif haskey(raw, "PSRTransformer") 
+        raw["PSRSerie"] = raw["PSRTransformer"]
+    end
+    nothing
+end
+
 function initialize_study(
     ::OpenInterface;
     data_path = "",
@@ -130,6 +141,9 @@ function initialize_study(
     log_file = "",
     verbose = true,
     extra_config_file::String = "",
+
+    #merge collections
+    add_transformers_to_series::Bool = true,
 )
     if !isdir(data_path)
         error("$data_path is not a valid directory")
@@ -195,6 +209,9 @@ function initialize_study(
         log_file = file,
         verbose = verbose,
     )
+    if add_transformers_to_series
+        _merge_collections!(data)
+    end
 
     if duration_mode == VARIABLE_DURATION
         _variable_duration_to_file!(data)
