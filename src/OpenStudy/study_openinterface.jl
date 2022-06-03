@@ -122,9 +122,8 @@ end
 # TODO: preprocess date vectors
 # TODO: informs about empty slots (beyond classes)
 
-function _merge_collections!(data::Data)
+function _merge_psr_transformer_and_psr_serie!(data::Data)
     raw = _raw(data)
-    #PSRSerie <= PSRTransformer
     if haskey(raw, "PSRSerie") && haskey(raw, "PSRTransformer") 
         append!(raw["PSRSerie"], raw["PSRTransformer"])
     elseif haskey(raw, "PSRTransformer") 
@@ -210,7 +209,7 @@ function initialize_study(
         verbose = verbose,
     )
     if add_transformers_to_series
-        _merge_collections!(data)
+        _merge_psr_transformer_and_psr_serie!(data)
     end
 
     if duration_mode == VARIABLE_DURATION
