@@ -395,8 +395,11 @@ PSRI.current_stage(graf::Reader) = graf.stage_current
 PSRI.current_scenario(graf::Reader) = graf.scenario_current
 PSRI.current_block(graf::Reader) = graf.block_current
 
-function PSRI.agent_names(graf::Reader)
+function unsafe_agent_names(graf::Reader)
     return graf.agent_names
+end
+function PSRI.agent_names(graf::Reader)
+    return deepcopy(unsafe_agent_names(graf))
 end
 
 function PSRI.goto(graf::Reader, t::Integer, s::Integer = 1, b::Integer = 1)
