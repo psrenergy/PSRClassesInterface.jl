@@ -70,11 +70,11 @@ function psrbin_to_parquet(FILE_PATH::String, FILE_NAME::String)
     #=
         Read data
     =#
-    global line = 0
+    line = 0
     for stage = 1:n_stages, scenario = 1:n_scenarios, block = 1:n_blocks
         PSRI.goto(bin_input, stage, scenario, block)
         # PSRI.next_registry(bin_input)
-        global line += 1
+        line += 1
         ref_from_file[STAGE_REF][line] = stage
         ref_from_file[SCENARIO_REF][line] = scenario
         ref_from_file[BLOCK_REF][line] = block
