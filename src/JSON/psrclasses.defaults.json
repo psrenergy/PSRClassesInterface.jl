@@ -1,0 +1,17 @@
+{
+    "PSRStudy": {},
+    "PSRDemand": {},
+    "PSRDemandSegment": {},
+    "PSRElectrificationNetwork": {},
+    "PSRFuel": {},
+    "PSRGasNetwork": {},
+    "PSRGaugingStation": {},
+    "PSRHydroPlant": {},
+    "PSRHydrologicalNetwork": {},
+    "PSRHydrologicalPlantNetwork": {},
+    "PSRInterconnectionNetwork": {},
+    "PSRNetwork": {},
+    "PSRNetworkDC": {},
+    "PSRSystem": {},
+    "PSRThermalPlant": {}
+}

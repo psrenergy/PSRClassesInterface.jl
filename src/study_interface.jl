@@ -377,3 +377,44 @@ PSRI.configuration_parameter(data, "DeficitCost", [0.0])
 ```
 """
 function configuration_parameter end
+
+"""
+    create_element(
+        data::Data,
+        name::String,
+    )
+
+Example:
+```
+index = PSRI.create_element(data, "PSRClass")
+
+PSRI.set_parm!(data, "PSRClass", index, "value", 0.0, Float64)
+```
+
+```
+index = PSRI.create_element(data, "PSRClass")
+
+element = PSRI.get_element(data, "PSRClass", index)
+```
+""" function create_element end
+
+"""
+    get_element(
+        data::Data,
+        name::String,
+        index::Integer,
+    )
+
+""" function get_element end
+
+"""
+    set_parm!(
+        data::Data,
+        name::String,
+        index::Integer,
+        attr::String,
+        value::Any,
+        type::Type,
+    )
+
+""" function set_parm! end

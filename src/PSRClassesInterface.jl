@@ -26,4 +26,7 @@ include("OpenStudy/study_openinterface.jl")
 include("OpenStudy/duration.jl")
 include("OpenStudy/relations.jl")
 
+# study API
+include("study_api.jl")
+
 end
