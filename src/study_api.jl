@@ -72,15 +72,24 @@ function get_element(
 end
 
 function set_parm!(
-    data::AbstractData,
+    data::Data,
     name::String,
     index::Integer,
     attr::String,
-    value::Any,
-    type::Type,
-    )
+    value::T,
+    ) where T <: MainTypes
     # ~ This is assumed to be a mutable dictionary.
     element = get_element(data, name, index)
+
+    @assert haskey(data.data_struct, name)
+
+    class_struct = data.data_struct[name]
+
+    @assert haskey(class_struct, attr)
+
+    attr_data = class_struct[attr]::Attribute
+
+    @assert !attr_data.is_vector
 
     # ~ In fact, all attributes must be set beforehand.
     # ~ Schema validation would be useful here, since there would be no need
@@ -92,12 +101,7 @@ function set_parm!(
         error("Invalid attribute '$attr' for object of type '$name'")
     end
 
-    # ~ How is type assertion supposed to happen?
-    element[attr] = convert(type, value)
-    # ~ Another option is to assert types without any `convert` call.
-    # > element[attr] = value::type
+    element[attr] = value::attr_data.type
 
-    # ~ Maybe return the (converted?) value that has just been set.
-    # > element[attr]
     nothing
 end
