@@ -273,17 +273,86 @@ PSRI.get_map(data, "PSRHydroPlant", "PSRHydroPlant", relation_type = PSRI.RELATI
 function get_map end
 
 """
-    get_vector_map
+    get_vector_map(
+        data::Data,
+        collection_from::String,
+        collection_to::String;
+        relation_type::RelationType = RELATION_1_TO_N,
+    )
+
+Returns a `Vector{Vector{Int32}}` to represent the relation between each element
+of `collection_from` to multiple elements of `collection_to`.
+
+Since multiple relations might be available one might need to specify
+`relation_type`.
+
+Example:
+```
+PSRI.get_vector_map(data, "PSRInterconnectionSumData", "PSRInterconnection")
+PSRI.get_vector_map(data, "PSRReserveGenerationConstraintData", "PSRHydroPlant")
+PSRI.get_vector_map(data, "PSRReserveGenerationConstraintData", "PSRThermalPlant", relation_type = PSRI.RELATION_BACKED)
+```
 """
 function get_vector_map end
 
 """
-    get_reverse_map
+    get_reverse_map(
+        data::AbstractData,
+        lst_from::String,
+        lst_to::String;
+        original_relation_type::RelationType = RELATION_1_TO_1,
+    )
+
+Obtains the relation between `lst_from` and `lst_to` though `original_relation_type`.
+But returns a `Vector{Int32}` with the relation reversed.
+Some relations cannot be reversed this way since they are not bijections,
+in this case use `get_reverse_vector_map`.
+
+See also `get_map`, `get_vector_map`, `get_reverse_vector_map`.
+
+Example:
+
+```
+PSRI.get_reverse_map(data, "PSRMaintenanceData", "PSRHydroPlant")
+# which is te reverse of
+PSRI.get_map(data, "PSRMaintenanceData", "PSRHydroPlant")
+
+
+PSRI.get_reverse_map(data, "PSRGenerator", "PSRThermalPlant")
+# which is the reverse of
+PSRI.get_map(data, "PSRGenerator", "PSRThermalPlant")
+``` 
 """
 function get_reverse_map end
 
 """
-    get_reverse_vector_map
+    get_reverse_vector_map(
+        data::AbstractData,
+        lst_from::String,
+        lst_to::String;
+        original_relation_type::RelationType = RELATION_1_TO_N,
+    )
+
+Obtains the relation between `lst_from` and `lst_to` though `original_relation_type`.
+But returns a `Vector{Vector{Int32}}` with the relation reversed.
+
+Some relations are bijections, in these cases it is also possible to use
+use `get_reverse_map`.
+
+See also `get_map`, `get_vector_map`, `get_reverse_vector_map`.
+
+Example:
+
+```
+# upstream turbining hydros
+PSRI.get_reverse_vector_map(data, "PSRHydroPlant", "PSRHydroPlant", original_relation_type = PSRI.RELATION_TURBINE_TO)
+# which is the reverse of
+PSRI.get_map(data, "PSRHydroPlant", "PSRHydroPlant", relation_type = PSRI.RELATION_TURBINE_TO)
+
+PSRI.get_reverse_vector_map(data, "PSRGenerator", "PSRBus", original_relation_type = PSRI.RELATION_1_TO_1)
+# which is the reverse of
+PSRI.get_map(data, "PSRGenerator", "PSRBus")
+```
 """
 function get_reverse_vector_map end
 
@@ -488,7 +557,20 @@ Goes to the `stage` in the `data` time controller.
 function go_to_stage end
 
 """
-    go_to_dimension
+    go_to_dimension(data::Data, name::String, value::Integer)
+
+Moves time controller reference of vectors indexed by dimension `name` to the
+index `value`.
+
+Example:
+```
+cesp = PSRI.mapped_vector(data, "PSRThermalPlant", "CEsp", Float64, "segment", "block")
+
+PSRI.go_to_stage(data, 1)
+
+PSRI.go_to_dimension(data, "segment", 1)
+PSRI.go_to_dimension(data, "block", 1)
+```
 """
 function go_to_dimension end
 
@@ -506,7 +588,9 @@ Update filtered classes of mapped vectors according to the time controller insid
 function update_vectors! end
 
 """
-    description
+    description(data::Data)
+
+Returns the study description if available.
 """
 function description end
 
@@ -608,12 +692,34 @@ Returns the duration, in hours, of the `block` at the current stage, set by `go_
 function block_duration end
 
 """
-    block_from_stage_hour
+    block_from_stage_hour(data::Data, t::Int, h::Int)
+
+Returns the block `b` associated with hour `h` at stage `t`.
+
+---------
+
+    block_from_stage_hour(data::Data, date::Dates.Date, h::Int)
+
+Returns the block `b` associated with hour `h` at date `date`.
 """
 function block_from_stage_hour end
 
 """
-    get_nonempty_vector
+    get_nonempty_vector(
+        data::Data,
+        colllection::String,
+        attribute::String,
+    )
+
+Returns a vector of booleans with the number of elements of the collection.
+`true` means the vector associated with the given attribute is non-emepty,
+`false` means it is empty.
+
+Example:
+```
+PSRI.get_nonempty_vector(data, "PSRThermalPlant", "ChroGerMin")
+PSRI.get_nonempty_vector(data, "PSRThermalPlant", "SpinningReserve")
+```
 """
 function get_nonempty_vector end
 

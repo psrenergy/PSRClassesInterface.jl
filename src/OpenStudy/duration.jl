@@ -61,7 +61,7 @@ function block_duration(data::Data, t::Int, b::Int)
     return _variable_stage_duration(data, t, b)
 end
 
-function block_from_stage_hour(data::Data, t::Int, h::Int)::Int
+function block_from_stage_hour(data::Data, t::Int, h::Int)
     if data.duration_mode != HOUR_BLOCK_MAP
         error("Cannot query block from study with duration mode: $(data.duration_mode)")
     end
@@ -69,7 +69,7 @@ function block_from_stage_hour(data::Data, t::Int, h::Int)::Int
     return data.hour_to_block[]
 end
 
-function block_from_stage_hour(data::Data, date::Dates.Date, h)
+function block_from_stage_hour(data::Data, date::Dates.Date, h::Int)
     t = _stage_from_date(date, data.stage_type, data.first_date)
     return block_from_stage_hour(data, t, h)
 end
