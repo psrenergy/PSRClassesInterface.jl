@@ -68,6 +68,13 @@ function _parse_pmd!(data_struct, FILE)
                     current_class = PMD._MODEL_TO_CLASS[model_name]
                     inside_model = true
                     data_struct[current_class] = Dict{String, Attribute}()
+                    # default attributes tha belong to "all classes"
+                    data_struct[current_class]["name"] = Attribute(
+                        "name", false, String, 0, "")
+                    data_struct[current_class]["code"] = Attribute(
+                        "code", false, Int32, 0, "")
+                    data_struct[current_class]["AVId"] = Attribute(
+                        "code", false, String, 0, "")
                     continue
                 end
             end

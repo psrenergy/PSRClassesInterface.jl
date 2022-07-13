@@ -5,6 +5,7 @@ import Dates
 const _PMDS_BASE_PATH = joinpath(@__DIR__(), "pmds")
 
 const _MODEL_TO_CLASS = Dict(
+    "SDDP_V10.2_ConfiguracaoEstudo" => "PSRStudy",
     "SDDP_V10.2_Sistema" => "PSRSystem",
     "SDDP_V10.2_Area" => "PSRArea",
     "SDDP_V10.2_CargaBarra" => "PSRLoad",

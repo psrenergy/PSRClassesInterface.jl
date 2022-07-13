@@ -23,6 +23,7 @@ include("OpenBinary/OpenBinary.jl")
 # main interface
 include("OpenStudy/pmd.jl")
 include("OpenStudy/study_openinterface.jl")
+include("OpenStudy/vector_map.jl")
 include("OpenStudy/duration.jl")
 include("OpenStudy/relations.jl")
 

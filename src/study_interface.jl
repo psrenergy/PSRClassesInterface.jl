@@ -64,9 +64,174 @@ data = PSRI.initialize_study(
 function initialize_study end
 
 """
-    get_vector
+    PSRI.get_vector(
+        data::Data,
+        collection::String,
+        attribute::String,
+        index::Integer,
+        ::Type{T};
+        default::T = _default_value(T),
+    ) where T
+
+Returns a `Vector{T}` of entries of the `attribute` of `collection` at the
+element with index `index`.
+
+Example:
+```
+PSRI.get_vector(data, "PSRGaugingStation", "Vazao", 1, Float64)
+PSRI.get_vector(data, "PSRGaugingStation", "Data", 1, Dates.Date)
+```
 """
 function get_vector end
+
+"""
+    PSRI.get_vector_1d(
+        data::Data,
+        collection::String,
+        attribute::String,
+        index::Integer,
+        ::Type{T};
+        default::T = _default_value(T),
+    ) where T
+
+Returns a `Vector{Vector{T}}` of entries of the `attribute` of `collection` at the
+element with index `index`.
+The outer vector contains one entry per index in dimension 1, while the inner
+vector is sized according to the main vector index which is tipicaaly time.
+
+Example:
+```
+PSRI.get_vector_1d(data, "PSRArea", "Export", 1, Float64)
+PSRI.get_vector_1d(data, "PSRLoad", "P", 1, Float64)
+```
+"""
+function get_vector_1d end
+
+"""
+    PSRI.get_vector_2d(
+        data::Data,
+        collection::String,
+        attribute::String,
+        index::Integer,
+        ::Type{T};
+        default::T = _default_value(T),
+    ) where T
+
+Returns a `Matrix{Vector{T}}` of entries of the `attribute` of `collection` at the
+element with index `index`.
+The outer matrix contains one entry per index in dimension 1 and dimension 2,
+while the inner
+vector is sized according to the main vector index which is tipicaaly time.
+
+Example:
+```
+PSRI.get_vector_2d(data, "PSRThermalPlant", "CEsp", 1, Float64)
+PSRI.get_vector_2d(data, "PSRFuelConsumption", "CEsp", 1, Float64)
+```
+"""
+function get_vector_2d end
+
+"""
+    PSRI.get_vectors(
+        data::Data,
+        collection::String,
+        attribute::String,
+        ::Type{T};
+        default::T = _default_value(T),
+    ) where T
+
+Returns a `Vector{Vector{T}}` of entries of the `attribute` of `collection`.
+Each entry of the outer vector corresponding to an element of the collection.
+
+Example:
+```
+PSRI.get_vectors(data, "PSRGaugingStation", "Vazao", Float64)
+PSRI.get_vectors(data, "PSRGaugingStation", "Data", Dates.Date)
+```
+"""
+function get_vectors(
+    data::AbstractData,
+    collection::String,
+    attribute::String,
+    ::Type{T};
+    default::T = _default_value(T),
+) where T
+    n = max_elements(data, collection)
+    out = Vector{T}[]
+    sizehint!(out, n)
+    for i in 1:n
+        push!(out, get_vector(data, collection, attribute, i, T, default = default))
+    end
+    return out
+end
+
+"""
+    PSRI.get_vectors_1d(
+        data::Data,
+        collection::String,
+        attribute::String,
+        ::Type{T},
+    ) where T
+
+Returns a `Vector{Vector{Vector{T}}}` of entries of the `attribute` of `collection`.
+Each entry of the outer vector corresponding to an element of the collection.
+For the containt of the 2 inner vectors see `get_vector_1d`.
+
+Example:
+```
+PSRI.get_vectors_1d(data, "PSRArea", "Export", Float64)
+PSRI.get_vectors_1d(data, "PSRLoad", "P", Float64)
+```
+"""
+function get_vectors_1d(
+    data::AbstractData,
+    collection::String,
+    attribute::String,
+    ::Type{T};
+    default::T = _default_value(T),
+) where T
+    n = max_elements(data, collection)
+    out =  Vector{Vector{T}}[]
+    sizehint!(out, n)
+    for i in 1:n
+        push!(out, get_vector_1d(data, collection, attribute, i, T, default = default))
+    end
+    return out
+end
+
+"""
+    PSRI.get_vectors_2d(
+        data::Data,
+        collection::String,
+        attribute::String,
+        ::Type{T},
+    ) where T
+
+Returns a `Vector{Matrix{Vector{T}}}` of entries of the `attribute` of `collection`.
+Each entry of the outer vector corresponding to an element of the collection.
+For the containt of the `Matrix{Vector{T}}` see `get_vector_2d`.
+
+Example:
+```
+PSRI.get_vectors_2d(data, "PSRThermalPlant", "CEsp", Float64)
+PSRI.get_vectors_2d(data, "PSRFuelConsumption", "CEsp", Float64)
+```
+"""
+function get_vectors_2d(
+    data::AbstractData,
+    collection::String,
+    attribute::String,
+    ::Type{T};
+    default::T = _default_value(T),
+) where T
+    n = max_elements(data, collection)
+    out = Matrix{Vector{T}}[]
+    sizehint!(out, n)
+    for i in 1:n
+        push!(out, get_vector_2d(data, collection, attribute, i, T, default = default))
+    end
+    return out
+end
 
 """
     max_elements(data::AbstractData, collection::String)
@@ -123,10 +288,72 @@ function get_reverse_map end
 function get_reverse_vector_map end
 
 """
+    get_parm(
+        data::AbstractData,
+        collection::String,
+        attribute::String,
+        index::Integer,
+        ::Type{T};
+        default::T = _default_value(T),
+    ) where T
+
+Returns a `T` containing the the value from `attribute` of `collection`.
+This function is used to get data from collections that don't vary over time.
+
+Example:
+```julia
+PSRI.get_parms(data, "PSRBattery", "Einic", Float64, 1)
+PSRI.get_parms(data, "PSRBattery", "ChargeRamp", Float64, 1)
+PSRI.get_parms(data, "PSRBattery", "DischargeRamp", Float64, 1)
+```
+"""
+function get_parm end
+
+"""
+    get_parm_1d(
+        data::AbstractData,
+        collection::String,
+        attribute::String,
+        index::Integer,
+        ::Type{T};
+        default::T = _default_value(T),
+    ) where T
+
+Returns a `T` containing the the value from `attribute` of `collection`.
+This function is used to get data from collections that don't vary over time.
+
+Example:
+```julia
+PSRI.get_parm_1d(data, "PSRHydroPlant", "FP", Float64, 1)
+PSRI.get_parm_1d(data, "PSRHydroPlant", "FP.VOL", Float64, 1)
+```
+"""
+function get_parm_1d end
+
+"""
+    get_parm_2d(
+        data::AbstractData,
+        collection::String,
+        attribute::String,
+        index::Integer,
+        ::Type{T};
+        default::T = _default_value(T),
+    ) where T
+
+Returns a `T` containing the the value from `attribute` of `collection`.
+This function is used to get data from collections that don't vary over time.
+
+Example: no available in SDDP data base
+```julia
+```
+"""
+function get_parm_2d end
+
+"""
     get_parms(
         data::AbstractData,
-        col::String,
-        name::String,
+        collection::String,
+        attribute::String,
         ::Type{T};
         check_type::Bool = true,
         check_parm::Bool = true,
@@ -134,8 +361,9 @@ function get_reverse_vector_map end
         default::T = _default_value(T),
     ) where T
 
-Returns a `Vector{T}` containing the elements in `col` to a vector in julia. This function is
-used to get data from collections that don't vary over time
+Returns a `Vector{T}` containing the elements in `collection` to a vector in
+julia.
+This function is used to get data from collections that don't vary over time
 
 Example:
 ```julia
@@ -145,6 +373,55 @@ PSRI.get_parms(data, "PSRBattery", "DischargeRamp", Float64)
 ```
 """
 function get_parms end
+
+"""
+    get_parms_1d(
+        data::AbstractData,
+        collection::String,
+        attribute::String,
+        ::Type{T};
+        check_type::Bool = true,
+        check_parm::Bool = true,
+        ignore::Bool = false,
+        default::T = _default_value(T),
+    ) where T
+
+Returns a `Vector{T}` containing the elements in `collection` to a vector in
+julia.
+This function is used to get data from collections that don't vary over time
+
+Example:
+```julia
+PSRI.get_parm_1d(data, "PSRHydroPlant", "FP", Float64)
+PSRI.get_parm_1d(data, "PSRHydroPlant", "FP.VOL", Float64)
+```
+"""
+function get_parms_1d end
+
+"""
+    get_parms_2d(
+        data::AbstractData,
+        collection::String,
+        attribute::String,
+        ::Type{T};
+        check_type::Bool = true,
+        check_parm::Bool = true,
+        ignore::Bool = false,
+        default::T = _default_value(T),
+    ) where T
+
+Returns a `Vector{T}` containing the elements in `collection` to a vector in
+julia.
+This function is used to get data from collections that don't vary over time
+
+Example:
+```julia
+PSRI.get_parms_2d(data, "PSRBattery", "Einic", Float64)
+PSRI.get_parms_2d(data, "PSRBattery", "ChargeRamp", Float64)
+PSRI.get_parms_2d(data, "PSRBattery", "DischargeRamp", Float64)
+```
+"""
+function get_parms_2d end
 
 """
     get_code(data::AbstractData, collection::String)
@@ -174,17 +451,17 @@ function get_name end
 """
     mapped_vector(
         data::AbstractData,
-        col::String,
-        name::String,
+        collection::String,
+        attribute::String,
         ::Type{T},
         dim1::String="",
         dim2::String="";
         ignore::Bool=false,
-        map_key = col, # reference for PSRMap pointer, if empty use class name
+        map_key = collection, # reference for PSRMap pointer, if empty use class name
         filters = String[], # for calling just within a subset instead of the full call
     ) where T
 
-Maps a `Vector{T}` containing the elements in `col` to a vector in julia. When the function [`update_vectors!`](@ref) 
+Maps a `Vector{T}` containing the elements in `collection` to a vector in julia. When the function [`update_vectors!`](@ref) 
 is called the elements of the vector will be updated to the according elements registered at the current `data.time_controller`.
 
 Example:
@@ -312,21 +589,21 @@ Returns the duration, in hours, at the stage corresponding to `date`.
 function stage_duration end
 
 """
-    block_duration(data::AbstractData, date::Dates.Date, b::Int)
+    block_duration(data::AbstractData, date::Dates.Date, block::Int)
 
-Returns the duration, in hours, of the block `b` at the stage corresponding to `date`.
-
----------
-
-    block_duration(data::AbstractData, t::Int, b::Int)
-
-Returns the duration, in hours, of the block `b` at stage `t`.
+Returns the duration, in hours, of the `block` at the stage corresponding to `date`.
 
 ---------
 
-    block_duration(data::AbstractData, b::Int)
+    block_duration(data::AbstractData, stage::Int, block::Int)
 
-Returns the duration, in hours, of the block `b` at the current stage, set by `go_to_stage`.
+Returns the duration, in hours, of the `block` at `stage`.
+
+---------
+
+    block_duration(data::AbstractData, block::Int)
+
+Returns the duration, in hours, of the `block` at the current stage, set by `go_to_stage`.
 """
 function block_duration end
 
@@ -350,7 +627,7 @@ const MainTypes = Union{Float64, Int32, String, Dates.Date}
 """
     configuration_parameter(
         data::AbstractData,
-        name::String,
+        attribute::String,
         default::T
     ) where T <: MainTypes
 
@@ -365,8 +642,8 @@ PSRI.configuration_parameter(data, "MinOutflowPenalty", 0.0)
 
     configuration_parameter(
         data::Data,
-        name::String,
-        default::Vector{T}
+        attribute::String,
+        default::Vector{T},
     ) where T <: MainTypes
 
 Returns the rquired configuration parameters from the case that are vectors that are vectors. If the parameter is not registered returns the default value.
@@ -377,3 +654,71 @@ PSRI.configuration_parameter(data, "DeficitCost", [0.0])
 ```
 """
 function configuration_parameter end
+
+"""
+    get_attribute_struct(
+        data::AbsttractData,
+        collection::String,
+        attribute::string,
+    )
+
+Return a struct of type `Attribute` with fields:
+
+* name::String = attribute name
+* is_vector::Bool = true if attribute is a vector (tipically, varies in time)
+* type::DataType = attribute type (tipically: Int32, Float64, String, Dates.Date)
+* dim::Int = number of additional dimensions
+* index::String = if a vector represents the indexing vector (might be empty)
+"""
+function get_attribute_struct end
+
+
+"""
+    get_attribute_dim1(
+        data::Data,
+        collection::String,
+        attribute::string,
+        index::Integer;
+    )
+
+Returns the size of dimension 1 of `attribute` from `collection` at element
+`index`.
+Errors if attribute has zero dimensions.
+"""
+function get_attribute_dim1 end
+
+"""
+    get_attribute_dim2(
+        data::Data,
+        collection::String,
+        attribute::string,
+        index::Integer;
+    )
+
+Returns the size of dimension 2 of `attribute` from `collection` at element
+`index`.
+Errors if attribute has zero or one dimensions.
+"""
+function get_attribute_dim2 end
+
+"""
+    get_attributes(data::Data, collection::String)
+
+Return `Vector{String}` of valid attributes from `collection`.
+"""
+function get_attributes end
+
+"""
+    get_collections(data::Data)
+
+Return `Vector{String}` of valid collections (depends on loaded pmd files).
+"""
+function get_collections end
+
+"""
+    get_relations(data::Data, collection::String)
+
+Returns a `Vector{Tuple{String, RelationType}}` with relating `collection`
+and their relation type associated to `collection`.
+"""
+function get_relations end

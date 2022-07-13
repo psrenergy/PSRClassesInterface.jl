@@ -6,6 +6,7 @@ data = PSRI.initialize_study(
 @test_throws ErrorException PSRI.mapped_vector(data, "PSRBattery", "Einic", Float64)
 @test_throws ErrorException PSRI.mapped_vector(data, "PSRBattery", "Einic", Int32)
 @test_throws ErrorException PSRI.get_parms(data, "PSRBattery", "Einic", Int32)
+
 @test PSRI.get_parms(data, "PSRBattery", "Einic", Float64) == Float64[0, 0, 0]
 @test PSRI.get_parms(data, "PSRBattery", "ChargeRamp", Float64) == Float64[-1, -1, -1]
 @test PSRI.get_parms(data, "PSRBattery", "DischargeRamp", Float64) == Float64[-1, -1, -1]
