@@ -77,7 +77,7 @@ Returns a `Vector{T}` of entries of the `attribute` of `collection` at the
 element with index `index`.
 
 Example:
-```
+```julia
 PSRI.get_vector(data, "PSRGaugingStation", "Vazao", 1, Float64)
 PSRI.get_vector(data, "PSRGaugingStation", "Data", 1, Dates.Date)
 ```
@@ -100,7 +100,7 @@ The outer vector contains one entry per index in dimension 1, while the inner
 vector is sized according to the main vector index which is tipicaaly time.
 
 Example:
-```
+```julia
 PSRI.get_vector_1d(data, "PSRArea", "Export", 1, Float64)
 PSRI.get_vector_1d(data, "PSRLoad", "P", 1, Float64)
 ```
@@ -124,7 +124,7 @@ while the inner
 vector is sized according to the main vector index which is tipicaaly time.
 
 Example:
-```
+```julia
 PSRI.get_vector_2d(data, "PSRThermalPlant", "CEsp", 1, Float64)
 PSRI.get_vector_2d(data, "PSRFuelConsumption", "CEsp", 1, Float64)
 ```
@@ -144,7 +144,7 @@ Returns a `Vector{Vector{T}}` of entries of the `attribute` of `collection`.
 Each entry of the outer vector corresponding to an element of the collection.
 
 Example:
-```
+```julia
 PSRI.get_vectors(data, "PSRGaugingStation", "Vazao", Float64)
 PSRI.get_vectors(data, "PSRGaugingStation", "Data", Dates.Date)
 ```
@@ -178,7 +178,7 @@ Each entry of the outer vector corresponding to an element of the collection.
 For the containt of the 2 inner vectors see `get_vector_1d`.
 
 Example:
-```
+```julia
 PSRI.get_vectors_1d(data, "PSRArea", "Export", Float64)
 PSRI.get_vectors_1d(data, "PSRLoad", "P", Float64)
 ```
@@ -212,7 +212,7 @@ Each entry of the outer vector corresponding to an element of the collection.
 For the containt of the `Matrix{Vector{T}}` see `get_vector_2d`.
 
 Example:
-```
+```julia
 PSRI.get_vectors_2d(data, "PSRThermalPlant", "CEsp", Float64)
 PSRI.get_vectors_2d(data, "PSRFuelConsumption", "CEsp", Float64)
 ```
@@ -287,7 +287,7 @@ Since multiple relations might be available one might need to specify
 `relation_type`.
 
 Example:
-```
+```julia
 PSRI.get_vector_map(data, "PSRInterconnectionSumData", "PSRInterconnection")
 PSRI.get_vector_map(data, "PSRReserveGenerationConstraintData", "PSRHydroPlant")
 PSRI.get_vector_map(data, "PSRReserveGenerationConstraintData", "PSRThermalPlant", relation_type = PSRI.RELATION_BACKED)
@@ -312,11 +312,10 @@ See also `get_map`, `get_vector_map`, `get_reverse_vector_map`.
 
 Example:
 
-```
+```julia
 PSRI.get_reverse_map(data, "PSRMaintenanceData", "PSRHydroPlant")
 # which is te reverse of
 PSRI.get_map(data, "PSRMaintenanceData", "PSRHydroPlant")
-
 
 PSRI.get_reverse_map(data, "PSRGenerator", "PSRThermalPlant")
 # which is the reverse of
@@ -343,7 +342,7 @@ See also `get_map`, `get_vector_map`, `get_reverse_vector_map`.
 
 Example:
 
-```
+```julia
 # upstream turbining hydros
 PSRI.get_reverse_vector_map(data, "PSRHydroPlant", "PSRHydroPlant", original_relation_type = PSRI.RELATION_TURBINE_TO)
 # which is the reverse of
@@ -563,7 +562,7 @@ Moves time controller reference of vectors indexed by dimension `name` to the
 index `value`.
 
 Example:
-```
+```julia
 cesp = PSRI.mapped_vector(data, "PSRThermalPlant", "CEsp", Float64, "segment", "block")
 
 PSRI.go_to_stage(data, 1)
@@ -600,7 +599,7 @@ function description end
 Returns the total number of stages of the case.
 
 Example:
-```
+```julia
 PSRI.total_stages(data)
 ```
 """
@@ -612,7 +611,7 @@ function total_stages end
 Returns the total number of scenarios of the case.
 
 Example:
-```
+```julia
 PSRI.total_scenarios(data)
 ```
 """
@@ -624,7 +623,7 @@ function total_scenarios end
 Returns the total number of blocks of the case.
 
 Example:
-```
+```julia
 PSRI.total_blocks(data)
 ```
 """
@@ -636,7 +635,7 @@ function total_blocks end
 Returns the total number of openings of the case.
 
 Example:
-```
+```julia
 PSRI.total_openings(data)
 ```
 """
@@ -648,7 +647,7 @@ function total_openings end
 Returns the total number of stages per year of the case.
 
 Example:
-```
+```julia
 PSRI.total_stages_per_year(data)
 ```
 """
@@ -716,7 +715,7 @@ Returns a vector of booleans with the number of elements of the collection.
 `false` means it is empty.
 
 Example:
-```
+```julia
 PSRI.get_nonempty_vector(data, "PSRThermalPlant", "ChroGerMin")
 PSRI.get_nonempty_vector(data, "PSRThermalPlant", "SpinningReserve")
 ```
@@ -740,7 +739,7 @@ const MainTypes = Union{Float64, Int32, String, Dates.Date}
 Returns the required configuration parameter from the case. If the parameter is not registered returns the default value.
 
 Example:
-```
+```julia
 PSRI.configuration_parameter(data, "MaximoIteracoes", 0)
 PSRI.configuration_parameter(data, "MinOutflowPenalty", 0.0)
 ```
@@ -755,7 +754,7 @@ PSRI.configuration_parameter(data, "MinOutflowPenalty", 0.0)
 Returns the rquired configuration parameters from the case that are vectors that are vectors. If the parameter is not registered returns the default value.
 
 Example:
-```
+```julia
 PSRI.configuration_parameter(data, "DeficitCost", [0.0])
 ```
 """

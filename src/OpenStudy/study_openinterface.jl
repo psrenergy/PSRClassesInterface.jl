@@ -1,5 +1,11 @@
+"""
+    OpenInterface <: AbstractStudyInterface
+"""
 struct OpenInterface <: AbstractStudyInterface end
 
+"""
+    Attribute
+"""
 struct Attribute
     name::String
     is_vector::Bool

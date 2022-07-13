@@ -127,7 +127,6 @@ PSRClassesInterface.agent_names
 PSRClassesInterface.current_stage
 PSRClassesInterface.current_scenario
 PSRClassesInterface.current_block
-PSRClassesInterface.agent_names
 PSRClassesInterface.goto
 PSRClassesInterface.next_registry
 ```
@@ -139,17 +138,16 @@ PSRClassesInterface.open
 PSRClassesInterface.close
 PSRClassesInterface.array_to_file
 PSRClassesInterface.write_registry
-
 ```
 
 ### File conversion
 ```@docs
 PSRClassesInterface.convert_file
-PSRClassesInterface.convert
 PSRClassesInterface.add_reader!
 ```
 
 ### Reader mapper
+```@docs
 PSRClassesInterface.ReaderMapper
 PSRClassesInterface.add_reader!
 PSRClassesInterface.goto
