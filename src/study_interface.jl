@@ -761,26 +761,8 @@ PSRI.configuration_parameter(data, "DeficitCost", [0.0])
 function configuration_parameter end
 
 """
-    get_attribute_struct(
-        data::AbsttractData,
-        collection::String,
-        attribute::string,
-    )
-
-Return a struct of type `Attribute` with fields:
-
-* name::String = attribute name
-* is_vector::Bool = true if attribute is a vector (tipically, varies in time)
-* type::DataType = attribute type (tipically: Int32, Float64, String, Dates.Date)
-* dim::Int = number of additional dimensions
-* index::String = if a vector represents the indexing vector (might be empty)
-"""
-function get_attribute_struct end
-
-
-"""
     get_attribute_dim1(
-        data::Data,
+        data::AbsttractData,
         collection::String,
         attribute::string,
         index::Integer;
@@ -794,7 +776,7 @@ function get_attribute_dim1 end
 
 """
     get_attribute_dim2(
-        data::Data,
+        data::AbsttractData,
         collection::String,
         attribute::string,
         index::Integer;
@@ -807,23 +789,92 @@ Errors if attribute has zero or one dimensions.
 function get_attribute_dim2 end
 
 """
-    get_attributes(data::Data, collection::String)
+    get_attribute_struct(data::AbsttractData)
+
+Return a struct of type `DataStruct` with collection names (strings) as keys
+and maps from attributes names (string) to attributes data definitions
+`Attribute`.
+"""
+function get_data_strunct(data::AbstractData)
+    return data.data_struct
+end
+
+"""
+    get_attribute_struct(
+        data::AbsttractData,
+        collection::String,
+        attribute::string,
+    )
+
+-----
+
+    get_attribute_struct(
+        data::DataStruct,
+        collection::String,
+        attribute::string,
+    )
+
+-----
+
+Return a struct of type `Attribute` with fields:
+
+* name::String = attribute name
+* is_vector::Bool = true if attribute is a vector (tipically, varies in time)
+* type::DataType = attribute type (tipically: Int32, Float64, String, Dates.Date)
+* dim::Int = number of additional dimensions
+* index::String = if a vector represents the indexing vector (might be empty)
+"""
+function get_attribute_struct(data::AbstractData, collection::String, attribute::String)
+    return get_attribute_struct(get_data_strunct(data), collection, attribute)
+end
+function get_attribute_struct(data::DataStruct, collection::String, attribute::String)
+    collection_struct = data[collection]
+    # check attribute existence
+    if !haskey(collection_struct, attribute)
+        error("Attribute $attribute not found in collection $collection")
+    end
+    return collection_struct[attribute]
+end
+
+"""
+    get_attributes(data::AbsttractData, collection::String)
 
 Return `Vector{String}` of valid attributes from `collection`.
 """
-function get_attributes end
+function get_attributes(data::AbstractData, collection::String)
+    return get_attributes(get_data_strunct(data), collection)
+end
+function get_attributes(data::DataStruct, collection::String)
+    return sort(collect(keys(data[collection])))
+end
 
 """
-    get_collections(data::Data)
+    get_collections(data::AbsttractData)
 
 Return `Vector{String}` of valid collections (depends on loaded pmd files).
 """
-function get_collections end
+function get_collections(data::AbstractData)
+    return get_collections(get_data_strunct(data))
+end
+function get_collections(data::DataStruct)
+    return sort(collect(keys(data)))
+end
 
 """
-    get_relations(data::Data, collection::String)
+    get_relations(data::AbsttractData, collection::String)
 
 Returns a `Vector{Tuple{String, RelationType}}` with relating `collection`
 and their relation type associated to `collection`.
 """
-function get_relations end
+function get_relations(data::AbstractData, collection::String)
+    return get_relations(collection)
+end
+function get_relations(data::DataStruct, collection::String)
+    return get_relations(collection)
+end
+function get_relations(collection::String)
+    if haskey(_RELATIONS, collection)
+        return keys(_RELATIONS[collection])
+    end
+    return Tuple{String, RelationType}[]
+end

@@ -3,18 +3,6 @@
 """
 struct OpenInterface <: AbstractStudyInterface end
 
-"""
-    Attribute
-"""
-struct Attribute
-    name::String
-    is_vector::Bool
-    type::DataType
-    dim::Int
-    index::String
-    # interval::String
-end
-
 mutable struct VectorCache{T}
     dim1_str::String
     dim2_str::String
@@ -131,7 +119,7 @@ end
 function initialize_study(
     ::OpenInterface;
     data_path = "",
-    files = String[],
+    pmd_files = String[],
     path_pmds = PMD._PMDS_BASE_PATH,
     log_file = "",
     verbose = true,
@@ -163,9 +151,7 @@ function initialize_study(
                 Dates.Month(first_stage-1), Dates.Week(first_stage-1))
     # TODO daily study
 
-    data_struct = Dict{String, Dict{String, Attribute}}()
-    model_files_added = Set{String}()
-    _load_mask_or_model(path_pmds, data_struct, files, model_files_added)
+    data_struct, model_files_added = PMD.load_model(path_pmds, pmd_files)
     if isempty(model_files_added)
         error("No Model definition (.pmd) file found")
     end
@@ -274,7 +260,7 @@ function _check_vector(attr_struct, col, name)
     end
     return
 end
-function _check_dim(attr_struct, col, name, dim1, dim2)
+function _check_dim(attr_struct, col::String, name::String, dim1::Integer, dim2::Integer)
     dim = attr_struct.dim
     @assert dim1 >= 0
     @assert dim2 >= 0
@@ -299,7 +285,23 @@ function _check_dim(attr_struct, col, name, dim1, dim2)
     if dim == 2 && dim2 == 0
         error("Attribute $name of collection $col, has 2 dims but got dim2 = 0")
     end
-    return
+    return dim
+end
+function _check_dim(attr_struct, col::String, name::String, dim1::String, dim2::String)
+    dim = attr_struct.dim
+    if isempty(dim1) && !isempty(dim2)
+        error("Got dim1 empty, but dim2 = $dim2")
+    end
+    if dim == 0 && !isempty(dim1)
+        error("Got dim1 = $dim1 but attribute $name is no dimensioned")
+    end
+    if dim >= 1 && isempty(dim1)
+        error("Got dim1 empty but attribute $name has $dim dimension(s)")
+    end
+    if dim == 1 && !isempty(dim2)
+        error("Got dim2 = $dim2 but attribute $name has a single dimension")
+    end
+    return dim
 end
 
 function get_parm(
@@ -315,16 +317,7 @@ function get_parm(
 
     attr_struct = get_attribute_struct(data, col, name)
 
-    @assert dim1 >= 0
-    @assert dim2 >= 0
-
-    if dim2 > 0 && dim1 == 0
-        error("Getting attribute $name of collection $col, got dim2 = $dims2 and dim1 = 0")
-    end
-
-    dim = attr_struct.dim
-
-    _check_dim(attr_struct, col, name, dim1, dim2)
+    dim = _check_dim(attr_struct, col, name, dim1, dim2)
     _check_type(attr_struct, T, col, name)
     _check_parm(attr_struct, col, name)
 
@@ -522,15 +515,6 @@ function get_parms_2d(
     return out
 end
 
-function get_attribute_struct(data::Data, collection::String, attribute::String)
-    collection_struct = data.data_struct[collection]
-    # check attribute existence
-    if !haskey(collection_struct, attribute)
-        error("Attribute $attribute not found in collection $collection")
-    end
-    return collection_struct[attribute]
-end
-
 function get_attribute_dim1(
     data::Data,
     col::String,
@@ -592,21 +576,6 @@ function get_attribute_dim2(
     end
     error("Attribute $attribute from collection $col has dim2 larger than $max_check")
     return 999
-end
-
-function get_attributes(data::Data, collection::String)
-    return sort(collect(keys(data.data_struct[collection])))
-end
-
-function get_collections(data::Data)
-    return sort(collect(keys(data.data_struct)))
-end
-
-function get_relations(data::Data, collection::String)
-    if haskey(_RELATIONS, collection)
-        return keys(_RELATIONS[collection])
-    end
-    return Tuple{String, RelationType}[]
 end
 
 function get_code(

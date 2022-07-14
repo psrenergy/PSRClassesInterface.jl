@@ -18,36 +18,13 @@ function mapped_vector(
         return T[]
     end
 
-    collection_struct = data.data_struct[col]
+    attr_struct = get_attribute_struct(data, col, name)
 
-    # check attribute existence
-    if !haskey(collection_struct, name)
-        error("Attribute $name not found in collection $col")
-    end
-    attr_data = collection_struct[name]
-
-    # validate type and shape
-    if attr_data.type != T
-        error("Attribute $name of collection $col is a of type $(attr_data.type) not $T.")
-    end
-    if !attr_data.is_vector
-        error("Attribute $name of collection $col is a of type parm. Use `get_parms` instead.")
-    end
+    _check_type(attr_struct, T, col, name)
+    _check_vector(attr_struct, col, name)
 
     # validate dimensions
-    dim = attr_data.dim
-    if isempty(dim1) && !isempty(dim2)
-        error("Got dim1 empty, but dim2 = $dim2")
-    end
-    if dim == 0 && !isempty(dim1)
-        error("Got dim1 = $dim1 but attribute $name is no dimensioned")
-    end
-    if dim >= 1 && isempty(dim1)
-        error("Got dim1 empty but attribute $name has $dim dimension(s)")
-    end
-    if dim == 1 && !isempty(dim2)
-        error("Got dim2 = $dim2 but attribute $name has a single dimension")
-    end
+    dim = _check_dim(attr_struct, col, name, dim1, dim2)
 
     dim1_val = _add_get_dim_val(data, dim1)
     dim2_val = _add_get_dim_val(data, dim2)
@@ -57,7 +34,7 @@ function mapped_vector(
         error("Dimension mismatch, data structure should have $(total_dim) but has $dim in the data file")
     end
 
-    index = attr_data.index
+    index = attr_struct.index
     stage = data.controller_stage
 
     cache = _get_cache(data, T)
