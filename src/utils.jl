@@ -38,22 +38,23 @@ function _delete_or_error(path::AbstractString)
     return
 end
 
-function blocks_in_stage(is_hourly, stage_type, initial_stage, t)::Int
+function blocks_in_stage(is_hourly, hour_discretization, stage_type, initial_stage, t)::Int
     if is_hourly
         if stage_type == STAGE_MONTH
-            return DAYS_IN_MONTH[mod1(t - 1 + initial_stage, 12)] * 24
+            return hour_discretization * DAYS_IN_MONTH[mod1(t - 1 + initial_stage, 12)] * 24
         else
-            return HOURS_IN_STAGE[stage_type]
+            return hour_discretization * HOURS_IN_STAGE[stage_type]
         end
     end
     return io.blocks
 end
+
 function blocks_in_stage(io, t)::Int
     if is_hourly(io)
         if stage_type(io) == STAGE_MONTH
-            return DAYS_IN_MONTH[mod1(t - 1 + initial_stage(io), 12)] * 24
+            return io.hour_discretization * DAYS_IN_MONTH[mod1(t - 1 + initial_stage(io), 12)] * 24
         else
-            return HOURS_IN_STAGE[stage_type(io)]
+            return io.hour_discretization * HOURS_IN_STAGE[stage_type(io)]
         end
     end
     return max_blocks(io)

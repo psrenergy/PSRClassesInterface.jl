@@ -80,8 +80,6 @@ function read_write_binary_block()
     return
 end
 
-read_write_binary_block()
-
 function read_write_binary_block_single_binary()
     BLOCKS = 3
     SCENARIOS = 5
@@ -165,4 +163,5 @@ function read_write_binary_block_single_binary()
     return
 end
 
+read_write_binary_block()
 read_write_binary_block_single_binary()

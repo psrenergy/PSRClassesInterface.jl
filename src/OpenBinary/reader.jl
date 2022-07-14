@@ -11,7 +11,6 @@ function skip_store(io::IO, s::Int, skips::Vector{Tuple{Int, Int}}, store_skips:
 end
 
 Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
-
     io::IOStream
 
     stage_total::Int
@@ -23,6 +22,7 @@ Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
     blocks_per_stage::Vector{Int}
     blocks_until_stage::Vector{Int}
     hours_exist::Bool
+    hour_discretization::Int
 
     _block_type::Int
 
@@ -62,9 +62,10 @@ function Base.show(io::IO, ptr::Reader)
     println(io, "   Scenarios = $(ptr.scenario_total)")
     println(io, "   Max Blocks = $(ptr.block_total)")
     println(io, "   Is Hourly = $(ptr.hours_exist)")
+    println(io, "   Hour Discretization = $(ptr.hour_discretization)")
     println(io, "   Agents = $(length(ptr.agent_names))")
     println(io, "   Unit = $(ptr.unit)")
-    print(io, "   Data File = $(ptr.io.name)")
+    print(io,   "   Data File = $(ptr.io.name)")
 end
 
 function PSRI.open(
@@ -160,6 +161,8 @@ function PSRI.open(
         #
         name_length = read(ioh, Int32)
 
+        hour_discretization = 1
+
         if variable_by_hour == 0
             skip_store(ioh, 4, skips, store_skips)
             skip_store(ioh, 4, skips, store_skips)
@@ -181,6 +184,27 @@ function PSRI.open(
                 end
             end
             block_total = maximum(number_blocks)
+
+			hour_discretization = floor(Int, block_total / 
+                if stage_type == 1
+			        168
+			    elseif stage_type == 2
+                    if block_total % 672 == 0
+                        672
+                    elseif block_total % 720 == 0
+                        720
+                    else
+                        744
+                    end
+			    elseif stage_type == 5
+			    	24
+			    elseif stage_type == 10
+			    	8760
+                else
+                    error("stage_type = $stage_type is invalid")
+                end
+            )
+
             if verbose_header
                 @show block_total, length(number_blocks), number_blocks
             end
@@ -242,12 +266,14 @@ function PSRI.open(
     end
     @assert name_length > 0
 
-    _stage_type = if stage_type == 2#PSR_STAGETYPE_MONTHLY
+    _stage_type = if stage_type == 2
         PSRI.STAGE_MONTH
-    elseif stage_type == 1#PSR_STAGETYPE_WEEKLY
+    elseif stage_type == 1
         PSRI.STAGE_WEEK
-    elseif stage_type == 5#PSR_STAGETYPE_DAILY
+    elseif stage_type == 5
         PSRI.STAGE_DAY
+    elseif stage_type == 10
+        PSRI.STAGE_YEAR
     else
         error("Stage type with code $stage_type is no known")
     end
@@ -273,7 +299,6 @@ function PSRI.open(
     else
         index = collect(1:total_agents)
     end
-
 
     data_buffer = zeros(Float32, total_agents)
     data = zeros(Float64, total_agents)
@@ -323,6 +348,7 @@ function PSRI.open(
         blocks_per_stage = number_blocks,
         blocks_until_stage = cumsum(vcat(Int[0], number_blocks)),
         hours_exist = hours_exist,
+        hour_discretization = hour_discretization,
 
         _block_type = Int(variable_by_block),
 
@@ -362,7 +388,7 @@ function PSRI.open(
         stage_total,
         scenario_total,
         hours_exist ? number_blocks[end] : block_total
-        ) + 4 * total_agents
+    ) + 4 * total_agents
     seekend(ret.io)
     @assert last == position(ret.io)
 
