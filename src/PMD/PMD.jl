@@ -74,6 +74,8 @@ function _get_type(str)
         return String
     elseif str == "DATE"
         return Dates.Date
+    elseif str == "REFERENCE"
+        return Ptr{Nothing}
     else
         error("Type $str no known")
     end

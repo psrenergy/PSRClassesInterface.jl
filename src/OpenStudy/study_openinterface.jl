@@ -242,25 +242,25 @@ _default_value(::Type{T}) where T = zero(T)
 _default_value(::Type{String}) = ""
 _default_value(::Type{Dates.Date}) = Dates.Date(1900, 1, 1)
 
-function _check_type(attr_struct, T, col, name)
+function _check_type(attr_struct::Attribute, ::Type{T}, col::String, name::String) where T
     if attr_struct.type != T
         error("Attribute $name of collection $col is a of type $(attr_struct.type) not $T.")
     end
     return
 end
-function _check_parm(attr_struct, col, name)
+function _check_parm(attr_struct::Attribute, col::String, name::String)
     if attr_struct.is_vector
         error("Attribute $name of collection $col is a of type vector.")
     end
     return
 end
-function _check_vector(attr_struct, col, name)
+function _check_vector(attr_struct::Attribute, col::String, name::String)
     if !attr_struct.is_vector
         error("Attribute $name of collection $col is a of type parm.")
     end
     return
 end
-function _check_dim(attr_struct, col::String, name::String, dim1::Integer, dim2::Integer)
+function _check_dim(attr_struct::Attribute, col::String, name::String, dim1::Integer, dim2::Integer)
     dim = attr_struct.dim
     @assert dim1 >= 0
     @assert dim2 >= 0
@@ -287,7 +287,7 @@ function _check_dim(attr_struct, col::String, name::String, dim1::Integer, dim2:
     end
     return dim
 end
-function _check_dim(attr_struct, col::String, name::String, dim1::String, dim2::String)
+function _check_dim(attr_struct::Attribute, col::String, name::String, dim1::String, dim2::String)
     dim = attr_struct.dim
     if isempty(dim1) && !isempty(dim2)
         error("Got dim1 empty, but dim2 = $dim2")
@@ -302,6 +302,16 @@ function _check_dim(attr_struct, col::String, name::String, dim1::String, dim2::
         error("Got dim2 = $dim2 but attribute $name has a single dimension")
     end
     return dim
+end
+function _check_element_range(data::AbstractData, col::String, index::Integer)
+    n = max_elements(data, col)
+    if n == 0
+        error("Collection $col is empty.")
+    end
+    if !(1 <= index <= n)
+        error("Index = $index is out of the range 1 to $n for collection $col")
+    end
+    return
 end
 
 function get_parm(
@@ -320,6 +330,7 @@ function get_parm(
     dim = _check_dim(attr_struct, col, name, dim1, dim2)
     _check_type(attr_struct, T, col, name)
     _check_parm(attr_struct, col, name)
+    _check_element_range(data, col, index)
 
     query_name = if dim == 0
         name
@@ -328,13 +339,6 @@ function get_parm(
     elseif dim == 2
         name * "($dim1,$dim2)"
     end
-
-    n = max_elements(data, col)
-    if n == 0
-        return default
-    end
-
-    @assert 1 <= index <= n
 
     raw = _raw(data)
 
@@ -361,14 +365,9 @@ function get_parm_1d(
 
     _check_type(attr_struct, T, col, name)
     _check_parm(attr_struct, col, name)
+    _check_element_range(data, col, index)
 
     n_dim1 = get_attribute_dim1(data, col, name, index)
-
-    n = max_elements(data, col)
-    if n == 0
-        error("Collection $col is empty")
-    end
-    @assert 1 <= index <= n
 
     raw = _raw(data)
     
@@ -403,15 +402,10 @@ function get_parm_2d(
 
     _check_type(attr_struct, T, col, name)
     _check_parm(attr_struct, col, name)
+    _check_element_range(data, col, index)
 
     n_dim1 = get_attribute_dim1(data, col, name, index)
     n_dim2 = get_attribute_dim2(data, col, name, index)
-
-    n = max_elements(data, col)
-    if n == 0
-        error("Collection $col is empty")
-    end
-    @assert 1 <= index <= n
 
     raw = _raw(data)
     
@@ -527,9 +521,7 @@ function get_attribute_dim1(
     if dim == 0
         error("Attribute $attribute from collection $col has no extra dimensions")
     end
-
-    n = max_elements(data, col)
-    @assert 1 <= index <= n
+    _check_element_range(data, col, index)
 
     raw = _raw(data)
 
@@ -560,9 +552,7 @@ function get_attribute_dim2(
     if attr_struct.dim < 2
         error("Attribute $attribute from collection $col has $(attr_struct.dim) < 2 dimensions")
     end
-
-    n = max_elements(data, col)
-    @assert 1 <= index <= n
+    _check_element_range(data, col, index)
 
     raw = _raw(data)
 
@@ -676,6 +666,7 @@ function get_vector(
     _check_dim(attr_struct, col, name, dim1, dim2)
     _check_vector(attr_struct, col, name)
     _check_type(attr_struct, T, col, name)
+    _check_element_range(data, col, index)
 
     dim = attr_struct.dim
 
@@ -686,13 +677,6 @@ function get_vector(
     elseif dim == 2
         name * "($dim1,$dim2)"
     end
-
-    n = max_elements(data, col)
-    if n == 0
-        return T[]
-    end
-
-    @assert 1 <= index <= n
 
     raw = _raw(data)
 
@@ -719,14 +703,9 @@ function get_vector_1d(
 
     _check_vector(attr_struct, col, name)
     _check_type(attr_struct, T, col, name)
+    _check_element_range(data, col, index)
 
     n_dim1 = get_attribute_dim1(data, col, name, index)
-
-    n = max_elements(data, col)
-    if n == 0
-        error("Collection $col is empty")
-    end
-    @assert 1 <= index <= n
 
     raw = _raw(data)
 
@@ -760,15 +739,10 @@ function get_vector_2d(
 
     _check_vector(attr_struct, col, name)
     _check_type(attr_struct, T, col, name)
+    _check_element_range(data, col, index)
 
     n_dim2 = get_attribute_dim2(data, col, name, index)
     n_dim1 = get_attribute_dim1(data, col, name, index)
-
-    n = max_elements(data, col)
-    if n == 0
-        error("Collection $col is empty")
-    end
-    @assert 1 <= index <= n
 
     raw = _raw(data)
 
