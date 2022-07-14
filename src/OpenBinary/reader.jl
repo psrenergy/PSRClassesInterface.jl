@@ -185,10 +185,10 @@ function PSRI.open(
             end
             block_total = maximum(number_blocks)
 
-			hour_discretization = floor(Int, block_total / 
+            hour_discretization = floor(Int, block_total /
                 if stage_type == 1
-			        168
-			    elseif stage_type == 2
+                    168
+                elseif stage_type == 2
                     if block_total % 672 == 0
                         672
                     elseif block_total % 720 == 0
@@ -196,10 +196,10 @@ function PSRI.open(
                     else
                         744
                     end
-			    elseif stage_type == 5
-			    	24
-			    elseif stage_type == 10
-			    	8760
+                elseif stage_type == 5
+                    24
+                elseif stage_type == 10
+                    8760
                 else
                     error("stage_type = $stage_type is invalid")
                 end
