@@ -203,7 +203,7 @@ function PSRI.open(
                 elseif stage_type == PSRI.STAGE_YEAR
                     8760
                 else
-                    error("Stage Type $stage_type not currently supported")
+                    error("stage Type $stage_type not currently supported")
                 end,
             )
 
@@ -309,7 +309,7 @@ function PSRI.open(
             end
             ret
         else
-            error("Stage Type $stage_type not currently supported")
+            error("stage Type $stage_type not currently supported")
         end
         relative_first_stage = PSRI._stage_from_date(first_stage, stage_type, _date)
         if relative_first_stage < 1
