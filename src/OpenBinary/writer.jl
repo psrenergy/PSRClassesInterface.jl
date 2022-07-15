@@ -169,17 +169,6 @@ function PSRI.open(
     write(ioh, Int32(scenarios_type))
     write(ioh, Int32(block_type))
     write(ioh, Int32(is_hourly ? 1 : 0))
-    # const PSR_STAGETYPE_UNKNOWN = 0
-    # const PSR_STAGETYPE_WEEKLY = 1
-    # const PSR_STAGETYPE_MONTHLY = 2
-    # const PSR_STAGETYPE_QUARTERLY = 3
-    # const PSR_STAGETYPE_HOURLY = 4
-    # const PSR_STAGETYPE_DAILY = 5
-    # const PSR_STAGETYPE_13MONTHLY = 6
-    # const PSR_STAGETYPE_BIMONTHLY = 7
-    # const PSR_STAGETYPE_TRIANNUALLY = 8
-    # const PSR_STAGETYPE_SEMIANNUALLY = 9
-    # const PSR_STAGETYPE_YEARLY = 10
     write(ioh, Int32(stage_type))
     write(ioh, Int32(initial_stage))
     write(ioh, Int32(initial_year))
