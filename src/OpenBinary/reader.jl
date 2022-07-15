@@ -128,7 +128,7 @@ function PSRI.open(
         total_agents = read(ioh, Int32)
         variable_by_series = read(ioh, Int32)
         variable_by_block = read(ioh, Int32)
-        stage_type = read(ioh, Int32)
+        stage_type = StageType(read(ioh, Int32))
         _first_stage = read(ioh, Int32) #month or week
         first_year = read(ioh, Int32) # year
         #
@@ -151,7 +151,7 @@ function PSRI.open(
         variable_by_series = read(ioh, Int32)
         variable_by_block = read(ioh, Int32)
         variable_by_hour = read(ioh, Int32)
-        stage_type = read(ioh, Int32)
+        stage_type = StageType(read(ioh, Int32))
         _first_stage = read(ioh, Int32) #month or week
         first_year = read(ioh, Int32) # year
         #
@@ -186,9 +186,9 @@ function PSRI.open(
             block_total = maximum(number_blocks)
 
             hour_discretization = floor(Int, block_total /
-                if stage_type == 1
+                if stage_type == PSRI.STAGE_WEEK
                     168
-                elseif stage_type == 2
+                elseif stage_type == PSRI.STAGE_MONTH
                     if block_total % 672 == 0
                         672
                     elseif block_total % 720 == 0
@@ -196,12 +196,12 @@ function PSRI.open(
                     else
                         744
                     end
-                elseif stage_type == 5
+                elseif stage_type == PSRI.STAGE_DAY
                     24
-                elseif stage_type == 10
+                elseif stage_type == PSRI.STAGE_YEAR
                     8760
                 else
-                    error("stage_type = $stage_type is invalid")
+                    error("Stage Type $stage_type not currently supported")
                 end
             )
 
@@ -266,18 +266,6 @@ function PSRI.open(
     end
     @assert name_length > 0
 
-    _stage_type = if stage_type == 2
-        PSRI.STAGE_MONTH
-    elseif stage_type == 1
-        PSRI.STAGE_WEEK
-    elseif stage_type == 5
-        PSRI.STAGE_DAY
-    elseif stage_type == 10
-        PSRI.STAGE_YEAR
-    else
-        error("Stage type with code $stage_type is no known")
-    end
-
     if use_header
         if length(header) > total_agents
             error("Header does not match with expected. Header length = $(length(header)), number ofo agents is $(total_agents)")
@@ -305,13 +293,13 @@ function PSRI.open(
 
     if first_stage != Dates.Date(1900, 1, 1)
         _year = first_year
-        _date = if _stage_type == PSRI.STAGE_MONTH
+        _date = if stage_type == PSRI.STAGE_MONTH
             @assert 1 <= _first_stage <= 12
             Dates.Date(_year, 1, 1) + Dates.Month(_first_stage-1)
-        elseif _stage_type == PSRI.STAGE_WEEK
+        elseif stage_type == PSRI.STAGE_WEEK
             @assert 1 <= _first_stage <= 52
             Dates.Date(_year, 1, 1) + Dates.Week(_first_stage-1)
-        elseif _stage_type == PSRI.STAGE_DAY
+        elseif stage_type == PSRI.STAGE_DAY
             @assert 1 <= _first_stage <= 365
             ret = Dates.Date(_year, 1, 1) + Dates.Day(_first_stage-1)
             if Dates.isleapyear(_year) && _first_stage > 24 * (31 + 28)
@@ -319,9 +307,9 @@ function PSRI.open(
             end
             ret
         else
-            error("Stage Type $_stage_type not currently supported")
+            error("Stage Type $stage_type not currently supported")
         end
-        relative_first_stage = PSRI._stage_from_date(first_stage, _stage_type, _date)
+        relative_first_stage = PSRI._stage_from_date(first_stage, stage_type, _date)
         if relative_first_stage < 1
             error("first_stage = $first_stage is earlier than file initial stage = $_date")
         end
@@ -355,7 +343,7 @@ function PSRI.open(
         first_year = Int(first_year),
         first_stage = Int(_first_stage),
         first_relative_stage = Int(first_relative_stage),
-        stage_type = _stage_type,
+        stage_type = stage_type,
 
         agents_total = total_agents,
         name_length = Int(name_length),
