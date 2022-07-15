@@ -129,7 +129,7 @@ function PSRI.open(
         total_agents = read(ioh, Int32)
         variable_by_series = read(ioh, Int32)
         variable_by_block = read(ioh, Int32)
-        stage_type = StageType(read(ioh, Int32))
+        stage_type = PSRI.StageType(read(ioh, Int32))
         _first_stage = read(ioh, Int32) #month or week
         first_year = read(ioh, Int32) # year
         #
@@ -152,7 +152,7 @@ function PSRI.open(
         variable_by_series = read(ioh, Int32)
         variable_by_block = read(ioh, Int32)
         variable_by_hour = read(ioh, Int32)
-        stage_type = StageType(read(ioh, Int32))
+        stage_type = PSRI.StageType(read(ioh, Int32))
         _first_stage = read(ioh, Int32) #month or week
         first_year = read(ioh, Int32) # year
         #
