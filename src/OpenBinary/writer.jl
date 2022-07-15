@@ -49,7 +49,7 @@ function PSRI.open(
     scenarios::Integer = 0,
     stages::Integer = 0,
     agents::Vector{String} = String[],
-    unit::Union{Nothing, String} = nothing,
+    unit::Union{Nothing,String} = nothing,
     # optional
     is_hourly::Bool = false,
     hour_discretization = 1,
@@ -65,9 +65,8 @@ function PSRI.open(
     # pre_ext::String = "", for part-bin
     reopen_mode::Bool = false,
     verbose_hour_block_check::Bool = true,
-    single_binary::Bool = false
+    single_binary::Bool = false,
 )
-
     if !allow_unsafe_name_length
         if name_length != 24 && name_length != 12
             error("name_length should be either 24 or 11. " *
@@ -153,8 +152,8 @@ function PSRI.open(
     end
 
     version = 2
-	if hour_discretization > 1
-		version = 4
+    if hour_discretization > 1
+        version = 4
     end
 
     write(ioh, Int32(0))
@@ -279,8 +278,7 @@ function PSRI.write_registry(
     stage::Integer,
     scenario::Integer = 1,
     block::Integer = 1,
-) where T <: Real
-
+) where {T<:Real}
     _reopen_pre_write(io)
 
     if !io.is_open
@@ -290,7 +288,7 @@ function PSRI.write_registry(
     if !(1 <= stage <= io.stage_total)
         error("stage should be between 1 and $(io.stage_total)")
     end
-    
+
     if !(1 <= scenario <= io.scenario_total)
         error("scenarios should be between 1 and $(io.scenario_total)")
     end
@@ -299,7 +297,7 @@ function PSRI.write_registry(
     if !(1 <= block <= blocks_in_stage) # io.blocks
         error("block should be between 1 and $blocks_in_stage")
     end
-    
+
     if length(data) != io.agents_total
         error("data vector has length $(length(data)) and expected was $(io.agents_total)")
     end
@@ -310,7 +308,7 @@ function PSRI.write_registry(
     if current != next
         seek(io.io, next)
     end
-    
+
     for i in eachindex(data)
         @inbounds write(io.io, Float32(data[i]))
     end

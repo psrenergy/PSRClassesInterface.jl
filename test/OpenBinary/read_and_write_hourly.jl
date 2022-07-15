@@ -103,31 +103,21 @@ function read_write_binary_subhourly()
                 # optional:
                 initial_stage = 2,
                 initial_year = 2006,
-                stage_type = _stage_type
+                stage_type = _stage_type,
             )
 
-            for t = 1:STAGES, s = 1:SCENARIOS
+            for t in 1:STAGES, s in 1:SCENARIOS
                 for b in 1:PSRI.blocks_in_stage(gerter, t)
-                    X = 10_000. * t + 1000. * s + b
-                    Y = b + 0.
-                    Z = 10. * t + s
-                	PSRI.write_registry(
-                    	gerter,
-                    	[X, Y, Z],
-                    	t,
-                    	s,
-                    	b
-                	)
+                    X = 10_000.0 * t + 1000.0 * s + b
+                    Y = b + 0.0
+                    Z = 10.0 * t + s
+                    PSRI.write_registry(gerter, [X, Y, Z], t, s, b)
                 end
             end
 
             PSRI.close(gerter)
 
-            ior = PSRI.open(
-                PSRI.OpenBinary.Reader,
-                FILE_GERTER,
-                use_header = false,
-            )
+            ior = PSRI.open(PSRI.OpenBinary.Reader, FILE_GERTER, use_header = false)
 
             @test PSRI.max_stages(ior) == STAGES
             @test PSRI.max_scenarios(ior) == SCENARIOS
@@ -138,15 +128,15 @@ function read_write_binary_subhourly()
             @test PSRI.data_unit(ior) == "MW"
             @test PSRI.agent_names(ior) == ["X", "Y", "Z"]
 
-            for t = 1:1, s = 1:1
+            for t in 1:1, s in 1:1
                 @test PSRI.blocks_in_stage(ior, t) <= PSRI.max_blocks(ior)
-                for b = 1:PSRI.blocks_in_stage(ior, t)
+                for b in 1:PSRI.blocks_in_stage(ior, t)
                     @test PSRI.current_stage(ior) == t
                     @test PSRI.current_scenario(ior) == s
                     @test PSRI.current_block(ior) == b
-                    X = 10_000. * t + 1000. * s + b
-                    Y = b + 0.
-                    Z = 10. * t + s
+                    X = 10_000.0 * t + 1000.0 * s + b
+                    Y = b + 0.0
+                    Z = 10.0 * t + s
                     ref = [X, Y, Z]
                     for agent in 1:3
                         @test ior[agent] == ref[agent]

@@ -66,13 +66,14 @@ function Base.show(io::IO, ptr::Reader)
     println(io, "   Agents = $(length(ptr.agent_names))")
     println(io, "   Unit = $(ptr.unit)")
     print(io,   "   Data File = $(ptr.io.name)")
+    return
 end
 
 function PSRI.open(
     ::Type{Reader},
     path::String;
-    is_hourly::Union{Bool, Nothing} = nothing, 
-    stage_type::Union{PSRI.StageType, Nothing} = nothing,
+    is_hourly::Union{Bool,Nothing} = nothing,
+    stage_type::Union{PSRI.StageType,Nothing} = nothing,
     header::Vector{String} = String[],
     use_header::Bool = true,
     allow_empty::Bool = false,
@@ -87,7 +88,7 @@ function PSRI.open(
         error("is_hourly and stage_type are not supported by OpenBinary.")
     end
 
-    skips = Tuple{Int, Int}[]
+    skips = Tuple{Int,Int}[]
 
     hs = 0
     if single_binary
@@ -108,7 +109,7 @@ function PSRI.open(
         end
         ioh = open(PATH_HDR, "r")
     end
-    
+
     skip_store(ioh, 4, skips, store_skips)
     version = read(ioh, Int32)
 
@@ -185,8 +186,9 @@ function PSRI.open(
             end
             block_total = maximum(number_blocks)
 
-            hour_discretization = floor(Int, block_total /
-                if stage_type == PSRI.STAGE_WEEK
+            hour_discretization = floor(
+                Int,
+                block_total / if stage_type == PSRI.STAGE_WEEK
                     168
                 elseif stage_type == PSRI.STAGE_MONTH
                     if block_total % 672 == 0
@@ -202,7 +204,7 @@ function PSRI.open(
                     8760
                 else
                     error("Stage Type $stage_type not currently supported")
-                end
+                end,
             )
 
             if verbose_header
@@ -337,29 +339,21 @@ function PSRI.open(
         blocks_until_stage = cumsum(vcat(Int[0], number_blocks)),
         hours_exist = hours_exist,
         hour_discretization = hour_discretization,
-
         _block_type = Int(variable_by_block),
-
         first_year = Int(first_year),
         first_stage = Int(_first_stage),
         first_relative_stage = Int(first_relative_stage),
         stage_type = stage_type,
-
         agents_total = total_agents,
         name_length = Int(name_length),
         agent_names = agent_names,
         unit = unit_str,
-
         data_buffer = data_buffer,
-
         index = index, # header ordering
         data = data, # float cache
-
         relative_stage_skip = relative_stage_skip,
-
         io = io,
         hs = hs,
-
         skips = skips,
     )
 

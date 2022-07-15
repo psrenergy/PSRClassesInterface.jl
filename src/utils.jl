@@ -13,18 +13,18 @@ const DAYS_IN_MONTH = Int[
     31, # dez
 ]
 
-const STAGES_IN_YEAR = Dict{StageType, Int}(
+const STAGES_IN_YEAR = Dict{StageType,Int}(
     STAGE_WEEK => 52,
     STAGE_MONTH => 12,
     STAGE_DAY => 365,
-    STAGE_YEAR => 1
+    STAGE_YEAR => 1,
 )
 
-const HOURS_IN_STAGE = Dict{StageType, Int}(
+const HOURS_IN_STAGE = Dict{StageType,Int}(
     STAGE_WEEK => 168,
     # STAGE_MONTH => 744,
     STAGE_DAY => 24,
-    STAGE_YEAR => 8760
+    STAGE_YEAR => 8760,
 )
 
 function _delete_or_error(path::AbstractString)
