@@ -385,6 +385,7 @@ function Base.getindex(graf::Reader, args...)
 end
 
 PSRI.is_hourly(graf::Reader) = graf.hours_exist
+PSRI.hour_discretization(graf::Reader) = graf.hour_discretization
 
 PSRI.max_stages(graf::Reader) = graf.stage_total - graf.relative_stage_skip
 PSRI.max_scenarios(graf::Reader) = graf.scenario_total

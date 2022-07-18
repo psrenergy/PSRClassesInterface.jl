@@ -52,7 +52,7 @@ function PSRI.open(
     unit::Union{Nothing,String} = nothing,
     # optional
     is_hourly::Bool = false,
-    hour_discretization = 1,
+    hour_discretization::Integer = 1,
     name_length::Integer = 24,
     block_type::Integer = 1,
     scenarios_type::Integer = 1,
@@ -267,7 +267,7 @@ function PSRI.open(
 end
 
 PSRI.is_hourly(graf::Writer) = graf.is_hourly
-# PSRI.subhourly_discretization(graf::Writer) = graf.subhourly_discretization
+PSRI.hour_discretization(graf::Reader) = graf.hour_discretization
 PSRI.stage_type(graf::Writer) = graf.stage_type
 PSRI.max_blocks(graf::Writer) = graf.block_total
 PSRI.initial_stage(graf::Writer) = graf.initial_stage
@@ -293,7 +293,7 @@ function PSRI.write_registry(
         error("scenarios should be between 1 and $(io.scenario_total)")
     end
 
-    blocks_in_stage = io.hour_discretization * PSRI.blocks_in_stage(io, stage)
+    blocks_in_stage = PSRI.blocks_in_stage(io, stage)
     if !(1 <= block <= blocks_in_stage) # io.blocks
         error("block should be between 1 and $blocks_in_stage")
     end

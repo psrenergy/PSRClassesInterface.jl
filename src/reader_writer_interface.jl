@@ -85,6 +85,8 @@ Returns updated `AbstractWriter` instance.
 
 - `is_hourly`: if data is hourly. If yes, block dimension will be ignored.
 
+- `hour_discretization`: sub-hour parameter to discretize an hour into minutes.
+
 - `name_length`: length of element names.
 
 - `block_type`: case's type of block.
@@ -153,6 +155,13 @@ function close end
 Returns a `Bool` indicating whether the data in the file read by [`PSRI.AbstractReader`](@ref) is hourly.
 """
 function is_hourly end
+
+"""
+    PSRI.hour_discretization(ior::AbstractReader)
+
+Returns an `Int` indicating the hour discretization.
+"""
+function hour_discretization end
 
 """
     PSRI.max_stages(ior::AbstractReader)

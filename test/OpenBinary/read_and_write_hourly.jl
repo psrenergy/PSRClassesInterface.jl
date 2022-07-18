@@ -6,7 +6,7 @@ function read_write_binary_hourly()
     AGENTS = ["X", "Y", "Z"]
     UNIT = "MW"
 
-    for _stage_type in [PSRI.STAGE_MONTH, PSRI.STAGE_WEEK, PSRI.STAGE_DAY]
+    for stage_type in [PSRI.STAGE_MONTH, PSRI.STAGE_WEEK, PSRI.STAGE_DAY]
 
         gerter = PSRI.open(
             PSRI.OpenBinary.Writer,
@@ -19,7 +19,7 @@ function read_write_binary_hourly()
             # optional:
             initial_stage = 2,
             initial_year = 2006,
-            stage_type = _stage_type
+            stage_type = stage_type
         )
 
         for t = 1:STAGES, s = 1:SCENARIOS
@@ -47,12 +47,14 @@ function read_write_binary_hourly()
 
         @test PSRI.max_stages(ior) == STAGES
         @test PSRI.max_scenarios(ior) == SCENARIOS
-        @test PSRI.max_blocks(ior) == (_stage_type == PSRI.STAGE_MONTH ? 744 : PSRI.HOURS_IN_STAGE[_stage_type])
-        @test PSRI.stage_type(ior) == _stage_type
+        @test PSRI.max_blocks(ior) == (stage_type == PSRI.STAGE_MONTH ? 744 : PSRI.HOURS_IN_STAGE[stage_type])
+        @test PSRI.stage_type(ior) == stage_type
         @test PSRI.initial_stage(ior) == 2
         @test PSRI.initial_year(ior) == 2006
         @test PSRI.data_unit(ior) == "MW"
         @test PSRI.agent_names(ior) == ["X", "Y", "Z"]
+        @test PSRI.is_hourly(ior) == true
+        @test PSRI.hour_discretization(ior) == 1
 
         for t = 1:1, s = 1:1
             @test PSRI.blocks_in_stage(ior, t) <= PSRI.max_blocks(ior)
@@ -89,7 +91,7 @@ function read_write_binary_subhourly()
     AGENTS = ["X", "Y", "Z"]
     UNIT = "MW"
 
-    for _stage_type in [PSRI.STAGE_MONTH, PSRI.STAGE_WEEK, PSRI.STAGE_DAY]
+    for stage_type in [PSRI.STAGE_MONTH, PSRI.STAGE_WEEK, PSRI.STAGE_DAY]
         for hour_discretization in [2, 3, 4, 6, 12]
             gerter = PSRI.open(
                 PSRI.OpenBinary.Writer,
@@ -103,7 +105,7 @@ function read_write_binary_subhourly()
                 # optional:
                 initial_stage = 2,
                 initial_year = 2006,
-                stage_type = _stage_type,
+                stage_type = stage_type,
             )
 
             for t in 1:STAGES, s in 1:SCENARIOS
@@ -121,12 +123,14 @@ function read_write_binary_subhourly()
 
             @test PSRI.max_stages(ior) == STAGES
             @test PSRI.max_scenarios(ior) == SCENARIOS
-            @test PSRI.max_blocks(ior) == hour_discretization * (_stage_type == PSRI.STAGE_MONTH ? 744 : PSRI.HOURS_IN_STAGE[_stage_type])
-            @test PSRI.stage_type(ior) == _stage_type
+            @test PSRI.max_blocks(ior) == hour_discretization * (stage_type == PSRI.STAGE_MONTH ? 744 : PSRI.HOURS_IN_STAGE[stage_type])
+            @test PSRI.stage_type(ior) == stage_type
             @test PSRI.initial_stage(ior) == 2
             @test PSRI.initial_year(ior) == 2006
             @test PSRI.data_unit(ior) == "MW"
             @test PSRI.agent_names(ior) == ["X", "Y", "Z"]
+            @test PSRI.is_hourly(ior) == true
+            @test PSRI.hour_discretization(ior) == hour_discretization
 
             for t in 1:1, s in 1:1
                 @test PSRI.blocks_in_stage(ior, t) <= PSRI.max_blocks(ior)
@@ -163,7 +167,7 @@ function read_write_binary_hourly_single_binary()
     AGENTS = ["X", "Y", "Z"]
     UNIT = "MW"
 
-    for _stage_type in [PSRI.STAGE_MONTH, PSRI.STAGE_WEEK, PSRI.STAGE_DAY]
+    for stage_type in [PSRI.STAGE_MONTH, PSRI.STAGE_WEEK, PSRI.STAGE_DAY]
 
         gerter = PSRI.open(
             PSRI.OpenBinary.Writer,
@@ -176,7 +180,7 @@ function read_write_binary_hourly_single_binary()
             # optional:
             initial_stage = 2,
             initial_year = 2006,
-            stage_type = _stage_type,
+            stage_type = stage_type,
             single_binary = true
         )
 
@@ -206,12 +210,14 @@ function read_write_binary_hourly_single_binary()
 
         @test PSRI.max_stages(ior) == STAGES
         @test PSRI.max_scenarios(ior) == SCENARIOS
-        @test PSRI.max_blocks(ior) == (_stage_type == PSRI.STAGE_MONTH ? 744 : PSRI.HOURS_IN_STAGE[_stage_type])
-        @test PSRI.stage_type(ior) == _stage_type
+        @test PSRI.max_blocks(ior) == (stage_type == PSRI.STAGE_MONTH ? 744 : PSRI.HOURS_IN_STAGE[stage_type])
+        @test PSRI.stage_type(ior) == stage_type
         @test PSRI.initial_stage(ior) == 2
         @test PSRI.initial_year(ior) == 2006
         @test PSRI.data_unit(ior) == "MW"
         @test PSRI.agent_names(ior) == ["X", "Y", "Z"]
+        @test PSRI.is_hourly(ior) == true
+        @test PSRI.hour_discretization(ior) == 1
 
         for t = 1:1, s = 1:1
             @test PSRI.blocks_in_stage(ior, t) <= PSRI.max_blocks(ior)

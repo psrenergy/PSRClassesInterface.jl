@@ -6,7 +6,7 @@ function read_write_binary_block()
 
     FILE_PATH = joinpath(".", "example_21")
 
-    for _stage_type in [PSRI.STAGE_MONTH, PSRI.STAGE_WEEK, PSRI.STAGE_DAY]
+    for stage_type in [PSRI.STAGE_MONTH, PSRI.STAGE_WEEK, PSRI.STAGE_DAY]
 
         iow = PSRClassesInterface.open(
             PSRClassesInterface.OpenBinary.Writer,
@@ -19,7 +19,7 @@ function read_write_binary_block()
             # optional:
             initial_stage = INITIAL_STAGE,
             initial_year = 2006,
-            stage_type = _stage_type
+            stage_type = stage_type
         )
 
         for t = 1:STAGES, s = 1:SCENARIOS, b = 1:BLOCKS
@@ -41,10 +41,11 @@ function read_write_binary_block()
         @test PSRI.max_stages(ior) == STAGES
         @test PSRI.max_scenarios(ior) == SCENARIOS
         @test PSRI.max_blocks(ior) == BLOCKS
-        @test PSRI.stage_type(ior) == _stage_type
+        @test PSRI.stage_type(ior) == stage_type
         @test PSRI.initial_stage(ior) == INITIAL_STAGE
         @test PSRI.initial_year(ior) == 2006
         @test PSRI.data_unit(ior) == "MW"
+        @test PSRI.is_hourly(ior) == false
 
         # obtem número de colunas
         @test PSRI.agent_names(ior) == ["X", "Y", "Z"]
@@ -88,7 +89,7 @@ function read_write_binary_block_single_binary()
 
     FILE_PATH = joinpath(".", "example_2")
 
-    for _stage_type in [PSRI.STAGE_MONTH, PSRI.STAGE_WEEK, PSRI.STAGE_DAY]
+    for stage_type in [PSRI.STAGE_MONTH, PSRI.STAGE_WEEK, PSRI.STAGE_DAY]
 
         iow = PSRClassesInterface.open(
             PSRClassesInterface.OpenBinary.Writer,
@@ -101,7 +102,7 @@ function read_write_binary_block_single_binary()
             # optional:
             initial_stage = INITIAL_STAGE,
             initial_year = 2006,
-            stage_type = _stage_type,
+            stage_type = stage_type,
             single_binary = true
         )
 
@@ -125,10 +126,11 @@ function read_write_binary_block_single_binary()
         @test PSRI.max_stages(ior) == STAGES
         @test PSRI.max_scenarios(ior) == SCENARIOS
         @test PSRI.max_blocks(ior) == BLOCKS
-        @test PSRI.stage_type(ior) == _stage_type
+        @test PSRI.stage_type(ior) == stage_type
         @test PSRI.initial_stage(ior) == INITIAL_STAGE
         @test PSRI.initial_year(ior) == 2006
         @test PSRI.data_unit(ior) == "MW"
+        @test PSRI.is_hourly(ior) == false
 
         # obtem número de colunas
         @test PSRI.agent_names(ior) == ["X", "Y", "Z"]
