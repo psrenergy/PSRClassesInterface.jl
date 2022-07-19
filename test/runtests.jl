@@ -18,12 +18,16 @@ PATH_CASE_0 = joinpath(".", "data", "caso0")
         @time include("duration.jl")
     end
     @testset "OpenBinary file format" begin
-        @testset "Read and write with monthlydata" begin
+        @testset "Read and write with monthly data" begin
             @time include("OpenBinary/read_and_write_blocks.jl")
         end
-        @testset "Read and write with hourlydata" begin
+        @testset "Read and write with hourly data" begin
             @time include("OpenBinary/read_and_write_hourly.jl")
         end
+        @testset "Read hourly data from psrclasses c++" begin
+            @time include("OpenBinary/read_hourly.jl")
+        end
+        
     end
     @testset "ReaderMapper" begin
         @time include("reader_mapper.jl")
