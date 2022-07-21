@@ -107,7 +107,7 @@ function _variable_duration_to_file!(data::Data)
 
     STAGES = length(dates)
 
-    _year, _stage = _year_stage(_simple_data(dates[1]), data.stage_type)
+    _year, _stage = _year_stage(_simple_date(dates[1]), data.stage_type)
 
     iow = open(
         OpenBinary.Writer,
@@ -162,8 +162,8 @@ function _hour_block_map_to_file!(data::Data)
     FILE_NAME_DUR = tempname(data.data_path) * string("_", time_ns(), "_psr_temp")
     FILE_NAME_HBM = tempname(data.data_path) * string("_", time_ns(), "_psr_temp")
 
-    _first = _simple_data(dates[1])
-    _last = _simple_data(dates[end])
+    _first = _simple_date(dates[1])
+    _last = _simple_date(dates[end])
 
     STAGES = _stage_from_date(_last, data.stage_type, _first)
 

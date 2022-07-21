@@ -4,8 +4,9 @@ import GrafCSV
 using Test
 const PSRI = PSRClassesInterface
 
-PATH_CASE_0 = joinpath(".", "data", "caso0")
-
+@testset "File Loop" begin
+    @time include("loop_file.jl")
+end
 @testset "PSRClassesInterface" begin
     @testset "Read json parameters" begin
         @time include("read_json_parameters.jl")

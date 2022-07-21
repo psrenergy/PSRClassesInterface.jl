@@ -1,3 +1,6 @@
+"""
+    ReaderMapper{T}
+"""
 Base.@kwdef mutable struct ReaderMapper{T}
     list::Vector{T} = T[]
     default::Vector{Int} = Int[]

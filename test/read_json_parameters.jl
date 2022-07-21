@@ -1,3 +1,5 @@
+PATH_CASE_0 = joinpath(@__DIR__, "data", "caso0")
+
 data = PSRI.initialize_study(
     PSRI.OpenInterface(),
     data_path = PATH_CASE_0
@@ -126,3 +128,49 @@ end
 
 @test PSRI.get_nonempty_vector(data, "PSRThermalPlant", "ChroGerMin") == Bool[0, 0, 0]
 @test PSRI.get_nonempty_vector(data, "PSRThermalPlant", "SpinningReserve") == Bool[0, 0, 0]
+
+vazao = PSRI.get_vector(data, "PSRGaugingStation", "Vazao", 1, Float64)
+@test vazao[2] == 35.01
+
+vazao = PSRI.get_vectors(data, "PSRGaugingStation", "Vazao", Float64)
+@test vazao[1][2] == 35.01
+@test vazao[2][2] == 0.0
+
+fi_6 = PSRI.get_vector(data, "PSRGaugingStation", "Fi", 2, Float64, dim1 = 6)
+@test length(fi_6) == 12
+@test sum(fi_6) == 0
+
+fi = PSRI.get_vector_1d(data, "PSRGaugingStation", "Fi", 2, Float64)
+@test length(fi[6]) == 12
+@test sum(fi[6]) == 0
+
+fi = PSRI.get_vectors_1d(data, "PSRGaugingStation", "Fi", Float64)
+@test length(fi[2][6]) == 12
+@test sum(fi[2][6]) == 0
+@test length(fi[1][6]) == 12
+@test sum(abs.(fi[1][6])) == 0
+@test sum(abs.(fi[1][1])) > 0
+
+cesp = PSRI.get_vector_2d(data, "PSRThermalPlant", "CEsp", 3, Float64)
+@test cesp[1,1][1] == 12.5
+@test cesp[2,1][1] == 0.0
+@test cesp[3,1][1] == 0.0
+
+cesp = PSRI.get_vectors_2d(data, "PSRThermalPlant", "CEsp", Float64)
+@test cesp[3][1,1][1] == 12.5
+@test cesp[3][2,1][1] == 0.0
+@test cesp[3][3,1][1] == 0.0
+@test cesp[2][1,1][1] == 15.0
+@test cesp[2][2,1][1] == 0.0
+@test cesp[2][3,1][1] == 0.0
+
+
+@test PSRI.get_parm(data, "PSRThermalPlant", "ComT", 2, Int32) == 0
+@test PSRI.get_parm(data, "PSRThermalPlant", "RampUp", 2, Float64, default = 3.6) == 3.6
+
+@test PSRI.get_parms(data, "PSRThermalPlant", "ComT", Int32) == zeros(Int32, 3)
+
+@test PSRI.get_parm_1d(data, "PSRHydroPlant", "FP", 1, Float64) ==  [0.0, 0.0, 0.0, 0.0, 0.0]
+@test PSRI.get_parm_1d(data, "PSRHydroPlant", "FP.VOL", 1, Float64) == [0.0, 0.0, 0.0, 0.0, 0.0]
+
+@test PSRI.get_parms_1d(data, "PSRHydroPlant", "FP", Float64) ==  [[0.0, 0.0, 0.0, 0.0, 0.0]]

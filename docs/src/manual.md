@@ -14,44 +14,100 @@ const PSRI = PSRClassesInterface
 
 ## Abstract study interface
 
+### Main
 ```@docs
+PSRClassesInterface.AbstractData
 PSRClassesInterface.AbstractStudyInterface
-PSRClassesInterface.RelationType
-PSRClassesInterface.StageType
 PSRClassesInterface.initialize_study
-PSRClassesInterface.get_vector
 PSRClassesInterface.max_elements
-PSRClassesInterface.get_map
-PSRClassesInterface.get_vector_map
-PSRClassesInterface.get_reverse_map
-PSRClassesInterface.get_reverse_vector_map
-PSRClassesInterface.get_parms
-PSRClassesInterface.get_code
-PSRClassesInterface.get_name
-PSRClassesInterface.mapped_vector
-PSRClassesInterface.go_to_stage
-PSRClassesInterface.go_to_dimension
-PSRClassesInterface.update_vectors!
 PSRClassesInterface.description
+```
+
+### Study dimensions
+```@docs
+PSRClassesInterface.StageType
 PSRClassesInterface.total_stages
 PSRClassesInterface.total_scenarios
 PSRClassesInterface.total_blocks
 PSRClassesInterface.total_openings
 PSRClassesInterface.total_stages_per_year
+```
+
+### Study duration and blocking
+```
+PSRClassesInterface.BlockDurationMode
 PSRClassesInterface.stage_duration
 PSRClassesInterface.block_duration
 PSRClassesInterface.block_from_stage_hour
+```
+
+### Relations between collections
+```@docs
+PSRClassesInterface.RelationType
+PSRClassesInterface.is_vector_relation
+PSRClassesInterface.get_map
+PSRClassesInterface.get_vector_map
+PSRClassesInterface.get_reverse_map
+PSRClassesInterface.get_reverse_vector_map
+```
+
+### Scalar attributes
+```@docs
+PSRClassesInterface.configuration_parameter
+PSRClassesInterface.get_code
+PSRClassesInterface.get_name
+PSRClassesInterface.get_parm
+PSRClassesInterface.get_parm_1d
+PSRClassesInterface.get_parms
+PSRClassesInterface.get_parms_1d
+```
+
+### Vector attributed
+
+#### Time controller
+
+```@docs
+PSRClassesInterface.mapped_vector
+PSRClassesInterface.go_to_stage
+PSRClassesInterface.go_to_dimension
+PSRClassesInterface.update_vectors!
+```
+
+#### Direct access
+```@docs
+PSRClassesInterface.get_vector
+PSRClassesInterface.get_vector_1d
+PSRClassesInterface.get_vector_2d
+PSRClassesInterface.get_vectors
+PSRClassesInterface.get_vectors_1d
+PSRClassesInterface.get_vectors_2d
 PSRClassesInterface.get_nonempty_vector
 ```
 
+### Reflection
+```@docs
+PSRClassesInterface.get_attribute_dim1
+PSRClassesInterface.get_attribute_dim2
+PSRClassesInterface.get_collections
+PSRClassesInterface.get_attributes
+PSRClassesInterface.get_attribute_struct
+PSRClassesInterface.Attribute
+```
+
+
 ## Abstract reader and writer interface
 
+### Reader
 ```@docs
 PSRClassesInterface.AbstractReader
-PSRClassesInterface.AbstractWriter
 PSRClassesInterface.file_to_array
 PSRClassesInterface.file_to_array_and_header
 PSRClassesInterface.open
+PSRClassesInterface.close
+```
+
+#### Header information
+```@docs
 PSRClassesInterface.is_hourly
 PSRClassesInterface.hour_discretization
 PSRClassesInterface.max_stages
@@ -64,16 +120,37 @@ PSRClassesInterface.stage_type
 PSRClassesInterface.initial_stage
 PSRClassesInterface.initial_year
 PSRClassesInterface.data_unit
+PSRClassesInterface.agent_names
+```
+
+#### Read in loop
+```@docs
 PSRClassesInterface.current_stage
 PSRClassesInterface.current_scenario
 PSRClassesInterface.current_block
-PSRClassesInterface.agent_names
 PSRClassesInterface.goto
 PSRClassesInterface.next_registry
+```
+
+### Writer
+```@docs
+PSRClassesInterface.AbstractWriter
+PSRClassesInterface.open
 PSRClassesInterface.close
-PSRClassesInterface.convert_file
-PSRClassesInterface.convert
-PSRClassesInterface.add_reader!
-PSRClassesInterface.write_registry
 PSRClassesInterface.array_to_file
+PSRClassesInterface.write_registry
+```
+
+### File conversion
+```@docs
+PSRClassesInterface.convert_file
+PSRClassesInterface.add_reader!
+```
+
+### Reader mapper
+```@docs
+PSRClassesInterface.ReaderMapper
+PSRClassesInterface.add_reader!
+PSRClassesInterface.goto
+PSRClassesInterface.close
 ```
