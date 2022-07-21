@@ -5,8 +5,7 @@
 In this example we will demonstrate how to save a time series into a csv or binary file. 
 The first step is to obtain the data that you wish to save
 
-```julia 
-@example rw_file
+```@example rw_file
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
 
@@ -23,8 +22,7 @@ nothing #hide
 
 There are two ways of saving the data to a file, save the data in the file directly or iteratively.
 To save the data directly use the function [`PSRI.array_to_file`](@ref) by calling:
-```julia 
-@example rw_file
+```@example rw_file
 FILE_PATH = joinpath(".", "example")
 
 PSRI.array_to_file(
@@ -42,8 +40,7 @@ To save the data iteractively use the function [`PSRI.open`](@ref) to create an 
 Save the data of each registry to the file using the function [`PSRI.write_registry`](@ref) and then close the data stream
 calling the function [`PSRI.close`](@ref).
 
-```julia 
-@example rw_file 
+```@example rw_file 
 iow = PSRI.open(
     PSRI.OpenBinary.Writer,
     FILE_PATH,
@@ -71,8 +68,7 @@ PSRI.close(iow)
 
 A similar logic can be used to read the data from a file. You can read it directly or iteratively.
 To read the data directly use the function [`PSRI.file_to_array`](@ref) or [`PSRI.file_to_array_and_header`](@ref)
-```julia
-@example rw_file
+```@example rw_file
 data_from_file = PSRI.file_to_array(
         PSRI.OpenBinary.Reader, 
         FILE_PATH;
@@ -91,8 +87,7 @@ data_from_file_and_header, header = PSRI.file_to_array_and_header(
 
 To read the data iteractively use the function [`PSRI.open`](@ref) to create an [`PSRI.AbstractReader`](@ref) and
 read each registry iteratively. At the end you should close the [`PSRI.AbstractReader`](@ref) by calling [`PSRI.close`](@ref)
-```julia
-@example rw_file
+```@example rw_file
 ior = PSRI.open(
     PSRI.OpenBinary.Reader, 
     FILE_PATH;
@@ -113,8 +108,7 @@ rm(FILE_PATH; force = true)
 
 To choose the agents order use `use_header` and `header`
 
-```julia
-@example rw_file
+```@example rw_file
 data_from_file = PSRI.file_to_array(
         PSRI.OpenBinary.Reader, 
         FILE_PATH;
@@ -130,8 +124,7 @@ data_from_file = PSRI.file_to_array(
 Most cases have configuration parameters such as the maximum number of iterations, the discount rate, the deficit cost etc. The
 function [`PSRI.configuration_parameter`](@ref) reads all the parameters from the cases.
 
-```julia
-@example thermal_gens_pars
+```@example thermal_gens_pars
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
 
@@ -153,8 +146,7 @@ PSRI.configuration_parameter(data, "DeficitCost", [0.0])
 
 In this example we will map parameters of thermal generators at each stage of the study to a struct.
 Suppose in this case that our thermal generators has the following attributes:
-```julia
-@example thermal_gens_pars
+```@example thermal_gens_pars
 Base.@kwdef mutable struct ThermalGenerators
     names::Vector{String} = String[]
     codes::Vector{Int32} = Int32[]
@@ -164,8 +156,7 @@ end
 ```
 
 The first thing we must do is to initialize the reading procedure with the following commands:
-```julia
-@example thermal_gens_pars
+```@example thermal_gens_pars
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
 
@@ -178,8 +169,7 @@ data = PSRI.initialize_study(
 ```
 
 We can initialize the struct with the parameters of the first stage using the function [`PSRI.mapped_vector`](@ref)
-```julia
-@example thermal_gens_pars
+```@example thermal_gens_pars
 therm_gen = ThermalGenerators()
 therm_gen.names = PSRI.get_name(data, "PSRThermalPlant")
 therm_gen.codes = PSRI.get_code(data, "PSRThermalPlant")
@@ -188,8 +178,7 @@ therm_gen.therm2sys = PSRI.get_map(data, "PSRThermalPlant", "PSRSystem")
 ```
 
 And afterwards we can update the parameters for each stage as follows.
-```julia
-@example thermal_gens_pars
+```@example thermal_gens_pars
 for stage in 1:PSRI.total_stages(data)
     PSRI.go_to_stage(data, stage)
     PSRI.update_vectors!(data)
@@ -200,8 +189,7 @@ end
 ## Reading basic battery parameters
 
 This example is very similar to "Reading basic thermal generator parameters", but it is necessary to be cautious about the diffence between elements. For instance, batteries have different parameters than thermal generators, therefore, our data structure must be defined accordingly:
-```julia
-@example batteries_pars
+```@example batteries_pars
 Base.@kwdef mutable struct Batteries
     names::Vector{String} = String[]
     codes::Vector{Int32} = Int32[]
@@ -211,8 +199,7 @@ end
 ```
 
 Stardard proceadure of reading data from file:
-```julia
-@example batteries_pars
+```@example batteries_pars
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
 
@@ -225,8 +212,7 @@ data = PSRI.initialize_study(
 ```
 
 And now the struct may be instantiated by setting its appropriate parameters:
-```julia
-@example batteries_pars
+```@example batteries_pars
 batteries = Batteries()
 batteries.names = PSRI.get_name(data, "PSRBattery")
 batteries.codes = PSRI.get_code(data, "PSRBattery")
@@ -237,8 +223,7 @@ batteries.bat2sys = PSRI.get_map(data, "PSRBattery", "PSRSystem")
 ## Determining subsystem from a certain hydro plant
 
 In this example we will demonstrate how to make a simple use of a relationship map. That will be achieved by determining a subsystem from a certain hydro plant through its parameters. The program will initiate by the standard reading procedure:
-```julia
-@example sys_by_gaug
+```@example sys_by_gaug
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
 
@@ -251,16 +236,14 @@ data = PSRI.initialize_study(
 ```
 
 Next, the maps between hydroplants and systems is retrieved by the `get_map` method:
-```julia
-@example sys_by_gaug
+```@example sys_by_gaug
 hyd2sys = PSRI.get_map(data, "PSRHydroPlant","PSRSystem")
 ```
 
 ## Determining buses from a certain thermal plant
 
 This case consists of a more advanced use of a relationship map. We'll determine which buses are linked to a given target thermal plant, while there is no direct relationship between both. Firstly, the study data is read:
-```julia
-@example the_by_bus
+```@example the_by_bus
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
 
@@ -273,21 +256,18 @@ data = PSRI.initialize_study(
 ```
 
 Whereas there is no direct link between buses and thermal plants, both are indirectly related through generators. Therefore, we must identify those relationships by calling `get_map` for each:
-```julia
-@example the_by_bus
+```@example the_by_bus
 gen2thermal = PSRI.get_map(data, "PSRGenerator","PSRThermalPlant")
 gen2bus = PSRI.get_map(data, "PSRGenerator", "PSRBus")
 ```
 
 Next, we can find which generators are linked to our target thermal plant by the indexes of `gen2the`:
-```julia
-@example the_by_bus
+```@example the_by_bus
 target_thermal = 1
 target_generator = findall(isequal(target_thermal), gen2thermal)
 ```
 
 `target_generator` now holds the indexes of generators that are linked to the buses we are trying to identify. With those at hand, the indexes of the buses are easily identifiable by:
-```julia
-@example the_by_bus
+```@example the_by_bus
 targetBus = gen2bus[target_generator]
 ```

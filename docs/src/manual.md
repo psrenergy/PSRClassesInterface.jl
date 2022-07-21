@@ -14,8 +14,7 @@ const PSRI = PSRClassesInterface
 
 ## Abstract study interface
 
-```julia
-@docs
+```@docs
 PSRClassesInterface.AbstractStudyInterface
 PSRClassesInterface.RelationType
 PSRClassesInterface.StageType
@@ -47,8 +46,7 @@ PSRClassesInterface.get_nonempty_vector
 
 ## Abstract reader and writer interface
 
-```julia
-@docs
+```@docs
 PSRClassesInterface.AbstractReader
 PSRClassesInterface.AbstractWriter
 PSRClassesInterface.file_to_array
