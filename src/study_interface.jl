@@ -388,10 +388,12 @@ Example:
 ```
 element = PSRI.create_element!(data, "PSRClass")
 ```
-""" function create_element! end
+"""
+function create_element! end
 
 """
-""" function _insert_element! end
+"""
+function _insert_element! end
 
 """
     _get_element(
@@ -400,7 +402,8 @@ element = PSRI.create_element!(data, "PSRClass")
         index::Integer,
     )
 
-""" function _get_element end
+"""
+function _get_element end
 
 """
     set_parm!(
@@ -412,16 +415,21 @@ element = PSRI.create_element!(data, "PSRClass")
         type::Type,
     )
 
-""" function set_parm! end
+"""
+function set_parm! end
 
 """
-""" function get_vector end
+"""
+function get_vector end
 
 """
-""" function set_vector! end
+"""
+function set_vector! end
 
 """
-""" function get_series end
+"""
+function get_series end
 
 """
-""" function set_series! end
+"""
+function set_series! end

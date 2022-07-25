@@ -20,17 +20,13 @@ function _insert_element!(
     name::String,
     element::Any,
 )
-    raw_data = _raw(data)
-
-    @assert raw_data isa Dict{String,<:Any}
+    raw_data = _raw(data)::Dict{String,<:Any}
 
     if !haskey(raw_data, name)
         error("PSR Class '$name' is not available for this study")
     end
 
-    objects = raw_data[name]
-
-    @assert objects isa Vector{<:Any}
+    objects = raw_data[name]::Vector
 
     push!(objects, element)
 
@@ -46,27 +42,20 @@ function _get_element(
     # ~ Retrieves raw JSON-like dict, i.e. `Dict{String, Any}`.
     # ~ `_raw(data)` is a safe interface for `data.raw`.
     # ~ This dictionary was created by reading a JSON file.
-    raw_data = _raw(data)
-
-    @assert raw_data isa Dict{String,<:Any}
+    raw_data = _raw(data)::Dict{String,<:Any}
 
     if !haskey(raw_data, name)
         error("PSR Class '$name' is not available for this study")
     end
 
     # ~ Gathers a list containing all instances of the class referenced above.
-    objects = raw_data[name]
-
-    @assert objects isa Vector{<:Any}
+    objects = raw_data[name]::Vector
 
     if !(1 <= index <= length(objects))
         error("Invalid index '$index' out of bounds [1, $(length(objects))]")
     end
 
-    element = objects[index]
-
-    # ~ Stronger validation can be achieved by using JSONSchema.jl-like tools.
-    @assert element isa Dict{String,<:Any}
+    element = objects[index]::Dict{String,<:Any}
 
     return element
 end
@@ -78,15 +67,28 @@ function set_parm!(
     attr::String,
     value::T,
 ) where {T<:MainTypes}
-    @assert haskey(data.data_struct, name)
+    if !haskey(data.data_struct, name)
+        error("PSR Class '$name' is not available for this study")
+    end
 
     class_struct = data.data_struct[name]
 
-    @assert haskey(class_struct, attr)
+    if !haskey(class_struct, attr)
+        error("PSR Class '$name' has no attribute '$attr'")
+    end
 
     attr_data = class_struct[attr]::Attribute
 
-    @assert !attr_data.is_vector
+    if attr_data.is_vector
+        error(
+            """
+            Attribute '$attr' PSR Class '$name' is a vector, not a scalar parameter.
+            Consider using `PSRI.set_vector!` instead
+            """
+        )
+    end
+
+    attr_type = attr_data.type
 
     # ~ This is assumed to be a mutable dictionary.
     element = _get_element(data, name, index)
@@ -101,7 +103,7 @@ function set_parm!(
         error("Invalid attribute '$attr' for object of type '$name'")
     end
 
-    element[attr] = value::attr_data.type
+    element[attr] = value::attr_type
 
     nothing
 end
@@ -111,17 +113,28 @@ function get_vector(
     name::String,
     index::Integer,
     attr::String,
-    type::Union{Type{<:T}, Nothing} = nothing,
-) where T <: MainTypes
-    @assert haskey(data.data_struct, name)
+    type::Union{Type{<:T},Nothing}=nothing,
+) where {T<:MainTypes}
+    if !haskey(data.data_struct, name)
+        error("PSR Class '$name' is not available for this study")
+    end
 
     class_struct = data.data_struct[name]
 
-    @assert haskey(class_struct, attr)
+    if !haskey(class_struct, attr)
+        error("PSR Class '$name' has no attribute '$attr'")
+    end
 
     attr_data = class_struct[attr]::Attribute
 
-    @assert attr_data.is_vector
+    if !attr_data.is_vector
+        error(
+            """
+            Attribute '$attr' PSR Class '$name' is a scalar parameter, not a vector.
+            Consider using `PSRI.set_parm!` instead
+            """
+        )
+    end
 
     element = _get_element(data, name, index)
 
@@ -132,9 +145,9 @@ function get_vector(
     vector = element[attr]
 
     if isnothing(type)
-        copy(vector)
+        return Vector(vector)
     else
-        Vector{type}(vector)
+        return Vector{type}(vector)
     end
 end
 
@@ -149,14 +162,16 @@ function set_vector!(
 
     if length(vector) != length(buffer)
         error(
-        """
-        Vector length change from $(length(buffer)) to $(length(vector)) is not allowed.
-        Use `PSRI.set_series!` instead.
-        """
+            """
+            Vector length change from $(length(buffer)) to $(length(vector)) is not allowed.
+            Use `PSRI.set_series!` instead.
+            """
         )
     end
 
-    attr_type = (data.data_struct[name][attr]).type
+    # ~ Validation on `name` & `attr` already happened during `get_vector`
+    attr_data = data.data_struct[name][attr]
+    attr_type = attr_data.type
 
     # ~ Modify data in-place
     for i = eachindex(buffer)
