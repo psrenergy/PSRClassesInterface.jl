@@ -386,26 +386,21 @@ function configuration_parameter end
 
 Example:
 ```
-index = PSRI.create_element(data, "PSRClass")
-
-PSRI.set_parm!(data, "PSRClass", index, "value", 0.0, Float64)
+element = PSRI.create_element!(data, "PSRClass")
 ```
-
-```
-index = PSRI.create_element(data, "PSRClass")
-
-element = PSRI.get_element(data, "PSRClass", index)
-```
-""" function create_element end
+""" function create_element! end
 
 """
-    get_element(
+""" function _insert_element! end
+
+"""
+    _get_element(
         data::Data,
         name::String,
         index::Integer,
     )
 
-""" function get_element end
+""" function _get_element end
 
 """
     set_parm!(
@@ -418,3 +413,15 @@ element = PSRI.get_element(data, "PSRClass", index)
     )
 
 """ function set_parm! end
+
+"""
+""" function get_vector end
+
+"""
+""" function set_vector! end
+
+"""
+""" function get_series end
+
+"""
+""" function set_series! end

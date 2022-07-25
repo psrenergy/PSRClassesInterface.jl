@@ -1,29 +1,29 @@
-const PSRCLASSES_DEFAULTS = JSON.parsefile(joinpath(@__DIR__, "JSON", "psrclasses.default.json"))
+const PSRCLASSES_DEFAULTS = JSON.parsefile(joinpath(@__DIR__, "JSON", "psrclasses.defaults.json"))
 
 function create_element!(
     data::Data,
     name::String,
-    )
+)
     if !haskey(PSRCLASSES_DEFAULTS, name)
         error("Unknown PSR Class '$name'")
     end
-    
+
     element = deepcopy(PSRCLASSES_DEFAULTS[name])
 
-    index = insert_element!(data, name, element)
+    index = _insert_element!(data, name, element)
 
     return index
 end
 
-function insert_element!(
+function _insert_element!(
     data::Data,
     name::String,
     element::Any,
-    )
+)
     raw_data = _raw(data)
 
-    @assert raw_data isa Dict{String, <:Any}
-    
+    @assert raw_data isa Dict{String,<:Any}
+
     if !haskey(raw_data, name)
         error("PSR Class '$name' is not available for this study")
     end
@@ -37,26 +37,26 @@ function insert_element!(
     return length(objects)
 end
 
-function get_element(
+function _get_element(
     data::Data,
     name::String, # classe
     index::Integer,
-    )
+)
 
     # ~ Retrieves raw JSON-like dict, i.e. `Dict{String, Any}`.
     # ~ `_raw(data)` is a safe interface for `data.raw`.
     # ~ This dictionary was created by reading a JSON file.
     raw_data = _raw(data)
 
-    @assert raw_data isa Dict{String, <:Any}
-    
+    @assert raw_data isa Dict{String,<:Any}
+
     if !haskey(raw_data, name)
         error("PSR Class '$name' is not available for this study")
     end
 
     # ~ Gathers a list containing all instances of the class referenced above.
     objects = raw_data[name]
-    
+
     @assert objects isa Vector{<:Any}
 
     if !(1 <= index <= length(objects))
@@ -66,7 +66,7 @@ function get_element(
     element = objects[index]
 
     # ~ Stronger validation can be achieved by using JSONSchema.jl-like tools.
-    @assert element isa Dict{String, <:Any}
+    @assert element isa Dict{String,<:Any}
 
     return element
 end
@@ -77,10 +77,7 @@ function set_parm!(
     index::Integer,
     attr::String,
     value::T,
-    ) where T <: MainTypes
-    # ~ This is assumed to be a mutable dictionary.
-    element = get_element(data, name, index)
-
+) where {T<:MainTypes}
     @assert haskey(data.data_struct, name)
 
     class_struct = data.data_struct[name]
@@ -90,6 +87,9 @@ function set_parm!(
     attr_data = class_struct[attr]::Attribute
 
     @assert !attr_data.is_vector
+
+    # ~ This is assumed to be a mutable dictionary.
+    element = _get_element(data, name, index)
 
     # ~ In fact, all attributes must be set beforehand.
     # ~ Schema validation would be useful here, since there would be no need
@@ -102,6 +102,66 @@ function set_parm!(
     end
 
     element[attr] = value::attr_data.type
+
+    nothing
+end
+
+function get_vector(
+    data::Data,
+    name::String,
+    index::Integer,
+    attr::String,
+    type::Union{Type{<:T}, Nothing} = nothing,
+) where T <: MainTypes
+    @assert haskey(data.data_struct, name)
+
+    class_struct = data.data_struct[name]
+
+    @assert haskey(class_struct, attr)
+
+    attr_data = class_struct[attr]::Attribute
+
+    @assert attr_data.is_vector
+
+    element = _get_element(data, name, index)
+
+    if !haskey(element, attr)
+        error("Invalid attribute '$attr' for object of type '$name'")
+    end
+
+    vector = element[attr]
+
+    if isnothing(type)
+        copy(vector)
+    else
+        Vector{type}(vector)
+    end
+end
+
+function set_vector!(
+    data::Data,
+    name::String,
+    index::Integer,
+    attr::String,
+    vector::Vector{T}
+) where {T<:MainTypes}
+    buffer = get_vector(data, name, index, attr)
+
+    if length(vector) != length(buffer)
+        error(
+        """
+        Vector length change from $(length(buffer)) to $(length(vector)) is not allowed.
+        Use `PSRI.set_series!` instead.
+        """
+        )
+    end
+
+    attr_type = (data.data_struct[name][attr]).type
+
+    # ~ Modify data in-place
+    for i = eachindex(buffer)
+        buffer[i] = vector[i]::attr_type
+    end
 
     nothing
 end
