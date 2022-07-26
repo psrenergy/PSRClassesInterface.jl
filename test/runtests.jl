@@ -1,6 +1,7 @@
 import PSRClassesInterface
 import Dates
 import GrafCSV
+import JSON
 using Test
 const PSRI = PSRClassesInterface
 
@@ -30,5 +31,8 @@ PATH_CASE_0 = joinpath(".", "data", "caso0")
     end
     @testset "TS Utils" begin
         @time include("time_series_utils.jl")
+    end
+    @testset "Study API" begin
+        @time include("study_api.jl")
     end
 end
