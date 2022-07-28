@@ -11,7 +11,6 @@ function skip_store(io::IO, s::Int, skips::Vector{Tuple{Int, Int}}, store_skips:
 end
 
 Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
-
     io::IOStream
 
     stage_total::Int
@@ -23,6 +22,7 @@ Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
     blocks_per_stage::Vector{Int}
     blocks_until_stage::Vector{Int}
     hours_exist::Bool
+    hour_discretization::Int
 
     _block_type::Int
 
@@ -62,16 +62,18 @@ function Base.show(io::IO, ptr::Reader)
     println(io, "   Scenarios = $(ptr.scenario_total)")
     println(io, "   Max Blocks = $(ptr.block_total)")
     println(io, "   Is Hourly = $(ptr.hours_exist)")
+    println(io, "   Hour Discretization = $(ptr.hour_discretization)")
     println(io, "   Agents = $(length(ptr.agent_names))")
     println(io, "   Unit = $(ptr.unit)")
-    print(io, "   Data File = $(ptr.io.name)")
+    print(io,   "   Data File = $(ptr.io.name)")
+    return
 end
 
 function PSRI.open(
     ::Type{Reader},
     path::String;
-    is_hourly::Union{Bool, Nothing} = nothing, 
-    stage_type::Union{PSRI.StageType, Nothing} = nothing,
+    is_hourly::Union{Bool,Nothing} = nothing,
+    stage_type::Union{PSRI.StageType,Nothing} = nothing,
     header::Vector{String} = String[],
     use_header::Bool = true,
     allow_empty::Bool = false,
@@ -86,7 +88,7 @@ function PSRI.open(
         error("is_hourly and stage_type are not supported by OpenBinary.")
     end
 
-    skips = Tuple{Int, Int}[]
+    skips = Tuple{Int,Int}[]
 
     hs = 0
     if single_binary
@@ -107,7 +109,7 @@ function PSRI.open(
         end
         ioh = open(PATH_HDR, "r")
     end
-    
+
     skip_store(ioh, 4, skips, store_skips)
     version = read(ioh, Int32)
 
@@ -127,7 +129,7 @@ function PSRI.open(
         total_agents = read(ioh, Int32)
         variable_by_series = read(ioh, Int32)
         variable_by_block = read(ioh, Int32)
-        stage_type = read(ioh, Int32)
+        stage_type = PSRI.StageType(read(ioh, Int32))
         _first_stage = read(ioh, Int32) #month or week
         first_year = read(ioh, Int32) # year
         #
@@ -150,7 +152,7 @@ function PSRI.open(
         variable_by_series = read(ioh, Int32)
         variable_by_block = read(ioh, Int32)
         variable_by_hour = read(ioh, Int32)
-        stage_type = read(ioh, Int32)
+        stage_type = PSRI.StageType(read(ioh, Int32))
         _first_stage = read(ioh, Int32) #month or week
         first_year = read(ioh, Int32) # year
         #
@@ -159,6 +161,8 @@ function PSRI.open(
         unit_str = strip(join(Char.(unit_buffer)))
         #
         name_length = read(ioh, Int32)
+
+        hour_discretization = 1
 
         if variable_by_hour == 0
             skip_store(ioh, 4, skips, store_skips)
@@ -181,6 +185,28 @@ function PSRI.open(
                 end
             end
             block_total = maximum(number_blocks)
+
+            hour_discretization = floor(
+                Int,
+                block_total / if stage_type == PSRI.STAGE_WEEK
+                    168
+                elseif stage_type == PSRI.STAGE_MONTH
+                    if block_total % 672 == 0
+                        672
+                    elseif block_total % 720 == 0
+                        720
+                    else
+                        744
+                    end
+                elseif stage_type == PSRI.STAGE_DAY
+                    24
+                elseif stage_type == PSRI.STAGE_YEAR
+                    8760
+                else
+                    error("stage Type $stage_type not currently supported")
+                end,
+            )
+
             if verbose_header
                 @show block_total, length(number_blocks), number_blocks
             end
@@ -242,16 +268,6 @@ function PSRI.open(
     end
     @assert name_length > 0
 
-    _stage_type = if stage_type == 2#PSR_STAGETYPE_MONTHLY
-        PSRI.STAGE_MONTH
-    elseif stage_type == 1#PSR_STAGETYPE_WEEKLY
-        PSRI.STAGE_WEEK
-    elseif stage_type == 5#PSR_STAGETYPE_DAILY
-        PSRI.STAGE_DAY
-    else
-        error("Stage type with code $stage_type is no known")
-    end
-
     if use_header
         if length(header) > total_agents
             error("Header does not match with expected. Header length = $(length(header)), number ofo agents is $(total_agents)")
@@ -274,19 +290,18 @@ function PSRI.open(
         index = collect(1:total_agents)
     end
 
-
     data_buffer = zeros(Float32, total_agents)
     data = zeros(Float64, total_agents)
 
     if first_stage != Dates.Date(1900, 1, 1)
         _year = first_year
-        _date = if _stage_type == PSRI.STAGE_MONTH
+        _date = if stage_type == PSRI.STAGE_MONTH
             @assert 1 <= _first_stage <= 12
             Dates.Date(_year, 1, 1) + Dates.Month(_first_stage-1)
-        elseif _stage_type == PSRI.STAGE_WEEK
+        elseif stage_type == PSRI.STAGE_WEEK
             @assert 1 <= _first_stage <= 52
             Dates.Date(_year, 1, 1) + Dates.Week(_first_stage-1)
-        elseif _stage_type == PSRI.STAGE_DAY
+        elseif stage_type == PSRI.STAGE_DAY
             @assert 1 <= _first_stage <= 365
             ret = Dates.Date(_year, 1, 1) + Dates.Day(_first_stage-1)
             if Dates.isleapyear(_year) && _first_stage > 24 * (31 + 28)
@@ -294,9 +309,9 @@ function PSRI.open(
             end
             ret
         else
-            error("Stage Type $_stage_type not currently supported")
+            error("stage Type $stage_type not currently supported")
         end
-        relative_first_stage = PSRI._stage_from_date(first_stage, _stage_type, _date)
+        relative_first_stage = PSRI._stage_from_date(first_stage, stage_type, _date)
         if relative_first_stage < 1
             error("first_stage = $first_stage is earlier than file initial stage = $_date")
         end
@@ -323,29 +338,22 @@ function PSRI.open(
         blocks_per_stage = number_blocks,
         blocks_until_stage = cumsum(vcat(Int[0], number_blocks)),
         hours_exist = hours_exist,
-
+        hour_discretization = hour_discretization,
         _block_type = Int(variable_by_block),
-
         first_year = Int(first_year),
         first_stage = Int(_first_stage),
         first_relative_stage = Int(first_relative_stage),
-        stage_type = _stage_type,
-
+        stage_type = stage_type,
         agents_total = total_agents,
         name_length = Int(name_length),
         agent_names = agent_names,
         unit = unit_str,
-
         data_buffer = data_buffer,
-
         index = index, # header ordering
         data = data, # float cache
-
         relative_stage_skip = relative_stage_skip,
-
         io = io,
         hs = hs,
-
         skips = skips,
     )
 
@@ -362,7 +370,7 @@ function PSRI.open(
         stage_total,
         scenario_total,
         hours_exist ? number_blocks[end] : block_total
-        ) + 4 * total_agents
+    ) + 4 * total_agents
     seekend(ret.io)
     @assert last == position(ret.io)
 
@@ -377,6 +385,7 @@ function Base.getindex(graf::Reader, args...)
 end
 
 PSRI.is_hourly(graf::Reader) = graf.hours_exist
+PSRI.hour_discretization(graf::Reader) = graf.hour_discretization
 
 PSRI.max_stages(graf::Reader) = graf.stage_total - graf.relative_stage_skip
 PSRI.max_scenarios(graf::Reader) = graf.scenario_total
@@ -395,8 +404,11 @@ PSRI.current_stage(graf::Reader) = graf.stage_current
 PSRI.current_scenario(graf::Reader) = graf.scenario_current
 PSRI.current_block(graf::Reader) = graf.block_current
 
-function PSRI.agent_names(graf::Reader)
+function unsafe_agent_names(graf::Reader)
     return graf.agent_names
+end
+function PSRI.agent_names(graf::Reader)
+    return deepcopy(unsafe_agent_names(graf))
 end
 
 function PSRI.goto(graf::Reader, t::Integer, s::Integer = 1, b::Integer = 1)
