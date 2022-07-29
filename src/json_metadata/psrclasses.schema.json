@@ -1,0 +1,30 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "title": "PSRClasses JSON Schema",
+    "type": "object",
+    "required": [
+        "PSRStudy"
+    ],
+    "properties": {
+        "PSRStudy": {
+            "type": "object",
+            "required" : [
+                "reference_id"
+            ]
+        },
+        "PSRDemand": {},
+        "PSRDemandSegment": {},
+        "PSRElectrificationNetwork": {},
+        "PSRFuel": {},
+        "PSRGasNetwork": {},
+        "PSRGaugingStation": {},
+        "PSRHydroPlant": {},
+        "PSRHydrologicalNetwork": {},
+        "PSRHydrologicalPlantNetwork": {},
+        "PSRInterconnectionNetwork": {},
+        "PSRNetwork": {},
+        "PSRNetworkDC": {},
+        "PSRSystem": {},
+        "PSRThermalPlant": {}
+    }
+}
