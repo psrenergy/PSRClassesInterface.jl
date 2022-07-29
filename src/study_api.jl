@@ -332,9 +332,13 @@ function get_series(
     index::Int,
     index_attr::String,
 )
+    attrs = list_indexed_attributes(data, name, index, index_attr)
+
     series = Dict{String,Vector}()
 
-    for attr in list_indexed_attributes(data, name, index, index_attr)
+    sizehint!(series, length(attrs))
+
+    for attr in attrs
         series[attr] = get_vector(data, name, index, attr)
     end
 
