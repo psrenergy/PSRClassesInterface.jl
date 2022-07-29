@@ -53,6 +53,7 @@ PSRClassesInterface.file_to_array
 PSRClassesInterface.file_to_array_and_header
 PSRClassesInterface.open
 PSRClassesInterface.is_hourly
+PSRClassesInterface.hour_discretization
 PSRClassesInterface.max_stages
 PSRClassesInterface.max_scenarios
 PSRClassesInterface.max_blocks
