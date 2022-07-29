@@ -20,7 +20,7 @@ end
 function list_attributes(
     data::Data,
     name::String,
-    index::Integer,
+    index::Int,
 )
     element = _get_element(data, name, index)
 
@@ -51,7 +51,7 @@ end
 function list_indexed_attributes(
     data::Data,
     name::String,
-    index::Integer,
+    index::Int,
     index_attr::String,
 )
     if !haskey(data.data_struct, name)
@@ -107,7 +107,7 @@ end
 function _get_element(
     data::Data,
     name::String, # classe
-    index::Integer,
+    index::Int,
 )
     # ~ Retrieves raw JSON-like dict, i.e. `Dict{String, Any}`.
     # ~ `_raw(data)` is a safe interface for `data.raw`.
@@ -181,7 +181,7 @@ end
 function get_parm(
     data::Data,
     name::String,
-    index::Integer,
+    index::Int,
     attr::String,
 )
     attr_data = _get_attr_data(data, name, attr)
@@ -214,7 +214,7 @@ end
 function set_parm!(
     data::Data,
     name::String,
-    index::Integer,
+    index::Int,
     attr::String,
     value::T,
 ) where {T<:MainTypes}
@@ -250,7 +250,7 @@ end
 function _get_vector_ref(
     data::Data,
     name::String,
-    index::Integer,
+    index::Int,
     attr::String,
 )
     attr_data = _get_attr_data(data, name, attr)
@@ -276,7 +276,7 @@ end
 function get_vector(
     data::Data,
     name::String,
-    index::Integer,
+    index::Int,
     attr::String,
     type::Union{Type{<:T},Nothing}=nothing,
 ) where {T<:MainTypes}
@@ -294,7 +294,7 @@ end
 function set_vector!(
     data::Data,
     name::String,
-    index::Integer,
+    index::Int,
     attr::String,
     buffer::Vector{T}
 ) where {T<:MainTypes}
@@ -323,7 +323,7 @@ end
 function get_series(
     data::Data,
     name::String,
-    index::Integer,
+    index::Int,
     index_attr::String,
 )
     series = Dict{String,Vector}()
@@ -338,7 +338,7 @@ end
 function set_series!(
     data::Data,
     name::String,
-    index::Integer,
+    index::Int,
     index_attr::String,
     buffer::Dict{String,Vector}
 )
