@@ -40,10 +40,15 @@ function list_indexed_attributes(
 
     class_struct = data.data_struct[name]
 
-    attrs = [
-        attr for (attr, attr_data) in class_struct
+    attrs = []
+
+    for (attr, attr_data) in class_struct
         if attr_data.index == index_attr || attr == index_attr
-    ] |> sort
+            push!(attrs, attr)
+        end
+    end
+
+    sort!(attrs)
 
     return attrs
 end
@@ -54,19 +59,20 @@ function list_indexed_attributes(
     index::Int,
     index_attr::String,
 )
-    if !haskey(data.data_struct, name)
-        error("PSR Class '$name' is not available for this study")
-    end
+    element = _get_element(data, name, index)
 
     class_struct = data.data_struct[name]
 
-    element = _get_element(data, name, index)
+    attrs = []
 
-    attrs = [
-        attr for (attr, attr_data) in class_struct
+    for (attr, attr_data) in class_struct
         if haskey(element, attr) &&
-        (attr_data.index == index_attr || attr == index_attr)
-    ] |> sort
+            (attr_data.index == index_attr || attr == index_attr)
+            push!(attrs, attr)
+        end
+    end
+
+    sort!(attrs)
 
     return attrs
 end
