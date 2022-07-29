@@ -508,8 +508,22 @@ function _insert_element! end
         index::Integer,
     )
 
+Low-level call to retrieve an element, that is, an instance of a class in the form of a `Dict{String, <:MainTypes}`.
+It performs basic checks for bounds and existence of `index` and `name` according to `data`.
 """
 function _get_element end
+
+"""
+    get_parm(
+        data::Data,
+        name::String,
+        index::Integer,
+        attr::String,
+    )
+
+Retrieves the value of a scalar parameter.
+"""
+function set_parm end
 
 """
     set_parm!(
@@ -517,25 +531,117 @@ function _get_element end
         name::String,
         index::Integer,
         attr::String,
-        value::Any,
-        type::Type,
-    )
+        value::T,
+    ) where {T <: MainTypes}
 
+Defines the value of a scalar parameter.
 """
 function set_parm! end
 
 """
+    get_vector(
+        data::Data,
+        name::String,
+        index::Integer,
+        attr::String,
+    )
+
+Retrieves a copy of vectorial data.
 """
 function get_vector end
 
 """
+    function set_vector!(
+        data::Data,
+        name::String,
+        index::Int,
+        attr::String,
+        buffer::Vector{T}
+    ) where {T<:MainTypes}
+
+Updates a data vector according to the given `buffer`.
+*Note:* Modifying current vector length is not allowed: use `set_series!` instead.
 """
 function set_vector! end
 
 """
+    function get_series(
+        data::Data,
+        name::String,
+        index::Int,
+        index_attr::String,
+    )
+
+Retrieves the series i.e. `Dict{String, Vector}` indexed by `index_attr`.
+
+Example
+```
+julia> PSRI.get_series(data, "PSRThermalPlant", 1, "Data")
+Dict{String, Vector} with 13 entries:
+  "GerMin"   => [0.0]    
+  "GerMax"   => [888.0]  
+  "NGas"     => [nothing]
+  "IH"       => [0.0]    
+  "ICP"      => [0.0]    
+  "Data"     => ["1900-01-01"]
+  "CoefE"    => [1.0]
+  "PotInst"  => [888.0]
+  "Existing" => [0]
+  "sfal"     => [0]
+  "NAdF"     => [0]
+  "Unidades" => [1]
+  "StartUp"  => [0.0]
+```
 """
 function get_series end
 
 """
+    function set_series!(
+        data::Data,
+        name::String,
+        index::Int,
+        index_attr::String,
+        buffer::Dict{String,Vector}
+    )
+
+Updates serial (indexed) data.
+All columns must be the same as before.
+The series length is allowed to be changed, but all vectors in the new series must have equal length.
+
+```
+julia> series = Dict{String, Vector}(     
+         "GerMin" => [0.0, 1.0],        
+         "GerMax" => [888.0, 777.0],    
+         "NGas" => [nothing, nothing],  
+         "IH" => [0.0, 0.0],
+         "CoefE" => [1.0, 2.0],
+         "PotInst" => [888.0, 777.0],   
+         "ICP" => [0.0, 0.0],
+         "Data" => ["1900-01-01", "1900-01-02"],
+         "Existing" => [0, 0],
+         "sfal" => [0, 1],
+         "NAdF" => [0, 0],
+         "Unidades" => [1, 1],
+         "StartUp" => [0.0, 2.0]
+       );
+
+julia> PSRI.set_series!(data, "PSRThermalPlant", 1, "Data", series)
+
+julia> PSRI.get_series(data, "PSRThermalPlant", 1, "Data")
+Dict{String, Vector} with 13 entries:
+  "GerMin"   => [0.0, 1.0]
+  "GerMax"   => [888.0, 777.0]
+  "NGas"     => [nothing, nothing]
+  "IH"       => [0.0, 0.0]
+  "ICP"      => [0.0, 0.0]
+  "Data"     => ["1900-01-01", "1900-01-02"]
+  "CoefE"    => [1.0, 2.0]
+  "PotInst"  => [888.0, 777.0]
+  "Existing" => [0, 0]
+  "sfal"     => [0, 1]
+  "NAdF"     => [0, 0]
+  "Unidades" => [1, 1]
+  "StartUp"  => [0.0, 2.0]
+```
 """
 function set_series! end
