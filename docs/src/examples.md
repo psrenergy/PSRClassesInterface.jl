@@ -291,7 +291,7 @@ PSRI.go_to_stage(data,target_stage)
 ```
 Now, we can read the demand segments and the map between demands and demand segments, and then obtain the value of each demand:
 ```@example seg_by_dem
-dem_seg = PSRI.mapped_vector(data, "PSRDemandSegment" , "Demanda", Float64, "block")
+dem_seg = PSRI.mapped_vector(data, "PSRDemandSegment", "Demanda", Float64, "block")
 PSRI.update_vectors!(data)
 
 seg2dem = PSRI.get_map(data, "PSRDemandSegment", "PSRDemand", relation_type = PSRI.RELATION_1_TO_1)
@@ -303,5 +303,4 @@ demand_values = zeros(dem_size)
 for demand = 1:dem_size
     demand_values[demand] = sum(dem_seg[i] for i = 1:length(dem_seg) if seg2dem[i] == demand)
 end
-
 ```
