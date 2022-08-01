@@ -188,7 +188,7 @@ end
 
 ## Reading basic battery parameters
 
-This example is very similar to "Reading basic thermal generator parameters", but it is necessary to be cautious about the diffence between elements. For instance, batteries have different parameters than thermal generators, therefore, our data structure must be defined accordingly:
+This example is very similar to "Reading basic thermal generator parameters", but it is necessary to be cautious about the difference between elements. For instance, batteries have different parameters than thermal generators, therefore, our data structure must be defined accordingly:
 ```@example batteries_pars
 Base.@kwdef mutable struct Batteries
     names::Vector{String} = String[]
@@ -270,4 +270,37 @@ target_generator = findall(isequal(target_thermal), gen2thermal)
 `target_generator` now holds the indexes of generators that are linked to the buses we are trying to identify. With those at hand, the indexes of the buses are easily identifiable by:
 ```@example the_by_bus
 targetBus = gen2bus[target_generator]
+```
+## Determining the value of demands
+In this example we will read demand segments and obtain the value of demands. The first step is to read the study data:
+```@example seg_by_dem
+import PSRClassesInterface
+const PSRI = PSRClassesInterface
+
+PATH_CASE_EXAMPLE_DEM = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "caso1")
+
+data = PSRI.initialize_study(
+    PSRI.OpenInterface(),
+    data_path = PATH_CASE_EXAMPLE_DEM
+)
+```
+Whereas the demand varies according to the stage, we must specify the stage by calling `go_to_stage`:
+```@example seg_by_dem
+target_stage = 1
+PSRI.go_to_stage(data,target_stage)
+```
+Now, we can read the demand segments and the map between demands and demand segments, and then obtain the value of each demand:
+```@example seg_by_dem
+dem_seg = PSRI.mapped_vector(data, "PSRDemandSegment", "Demanda", Float64, "block")
+PSRI.update_vectors!(data)
+
+seg2dem = PSRI.get_map(data, "PSRDemandSegment", "PSRDemand", relation_type = PSRI.RELATION_1_TO_1)
+
+dem_size = PSRI.max_elements(data, "PSRDemand")
+
+demand_values = zeros(dem_size)
+
+for demand = 1:dem_size
+    demand_values[demand] = sum(dem_seg[i] for i = 1:length(dem_seg) if seg2dem[i] == demand)
+end
 ```
