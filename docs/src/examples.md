@@ -298,5 +298,5 @@ seg2dem = PSRI.get_map(data, "PSRDemandSegment", "PSRDemand", relation_type = PS
 
 target_demand = 1
 
-demand_value = sum(dem_seg[i] for i = 1:length(dem_seg) if seg2dem[i]== target_demand)
+demand_value = sum(dem_seg[i] for i = 1:length(dem_seg) if seg2dem[i] == target_demand)
 ```
