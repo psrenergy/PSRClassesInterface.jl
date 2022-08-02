@@ -318,7 +318,7 @@ lod2bus = PSRI.get_map(data, "PSRLoad", "PSRBus", relation_type = PSRI.RELATION_
 The values of the loads are weights in a kind of a weighted arithmetic mean of the buses for each demand. But the loads of each demand don't add up to 1, so they need to be normalized to represent fractions of the total:
 ```@example seg_by_dem
 total_lod_bydem = zeros(dem_size)
-lod_size = PSRI.max_elements(case_data, "PSRLoad")
+lod_size = PSRI.max_elements(data, "PSRLoad")
 
 for i in 1:lod_size
     total_lod_bydem[lod2dem[i]] += loads[i]
@@ -331,10 +331,12 @@ for i in 1:lod_size
         loads[i] = 0.0
     end
 end
+
+loads
 ```
 Now we know the fraction of each demand that corresponds to each bus, and can easily define the total demand by bus:
 ```@example seg_by_dem
-bus_size = PSRI.max_elements(case_data, "PSRBus")
+bus_size = PSRI.max_elements(data, "PSRBus")
 
 dem_bybus = zeros(bus_size)
 
