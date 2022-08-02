@@ -271,8 +271,8 @@ target_generator = findall(isequal(target_thermal), gen2thermal)
 ```@example the_by_bus
 targetBus = gen2bus[target_generator]
 ```
-## Determining the value of demands
-In this example we will read demand segments and obtain the value of demands. The first step is to read the study data:
+## Determining elasticity and value of demands
+In this example we will read demand segments, obtain the value of demands, discover wheter each demand is elastic or inelastic, and then obtain the sums of demands by elasticity. The first step is to read the study data:
 ```@example seg_by_dem
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
@@ -305,6 +305,25 @@ end
 
 demand_values
 ```
+We can discover the elasticity of each demand by calling `get_parms` with the parameter `Elastico`:
+```@example seg_to_dem
+demands_elasticity = PSRI.get_parms(data, "PSRDemand", "Elastico", Int32)
+```
+If `demands_elasticity[i] == 0` it means that the demand at index `i` is inelastic, and elastic if `demands_elasticity[i] == 1`.
+We can now obtain the total demands of each elasticity:
+```@example seg_by_dem
+total_elastic_demand = 0.0
+total_inelastic_demand = 0.0
+
+for i = 1:dem_size
+    if demands_elasticity[i] == 0
+        total_inelastic_demand += demand_values[i]
+    else
+        total_elastic_demand += demand_values[i]
+    end
+end
+```
+
 ### Determining demands values of each bus
 Now we have the values of the demands, we can obtain the values of demand for each bus. 
 Each demand has a set of loads, which define how much of this demand corresponds to each bus.  We can begin by reading the loads and its relations with demands and buses:
