@@ -384,9 +384,8 @@ Next, we get from which bus each circuit starts and which bus it goes to with `g
 ```@example cir_bus
 cir2bus_to = PSRI.get_map(data, "PSRSerie", "PSRBus"; relation_type = PSRI.RELATION_TO)
 cir2bus_from = PSRI.get_map(data, "PSRSerie", "PSRBus"; relation_type = PSRI.RELATION_FROM)
-
 ```
-Now we can build the incidence matrix. Each row corresponds to a circuit and each column corresponds to a bus. The element at the index ´[i,j]´ is -1 if the circuit ´i´ starts from the bus ´j´, 1 if it goes to this bus, and 0 if they both have no relation:
+Now we can build the incidence matrix. Each row corresponds to a circuit and each column corresponds to a bus. The element at the index (i,j) is -1 if the circuit i starts from the bus j, 1 if it goes to this bus, and 0 if they both have no relation:
 ```@example cir_bus 
 bus_size = PSRI.max_elements(data, "PSRBus")
 cir_size = PSRI.max_elements(data, "PSRSerie")
@@ -397,3 +396,48 @@ for cir = 1:cir_size
 end
 incidence_matrix
 ``` 
+## Calculating the energy prices of each thermal plant
+The energy prices in a thermal plant deppends on the  the price of the fuel used, the specific consumption of this fuel and Operation and Maintenance cost. Again, we begin by reading the data:
+```@example ther_prices
+import PSRClassesInterface
+const PSRI = PSRClassesInterface
+
+PATH_CASE_EXAMPLE_THER_PRICES = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "caso1")
+
+data = PSRI.initialize_study(
+    PSRI.OpenInterface(),
+    data_path = PATH_CASE_EXAMPLE_THER_PRICES
+)
+```
+We discover the necessary infos of the thermal plants indirectly through `PSRFuelConsumption`:
+```@example ther_prices
+fuelcons2ther = PSRI.get_map(data,"PSRFuelConsumption", "PSRThermalPlant"; relation_type = PSRI.RELATION_1_TO_1)
+
+ther_size = PSRI.max_elements(data, "PSRThermalPlant")
+fuelcons_size = PSRI.max_elements(data, "PSRFuelConsumption")
+ther2fuelcons = [[fc for fc = 1:fuelcons_size if fuelcons2ther[fc] == t] for t = 1:ther_size]
+```
+Next, we get the O&M cost, the specific consumption and the relation with fuels of our fuels consumptions. Then we get the cost of each fuel. After calling `mapped_vector` we must call `update_vectors!`.
+```@example ther_prices
+om_cost = PSRI.mapped_vector(data, "PSRFuelConsumption", "O&MCost", Float64)
+spec_consum = PSRI.mapped_vector(data, "PSRFuelConsumption", "CEsp", Float64, "segment", "block")
+fuelcons2fuel = PSRI.get_map(data, "PSRFuelConsumption", "PSRFuel"; relation_type = PSRI.RELATION_1_TO_1)
+fuel_cost = PSRI.mapped_vector(data, "PSRFuel", "Custo", Float64)
+
+PSRI.update_vectors!(data)
+```
+Now we can calculate the price of the energy unity of each fuel consumption for each thermal plant:
+```@example ther_prices
+ther_prices = [zeros(0) for _ = 1:ther_size]
+for ther = 1:ther_size
+    n_fuelcons = length(ther2fuelcons[ther])
+    prices = zeros(n_fuelcons)
+    for i = 1:n_fuelcons
+        fuelcons = ther2fuelcons[ther][i]
+        fuel = fuelcons2fuel[fuelcons]
+        prices[i] = om_cost[fuelcons] + spec_consum[fuelcons]*fuel_cost[fuel]
+    end
+    ther_prices[ther] = prices
+end
+ther_prices
+```
