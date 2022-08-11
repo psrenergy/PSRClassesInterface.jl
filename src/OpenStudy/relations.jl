@@ -119,6 +119,17 @@ function validate_relation(lst_from::String, lst_to::String, type::RelationType)
     return nothing
 end
 
+function check_relation(lst_from::String, lst_to::String, type::RelationType)
+    if haskey(_RELATIONS, lst_from)
+        if !haskey(_RELATIONS[lst_from], (lst_to, type))
+            return false
+        end
+    else
+        error("No relations from $lst_from available")
+    end
+    return true
+end
+
 function get_reverse_map(
     data::AbstractData,
     lst_from::String,
@@ -276,8 +287,11 @@ function get_vector_map(
     if !is_vector_relation(relation_type)
         error("For relation relation_type = $relation_type use get_map")
     end
-    validate_relation(lst_from, lst_to, relation_type)
-
+    if check_relation(lst_from, lst_to, relation_type)
+        nothing
+    else
+        return get_reverse_vector_map(data, lst_to, lst_from; allow_empty = allow_empty, original_relation_type = RELATION_1_TO_1)
+    end
     # @assert TYPE == PSR_RELATIONSHIP_1TO1 # TODO I think we don't need that in this interface
     raw = _raw(data)
     n_from = max_elements(data, lst_from)
