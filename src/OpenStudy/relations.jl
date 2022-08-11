@@ -290,6 +290,8 @@ function get_vector_map(
     if check_relation(lst_from, lst_to, relation_type)
         nothing
     else
+        @warn "No relation from $lst_from to $lst_to with type $relation_type \n "*
+        "Using an equivalent get_reverse_vector_map relation"
         return get_reverse_vector_map(data, lst_to, lst_from; allow_empty = allow_empty, original_relation_type = RELATION_1_TO_1)
     end
     # @assert TYPE == PSR_RELATIONSHIP_1TO1 # TODO I think we don't need that in this interface
