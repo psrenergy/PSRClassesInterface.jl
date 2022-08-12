@@ -80,7 +80,7 @@ function _deal_with_value(ids, d1, d2, adress, logs)
 end
 
 # example
-dict1 = Dict("a"=>1,"b"=>[Dict("reference_id" => 3), 2, 3], "fuels" => [3, 3]);
-dict2 = Dict("a"=>3,"b"=>[Dict("reference_id" => 2), 2, 1, 4], "c" => true, "fuels" => [2, 3]);
-logs, ids = compare(dict1, dict2);
-print(logs)
+# dict1 = Dict("a"=>1,"b"=>[Dict("reference_id" => 3), 2, 3], "fuels" => [3, 3]);
+# dict2 = Dict("a"=>3,"b"=>[Dict("reference_id" => 2), 2, 1, 4], "c" => true, "fuels" => [2, 3]);
+# logs, ids = compare(dict1, dict2);
+# print(logs)
