@@ -15,10 +15,11 @@ end
 function _deal_with_id_uniq(ids, d1, d2, key, adress, logs)
     index1 = haskey(ids[1], d1)
     index2 = haskey(ids[2], d2)
-    if (index1 == false) + (index2 == false) == 2 #check if they dont have the key
+
+    if !index1 && !index2 #check if they dont have the key
         ids[1][d1] = adress
         ids[2][d2] = adress
-    elseif (index1 == false) + (index2 == false) == 1 #check if one of then have the key
+    elseif index1 ⊻ index2 #check if JUST one of then have the key
         logs = logs * adress * "[$(key)]\n"
     elseif ids[1][d1] == ids[2][d2] #check if they have the same value
         nothing
@@ -79,7 +80,7 @@ function _deal_with_value(ids, d1, d2, adress, logs)
 end
 
 # example
-# dict1 = Dict("a"=>1,"b"=>[Dict("reference_id" => 3), 2, 3], "fuels" => [3, 3]);
-# dict2 = Dict("a"=>3,"b"=>[Dict("reference_id" => 2), 2, 1, 4], "c" => true, "fuels" => [2, 3]);
-# logs, ids = compare(dict1, dict2);
-# print(logs)
+dict1 = Dict("a"=>1,"b"=>[Dict("reference_id" => 3), 2, 3], "fuels" => [3, 3]);
+dict2 = Dict("a"=>3,"b"=>[Dict("reference_id" => 2), 2, 1, 4], "c" => true, "fuels" => [2, 3]);
+logs, ids = compare(dict1, dict2);
+print(logs)
