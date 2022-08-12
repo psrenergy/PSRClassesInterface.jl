@@ -1,5 +1,8 @@
-const ids_uniq = Set(["plant", "bus", "reference_id", "system", "area", "no1", "no2"]);
-const ids_list = Set(["fuels"]);
+const ids_uniq = Set(["plant", "bus", "reference_id", "system", "area", "no1", "no2", "demand",
+                      "station", "turbinning", "spilling", "filtration", "storedenergy",
+                      "fuel", "downstream"]);
+const ids_list = Set(["fuels", "usinas", "plants", "batteries", "elements", "reservoirs",
+                      "restricao", "reserveGeneration"]); #backed
 
 function compare(path1::String, path2::String)
     data1 = initialize_study(
@@ -77,8 +80,8 @@ function _deal_with_id_uniq!(
     index1 = haskey(ids1, d1)
     index2 = haskey(ids2, d2)
     if !index1 && !index2 #check if they dont have the key
-        ids1[d1] = address
-        ids2[d2] = address
+        ids1[d1] = address * "[$(key)]"
+        ids2[d2] = address * "[$(key)]"
     elseif index1 ⊻ index2 #check if JUST one of then have the key
         push!(logs, address * "[$(key)]") 
     elseif ids1[d1] == ids2[d2] #check if they have the same value
