@@ -15,7 +15,6 @@ include("reader_writer_interface.jl")
 include("reader_mapper.jl")
 include("time_series_utils.jl")
 include("utils.jl")
-include("compare_json.jl")
 
 # submodules
 include("PMD/PMD.jl")
@@ -26,5 +25,6 @@ include("OpenStudy/pmd.jl")
 include("OpenStudy/study_openinterface.jl")
 include("OpenStudy/duration.jl")
 include("OpenStudy/relations.jl")
+include("compare_json.jl")
 
 end

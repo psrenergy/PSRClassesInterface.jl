@@ -1,98 +1,166 @@
-const ids_uniq = ["plant", "bus", "reference_id", "system", "area", "no1", "no2"];
-const ids_list = ["fuels"];
+const ids_uniq = Set(["plant", "bus", "reference_id", "system", "area", "no1", "no2"]);
+const ids_list = Set(["fuels"]);
 
 function compare(path1::String, path2::String)
-    data1 = PSRI.initialize_study(
-        PSRI.OpenInterface(),
+    data1 = initialize_study(
+        OpenInterface(),
         data_path = path1)
-    data2 = PSRI.initialize_study(
-        PSRI.OpenInterface(),
+    data2 = initialize_study(
+        OpenInterface(),
         data_path = path2
+    ) 
+    
+    return compare(data1, data2)
+end
+
+function compare(data1::Data, data2::Data)     
+    return compare(data1.raw, data2.raw)
+end
+
+function compare(data1::Dict, data2::Dict)
+
+    logs = String[]
+    ids1 = Dict()
+    ids2 = Dict()
+    address = "" 
+    
+    compare!(data1, data2, address, logs, ids1, ids2)
+    return logs
+end
+
+function compare!(
+    d1::Dict,
+    d2::Dict,
+    address::String,
+    logs::Vector{String},
+    ids1::Dict,
+    ids2::Dict,
     )
-    logs, ids = PSRI.compare(data1.raw, data2.raw)
-    return logs, ids
+    _deal_with_dict!(d1, d2, address, logs, ids1, ids2)
+    nothing
 end
 
-function compare(d1, d2, adress = "", logs = "", ids = Dict(1 => Dict(), 2 => Dict()))
-    if isa(d1,Dict) && isa(d2,Dict)#dict check
-        logs, ids = _deal_with_dict(ids, d1, d2, adress, logs)
-    elseif isa(d1, Array) && isa(d2, Array) #array check
-        logs, ids = _deal_with_list(ids, d1, d2, adress, logs)
-    else #just a value
-        logs, ids = _deal_with_value(ids, d1, d2, adress, logs)
-    end
-    return logs, ids
+function compare!(
+    d1::Array,
+    d2::Array, 
+    address::String,
+    logs::Vector{String},
+    ids1::Dict,
+    ids2::Dict,
+    )
+    _deal_with_list!(d1, d2, address, logs, ids1, ids2)
+    nothing
 end
 
-function _deal_with_id_uniq(ids, d1, d2, key, adress, logs)
-    index1 = haskey(ids[1], d1)
-    index2 = haskey(ids[2], d2)
+function compare!(
+    d1,
+    d2,
+    address::String,
+    logs::Vector{String},
+    ids1::Dict,
+    ids2::Dict,
+    )
+    _deal_with_value!(d1, d2, address, logs)
+    nothing
+end
 
+function _deal_with_id_uniq!(
+    d1,
+    d2,
+    key,
+    address::String,
+    logs::Vector{String},
+    ids1::Dict,
+    ids2::Dict,
+    )
+
+    index1 = haskey(ids1, d1)
+    index2 = haskey(ids2, d2)
     if !index1 && !index2 #check if they dont have the key
-        ids[1][d1] = adress
-        ids[2][d2] = adress
+        ids1[d1] = address
+        ids2[d2] = address
     elseif index1 ⊻ index2 #check if JUST one of then have the key
-        logs = logs * adress * "[$(key)]\n"
-    elseif ids[1][d1] == ids[2][d2] #check if they have the same value
+        push!(logs, address * "[$(key)]") 
+    elseif ids1[d1] == ids2[d2] #check if they have the same value
         nothing
     else # they dont have the same value
-        logs = logs * adress * "[$(key)]\n"
+        push!(logs, address * "[$(key)]") 
     end
-    return logs, ids
+    nothing
 end
 
-function _deal_with_id_list(ids, d1, d2, adress, logs)
+function _deal_with_id_list!(
+    d1::Array,
+    d2::Array,
+    address::String,
+    logs::Vector{String},
+    ids1::Dict,
+    ids2::Dict,
+    )
     for item in union(eachindex(d1), eachindex(d2)) #loop in array
         if item <= min(length(d1),length(d2)) # check if they have the same index
-            logs, ids = _deal_with_id_uniq(ids, d1[item], d2[item], item, adress, logs)
+            _deal_with_id_uniq!(d1[item], d2[item], item, address, logs, ids1, ids2)
         else # check if they have the same index
-            logs = logs * adress * "[$(item)]\n"
+            push!(logs, address * "[$(item)]") 
         end
     end
-    return logs, ids
+    nothing
 end
 
-function _deal_with_dict(ids, d1, d2, adress, logs)
+function _deal_with_dict!(
+    d1::Dict,
+    d2::Dict,
+    address::String,
+    logs::Vector{String},
+    ids1::Dict,
+    ids2::Dict,
+    )
     for key in union(keys(d1),keys(d2))
         if haskey(d1, key) && haskey(d2, key) #check if both have the key
-            if !(key in ids_uniq)  && !(key in ids_list)# non id flag
-                logs, ids = compare(d1[key],d2[key], adress*"[$key]",logs, ids)
+            if !(key in ids_uniq) && !(key in ids_list)# non id flag
+                compare!(d1[key],d2[key], address*"[$key]",logs, ids1, ids2)
             elseif key in ids_uniq #id uniq
-                logs, ids = _deal_with_id_uniq(ids, d1[key], d2[key], key, adress, logs)
+                _deal_with_id_uniq!(d1[key], d2[key], key, address, logs, ids1, ids2)
             elseif key in ids_list #id list
-                logs, ids = _deal_with_id_list(ids, d1[key], d2[key], adress * "[$key]", logs)
+                _deal_with_id_list!(d1[key], d2[key], address * "[$key]", logs, ids1, ids2)
             else
                 error("You should not be here!")
             end
         else #they dont have the same key
-            logs = logs * adress * "[$(key)]\n"
+            push!(logs, address * "[$(key)]") 
         end
     end
-    return logs, ids
+    nothing
 end
 
-function _deal_with_list(ids, d1, d2, adress, logs)
+function _deal_with_list!(
+    d1::Array,
+    d2::Array,
+    address::String,
+    logs::Vector{String},
+    ids1::Dict,
+    ids2::Dict,
+    )
     for item in union(eachindex(d1), eachindex(d2)) #loop in array
         if item <= min(length(d1),length(d2)) # check if they have the same index
-            logs, ids = compare(d1[item],d2[item], adress*"[$item]",logs, ids)
+            compare!(d1[item],d2[item], address*"[$item]",logs, ids1, ids2)
         else # check if they have the same index
-            logs = logs * adress * "[$(item)]\n"
+            push!(logs, address * "[$(item)]") 
         end
     end
-    return logs, ids
+    nothing
 end
 
-function _deal_with_value(ids, d1, d2, adress, logs)
+function _deal_with_value!(
+    d1,
+    d2,
+    address::String,
+    logs::Vector{String},
+    )
     if d1 != d2 # check if they have not the same value
-        logs = logs * adress * "\n"
+        push!(logs, address) 
     else # they have the same value
         nothing
     end
-    return logs, ids
+    nothing
 end
-
-# example
-# dict1 = Dict("a"=>1,"b"=>[Dict("reference_id" => 3), 2, 3], "fuels" => [3, 3]);
-# dict2 = Dict("a"=>3,"b"=>[Dict("reference_id" => 2), 2, 1, 4], "c" => true, "fuels" => [2, 3]);
-# logs, ids = compare(dict1, dict2);
-# print(logs)
