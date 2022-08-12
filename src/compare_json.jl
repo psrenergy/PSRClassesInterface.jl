@@ -1,6 +1,18 @@
 const ids_uniq = ["plant", "bus", "reference_id", "system", "area", "no1", "no2"];
 const ids_list = ["fuels"];
 
+function compare(path1::String, path2::String)
+    data1 = PSRI.initialize_study(
+        PSRI.OpenInterface(),
+        data_path = path1)
+    data2 = PSRI.initialize_study(
+        PSRI.OpenInterface(),
+        data_path = path2
+    )
+    logs, ids = PSRI.compare(data1.raw, data2.raw)
+    return logs, ids
+end
+
 function compare(d1, d2, adress = "", logs = "", ids = Dict(1 => Dict(), 2 => Dict()))
     if isa(d1,Dict) && isa(d2,Dict)#dict check
         logs, ids = _deal_with_dict(ids, d1, d2, adress, logs)
