@@ -56,7 +56,7 @@ for col in collections
         push!(json_to_bin, j)
     end
     if verbose
-        @show json_to_bin
+        @show(json_to_bin)
     end
     attributes = PSRI.get_attributes(data, col)
     for attr in attributes

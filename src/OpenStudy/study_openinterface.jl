@@ -36,6 +36,7 @@ Base.@kwdef mutable struct Data{T} <: AbstractData
     first_date::Dates.Date
 
     data_struct::Dict{String, Dict{String, Attribute}}
+    validate_attributes::Bool
     model_files_added::Set{String}
 
     log_file::Union{IOStream, Nothing}
@@ -124,6 +125,9 @@ function initialize_study(
     log_file = "",
     verbose = true,
     extra_config_file::String = "",
+    validate_attributes::Bool = true,
+    _netplan_database::Bool = false,
+    model_class_map = PMD._MODEL_TO_CLASS_SDDP,
 )
     if !isdir(data_path)
         error("$data_path is not a valid directory")
@@ -151,7 +155,10 @@ function initialize_study(
                 Dates.Month(first_stage-1), Dates.Week(first_stage-1))
     # TODO daily study
 
-    data_struct, model_files_added = PMD.load_model(path_pmds, pmd_files)
+    if _netplan_database
+        model_class_map = PMD._MODEL_TO_CLASS_NETPLAN
+    end
+    data_struct, model_files_added = PMD.load_model(path_pmds, pmd_files, model_class_map)
     if isempty(model_files_added)
         error("No Model definition (.pmd) file found")
     end
@@ -174,6 +181,7 @@ function initialize_study(
         raw = raw,
         data_path = data_path,
         data_struct = data_struct,
+        validate_attributes = validate_attributes,
         model_files_added = model_files_added,
         stage_type = stage_type,
         first_year = first_year,
@@ -224,10 +232,9 @@ function _collection(
     # else
     #     col = _collection(data, Symbol(str), remove_redundant, sort_on, query)
     #     data.collections[str] = col
-    #     @show str, col
     #     return col
     # end
-    error("method not implmented")
+    error("method not implemented")
 end
 
 function max_elements(data::Data, str::String)
@@ -422,87 +429,6 @@ function get_parm_2d(
         end
     end
 
-    return out
-end
-
-function get_parms(
-    data::Data,
-    col::String,
-    name::String,
-    ::Type{T};
-    check_type::Bool = true,
-    check_parm::Bool = true,
-    ignore::Bool = false,
-    default::T = _default_value(T),
-) where T
-
-    attr_struct = get_attribute_struct(data, col, name)
-    if check_type
-        _check_type(attr_struct, T, col, name)
-    end
-    if check_parm
-        _check_parm(attr_struct, col, name)
-    end
-
-    n = max_elements(data, col)
-    out = Vector{T}(undef, n)
-    for i in 1:n
-        out[i] = get_parm(data, col, name, i, T; default = default)
-    end
-    return out
-end
-
-function get_parms_1d(
-    data::Data,
-    col::String,
-    name::String,
-    ::Type{T};
-    check_type::Bool = true,
-    check_parm::Bool = true,
-    ignore::Bool = false,
-    default::T = _default_value(T),
-) where T
-
-    attr_struct = get_attribute_struct(data, col, name)
-    if check_type
-        _check_type(attr_struct, T, col, name)
-    end
-    if check_parm
-        _check_parm(attr_struct, col, name)
-    end
-
-    n = max_elements(data, col)
-    out = Vector{Vector{T}}(undef, n)
-    for i in 1:n
-        out[i] = get_parm_1d(data, col, name, i, T; default = default)
-    end
-    return out
-end
-
-function get_parms_2d(
-    data::Data,
-    col::String,
-    name::String,
-    ::Type{T};
-    check_type::Bool = true,
-    check_parm::Bool = true,
-    ignore::Bool = false,
-    default::T = _default_value(T),
-) where T
-
-    attr_struct = get_attribute_struct(data, col, name)
-    if check_type
-        _check_type(attr_struct, T, col, name)
-    end
-    if check_parm
-        _check_parm(attr_struct, col, name)
-    end
-
-    n = max_elements(data, col)
-    out = Vector{Matrix{T}}(undef, n)
-    for i in 1:n
-        out[i] = get_parm_2d(data, col, name, i, T; default = default)
-    end
     return out
 end
 

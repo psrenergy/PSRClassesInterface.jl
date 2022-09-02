@@ -65,7 +65,7 @@ function initialize_study end
 
 """
     PSRI.get_vector(
-        data::Data,
+        data::AbstractData,
         collection::String,
         attribute::String,
         index::Integer,
@@ -86,7 +86,7 @@ function get_vector end
 
 """
     PSRI.get_vector_1d(
-        data::Data,
+        data::AbstractData,
         collection::String,
         attribute::String,
         index::Integer,
@@ -109,7 +109,7 @@ function get_vector_1d end
 
 """
     PSRI.get_vector_2d(
-        data::Data,
+        data::AbstractData,
         collection::String,
         attribute::String,
         index::Integer,
@@ -133,7 +133,7 @@ function get_vector_2d end
 
 """
     PSRI.get_vectors(
-        data::Data,
+        data::AbstractData,
         collection::String,
         attribute::String,
         ::Type{T};
@@ -166,7 +166,7 @@ end
 
 """
     PSRI.get_vectors_1d(
-        data::Data,
+        data::AbstractData,
         collection::String,
         attribute::String,
         ::Type{T},
@@ -199,7 +199,7 @@ end
 
 """
     PSRI.get_vectors_2d(
-        data::Data,
+        data::AbstractData,
         collection::String,
         attribute::String,
         ::Type{T},
@@ -271,7 +271,7 @@ function get_map end
 
 """
     get_vector_map(
-        data::Data,
+        data::AbstractData,
         collection_from::String,
         collection_to::String;
         relation_type::RelationType = RELATION_1_TO_N,
@@ -367,9 +367,9 @@ This function is used to get data from collections that don't vary over time.
 
 Example:
 ```julia
-PSRI.get_parms(data, "PSRBattery", "Einic", Float64, 1)
-PSRI.get_parms(data, "PSRBattery", "ChargeRamp", Float64, 1)
-PSRI.get_parms(data, "PSRBattery", "DischargeRamp", Float64, 1)
+PSRI.get_parm(data, "PSRBattery", "Einic", Float64, 1)
+PSRI.get_parm(data, "PSRBattery", "ChargeRamp", Float64, 1)
+PSRI.get_parm(data, "PSRBattery", "DischargeRamp", Float64, 1)
 ```
 """
 function get_parm end
@@ -437,7 +437,32 @@ PSRI.get_parms(data, "PSRBattery", "ChargeRamp", Float64)
 PSRI.get_parms(data, "PSRBattery", "DischargeRamp", Float64)
 ```
 """
-function get_parms end
+function get_parms(
+    data::AbstractData,
+    col::String,
+    name::String,
+    ::Type{T};
+    check_type::Bool = true,
+    check_parm::Bool = true,
+    ignore::Bool = false,
+    default::T = _default_value(T),
+) where T
+
+    attr_struct = get_attribute_struct(data, col, name)
+    if check_type
+        _check_type(attr_struct, T, col, name)
+    end
+    if check_parm
+        _check_parm(attr_struct, col, name)
+    end
+
+    n = max_elements(data, col)
+    out = Vector{T}(undef, n)
+    for i in 1:n
+        out[i] = get_parm(data, col, name, i, T; default = default)
+    end
+    return out
+end
 
 """
     get_parms_1d(
@@ -461,7 +486,32 @@ PSRI.get_parm_1d(data, "PSRHydroPlant", "FP", Float64)
 PSRI.get_parm_1d(data, "PSRHydroPlant", "FP.VOL", Float64)
 ```
 """
-function get_parms_1d end
+function get_parms_1d(
+    data::AbstractData,
+    col::String,
+    name::String,
+    ::Type{T};
+    check_type::Bool = true,
+    check_parm::Bool = true,
+    ignore::Bool = false,
+    default::T = _default_value(T),
+) where T
+
+    attr_struct = get_attribute_struct(data, col, name)
+    if check_type
+        _check_type(attr_struct, T, col, name)
+    end
+    if check_parm
+        _check_parm(attr_struct, col, name)
+    end
+
+    n = max_elements(data, col)
+    out = Vector{Vector{T}}(undef, n)
+    for i in 1:n
+        out[i] = get_parm_1d(data, col, name, i, T; default = default)
+    end
+    return out
+end
 
 """
     get_parms_2d(
@@ -486,7 +536,32 @@ PSRI.get_parms_2d(data, "PSRBattery", "ChargeRamp", Float64)
 PSRI.get_parms_2d(data, "PSRBattery", "DischargeRamp", Float64)
 ```
 """
-function get_parms_2d end
+function get_parms_2d(
+    data::AbstractData,
+    col::String,
+    name::String,
+    ::Type{T};
+    check_type::Bool = true,
+    check_parm::Bool = true,
+    ignore::Bool = false,
+    default::T = _default_value(T),
+) where T
+
+    attr_struct = get_attribute_struct(data, col, name)
+    if check_type
+        _check_type(attr_struct, T, col, name)
+    end
+    if check_parm
+        _check_parm(attr_struct, col, name)
+    end
+
+    n = max_elements(data, col)
+    out = Vector{Matrix{T}}(undef, n)
+    for i in 1:n
+        out[i] = get_parm_2d(data, col, name, i, T; default = default)
+    end
+    return out
+end
 
 """
     get_code(data::AbstractData, collection::String)
@@ -553,7 +628,7 @@ Goes to the `stage` in the `data` time controller.
 function go_to_stage end
 
 """
-    go_to_dimension(data::Data, name::String, value::Integer)
+    go_to_dimension(data::AbstractData, name::String, value::Integer)
 
 Moves time controller reference of vectors indexed by dimension `name` to the
 index `value`.
@@ -577,14 +652,14 @@ Update all mapped vectors according to the time controller inside `data`.
 
 ---------
 
-    update_vectors!(data::Data, filters::Vector{String})
+    update_vectors!(data::AbstractData, filters::Vector{String})
 
 Update filtered classes of mapped vectors according to the time controller inside `data`.
 """
 function update_vectors! end
 
 """
-    description(data::Data)
+    description(data::AbstractData)
 
 Returns the study description if available.
 """
@@ -688,13 +763,13 @@ Returns the duration, in hours, of the `block` at the current stage, set by `go_
 function block_duration end
 
 """
-    block_from_stage_hour(data::Data, t::Int, h::Int)
+    block_from_stage_hour(data::AbstractData, t::Int, h::Int)
 
 Returns the block `b` associated with hour `h` at stage `t`.
 
 ---------
 
-    block_from_stage_hour(data::Data, date::Dates.Date, h::Int)
+    block_from_stage_hour(data::AbstractData, date::Dates.Date, h::Int)
 
 Returns the block `b` associated with hour `h` at date `date`.
 """
@@ -702,7 +777,7 @@ function block_from_stage_hour end
 
 """
     get_nonempty_vector(
-        data::Data,
+        data::AbstractData,
         colllection::String,
         attribute::String,
     )
@@ -743,7 +818,7 @@ PSRI.configuration_parameter(data, "MinOutflowPenalty", 0.0)
 ---------
 
     configuration_parameter(
-        data::Data,
+        data::AbstractData,
         attribute::String,
         default::Vector{T},
     ) where T <: MainTypes
@@ -759,7 +834,7 @@ function configuration_parameter end
 
 """
     get_attribute_dim1(
-        data::AbsttractData,
+        data::AbstractData,
         collection::String,
         attribute::string,
         index::Integer;
@@ -773,7 +848,7 @@ function get_attribute_dim1 end
 
 """
     get_attribute_dim2(
-        data::AbsttractData,
+        data::AbstractData,
         collection::String,
         attribute::string,
         index::Integer;
@@ -786,19 +861,19 @@ Errors if attribute has zero or one dimensions.
 function get_attribute_dim2 end
 
 """
-    get_attribute_struct(data::AbsttractData)
+    get_attribute_struct(data::AbstractData)
 
 Return a struct of type `DataStruct` with collection names (strings) as keys
 and maps from attributes names (string) to attributes data definitions
 `Attribute`.
 """
-function get_data_strunct(data::AbstractData)
+function get_data_struct(data::AbstractData)
     return data.data_struct
 end
 
 """
     get_attribute_struct(
-        data::AbsttractData,
+        data::AbstractData,
         collection::String,
         attribute::string,
     )
@@ -822,7 +897,7 @@ Return a struct of type `Attribute` with fields:
 * index::String = if a vector represents the indexing vector (might be empty)
 """
 function get_attribute_struct(data::AbstractData, collection::String, attribute::String)
-    return get_attribute_struct(get_data_strunct(data), collection, attribute)
+    return get_attribute_struct(get_data_struct(data), collection, attribute)
 end
 function get_attribute_struct(data::DataStruct, collection::String, attribute::String)
     collection_struct = data[collection]
@@ -834,31 +909,31 @@ function get_attribute_struct(data::DataStruct, collection::String, attribute::S
 end
 
 """
-    get_attributes(data::AbsttractData, collection::String)
+    get_attributes(data::AbstractData, collection::String)
 
 Return `Vector{String}` of valid attributes from `collection`.
 """
 function get_attributes(data::AbstractData, collection::String)
-    return get_attributes(get_data_strunct(data), collection)
+    return get_attributes(get_data_struct(data), collection)
 end
 function get_attributes(data::DataStruct, collection::String)
     return sort(collect(keys(data[collection])))
 end
 
 """
-    get_collections(data::AbsttractData)
+    get_collections(data::AbstractData)
 
 Return `Vector{String}` of valid collections (depends on loaded pmd files).
 """
 function get_collections(data::AbstractData)
-    return get_collections(get_data_strunct(data))
+    return get_collections(get_data_struct(data))
 end
 function get_collections(data::DataStruct)
     return sort(collect(keys(data)))
 end
 
 """
-    get_relations(data::AbsttractData, collection::String)
+    get_relations(data::AbstractData, collection::String)
 
 Returns a `Vector{Tuple{String, RelationType}}` with relating `collection`
 and their relation type associated to `collection`.
@@ -874,4 +949,23 @@ function get_relations(collection::String)
         return keys(_RELATIONS[collection])
     end
     return Tuple{String, RelationType}[]
+end
+
+"""
+    set_validate_attributes(data::AbstractData, val::Bool)
+
+activates and de-activates attribute validation in getters for both parms and vectors.
+"""
+function set_validate_attributes(data::AbstractData, val::Bool)
+    data.validate_attributes = val
+    return nothing
+end
+
+"""
+    get_validate_attributes(data::AbstractData)
+
+check if attribute validation is active.
+"""
+function get_validate_attributes(data::AbstractData)
+    return data.validate_attributes
 end
