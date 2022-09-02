@@ -5,30 +5,32 @@ Possible stage types used in for reading and writing time series files.
 
 The current possible stage types are:
 ```julia
+STAGE_UNKNOWN
 STAGE_WEEK
 STAGE_MONTH
+STAGE_3MONTHS
 STAGE_DAY
+STAGE_13MONTHS
+STAGE_2MONTHS
+STAGE_4MONTHS
+STAGE_6MONTHS
 STAGE_YEAR
+STAGE_DECADE
 ```
 """
 @enum StageType begin
-    STAGE_WEEK=1
-    STAGE_MONTH=2
-    STAGE_DAY=5
-    STAGE_YEAR=10
+    STAGE_UNKNOWN = 0
+    STAGE_WEEK = 1
+    STAGE_MONTH = 2
+    STAGE_3MONTHS = 3
+    STAGE_DAY = 5
+    STAGE_13MONTHS = 6
+    STAGE_2MONTHS = 7
+    STAGE_4MONTHS = 8
+    STAGE_6MONTHS = 9
+    STAGE_YEAR = 10
+    STAGE_DECADE = 11
 end
-
-# "PSR_STAGETYPE_UNKNOWN" => 0,
-# "PSR_STAGETYPE_WEEKLY" => 1,
-# "PSR_STAGETYPE_MONTHLY" => 2,
-# "PSR_STAGETYPE_QUARTERLY" => 3,
-# "PSR_STAGETYPE_HOURLY" => 4,
-# "PSR_STAGETYPE_DAILY" => 5,
-# "PSR_STAGETYPE_13MONTHLY" => 6,
-# "PSR_STAGETYPE_BIMONTHLY" => 7,
-# "PSR_STAGETYPE_TRIANNUALLY" => 8,
-# "PSR_STAGETYPE_SEMIANNUALLY" => 9,
-# "PSR_STAGETYPE_YEARLY" => 10,
 
 """
     PSRI.AbstractReader
@@ -82,6 +84,8 @@ Returns updated `AbstractWriter` instance.
 - `unit`: dimension of the elements' data.
 
 - `is_hourly`: if data is hourly. If yes, block dimension will be ignored.
+
+- `hour_discretization`: sub-hour parameter to discretize an hour into minutes.
 
 - `name_length`: length of element names.
 
@@ -151,6 +155,13 @@ function close end
 Returns a `Bool` indicating whether the data in the file read by [`PSRI.AbstractReader`](@ref) is hourly.
 """
 function is_hourly end
+
+"""
+    PSRI.hour_discretization(ior::AbstractReader)
+
+Returns an `Int` indicating the hour discretization.
+"""
+function hour_discretization end
 
 """
     PSRI.max_stages(ior::AbstractReader)

@@ -109,6 +109,7 @@ PSRClassesInterface.close
 #### Header information
 ```@docs
 PSRClassesInterface.is_hourly
+PSRClassesInterface.hour_discretization
 PSRClassesInterface.max_stages
 PSRClassesInterface.max_scenarios
 PSRClassesInterface.max_blocks
