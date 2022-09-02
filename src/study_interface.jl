@@ -157,10 +157,9 @@ function get_vectors(
     default::T = _default_value(T),
 ) where T
     n = max_elements(data, collection)
-    out = Vector{T}[]
-    sizehint!(out, n)
+    out = Vector{Vector{T}}(undef, n)
     for i in 1:n
-        push!(out, get_vector(data, collection, attribute, i, T, default = default))
+        out[i] = get_vector(data, collection, attribute, i, T, default = default)
     end
     return out
 end
@@ -191,10 +190,9 @@ function get_vectors_1d(
     default::T = _default_value(T),
 ) where T
     n = max_elements(data, collection)
-    out =  Vector{Vector{T}}[]
-    sizehint!(out, n)
+    out = Vector{Vector{Vector{T}}}(undef, n)
     for i in 1:n
-        push!(out, get_vector_1d(data, collection, attribute, i, T, default = default))
+        out[i] = get_vector_1d(data, collection, attribute, i, T, default = default)
     end
     return out
 end
@@ -225,10 +223,9 @@ function get_vectors_2d(
     default::T = _default_value(T),
 ) where T
     n = max_elements(data, collection)
-    out = Matrix{Vector{T}}[]
-    sizehint!(out, n)
+    out = Vector{Matrix{Vector{T}}}(undef, n)
     for i in 1:n
-        push!(out, get_vector_2d(data, collection, attribute, i, T, default = default))
+        out[i] = get_vector_2d(data, collection, attribute, i, T, default = default)
     end
     return out
 end

@@ -445,10 +445,9 @@ function get_parms(
     end
 
     n = max_elements(data, col)
-    out = T[]
-    sizehint!(out, n)
+    out = Vector{T}(undef, n)
     for i in 1:n
-        push!(out, get_parm(data, col, name, i, T; default = default))
+        out[i] = get_parm(data, col, name, i, T; default = default)
     end
     return out
 end
@@ -473,10 +472,9 @@ function get_parms_1d(
     end
 
     n = max_elements(data, col)
-    out = Vector{T}[]
-    sizehint!(out, n)
+    out = Vector{Vector{T}}(undef, n)
     for i in 1:n
-        push!(out, get_parm_1d(data, col, name, i, T; default = default))
+        out[i] = get_parm_1d(data, col, name, i, T; default = default)
     end
     return out
 end
@@ -501,10 +499,9 @@ function get_parms_2d(
     end
 
     n = max_elements(data, col)
-    out = Matrix{T}[]
-    sizehint!(out, n)
+    out = Vector{Matrix{T}}(undef, n)
     for i in 1:n
-        push!(out, get_parm_2d(data, col, name, i, T; default = default))
+        out[i] = get_parm_2d(data, col, name, i, T; default = default)
     end
     return out
 end
