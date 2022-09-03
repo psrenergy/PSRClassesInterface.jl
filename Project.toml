@@ -1,6 +1,6 @@
 name = "PSRClassesInterface"
 uuid = "1eab49e5-27d8-4905-b9f6-327b6ea666c4"
-version = "0.7.0"
+version = "0.7.1"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
@@ -11,8 +11,7 @@ JSON = "0.21"
 julia = "1.6"
 
 [extras]
-GrafCSV = "070ba913-1d04-4147-8b30-d43c8af0fb3e"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "GrafCSV"]
+test = ["Test"]
