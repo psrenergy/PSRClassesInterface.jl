@@ -1,6 +1,6 @@
 name = "PSRClassesInterface"
 uuid = "1eab49e5-27d8-4905-b9f6-327b6ea666c4"
-version = "0.6.0"
+version = "0.7.0"
 
 [deps]
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
