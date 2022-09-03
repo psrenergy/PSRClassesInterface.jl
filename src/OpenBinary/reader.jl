@@ -114,7 +114,7 @@ function PSRI.open(
     version = read(ioh, Int32)
 
     if verbose_header
-        @show version
+        @show(version)
     end
 
     @assert 1 <= version <= 9
@@ -208,7 +208,7 @@ function PSRI.open(
             )
 
             if verbose_header
-                @show block_total, length(number_blocks), number_blocks
+                @show(block_total, length(number_blocks), number_blocks)
             end
         else
             error("variable_by_hour = $variable_by_hour is invalid")
@@ -224,7 +224,7 @@ function PSRI.open(
         push!(agent_names, agent_name)
     end
     if verbose_header
-        @show agent_names
+        @show(agent_names)
     end
 
     if single_binary

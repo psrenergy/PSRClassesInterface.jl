@@ -1,3 +1,8 @@
+"""
+    is_vector_relation(relation::RelationType)
+
+Returns true is `relation` is a vector relation.
+"""
 function is_vector_relation(relation)
     return relation == RELATION_1_TO_N || relation == RELATION_BACKED
 end
