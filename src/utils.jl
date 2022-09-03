@@ -52,9 +52,9 @@ end
 function blocks_in_stage(io, t)::Int
     if is_hourly(io)
         if stage_type(io) == STAGE_MONTH
-            return io.hour_discretization * DAYS_IN_MONTH[mod1(t - 1 + initial_stage(io), 12)] * 24
+            return hour_discretization(io) * DAYS_IN_MONTH[mod1(t - 1 + initial_stage(io), 12)] * 24
         else
-            return io.hour_discretization * HOURS_IN_STAGE[stage_type(io)]
+            return hour_discretization(io) * HOURS_IN_STAGE[stage_type(io)]
         end
     end
     return max_blocks(io)
