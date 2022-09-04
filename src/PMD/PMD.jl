@@ -93,7 +93,8 @@ const _MODEL_TO_CLASS_NETPLAN = Dict(
     "NETPLAN_StaticVarCompensator" => "PSRStaticVarCompensator",
     "NETPLAN_Battery" => "PSRBattery",
     "NETPLAN_Injection" => "PSRPowerInjection",
-    "NETPLAN_V2.6_ConversorDCAC" => "PSRConverterDCAC_LCC",
+    "NETPLAN_V2.6_ConversorDCAC" => "PSRConverterDCAC",
+    # "NETPLAN_V2.6_ConversorDCAC" => "PSRConverterDCAC_LCC",
     "NETPLAN_Conversor_P2P" => "PSRConverterDCAC_P2P",
     "NETPLAN_Conversor_VSC" => "PSRConverterDCAC_VSC",
     #
