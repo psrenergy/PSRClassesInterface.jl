@@ -506,19 +506,6 @@ function get_attribute_dim2(
     return 999
 end
 
-function get_code(
-    data::Data,
-    col::String
-)
-    return get_parms(data, col, "code", Int32)
-end
-function get_name(
-    data::Data,
-    col::String
-)
-    return get_parms(data, col, "name", String)
-end
-
 function description(data::Data)
     return ""
 end

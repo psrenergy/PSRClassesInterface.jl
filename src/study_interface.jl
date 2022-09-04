@@ -573,7 +573,12 @@ Example:
 PSRI.get_code(data, "PSRThermalPlant")
 ```
 """
-function get_code end
+function get_code(
+    data::AbstractData,
+    col::String
+)
+    return get_parms(data, col, "code", Int32)
+end
 
 """
     get_name(data::AbstractData, collection::String)
@@ -586,7 +591,12 @@ PSRI.get_name(data, "PSRThermalPlant")
 PSRI.get_name(data, "PSRGaugingStation")
 ```
 """
-function get_name end
+function get_name(
+    data::AbstractData,
+    col::String
+)
+    return get_parms(data, col, "name", String)
+end
 
 """
     mapped_vector(
