@@ -112,11 +112,25 @@ const _RELATIONS = Dict{String, _INNER_DICT}(
 )
 
 function validate_relation(lst_from::String, lst_to::String, type::RelationType)
+
+    reverse = false
+    if haskey(_RELATIONS, lst_to)
+        if haskey(_RELATIONS[lst_to], (lst_from, RELATION_1_TO_1)) 
+            reverse = true
+        end
+    end
+
     if haskey(_RELATIONS, lst_from)
         if !haskey(_RELATIONS[lst_from], (lst_to, type))
-            error("No relation from $lst_from to $lst_to with type $type \n" *
-                  "Available relations from $lst_from are: \n" *
-                  "$(keys(_RELATIONS[lst_from]))")
+            if reverse
+                error("No relation from $lst_from to $lst_to with type $type \n" *
+                    "There is an equivalent get_reverse_vector_map relation \n" *
+                    "Try: PSRI.get_reverse_vector_map(data, \"$lst_to\", \"$lst_from\"; original_relation_type = PSRI.RELATION_1_TO_1)")
+            else
+                error("No relation from $lst_from to $lst_to with type $type \n" *
+                    "Available relations from $lst_from are: \n" *
+                    "$(keys(_RELATIONS[lst_from]))")
+            end
         end
     else
         error("No relations from $lst_from available")
@@ -281,6 +295,7 @@ function get_vector_map(
     if !is_vector_relation(relation_type)
         error("For relation relation_type = $relation_type use get_map")
     end
+
     validate_relation(lst_from, lst_to, relation_type)
 
     # @assert TYPE == PSR_RELATIONSHIP_1TO1 # TODO I think we don't need that in this interface
