@@ -16,6 +16,7 @@ data = PSRI.initialize_study(
 
 @test PSRI.get_map(data, "PSRInterconnection", "PSRSystem", relation_type = PSRI.RELATION_FROM) == Int32[1]
 @test PSRI.get_map(data, "PSRInterconnection", "PSRSystem", relation_type = PSRI.RELATION_TO) == Int32[2]
+@test_throws ErrorException PSRI.get_vector_map(data,"PSRThermalPlant", "PSRFuelConsumption"; relation_type = PSRI.RELATION_1_TO_N)
 
 @test PSRI.get_vector_map(data, "PSRInterconnectionSumData", "PSRInterconnection") == Vector{Int32}[[1]]
 
