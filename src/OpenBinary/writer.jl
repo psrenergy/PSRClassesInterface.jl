@@ -267,7 +267,7 @@ function PSRI.open(
 end
 
 PSRI.is_hourly(graf::Writer) = graf.is_hourly
-PSRI.hour_discretization(graf::Reader) = graf.hour_discretization
+PSRI.hour_discretization(graf::Writer) = graf.hour_discretization
 PSRI.stage_type(graf::Writer) = graf.stage_type
 PSRI.max_blocks(graf::Writer) = graf.block_total
 PSRI.initial_stage(graf::Writer) = graf.initial_stage
