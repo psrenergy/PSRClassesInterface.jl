@@ -417,7 +417,7 @@ function write_data(data::Data, path::String)
     raw_data = _raw(data)::Dict{String,<:Any}
 
     # ~ Writes to file
-    open(path, "w") do io
+    Base.open(path, "w") do io
         JSON.print(io, raw_data)
     end
 
