@@ -110,10 +110,20 @@ function _insert_element!(
     return length(objects)
 end
 
+"""
+    _get_element(
+        data::Data,
+        name::String,
+        index::Integer,
+    )
+
+Low-level call to retrieve an element, that is, an instance of a class in the form of a `Dict{String, <:MainTypes}`.
+It performs basic checks for bounds and existence of `index` and `name` according to `data`.
+"""
 function _get_element(
     data::Data,
     name::String, # classe
-    index::Int,
+    index::Integer,   # instance index
 )
     # ~ Retrieves raw JSON-like dict, i.e. `Dict{String, Any}`.
     # ~ `_raw(data)` is a safe interface for `data.raw`.
@@ -166,7 +176,7 @@ end
 
 _parse_parm(::Nothing, ::Type{T}) where {T<:MainTypes} = nothing
 _parse_parm(value::T, ::Type{T}) where {T<:MainTypes} = value
-_parse_parm(value::Int64, ::Type{Int32}) = convert(Int32, value)
+_parse_parm(value::Int, ::Type{Int32}) = convert(Int32, value)
 
 function _parse_parm(date::String, ::Type{Dates.Date})
     for date_format in [DATE_FORMAT_1, DATE_FORMAT_2]
@@ -397,6 +407,18 @@ function set_series!(
 
     for (attr, vector) in buffer
         element[attr] = vector
+    end
+
+    nothing
+end
+
+function write_data(data::Data, path::String)
+    # ~ Retrieves JSON-like raw data
+    raw_data = _raw(data)::Dict{String,<:Any}
+
+    # ~ Writes to file
+    open(path, "w") do io
+        JSON.print(io, raw_data)
     end
 
     nothing

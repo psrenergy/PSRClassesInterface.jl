@@ -485,33 +485,18 @@ PSRI.configuration_parameter(data, "DeficitCost", [0.0])
 function configuration_parameter end
 
 """
-    create_element(
-        data::Data,
-        name::String,
-    )
+    create_element(data::Data, name::String)::Integer
+
+Creates a new instance of the class `name` and returns its index.
 
 Example:
 ```
-element = PSRI.create_element!(data, "PSRClass")
+index = PSRI.create_element!(data, "PSRClass")
+
+PSRI.set_parm!(data, "PSRClass", index, "PSRAttr", value)
 ```
 """
 function create_element! end
-
-"""
-"""
-function _insert_element! end
-
-"""
-    _get_element(
-        data::Data,
-        name::String,
-        index::Integer,
-    )
-
-Low-level call to retrieve an element, that is, an instance of a class in the form of a `Dict{String, <:MainTypes}`.
-It performs basic checks for bounds and existence of `index` and `name` according to `data`.
-"""
-function _get_element end
 
 """
     get_parm(
@@ -645,3 +630,10 @@ Dict{String, Vector} with 13 entries:
 ```
 """
 function set_series! end
+
+"""
+    write_data(data::Data, path::String)
+
+Writes data to file in JSON format.
+"""
+function write_data end
