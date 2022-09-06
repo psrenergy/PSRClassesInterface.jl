@@ -35,4 +35,7 @@ end
     @testset "TS Utils" begin
         @time include("time_series_utils.jl")
     end
+    @testset "Compare JSON" begin
+        @time include("compare_json.jl")
+    end
 end

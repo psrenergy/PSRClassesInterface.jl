@@ -27,5 +27,6 @@ include("OpenStudy/study_openinterface.jl")
 include("OpenStudy/vector_map.jl")
 include("OpenStudy/duration.jl")
 include("OpenStudy/relations.jl")
+include("compare_json.jl")
 
 end
