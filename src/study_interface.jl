@@ -439,8 +439,8 @@ PSRI.get_parms(data, "PSRBattery", "DischargeRamp", Float64)
 """
 function get_parms(
     data::AbstractData,
-    col::String,
-    name::String,
+    collection::String,
+    attribute::String,
     ::Type{T};
     check_type::Bool = true,
     check_parm::Bool = true,
@@ -448,18 +448,18 @@ function get_parms(
     default::T = _default_value(T),
 ) where T
 
-    attr_struct = get_attribute_struct(data, col, name)
+    attr_struct = get_attribute_struct(data, collection, attribute)
     if check_type
-        _check_type(attr_struct, T, col, name)
+        _check_type(attr_struct, T, collection, attribute)
     end
     if check_parm
-        _check_parm(attr_struct, col, name)
+        _check_parm(attr_struct, collection, attribute)
     end
 
-    n = max_elements(data, col)
+    n = max_elements(data, collection)
     out = Vector{T}(undef, n)
     for i in 1:n
-        out[i] = get_parm(data, col, name, i, T; default = default)
+        out[i] = get_parm(data, collection, attribute, i, T; default = default)
     end
     return out
 end
@@ -488,8 +488,8 @@ PSRI.get_parm_1d(data, "PSRHydroPlant", "FP.VOL", Float64)
 """
 function get_parms_1d(
     data::AbstractData,
-    col::String,
-    name::String,
+    collection::String,
+    attribute::String,
     ::Type{T};
     check_type::Bool = true,
     check_parm::Bool = true,
@@ -497,18 +497,18 @@ function get_parms_1d(
     default::T = _default_value(T),
 ) where T
 
-    attr_struct = get_attribute_struct(data, col, name)
+    attr_struct = get_attribute_struct(data, collection, attribute)
     if check_type
-        _check_type(attr_struct, T, col, name)
+        _check_type(attr_struct, T, collection, attribute)
     end
     if check_parm
-        _check_parm(attr_struct, col, name)
+        _check_parm(attr_struct, collection, attribute)
     end
 
-    n = max_elements(data, col)
+    n = max_elements(data, collection)
     out = Vector{Vector{T}}(undef, n)
     for i in 1:n
-        out[i] = get_parm_1d(data, col, name, i, T; default = default)
+        out[i] = get_parm_1d(data, collection, attribute, i, T; default = default)
     end
     return out
 end
@@ -538,8 +538,8 @@ PSRI.get_parms_2d(data, "PSRBattery", "DischargeRamp", Float64)
 """
 function get_parms_2d(
     data::AbstractData,
-    col::String,
-    name::String,
+    collection::String,
+    attribute::String,
     ::Type{T};
     check_type::Bool = true,
     check_parm::Bool = true,
@@ -547,18 +547,18 @@ function get_parms_2d(
     default::T = _default_value(T),
 ) where T
 
-    attr_struct = get_attribute_struct(data, col, name)
+    attr_struct = get_attribute_struct(data, collection, attribute)
     if check_type
-        _check_type(attr_struct, T, col, name)
+        _check_type(attr_struct, T, collection, attribute)
     end
     if check_parm
-        _check_parm(attr_struct, col, name)
+        _check_parm(attr_struct, collection, attribute)
     end
 
-    n = max_elements(data, col)
+    n = max_elements(data, collection)
     out = Vector{Matrix{T}}(undef, n)
     for i in 1:n
-        out[i] = get_parm_2d(data, col, name, i, T; default = default)
+        out[i] = get_parm_2d(data, collection, attribute, i, T; default = default)
     end
     return out
 end
@@ -575,9 +575,9 @@ PSRI.get_code(data, "PSRThermalPlant")
 """
 function get_code(
     data::AbstractData,
-    col::String
+    collection::String
 )
-    return get_parms(data, col, "code", Int32)
+    return get_parms(data, collection, "code", Int32)
 end
 
 """
@@ -593,9 +593,9 @@ PSRI.get_name(data, "PSRGaugingStation")
 """
 function get_name(
     data::AbstractData,
-    col::String
+    collection::String
 )
-    return get_parms(data, col, "name", String)
+    return get_parms(data, collection, "name", String)
 end
 
 """
@@ -1066,11 +1066,12 @@ end
 
 function get_attribute_struct(data::DataStruct, collection::String, attribute::String)
     collection_struct = data[collection]
-    # check attribute existence
+
     if !haskey(collection_struct, attribute)
         error("Attribute $attribute not found in collection $collection")
     end
-    return collection_struct[attribute]
+    
+    return collection_struct[attribute]::Attribute
 end
 
 """
@@ -1138,3 +1139,8 @@ check if attribute validation is active.
 function get_validate_attributes(data::AbstractData)
     return data.validate_attributes
 end
+
+"""
+    get_attribute_dim(attr_struct::Attribute)
+"""
+function get_attribute_dim end

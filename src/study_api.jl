@@ -1,252 +1,166 @@
-const PSRCLASSES_DEFAULTS = JSON.parsefile(joinpath(@__DIR__, "json_metadata", "psrclasses.defaults.json"))
+const PSRCLASSES_DEFAULTS =
+    JSON.parsefile(joinpath(@__DIR__, "json_metadata", "psrclasses.defaults.json"))
 const DATE_FORMAT_1 = Dates.DateFormat(raw"yyyy-mm-dd")
 const DATE_FORMAT_2 = Dates.DateFormat(raw"dd/mm/yyyy")
 
-function list_attributes(
-    data::Data,
-    name::String,
-)
-    if !haskey(data.data_struct, name)
-        error("PSR Class '$name' is not available for this study")
+function list_attributes(data::Data, collection::String)
+    if !haskey(data.data_struct, collection)
+        error("PSR Class '$collection' is not available for this study")
     end
 
-    class_struct = data.data_struct[name]
+    class_struct = data.data_struct[collection]
 
-    attrs = sort(collect(keys(class_struct)))
+    attributes = sort(collect(keys(class_struct)))
 
-    return attrs
+    return attributes
 end
 
-function list_attributes(
-    data::Data,
-    name::String,
-    index::Int,
-)
-    element = _get_element(data, name, index)
+function list_attributes(data::Data, collection::String, index::Int)
+    element = _get_element(data, collection, index)
 
-    attrs = sort(collect(keys(element)))
+    attributes = sort(collect(keys(element)))
 
-    return attrs
+    return attributes
 end
 
-function list_indexed_attributes(
-    data::Data,
-    name::String,
-    index_attr::String,
-)
-    if !haskey(data.data_struct, name)
-        error("PSR Class '$name' is not available for this study")
+function get_indexed_attributes(data::Data, collection::String, index_attr::String)
+    if !haskey(data.data_struct, collection)
+        error("PSR Class '$collection' is not available for this study")
     end
 
-    class_struct = data.data_struct[name]
+    class_struct = data.data_struct[collection]
 
-    attrs = []
+    attributes = []
 
-    for (attr, attr_data) in class_struct
-        if attr_data.index == index_attr || attr == index_attr
-            push!(attrs, attr)
+    for (attribute, attribute_data) in class_struct
+        if attribute_data.index == index_attr || attribute == index_attr
+            push!(attributes, attribute)
         end
     end
 
-    sort!(attrs)
+    sort!(attributes)
 
-    return attrs
+    return attributes
 end
 
-function list_indexed_attributes(
+function get_indexed_attributes(
     data::Data,
-    name::String,
+    collection::String,
     index::Int,
     index_attr::String,
 )
-    element = _get_element(data, name, index)
+    element = _get_element(data, collection, index)
 
-    class_struct = data.data_struct[name]
+    class_struct = data.data_struct[collection]
 
-    attrs = []
+    attributes = []
 
-    for (attr, attr_data) in class_struct
-        if haskey(element, attr) &&
-            (attr_data.index == index_attr || attr == index_attr)
-            push!(attrs, attr)
+    for (attribute, attribute_data) in class_struct
+        if haskey(element, attribute) &&
+           (attribute_data.index == index_attr || attribute == index_attr)
+            push!(attributes, attribute)
         end
     end
 
-    sort!(attrs)
+    sort!(attributes)
 
-    return attrs
+    return attributes
 end
 
-function create_element!(
-    data::Data,
-    name::String,
-)
-    if !haskey(PSRCLASSES_DEFAULTS, name)
-        error("Unknown PSR Class '$name'")
+function create_element!(data::Data, collection::String)
+    if !haskey(PSRCLASSES_DEFAULTS, collection)
+        error("Unknown PSR Class '$collection'")
     end
 
-    element = deepcopy(PSRCLASSES_DEFAULTS[name])
+    element = deepcopy(PSRCLASSES_DEFAULTS[collection])
 
-    index = _insert_element!(data, name, element)
+    index = _insert_element!(data, collection, element)
 
     return index
 end
 
-function _insert_element!(
-    data::Data,
-    name::String,
-    element::Any,
-)
+function _insert_element!(data::Data, collection::String, element::Any)
     raw_data = _raw(data)::Dict{String,<:Any}
 
-    if !haskey(raw_data, name)
-        error("PSR Class '$name' is not available for this study")
+    if !haskey(raw_data, collection)
+        error("Collection '$collection' is not available for this study")
     end
 
-    objects = raw_data[name]::Vector
+    objects = raw_data[collection]::Vector
 
     push!(objects, element)
 
     return length(objects)
 end
 
-"""
-    _get_element(
-        data::Data,
-        name::String,
-        index::Integer,
-    )
-
-Low-level call to retrieve an element, that is, an instance of a class in the form of a `Dict{String, <:MainTypes}`.
-It performs basic checks for bounds and existence of `index` and `name` according to `data`.
-"""
-function _get_element(
-    data::Data,
-    name::String, # classe
-    index::Integer,   # instance index
-)
+function _get_instances(data::Data, collection::String)
     # ~ Retrieves raw JSON-like dict, i.e. `Dict{String, Any}`.
     # ~ `_raw(data)` is a safe interface for `data.raw`.
     # ~ This dictionary was created by reading a JSON file.
     raw_data = _raw(data)::Dict{String,<:Any}
 
-    if !haskey(raw_data, name)
-        error("PSR Class '$name' is not available for this study")
+    if !haskey(raw_data, collection)
+        error("Collection '$collection' is not available for this study")
     end
 
     # ~ Gathers a list containing all instances of the class referenced above.
-    objects = raw_data[name]::Vector
+    return raw_data[collection]::Vector
+end
+
+"""
+    _get_element(
+        data::Data,
+        collection::String,
+        index::Integer,
+    )
+
+Low-level call to retrieve an element, that is, an instance of a class in the form of a `Dict{String, <:MainTypes}`.
+It performs basic checks for bounds and existence of `index` and `collection` according to `data`.
+"""
+function _get_element(data::Data, collection::String, index::Integer)
+    objects = _get_instances(data, collection)
 
     if !(1 <= index <= length(objects))
         error("Invalid index '$index' out of bounds [1, $(length(objects))]")
     end
 
-    element = objects[index]::Dict{String,<:Any}
-
-    return element
+    return objects[index]::Dict{String,<:Any}
 end
 
-function _get_attr_data(
-    data::Data,
-    name::String,
-    attr::String,
-)
-    if !haskey(data.data_struct, name)
-        error("PSR Class '$name' is not available for this study")
+function _get_attribute_data(data::Data, collection::String, attribute::String)
+    if !haskey(data.data_struct, collection)
+        error("Collection '$collection' is not available for this study")
     end
 
-    class_struct = data.data_struct[name]
+    class_struct = data.data_struct[collection]
 
-    if !haskey(class_struct, attr)
-        error("PSR Class '$name' has no attribute '$attr'")
+    if !haskey(class_struct, attribute)
+        error("Collection '$collection' has no attribute '$attribute'")
     end
 
-    attr_data = class_struct[attr]::Attribute
-
-    return attr_data
-end
-
-@doc raw"""
-"""
-function _parse_parm end
-
-function _parse_parm(::X, ::T) where {X,T<:MainTypes}
-    error("Invalid type '$X' for parsing as '$T'")
-end
-
-_parse_parm(::Nothing, ::Type{T}) where {T<:MainTypes} = nothing
-_parse_parm(value::T, ::Type{T}) where {T<:MainTypes} = value
-_parse_parm(value::Int, ::Type{Int32}) = convert(Int32, value)
-
-function _parse_parm(date::String, ::Type{Dates.Date})
-    for date_format in [DATE_FORMAT_1, DATE_FORMAT_2]
-        value = tryparse(Dates.Date, date, date_format)
-
-        if !isnothing(value)
-            return value
-        end
-    end
-
-    error("Invalid date format '$date'")
-end
-
-function _parse_vector(vector::Vector, ::Type{T}) where {T<:MainTypes}
-    return [_parse_parm(entry, T) for entry in vector]
-end
-
-function get_parm(
-    data::Data,
-    name::String,
-    index::Int,
-    attr::String,
-)
-    attr_data = _get_attr_data(data, name, attr)
-
-    if attr_data.is_vector
-        error(
-            """
-            Attribute '$attr' PSR Class '$name' is a vector, not a scalar parameter.
-            Consider using `PSRI.get_vector` instead
-            """
-        )
-    end
-
-    # ~ This is assumed to be a mutable dictionary.
-    element = _get_element(data, name, index)
-
-    # ~ In fact, all attributes must be set beforehand.
-    # ~ Schema validation would be useful here, since there would be no need
-    #   to check for existing keys and `get_element` could handle all necessary
-    #   consistency-related work.
-    # ~ This could even be done at loading time or if something is modified by
-    #   methods like `set_parm!`.
-    if !haskey(element, attr)
-        error("Invalid attribute '$attr' for object of type '$name'")
-    end
-
-    return _parse_parm(element[attr], attr_data.type)
+    return class_struct[attribute]::Attribute
 end
 
 function set_parm!(
     data::Data,
-    name::String,
+    collection::String,
+    attribute::String,
     index::Int,
-    attr::String,
     value::T,
 ) where {T<:MainTypes}
-    attr_data = _get_attr_data(data, name, attr)
+    attribute_data = _get_attribute_data(data, collection, attribute)
 
-    if attr_data.is_vector
+    if attribute_data.is_vector
         error(
             """
-            Attribute '$attr' PSR Class '$name' is a vector, not a scalar parameter.
+            Attribute '$attribute' from collection '$collection' is a vector, not a scalar parameter.
             Consider using `PSRI.set_vector!` instead
-            """
+            """,
         )
     end
 
     # ~ This is assumed to be a mutable dictionary.
-    element = _get_element(data, name, index)
+    element = _get_element(data, collection, index)
 
     # ~ In fact, all attributes must be set beforehand.
     # ~ Schema validation would be useful here, since there would be no need
@@ -254,102 +168,86 @@ function set_parm!(
     #   consistency-related work.
     # ~ This could even be done at loading time or if something is modified by
     #   methods like `set_parm!`.
-    if !haskey(element, attr)
-        error("Invalid attribute '$attr' for object of type '$name'")
+    if !haskey(element, attribute)
+        error("Invalid attribute '$attribute' for object from collection '$collection'")
     end
 
-    element[attr] = _parse_parm(value, attr_data.type)
+    element[attribute] = _cast(attribute_data.type, value)
 
-    nothing
+    return nothing
 end
 
-function _get_vector_ref(
-    data::Data,
-    name::String,
-    index::Int,
-    attr::String,
-)
-    attr_data = _get_attr_data(data, name, attr)
+function _get_vector_ref(data::Data, collection::String, index::Int, attribute::String)
+    attribute_data = _get_attribute_data(data, collection, attribute)
 
-    if !attr_data.is_vector
+    if !attribute_data.is_vector
         error(
             """
-            Attribute '$attr' PSR Class '$name' is a scalar parameter, not a vector.
+            Attribute '$attribute' from collection '$collection' is a scalar parameter, not a vector.
             Consider using `PSRI.set_parm!` instead
-            """
+            """,
         )
     end
 
-    element = _get_element(data, name, index)
+    element = _get_element(data, collection, index)
 
-    if !haskey(element, attr)
-        error("Invalid attribute '$attr' for object of type '$name'")
+    if !haskey(element, attribute)
+        error("Invalid attribute '$attribute' for object of type '$collection'")
     end
 
-    return element[attr]::Vector
+    return element[attribute]::Vector
 end
 
-function get_vector(
-    data::Data,
-    name::String,
-    index::Int,
-    attr::String,
-    type::Union{Type{<:T},Nothing}=nothing,
-) where {T<:MainTypes}
-    vector = _get_vector_ref(data, name, index, attr)
+function get_attribute_type(data::Data, collection::String, attribute::String)
+    attribute_data = _get_attribute_data(data, collection, attribute)
 
-    attr_data = _get_attr_data(data, name, attr)
-
-    if isnothing(type)
-        return _parse_vector(vector, attr_data.type)
-    else
-        return _parse_vector(vector, type)
-    end
+    return attribute_data.type::Type{<:MainTypes}
 end
 
 function set_vector!(
     data::Data,
-    name::String,
+    collection::String,
+    attribute::String,
     index::Int,
-    attr::String,
-    buffer::Vector{T}
+    buffer::Vector{T},
 ) where {T<:MainTypes}
-    vector = _get_vector_ref(data, name, index, attr)
+    vector = _get_vector_ref(data, collection, index, attribute)
 
     if length(buffer) != length(vector)
         error(
             """
             Vector length change from $(length(vector)) to $(length(buffer)) is not allowed.
             Use `PSRI.set_series!` instead.
-            """
+            """,
         )
     end
 
-    # ~ Validation on `name` & `attr` already happened during `_get_vector_ref`
-    attr_data = _get_attr_data(data, name, attr)
+    # ~ Validation on `collection` & `attribute` already happened during `_get_vector_ref`
+    attribute_type = get_attribute_type(data, collection, attribute)
 
     # ~ Modify data in-place
-    for i = eachindex(vector)
-        vector[i] = _parse_parm(buffer[i], attr_data.type)
+    for i in eachindex(vector)
+        vector[i] = _cast(attribute_type, buffer[i])
     end
 
-    nothing
+    return nothing
 end
 
-function get_series(
-    data::Data,
-    name::String,
-    index::Int,
-    index_attr::String,
-)
-    attrs = list_indexed_attributes(data, name, index, index_attr)
+function get_series(data::Data, collection::String, index_attr::String, index::Int)
+    attributes = get_indexed_attributes(data, collection, index, index_attr)
 
     series = Dict{String,Vector}()
 
-    sizehint!(series, length(attrs))
+    sizehint!(series, length(attributes))
 
-    for attr in attrs
-        series[attr] = get_vector(data, name, index, attr)
+    for attribute in attributes
+        series[attribute] = get_vector(
+            data,
+            collection,
+            attribute,
+            index,
+            get_attribute_type(data, collection, attribute),
+        )
     end
 
     return series
@@ -357,12 +255,12 @@ end
 
 function set_series!(
     data::Data,
-    name::String,
-    index::Int,
+    collection::String,
     index_attr::String,
-    buffer::Dict{String,Vector}
+    index::Int,
+    buffer::Dict{String,Vector},
 )
-    series = get_series(data, name, index, index_attr)
+    series = get_series(data, collection, index_attr, index)
 
     valid = true
 
@@ -370,8 +268,8 @@ function set_series!(
         valid = false
     end
 
-    for attr in keys(series)
-        if !haskey(buffer, attr)
+    for attribute in keys(series)
+        if !haskey(buffer, attribute)
             valid = false
             break
         end
@@ -379,13 +277,15 @@ function set_series!(
 
     if !valid
         missing_attrs = setdiff(keys(series), keys(buffer))
-        for attr in missing_attrs
-            @error "Missing attribute '$(attr)'"
+
+        for attribute in missing_attrs
+            @error "Missing attribute '$(attribute)'"
         end
 
         invalid_attrs = setdiff(keys(buffer), keys(series))
-        for attr in invalid_attrs
-            @warn "Invalid attribute '$(attr)'"
+
+        for attribute in invalid_attrs
+            @error "Invalid attribute '$(attribute)'"
         end
 
         error("Invalid attributes for series indexed by $(index_attr)")
@@ -403,13 +303,13 @@ function set_series!(
         end
     end
 
-    element = _get_element(data, name, index)
+    element = _get_element(data, collection, index)
 
-    for (attr, vector) in buffer
-        element[attr] = vector
+    for (attribute, vector) in buffer
+        element[attribute] = vector
     end
 
-    nothing
+    return nothing
 end
 
 function write_data(data::Data, path::String)
@@ -418,8 +318,8 @@ function write_data(data::Data, path::String)
 
     # ~ Writes to file
     Base.open(path, "w") do io
-        JSON.print(io, raw_data)
+        return JSON.print(io, raw_data)
     end
 
-    nothing
+    return nothing
 end

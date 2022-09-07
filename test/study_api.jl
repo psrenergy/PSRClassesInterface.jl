@@ -19,15 +19,15 @@ function test_api(data_path::String)
             "ComT" => Int32(33),
         ]
         # ~ TODO: Add more test cases later, as in:
-        #   "PSRClass" => ["attr" => value...]
+        #   "PSRClass" => ["attribute" => value...]
     )
 
-    for (name, parm_list) in parm_data
-        for (attr, new_value) in parm_list
-            old_value = PSRI.get_parm(src_data, name, 1, attr)
+    for (collection, parm_list) in parm_data
+        for (attribute, new_value) in parm_list
+            old_value = PSRI.get_parm(src_data, collection, attribute, 1, Int32)
             @test old_value != new_value
-            PSRI.set_parm!(src_data, name, 1, attr, new_value)
-            value_set = PSRI.get_parm(src_data, name, 1, attr)
+            PSRI.set_parm!(src_data, collection, attribute, 1, new_value)
+            value_set = PSRI.get_parm(src_data, collection, attribute, 1, Int32)
             @test new_value == value_set
         end
     end
@@ -38,15 +38,15 @@ function test_api(data_path::String)
             "Data" => Dates.Date.(["1900-01-02"]),
         ]
         # ~ TODO: Add more test cases later, as in:
-        #   "PSRClass" => ["attr" => [value...]...]
+        #   "PSRClass" => ["attribute" => [value...]...]
     )
 
-    for (name, vector_list) in vector_data
-        for (attr, new_value) in vector_list
-            old_value = PSRI.get_vector(src_data, name, 1, attr)
+    for (collection, vector_list) in vector_data
+        for (attribute, new_value) in vector_list
+            old_value = PSRI.get_vector(src_data, collection, attribute, 1, Dates.Date)
             @test old_value != new_value
-            PSRI.set_vector!(src_data, name, 1, attr, new_value)
-            value_set = PSRI.get_vector(src_data, name, 1, attr)
+            PSRI.set_vector!(src_data, collection, attribute, 1, new_value)
+            value_set = PSRI.get_vector(src_data, collection, attribute, 1, Dates.Date)
             @test new_value == value_set
         end
     end
@@ -58,7 +58,6 @@ function test_api(data_path::String)
                 "GerMin"   => [0.0, 1.0],
                 "GerMax"   => [888.0, 777.0],
                 "O&MCost"  => [0.0, 1.0],
-                "NGas"     => [nothing, nothing],
                 "IH"       => [0.0, 0.0],
                 "ICP"      => [0.0, 0.0],
                 "Data"     => Dates.Date.(["1900-01-01", "1900-01-02"]),
@@ -67,6 +66,7 @@ function test_api(data_path::String)
                 "PotInst"  => [888.0, 777.0],
                 "Existing" => [0, 0],
                 "sfal"     => [0, 1],
+                "NGas"     => [0, 0],
                 "NAdF"     => [0, 0],
                 "Unidades" => [1, 1],
                 "StartUp"  => [0.0, 2.0],
@@ -75,17 +75,17 @@ function test_api(data_path::String)
         # ~ TODO: Add more test cases later, as in:
         #   "PSRClass" => [
         #       "index_attr" => Dict{String, Vector}(
-        #           "attr" => [value...]...
+        #           "attribute" => [value...]...
         #       )...
         #   ]
     )
 
-    for (name, series_list) in series_data
-        for (attr, new_value) in series_list
-            old_value = PSRI.get_series(src_data, name, 1, attr)
+    for (collection, series_list) in series_data
+        for (attribute, new_value) in series_list
+            old_value = PSRI.get_series(src_data, collection, attribute, 1)
             @test old_value != new_value
-            PSRI.set_series!(src_data, name, 1, attr, new_value)
-            value_set = PSRI.get_series(src_data, name, 1, attr)
+            PSRI.set_series!(src_data, collection, attribute, 1, new_value)
+            value_set = PSRI.get_series(src_data, collection, attribute, 1)
             @test new_value == value_set
         end
     end
