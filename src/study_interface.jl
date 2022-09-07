@@ -155,7 +155,7 @@ function get_vectors(
     attribute::String,
     ::Type{T};
     default::T = _default_value(T),
-) where T
+) where {T}
     n = max_elements(data, collection)
     out = Vector{Vector{T}}(undef, n)
     for i in 1:n
@@ -188,7 +188,7 @@ function get_vectors_1d(
     attribute::String,
     ::Type{T};
     default::T = _default_value(T),
-) where T
+) where {T}
     n = max_elements(data, collection)
     out = Vector{Vector{Vector{T}}}(undef, n)
     for i in 1:n
@@ -221,7 +221,7 @@ function get_vectors_2d(
     attribute::String,
     ::Type{T};
     default::T = _default_value(T),
-) where T
+) where {T}
     n = max_elements(data, collection)
     out = Vector{Matrix{Vector{T}}}(undef, n)
     for i in 1:n
@@ -446,8 +446,7 @@ function get_parms(
     check_parm::Bool = true,
     ignore::Bool = false,
     default::T = _default_value(T),
-) where T
-
+) where {T}
     attr_struct = get_attribute_struct(data, collection, attribute)
     if check_type
         _check_type(attr_struct, T, collection, attribute)
@@ -495,8 +494,7 @@ function get_parms_1d(
     check_parm::Bool = true,
     ignore::Bool = false,
     default::T = _default_value(T),
-) where T
-
+) where {T}
     attr_struct = get_attribute_struct(data, collection, attribute)
     if check_type
         _check_type(attr_struct, T, collection, attribute)
@@ -545,8 +543,7 @@ function get_parms_2d(
     check_parm::Bool = true,
     ignore::Bool = false,
     default::T = _default_value(T),
-) where T
-
+) where {T}
     attr_struct = get_attribute_struct(data, collection, attribute)
     if check_type
         _check_type(attr_struct, T, collection, attribute)
@@ -573,10 +570,7 @@ Example:
 PSRI.get_code(data, "PSRThermalPlant")
 ```
 """
-function get_code(
-    data::AbstractData,
-    collection::String
-)
+function get_code(data::AbstractData, collection::String)
     return get_parms(data, collection, "code", Int32)
 end
 
@@ -591,10 +585,7 @@ PSRI.get_name(data, "PSRThermalPlant")
 PSRI.get_name(data, "PSRGaugingStation")
 ```
 """
-function get_name(
-    data::AbstractData,
-    collection::String
-)
+function get_name(data::AbstractData, collection::String)
     return get_parms(data, collection, "name", String)
 end
 
@@ -809,7 +800,7 @@ function get_nonempty_vector end
 
 All the data from the databases must have one of these types.
 """
-const MainTypes = Union{Float64, Int32, String, Dates.Date}
+const MainTypes = Union{Float64,Int32,String,Dates.Date}
 
 """
     configuration_parameter(
@@ -1070,7 +1061,7 @@ function get_attribute_struct(data::DataStruct, collection::String, attribute::S
     if !haskey(collection_struct, attribute)
         error("Attribute $attribute not found in collection $collection")
     end
-    
+
     return collection_struct[attribute]::Attribute
 end
 
@@ -1118,7 +1109,7 @@ function get_relations(collection::String)
     if haskey(_RELATIONS, collection)
         return keys(_RELATIONS[collection])
     end
-    return Tuple{String, RelationType}[]
+    return Tuple{String,RelationType}[]
 end
 
 """
@@ -1144,3 +1135,49 @@ end
     get_attribute_dim(attr_struct::Attribute)
 """
 function get_attribute_dim end
+
+"""
+    get_relation(
+        data::AbstractData,
+        source::String,
+        target::String,
+        index::Integer,
+        relation_type = RELATION_1_TO_1,
+    )
+"""
+function get_relation end
+
+"""
+    set_relation!(
+        data::AbstractData,
+        source::String,
+        target::String,
+        source_index::Integer,
+        target_index::Integer;
+        relation_type = RELATION_1_TO_1,
+    )
+"""
+function set_relation end
+
+"""
+    get_vector_relation(
+        data::AbstractData,
+        source::String,
+        target::String,
+        index::Integer,
+        relation_type = RELATION_1_TO_N,
+    )
+"""
+function get_vector_relation end
+
+"""
+    set_vector_relation!(
+        data::AbstractData,
+        source::String,
+        target::String,
+        source_index::Integer,
+        target_index::Integer;
+        relation_type = RELATION_1_TO_N,
+    )
+"""
+function set_vector_relation end
