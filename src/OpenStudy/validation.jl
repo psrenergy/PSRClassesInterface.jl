@@ -32,14 +32,12 @@ function _check_vector(attribute_struct::Attribute, collection::String, attribut
 end
 
 function _check_dim(
-    attribute_struct::Attribute,
     collection::String,
     attribute::String,
+    dim::Integer,
     dim1_valid::Bool = false,
     dim2_valid::Bool = false,
 )
-    dim = get_attribute_dim(attribute_struct)
-
     if dim == 0
         if dim1_valid || dim2_valid
             error("Attribute '$attribute' from collection '$collection' has no dimensions.")
@@ -73,50 +71,51 @@ function _check_dim(
     return nothing
 end
 
-function _check_dim(
-    attribute_struct::Attribute,
-    collection::String,
-    attribute::String,
-    ::Nothing,
-    ::Nothing,
-)
-    dim = get_attribute_dim(attribute_struct)
+# function _check_dim(
+#     attribute_struct::Attribute,
+#     collection::String,
+#     attribute::String,
+#     ::Nothing,
+#     ::Nothing,
+# )
+#     dim = get_attribute_dim(attribute_struct)
 
-    if dim != 0
-        error(
-            "Attribute '$attribute' from collection '$collection' has '$dim' dimensions but none was provided",
-        )
+#     if dim != 0
+#         error(
+#             "Attribute '$attribute' from collection '$collection' has '$dim' dimensions but none was provided",
+#         )
+#     end
+
+#     return nothing
+# end
+
+function _isvalid_dim(axis::Union{T,Nothing}) where {T<:Union{String,Integer}}
+    # ~ make backwards compatible by adding `iszero` and `isempty`
+    if !isnothing(axis)
+        if T <: Integer
+            return !iszero(axis)
+        else # T <: String
+            return !isempty(axis)
+        end
+    else
+        return false
     end
-
-    return nothing
 end
 
 function _check_dim(
     attribute_struct::Attribute,
     collection::String,
     attribute::String,
-    dim1::Union{Integer,Nothing} = nothing,
-    dim2::Union{Integer,Nothing} = nothing,
-)
-    # ~ make backwards compatible by adding `iszero`
-    dim1_valid = !isnothing(dim1) && !iszero(dim1)
-    dim2_valid = !isnothing(dim2) && !iszero(dim2)
-
-    return _check_dim(attribute_struct, collection, attribute, dim1_valid, dim2_valid)
-end
-
-function _check_dim(
-    attribute_struct::Attribute,
-    collection::String,
-    attribute::String,
-    dim1::Union{String,Nothing} = nothing,
-    dim2::Union{String,Nothing} = nothing,
-)
-    # ~ make backwards compatible by adding `isempty`
-    dim1_valid = !isnothing(dim1) && !isempty(dim1)
-    dim2_valid = !isnothing(dim2) && !isempty(dim2)
-
-    return _check_dim(attribute_struct, collection, attribute, dim1_valid, dim2_valid)
+    dim1::Union{T,Nothing} = nothing,
+    dim2::Union{T,Nothing} = nothing,
+) where {T<:Union{String,Integer}}
+    return _check_dim(
+        collection,
+        attribute,
+        get_attribute_dim(attribute_struct),
+        _isvalid_dim(dim1),
+        _isvalid_dim(dim2),
+    )
 end
 
 function _check_element_range(data::AbstractData, collection::String, index::Integer)

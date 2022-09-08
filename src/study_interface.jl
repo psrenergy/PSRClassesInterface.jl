@@ -651,8 +651,6 @@ function go_to_dimension end
 
 Update all mapped vectors according to the time controller inside `data`.
 
----------
-
     update_vectors!(data::AbstractData, filters::Vector{String})
 
 Update filtered classes of mapped vectors according to the time controller inside `data`.
@@ -736,8 +734,6 @@ function get_complex_map end
 
 Returns the duration, in hours, of the stage `t`.
 
----------
-
     stage_duration(data::AbstractData, date::Dates.Date)
 
 Returns the duration, in hours, at the stage corresponding to `date`.
@@ -749,13 +745,9 @@ function stage_duration end
 
 Returns the duration, in hours, of the `block` at the stage corresponding to `date`.
 
----------
-
     block_duration(data::AbstractData, stage::Int, block::Int)
 
 Returns the duration, in hours, of the `block` at `stage`.
-
----------
 
     block_duration(data::AbstractData, block::Int)
 
@@ -767,8 +759,6 @@ function block_duration end
     block_from_stage_hour(data::AbstractData, t::Int, h::Int)
 
 Returns the block `b` associated with hour `h` at stage `t`.
-
----------
 
     block_from_stage_hour(data::AbstractData, date::Dates.Date, h::Int)
 
@@ -811,13 +801,6 @@ const MainTypes = Union{Float64,Int32,String,Dates.Date}
 
 Returns the required configuration parameter from the case. If the parameter is not registered returns the default value.
 
-Example:
-```julia
-PSRI.configuration_parameter(data, "MaximoIteracoes", 0)
-PSRI.configuration_parameter(data, "MinOutflowPenalty", 0.0)
-```
----------
-
     configuration_parameter(
         data::AbstractData,
         attribute::String,
@@ -826,17 +809,23 @@ PSRI.configuration_parameter(data, "MinOutflowPenalty", 0.0)
 
 Returns the rquired configuration parameters from the case that are vectors that are vectors. If the parameter is not registered returns the default value.
 
-Example:
+## Examples:
+```julia
+PSRI.configuration_parameter(data, "MaximoIteracoes", 0)
+PSRI.configuration_parameter(data, "MinOutflowPenalty", 0.0)
+```
+
 ```julia
 PSRI.configuration_parameter(data, "DeficitCost", [0.0])
 ```
+
 """
 function configuration_parameter end
 
 """
-    create_element(data::Data, name::String)::Integer
+    create_element(data::Data, collection::String)
 
-Creates a new instance of the class `name` and returns its index.
+Creates a new instance of the given `collection` and returns its index.
 
 Example:
 ```
@@ -850,21 +839,21 @@ function create_element! end
 """
     get_parm(
         data::Data,
-        name::String,
+        collection::String,
+        attribute::String,
         index::Integer,
-        attr::String,
     )
 
 Retrieves the value of a scalar parameter.
 """
-function set_parm end
+function get_parm end
 
 """
     set_parm!(
         data::Data,
-        name::String,
+        collection::String,
+        attribute::String,
         index::Integer,
-        attr::String,
         value::T,
     ) where {T <: MainTypes}
 
@@ -875,9 +864,9 @@ function set_parm! end
 """
     get_vector(
         data::Data,
-        name::String,
+        collection::String,
+        attribute::String,
         index::Integer,
-        attr::String,
     )
 
 Retrieves a copy of vectorial data.
@@ -887,9 +876,9 @@ function get_vector end
 """
     function set_vector!(
         data::Data,
-        name::String,
+        collection::String,
+        attribute::String,
         index::Int,
-        attr::String,
         buffer::Vector{T}
     ) where {T<:MainTypes}
 
@@ -901,9 +890,9 @@ function set_vector! end
 """
     function get_series(
         data::Data,
-        name::String,
-        index::Int,
+        collection::String,
         index_attr::String,
+        index::Int,
     )
 
 Retrieves the series i.e. `Dict{String, Vector}` indexed by `index_attr`.
@@ -932,9 +921,9 @@ function get_series end
 """
     function set_series!(
         data::Data,
-        name::String,
-        index::Int,
+        collection::String,
         index_attr::String,
+        index::Int,
         buffer::Dict{String,Vector}
     )
 
@@ -1030,20 +1019,10 @@ end
     get_attribute_struct(
         data::AbstractData,
         collection::String,
-        attribute::string,
+        attribute::String,
     )
 
------
-
-    get_attribute_struct(
-        data::DataStruct,
-        collection::String,
-        attribute::string,
-    )
-
------
-
-Return a struct of type `Attribute` with fields:
+Returns a struct of type `Attribute` with fields:
 
 * name::String = attribute name
 * is_vector::Bool = true if attribute is a vector (tipically, varies in time)

@@ -719,62 +719,52 @@ end
 
 const _GET_DICT = Dict{String,Any}()
 
-function configuration_parameter(data::Data, name::String, default::Integer)
-    return configuration_parameter(data, name, Int32(default))
-end
-
-function configuration_parameter(data::Data, name::String, default::T) where {T<:MainTypes}
-    if haskey(data.extra_config, name)
-        val = dict[name]
-        return _cast(T, val)
-    end
-    raw = _raw(data)
-    study_data = raw["PSRStudy"][1]
-    exec = get(study_data, "ExecutionParameters", _GET_DICT)
-    chro = get(study_data, "ChronologicalData", _GET_DICT)
-    hour = get(study_data, "HourlyData", _GET_DICT)
-    if haskey(exec, name)
-        pre_out = exec[name]
-        return _cast(T, pre_out)
-    elseif haskey(chro, name)
-        pre_out = chro[name]
-        return _cast(T, pre_out)
-    elseif haskey(hour, name)
-        pre_out = hour[name]
-        return _cast(T, pre_out)
-    end
-    pre_out = get(study_data, name, default)
-    out = _cast(T, pre_out)
-    return out
+function configuration_parameter(data::Data, parameter::String, default::Integer)
+    return configuration_parameter(data, parameter, Int32(default))
 end
 
 function configuration_parameter(
     data::Data,
-    name::String,
+    parameter::String,
+    default::T,
+) where {T<:MainTypes}
+    if haskey(data.extra_config, parameter)
+        return _cast(T, data.extra_config[parameter])
+    end
+
+    raw_data = _raw(data)::Dict{String,<:Any}
+    study_data = raw_data["PSRStudy"][begin]
+
+    for key in ["ExecutionParameters", "ChronologicalData", "HourlyData"]
+        data = get(study_data, key, _GET_DICT)
+        if haskey(data, parameter)
+            return _cast(T, data[parameter])
+        end
+    end
+
+    return _cast(T, get(study_data, parameter, default))
+end
+
+function configuration_parameter(
+    data::Data,
+    parameter::String,
     default::Vector{T},
 ) where {T<:MainTypes}
-    if haskey(data.extra_config, name)
-        val = dict[name]
-        return _cast.(T, val)
+    if haskey(data.extra_config, parameter)
+        return _cast.(T, data.extra_config[parameter])
     end
-    raw = _raw(data)
-    study_data = raw["PSRStudy"][1]
-    exec = get(study_data, "ExecutionParameters", _GET_DICT)
-    chro = get(study_data, "ChronologicalData", _GET_DICT)
-    hour = get(study_data, "HourlyData", _GET_DICT)
-    if haskey(exec, name)
-        pre_out = exec[name]
-        return _cast.(T, pre_out)
-    elseif haskey(chro, name)
-        pre_out = chro[name]
-        return _cast.(T, pre_out)
-    elseif haskey(hour, name)
-        pre_out = hour[name]
-        return _cast.(T, pre_out)
+
+    raw_data = _raw(data)::Dict{String,<:Any}
+    study_data = raw_data["PSRStudy"][begin]
+
+    for key in ["ExecutionParameters", "ChronologicalData", "HourlyData"]
+        data = get(study_data, key, _GET_DICT)
+        if haskey(data, parameter)
+            return _cast.(T, data[parameter])
+        end
     end
-    pre_out = get(study_data, name, default)
-    out = _cast.(T, pre_out)
-    return out
+
+    return _cast.(T, get(study_data, parameter, default))
 end
 
 """
@@ -796,7 +786,6 @@ end
 function _cast(::Type{T}, val::String, default::T = _default_value(T)) where {T}
     return parse(T, val)
 end
-_cast(::Type{Int32}, val::Integer, default::Int32 = _default_value(Int32)) = Int32(val)
 function _cast(
     ::Type{Dates.Date},
     val::String,
