@@ -274,20 +274,22 @@ function _collection(
     return error("method not implemented")
 end
 
-function max_elements(data::Data, str::String)
-    raw = _raw(data)
-    if haskey(raw, str)
-        return length(raw[str])
+function max_elements(data::Data, collection::String)
+    raw = _raw(data)::Dict{String,<:Any}
+
+    if haskey(raw, collection)
+        return length(raw[collection])
+    else
+        return 0
     end
-    return 0
 end
 
 _default_value(::Type{T}) where {T<:Number} = zero(T)
 _default_value(::Type{String}) = ""
 _default_value(::Type{Dates.Date}) = Dates.Date(1900, 1, 1)
 
-function get_attribute_dim(attr_struct::Attribute)
-    return attr_struct.dim
+function get_attribute_dim(attribute_struct::Attribute)
+    return attribute_struct.dim
 end
 
 function get_attribute_key(
@@ -327,19 +329,19 @@ function get_parm(
     dim2::Union{Integer,Nothing} = nothing,
 ) where {T}
     # ~ Retrieve attribute metadata
-    attr_struct = get_attribute_struct(data, collection, attribute)
+    attribute_struct = get_attribute_struct(data, collection, attribute)
 
     # ~ Basic checks 😎
-    _check_dim(attr_struct, collection, attribute, dim1, dim2)
-    _check_type(attr_struct, T, collection, attribute)
-    _check_parm(attr_struct, collection, attribute)
+    _check_dim(attribute_struct, collection, attribute, dim1, dim2)
+    _check_type(attribute_struct, T, collection, attribute)
+    _check_parm(attribute_struct, collection, attribute)
     _check_element_range(data, collection, index)
 
     # ~ This is assumed to be a mutable dictionary
     element = _get_element(data, collection, index)
 
     # ~ Format according to dimension
-    dim = get_attribute_dim(attr_struct)
+    dim = get_attribute_dim(attribute_struct)
     key = get_attribute_key(attribute, dim, 1 => dim1, 2 => dim2)
 
     # ~ Here, a choice is made to return a default
@@ -360,10 +362,12 @@ function get_parm_1d(
     ::Type{T};
     default::T = _default_value(T),
 ) where {T}
-    attr_struct = get_attribute_struct(data, collection, attribute)
+    attribute_struct = get_attribute_struct(data, collection, attribute)
 
-    if attr_struct.dim != 1
-        if attr_struct.dim == 0
+    dim = get_attribute_dim(attribute_struct)
+
+    if dim != 1
+        if dim == 0
             error("""
                   Attribute '$attribute' from collection '$colllection' has no dimensions.
                   Consider using `get_parm` instead.
@@ -371,15 +375,15 @@ function get_parm_1d(
         else
             error(
                 """
-                Attribute '$attribute' from collection '$colllection' has $(attr_struct.dim) dimensions.
-                Consider using `get_parm_$(attr_struct.dim)d` instead.
+                Attribute '$attribute' from collection '$colllection' has $(attribute_struct.dim) dimensions.
+                Consider using `get_parm_$(attribute_struct.dim)d` instead.
                 """,
             )
         end
     end
 
-    _check_type(attr_struct, T, collection, attribute)
-    _check_parm(attr_struct, collection, attribute)
+    _check_type(attribute_struct, T, collection, attribute)
+    _check_parm(attribute_struct, collection, attribute)
     _check_element_range(data, collection, index)
 
     dim1 = get_attribute_dim1(data, collection, attribute, index)
@@ -409,9 +413,9 @@ function get_parm_2d(
     ::Type{T};
     default::T = _default_value(T),
 ) where {T}
-    attr_struct = get_attribute_struct(data, collection, attribute)
+    attribute_struct = get_attribute_struct(data, collection, attribute)
 
-    dim = get_attribute_dim(attr_struct)
+    dim = get_attribute_dim(attribute_struct)
 
     if dim != 2
         if dim == 0
@@ -429,8 +433,8 @@ function get_parm_2d(
         end
     end
 
-    _check_type(attr_struct, T, collection, attribute)
-    _check_parm(attr_struct, collection, attribute)
+    _check_type(attribute_struct, T, collection, attribute)
+    _check_parm(attribute_struct, collection, attribute)
     _check_element_range(data, collection, index)
 
     dim1 = get_attribute_dim1(data, collection, attribute, index)
@@ -488,9 +492,9 @@ function _get_attribute_axis_dim(
     lower_bound::Int = 1,
     upper_bound::Int = typemax(Int) - lower_bound, # ~ Avoid overflow
 )
-    attr_struct = get_attribute_struct(data, collection, attribute)
+    attribute_struct = get_attribute_struct(data, collection, attribute)
 
-    dim = get_attribute_dim(attr_struct)
+    dim = get_attribute_dim(attribute_struct)
 
     if dim == 0
         error("Attribute '$attribute' from collection '$collection' has no dimensions")
@@ -531,19 +535,24 @@ end
 function description(::Data)
     return ""
 end
+
 function total_stages(data::Data)
     return _raw(data)["PSRStudy"][1]["NumeroEtapas"]
 end
+
 function total_scenarios(data::Data)
     # _raw(data)["PSRStudy"][1]["Series_Forward"]
     return _raw(data)["PSRStudy"][1]["NumberSimulations"]
 end
+
 function total_openings(data::Data)
     return _raw(data)["PSRStudy"][1]["NumberOpenings"]
 end
+
 function total_blocks(data::Data)
     return _raw(data)["PSRStudy"][1]["NumberBlocks"]
 end
+
 function total_stages_per_year(data::Data)
     if data.stage_type == STAGE_MONTH
         return 12
@@ -595,14 +604,14 @@ function get_vector(
     dim2::Union{Integer,Nothing} = nothing,
     default::T = _default_value(T),
 ) where {T}
-    attr_struct = get_attribute_struct(data, collection, attribute)
+    attribute_struct = get_attribute_struct(data, collection, attribute)
 
-    _check_dim(attr_struct, collection, attribute, dim1, dim2)
-    _check_vector(attr_struct, collection, attribute)
-    _check_type(attr_struct, T, collection, attribute)
+    _check_dim(attribute_struct, collection, attribute, dim1, dim2)
+    _check_vector(attribute_struct, collection, attribute)
+    _check_type(attribute_struct, T, collection, attribute)
     _check_element_range(data, collection, index)
 
-    dim = get_attribute_dim(attr_struct)
+    dim = get_attribute_dim(attribute_struct)
     key = get_attribute_key(attribute, dim, 1 => dim1, 2 => dim2)
 
     element = _get_element(data, collection, index)
@@ -622,9 +631,9 @@ function get_vector_1d(
     ::Type{T};
     default::T = _default_value(T),
 ) where {T}
-    attr_struct = get_attribute_struct(data, collection, attribute)
+    attribute_struct = get_attribute_struct(data, collection, attribute)
 
-    dim = get_attribute_dim(attr_struct)
+    dim = get_attribute_dim(attribute_struct)
 
     if dim != 1
         if dim == 0
@@ -642,8 +651,8 @@ function get_vector_1d(
         end
     end
 
-    _check_vector(attr_struct, collection, attribute)
-    _check_type(attr_struct, T, collection, attribute)
+    _check_vector(attribute_struct, collection, attribute)
+    _check_type(attribute_struct, T, collection, attribute)
     _check_element_range(data, collection, index)
 
     dim1 = get_attribute_dim1(data, collection, attribute, index)
@@ -673,9 +682,9 @@ function get_vector_2d(
     ::Type{T};
     default::T = _default_value(T),
 ) where {T}
-    attr_struct = get_attribute_struct(data, collection, attribute)
+    attribute_struct = get_attribute_struct(data, collection, attribute)
 
-    dim = get_attribute_dim(attr_struct)
+    dim = get_attribute_dim(attribute_struct)
 
     if dim != 2
         if dim == 0
@@ -693,8 +702,8 @@ function get_vector_2d(
         end
     end
 
-    _check_vector(attr_struct, collection, attribute)
-    _check_type(attr_struct, T, collection, attribute)
+    _check_vector(attribute_struct, collection, attribute)
+    _check_type(attribute_struct, T, collection, attribute)
     _check_element_range(data, collection, index)
 
     dim1 = get_attribute_dim1(data, collection, attribute, index)
@@ -776,6 +785,8 @@ _cast(::Type{T}, val::T, default::T = _default_value(T)) where {T} = val
 _cast(::Type{String}, val::String, default::String = _default_value(String)) = val
 _cast(::Type{Int32}, val::Integer, default::Int32 = _default_value(Int32)) = Int32(val)
 _cast(::Type{Float64}, val::Float64, default::Float64 = _default_value(Float64)) = val
+_cast(::Type{T}, val::Nothing, default::T = _default_value(T)) where {T} = default
+
 function _cast(
     ::Type{Dates.Date},
     val::Dates.Date,
@@ -783,9 +794,11 @@ function _cast(
 )
     return val
 end
+
 function _cast(::Type{T}, val::String, default::T = _default_value(T)) where {T}
     return parse(T, val)
 end
+
 function _cast(
     ::Type{Dates.Date},
     val::String,
@@ -794,8 +807,6 @@ function _cast(
     return _simple_date(val)
 end
 
-_cast(::Type{T}, val::Nothing, default::T = _default_value(T)) where {T} = default
-
 """
     _cast_vector(::Type{T}, vector, default::T = _default_value(T))
 
@@ -803,18 +814,18 @@ Converts `vector` to vector of type `T`, if possible.
 """
 function _cast_vector(
     ::Type{T},
-    vec::Vector{<:Any},
+    vector::Vector{<:Any},
     default::T = _default_value(T),
 ) where {T}
-    out = Vector{T}(undef, length(vec))
+    out = Vector{T}(undef, length(vector))
 
-    for i in eachindex(vec)
-        out[i] = _cast(T, vec[i], default)
+    for i in eachindex(vector)
+        out[i] = _cast(T, vector[i], default)
     end
 
     return out
 end
 
-function _cast_vector(::Type{T}, vec::Vector{T}, default::T = _default_value(T)) where {T}
-    return deepcopy(vec)
+function _cast_vector(::Type{T}, vector::Vector{T}, default::T = _default_value(T)) where {T}
+    return deepcopy(vector)
 end

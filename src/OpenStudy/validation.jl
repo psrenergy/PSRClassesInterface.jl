@@ -31,13 +31,24 @@ function _check_vector(attribute_struct::Attribute, collection::String, attribut
     return nothing
 end
 
+# ~ make backwards compatible by adding `iszero` and `isempty`
+_isvalid_dim(axis::Nothing) = false
+_isvalid_dim(axis::Integer) = !iszero(axis)
+_isvalid_dim(axis::String) = !isempty(axis)
+
 function _check_dim(
+    attribute_struct::Attribute,
     collection::String,
     attribute::String,
-    dim::Integer,
-    dim1_valid::Bool = false,
-    dim2_valid::Bool = false,
-)
+    dim1::Union{T,Nothing} = nothing,
+    dim2::Union{T,Nothing} = nothing,
+) where {T<:Union{String,Integer}}
+    # ~*~ Retrieve Information & validate input ~*~ #
+    dim = get_attribute_dim(attribute_struct)
+    dim1_valid = _isvalid_dim(dim1)
+    dim2_valid = _isvalid_dim(dim2)
+
+    # ~*~ Run semantic checks ~*~ #
     if dim == 0
         if dim1_valid || dim2_valid
             error("Attribute '$attribute' from collection '$collection' has no dimensions.")
@@ -69,53 +80,6 @@ function _check_dim(
     end
 
     return nothing
-end
-
-# function _check_dim(
-#     attribute_struct::Attribute,
-#     collection::String,
-#     attribute::String,
-#     ::Nothing,
-#     ::Nothing,
-# )
-#     dim = get_attribute_dim(attribute_struct)
-
-#     if dim != 0
-#         error(
-#             "Attribute '$attribute' from collection '$collection' has '$dim' dimensions but none was provided",
-#         )
-#     end
-
-#     return nothing
-# end
-
-function _isvalid_dim(axis::Union{T,Nothing}) where {T<:Union{String,Integer}}
-    # ~ make backwards compatible by adding `iszero` and `isempty`
-    if !isnothing(axis)
-        if T <: Integer
-            return !iszero(axis)
-        else # T <: String
-            return !isempty(axis)
-        end
-    else
-        return false
-    end
-end
-
-function _check_dim(
-    attribute_struct::Attribute,
-    collection::String,
-    attribute::String,
-    dim1::Union{T,Nothing} = nothing,
-    dim2::Union{T,Nothing} = nothing,
-) where {T<:Union{String,Integer}}
-    return _check_dim(
-        collection,
-        attribute,
-        get_attribute_dim(attribute_struct),
-        _isvalid_dim(dim1),
-        _isvalid_dim(dim2),
-    )
 end
 
 function _check_element_range(data::AbstractData, collection::String, index::Integer)

@@ -69,11 +69,11 @@ for col in collections
             end
             continue
         end
-        attr_struct = PSRI.get_attribute_struct(data, col, attr)
-        type = attr_struct.type
-        dim = attr_struct.dim
-        index = attr_struct.index
-        if !attr_struct.is_vector
+        attribute_struct = PSRI.get_attribute_struct(data, col, attr)
+        type = attribute_struct.type
+        dim = attribute_struct.dim
+        index = attribute_struct.index
+        if !attribute_struct.is_vector
             if dim == 0
                 parm_json = PSRI.get_parms(data, col, attr, type)[json_to_bin]
                 parm_bin = PSRI.get_parms(data_bin, col, attr, type)

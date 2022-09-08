@@ -447,12 +447,12 @@ function get_parms(
     ignore::Bool = false,
     default::T = _default_value(T),
 ) where {T}
-    attr_struct = get_attribute_struct(data, collection, attribute)
+    attribute_struct = get_attribute_struct(data, collection, attribute)
     if check_type
-        _check_type(attr_struct, T, collection, attribute)
+        _check_type(attribute_struct, T, collection, attribute)
     end
     if check_parm
-        _check_parm(attr_struct, collection, attribute)
+        _check_parm(attribute_struct, collection, attribute)
     end
 
     n = max_elements(data, collection)
@@ -495,12 +495,12 @@ function get_parms_1d(
     ignore::Bool = false,
     default::T = _default_value(T),
 ) where {T}
-    attr_struct = get_attribute_struct(data, collection, attribute)
+    attribute_struct = get_attribute_struct(data, collection, attribute)
     if check_type
-        _check_type(attr_struct, T, collection, attribute)
+        _check_type(attribute_struct, T, collection, attribute)
     end
     if check_parm
-        _check_parm(attr_struct, collection, attribute)
+        _check_parm(attribute_struct, collection, attribute)
     end
 
     n = max_elements(data, collection)
@@ -544,12 +544,12 @@ function get_parms_2d(
     ignore::Bool = false,
     default::T = _default_value(T),
 ) where {T}
-    attr_struct = get_attribute_struct(data, collection, attribute)
+    attribute_struct = get_attribute_struct(data, collection, attribute)
     if check_type
-        _check_type(attr_struct, T, collection, attribute)
+        _check_type(attribute_struct, T, collection, attribute)
     end
     if check_parm
-        _check_parm(attr_struct, collection, attribute)
+        _check_parm(attribute_struct, collection, attribute)
     end
 
     n = max_elements(data, collection)
@@ -1111,7 +1111,7 @@ function get_validate_attributes(data::AbstractData)
 end
 
 """
-    get_attribute_dim(attr_struct::Attribute)
+    get_attribute_dim(attribute_struct::Attribute)
 """
 function get_attribute_dim end
 

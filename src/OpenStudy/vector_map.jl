@@ -18,15 +18,15 @@ function mapped_vector(
         return T[]
     end
 
-    attr_struct = get_attribute_struct(data, collection, attribute)
+    attribute_struct = get_attribute_struct(data, collection, attribute)
 
-    _check_type(attr_struct, T, collection, attribute)
-    _check_vector(attr_struct, collection, attribute)
+    _check_type(attribute_struct, T, collection, attribute)
+    _check_vector(attribute_struct, collection, attribute)
 
     # validate dimensions
-    _check_dim(attr_struct, collection, attribute, dim1, dim2)
+    _check_dim(attribute_struct, collection, attribute, dim1, dim2)
     
-    dim = get_attribute_dim(attr_struct)
+    dim = get_attribute_dim(attribute_struct)
 
     dim1_val = _add_get_dim_val(data, dim1)
     dim2_val = _add_get_dim_val(data, dim2)
@@ -39,7 +39,7 @@ function mapped_vector(
         )
     end
 
-    index = attr_struct.index
+    index = attribute_struct.index
     stage = data.controller_stage
 
     cache = _get_cache(data, T)
