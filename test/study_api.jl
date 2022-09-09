@@ -13,12 +13,12 @@ function test_api(data_path::String)
 
     @test PSRI._raw(dest_data) == raw_data
 
-    # ~ set_parm!
+    # set_parm!
     parm_data = Dict(
         "PSRThermalPlant" => [
             "ComT" => Int32(33),
         ]
-        # ~ TODO: Add more test cases later, as in:
+        # TODO: Add more test cases later, as in:
         #   "PSRClass" => ["attribute" => value...]
     )
 
@@ -32,12 +32,12 @@ function test_api(data_path::String)
         end
     end
 
-    # ~ set_vector!
+    # set_vector!
     vector_data = Dict(
         "PSRThermalPlant" => [
             "Data" => Dates.Date.(["1900-01-02"]),
         ]
-        # ~ TODO: Add more test cases later, as in:
+        # TODO: Add more test cases later, as in:
         #   "PSRClass" => ["attribute" => [value...]...]
     )
 
@@ -51,7 +51,7 @@ function test_api(data_path::String)
         end
     end
 
-    # ~ set_series!
+    # set_series!
     series_data = Dict(
         "PSRThermalPlant" => [
             "Data" => Dict{String, Vector}(    
@@ -72,7 +72,7 @@ function test_api(data_path::String)
                 "StartUp"  => [0.0, 2.0],
             )
         ]
-        # ~ TODO: Add more test cases later, as in:
+        # TODO: Add more test cases later, as in:
         #   "PSRClass" => [
         #       "index_attr" => Dict{String, Vector}(
         #           "attribute" => [value...]...

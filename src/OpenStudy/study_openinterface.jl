@@ -297,14 +297,14 @@ function get_attribute_key(
     dim::Integer,
     fix::Pair{<:Integer,<:Union{Integer,Nothing}}...,
 )
-    if dim == 0 # ~ Attribute has no dimensions
+    if dim == 0 # Attribute has no dimensions
         return attribute
     else
-        # ~ Fill extra indices with ones
+        # Fill extra indices with ones
         indices = ones(Int, dim)
 
         for (i, k) in fix
-            # ~ Discard indices out of range / empty
+            # Discard indices out of range / empty
             if i > dim || isnothing(k)
                 continue
             end
@@ -328,25 +328,25 @@ function get_parm(
     dim1::Union{Integer,Nothing} = nothing,
     dim2::Union{Integer,Nothing} = nothing,
 ) where {T}
-    # ~ Retrieve attribute metadata
+    # Retrieve attribute metadata
     attribute_struct = get_attribute_struct(data, collection, attribute)
 
-    # ~ Basic checks 😎
+    # Basic checks 😎
     _check_dim(attribute_struct, collection, attribute, dim1, dim2)
     _check_type(attribute_struct, T, collection, attribute)
     _check_parm(attribute_struct, collection, attribute)
     _check_element_range(data, collection, index)
 
-    # ~ This is assumed to be a mutable dictionary
+    # This is assumed to be a mutable dictionary
     element = _get_element(data, collection, index)
 
-    # ~ Format according to dimension
+    # Format according to dimension
     dim = get_attribute_dim(attribute_struct)
     key = get_attribute_key(attribute, dim, 1 => dim1, 2 => dim2)
 
-    # ~ Here, a choice is made to return a default
-    #   value if there is no entry for a given key
-    #   in the element.
+    # Here, a choice is made to return a default
+    # value if there is no entry for a given key
+    # in the element.
     if haskey(element, key)
         return _cast(T, element[key], default)
     else
@@ -463,13 +463,14 @@ function _get_element_axis_dim(
     dim::Integer,
     axis::Integer;
     lower_bound::Int = 1,
-    upper_bound::Int = typemax(Int) - lower_bound, # ~ Avoid overflow
+    upper_bound::Int = 100,
 )
-    i::Int = lower_bound # ~ Here, we assume that the first index is
+    i::Int = lower_bound # Here, we assume that the first index is
     j::Int = upper_bound #   within bounds but the second one is not.
 
-    while i < j - 1      # ~ O(sizeof(Int)) ≈ 64
-        k = (i + j) >> 1 # ~ x >> 1 ≡ x ÷ 2, x ∈ ℤ
+    # Binary search
+    while i < j - 1
+        k = (i + j) ÷ 2
 
         key = get_attribute_key(attribute, dim, axis => k)
 
@@ -480,7 +481,7 @@ function _get_element_axis_dim(
         end
     end
 
-    return i # ~ The last index within bounds
+    return i # The last index within bounds
 end
 
 function _get_attribute_axis_dim(
@@ -490,7 +491,7 @@ function _get_attribute_axis_dim(
     axis::Integer,
     index::Integer = 1;
     lower_bound::Int = 1,
-    upper_bound::Int = typemax(Int) - lower_bound, # ~ Avoid overflow
+    upper_bound::Int = 100,
 )
     attribute_struct = get_attribute_struct(data, collection, attribute)
 

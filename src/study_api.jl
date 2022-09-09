@@ -94,16 +94,16 @@ function _insert_element!(data::Data, collection::String, element::Any)
 end
 
 function _get_instances(data::Data, collection::String)
-    # ~ Retrieves raw JSON-like dict, i.e. `Dict{String, Any}`.
-    # ~ `_raw(data)` is a safe interface for `data.raw`.
-    # ~ This dictionary was created by reading a JSON file.
+    # Retrieves raw JSON-like dict, i.e. `Dict{String, Any}`.
+    # `_raw(data)` is a safe interface for `data.raw`.
+    # This dictionary was created by reading a JSON file.
     raw_data = _raw(data)::Dict{String,<:Any}
 
     if !haskey(raw_data, collection)
         error("Collection '$collection' is not available for this study")
     end
 
-    # ~ Gathers a list containing all instances of the class referenced above.
+    # Gathers a list containing all instances of the class referenced above.
     return raw_data[collection]::Vector
 end
 
@@ -159,14 +159,14 @@ function set_parm!(
         )
     end
 
-    # ~ This is assumed to be a mutable dictionary.
+    # This is assumed to be a mutable dictionary.
     element = _get_element(data, collection, index)
 
-    # ~ In fact, all attributes must be set beforehand.
-    # ~ Schema validation would be useful here, since there would be no need
+    # In fact, all attributes must be set beforehand.
+    # Schema validation would be useful here, since there would be no need
     #   to check for existing keys and `get_element` could handle all necessary
     #   consistency-related work.
-    # ~ This could even be done at loading time or if something is modified by
+    # This could even be done at loading time or if something is modified by
     #   methods like `set_parm!`.
     if !haskey(element, attribute)
         error("Invalid attribute '$attribute' for object from collection '$collection'")
@@ -222,10 +222,10 @@ function set_vector!(
         )
     end
 
-    # ~ Validation on `collection` & `attribute` already happened during `_get_vector_ref`
+    # Validation on `collection` & `attribute` already happened during `_get_vector_ref`
     attribute_type = get_attribute_type(data, collection, attribute)
 
-    # ~ Modify data in-place
+    # Modify data in-place
     for i in eachindex(vector)
         vector[i] = _cast(attribute_type, buffer[i])
     end
@@ -313,13 +313,161 @@ function set_series!(
 end
 
 function write_data(data::Data, path::String)
-    # ~ Retrieves JSON-like raw data
+    # Retrieves JSON-like raw data
     raw_data = _raw(data)::Dict{String,<:Any}
 
-    # ~ Writes to file
+    # Writes to file
     Base.open(path, "w") do io
         return JSON.print(io, raw_data)
     end
 
     return nothing
+end
+
+# ~*~ Relations ~*~ #
+function _validate_relation(
+    source::String,
+    target::String,
+    relation_type::RelationType,
+)
+    if !haskey(_RELATIONS, source)
+        error("Collection '$source' has no relations at all")
+    end
+
+    target_relation = (target, relation_type)
+    source_relations = _RELATIONS[source]
+
+    if !haskey(source_relations, target_relation)
+        error("Collection '$source' has no relation to '$target' of type '$relation_type'")
+    end
+
+    return nothing
+end
+
+function _get_relation(source::String, target::String, relation_type::RelationType)
+    _validate_relation(source, target, relation_type)
+    
+    return _RELATIONS[source][(target, relation_type)]
+end
+
+function get_related(
+    data::Data,
+    source::String,
+    target::String,
+    source_index::Integer;
+    relation_type::RelationType = RELATION_1_TO_1,
+)
+    source_element = _get_element(data, source, source_index)
+    relation_field = _get_relation(source, target, relation_type)
+    
+    if !haskey(source_element, relation_field)
+        error("Element '$source_index' from collection '$source' has no field '$relation_field'")
+    end
+
+    target_id = source_element[relation_field]
+    
+    # TODO: make this step a separate function?
+    target_index = nothing
+
+    for (index, element) in enumerate(_get_instances(data, target))
+        # TODO: perform validation on 'reference_id'
+        if element["reference_id"] === target_id
+            target_index = index
+            break
+        end
+    end
+
+    if isnothing(target_index)
+        error("No element with id '$target_id' was found in collection '$target'")
+    end
+
+    return target_index
+end
+
+function set_related!(
+    data::Data,
+    source::String,
+    target::String,
+    source_index::Integer,
+    target_index::Integer;
+    relation_type::RelationType = RELATION_1_TO_1,
+)
+    source_element = _get_element(data, source, source_index)
+    target_element = _get_element(data, target, target_index)
+    relation_field = _get_relation(source, target, relation_type)
+
+    # TODO: perform validation on 'reference_id'
+    source_element[relation_field] = target_element["reference_id"]
+
+    return nothing
+end
+
+function get_vector_related(
+    data::Data,
+    source::String,
+    target::String,
+    source_index::Integer,
+    relation_type::RelationType = RELATION_1_TO_N,
+)
+    source_element = _get_element(data, source, source_index)
+    relation_field = _get_relation(source, target, relation_type)
+    
+    if !haskey(source_element, relation_field)
+        error("Element '$source_index' from collection '$source' has no field '$relation_field'")
+    end
+
+    target_id_set = Set{Int}(source_element[relation_field])
+    
+    # TODO: make this step a separate function?
+    target_index_list = Int[]
+
+    for (index, element) in enumerate(_get_instances(data, target))
+        # TODO: perform validation on 'id'
+        if element["reference_id"] ∈ target_id_set
+            push!(target_index_list, index)
+        end
+    end
+
+    if isempty(target_index_list)
+        error("No elements with id '$target_id' were found in collection '$target'")
+    end
+
+    return target_index_list
+end
+
+function set_vector_related!(
+    data::Data,
+    source::String,
+    target::String,
+    source_index::Integer,
+    target_indices::Vector{T},
+    relation_type::RelationType = RELATION_1_TO_N,
+) where {T <:Integer}
+    source_element = _get_element(data, source, source_index)
+    relation_field = _get_relation(source, target, relation_type)
+
+    for target_index in target_indices
+        target_element = _get_element(data, target, target_index)
+
+        # TODO: perform validation on 'reference_id'
+        push!(
+            source_element[relation_field],
+            target_element["reference_id"],
+        )
+    end
+
+    return nothing
+end
+
+
+function Base.show(io::IO, data::Data)
+    collections = get_collections(data)
+
+    print(
+        io,
+        """
+        PSRClasses Interface Data with $(length(collections)) collections:
+            $(join(collections, "\n    "))
+        """
+    )
 end

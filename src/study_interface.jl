@@ -1116,15 +1116,17 @@ end
 function get_attribute_dim end
 
 """
-    get_relation(
+    get_related(
         data::AbstractData,
         source::String,
         target::String,
-        index::Integer,
+        source_index::Integer,
         relation_type = RELATION_1_TO_1,
     )
+
+Returns the index of the `target` instance related to the `source` element indexed by `source_index` according to `relation_type`.
 """
-function get_relation end
+function get_related end
 
 """
     set_relation!(
@@ -1136,21 +1138,21 @@ function get_relation end
         relation_type = RELATION_1_TO_1,
     )
 """
-function set_relation end
+function set_related! end
 
 """
-    get_vector_relation(
+    get_vector_related(
         data::AbstractData,
         source::String,
         target::String,
-        index::Integer,
+        source_index::Integer,
         relation_type = RELATION_1_TO_N,
     )
 """
-function get_vector_relation end
+function get_vector_related end
 
 """
-    set_vector_relation!(
+    set_vector_related!(
         data::AbstractData,
         source::String,
         target::String,
@@ -1159,4 +1161,4 @@ function get_vector_relation end
         relation_type = RELATION_1_TO_N,
     )
 """
-function set_vector_relation end
+function set_vector_related! end

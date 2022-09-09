@@ -31,7 +31,7 @@ function _check_vector(attribute_struct::Attribute, collection::String, attribut
     return nothing
 end
 
-# ~ make backwards compatible by adding `iszero` and `isempty`
+# make backwards compatible by adding `iszero` and `isempty`
 _isvalid_dim(axis::Nothing) = false
 _isvalid_dim(axis::Integer) = !iszero(axis)
 _isvalid_dim(axis::String) = !isempty(axis)
