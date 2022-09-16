@@ -28,7 +28,6 @@ end
         @testset "Read hourly data from psrclasses c++" begin
             @time include("OpenBinary/read_hourly.jl")
         end
-        
     end
     @testset "ReaderMapper" begin
         @time include("reader_mapper.jl")
@@ -36,8 +35,7 @@ end
     @testset "TS Utils" begin
         @time include("time_series_utils.jl")
     end
-
-    @testset "Study API" begin
-        @time include("study_api.jl")
+    @testset "Modification API" begin
+        @time include("modification_api.jl")
     end
 end

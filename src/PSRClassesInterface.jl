@@ -29,7 +29,7 @@ include("OpenStudy/vector_map.jl")
 include("OpenStudy/duration.jl")
 include("OpenStudy/relations.jl")
 
-# study API
-include("study_api.jl")
+# modification API
+include("modification_api.jl")
 
 end

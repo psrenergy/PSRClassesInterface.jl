@@ -5,7 +5,7 @@ function test_api(data_path::String)
     mkpath(temp_path)
 
     src_data = PSRI.initialize_study(PSRI.OpenInterface(); data_path=data_path)
-    raw_data = PSRI._raw(src_data)::Dict{String,<:Any}
+    raw_data = PSRI._raw(src_data)
 
     PSRI.write_data(src_data, json_path)
 
@@ -54,7 +54,7 @@ function test_api(data_path::String)
     # set_series!
     series_data = Dict(
         "PSRThermalPlant" => [
-            "Data" => Dict{String, Vector}(    
+            "Data" => Dict{String, Vector}(
                 "GerMin"   => [0.0, 1.0],
                 "GerMax"   => [888.0, 777.0],
                 "O&MCost"  => [0.0, 1.0],
@@ -64,11 +64,11 @@ function test_api(data_path::String)
                 "CoefE"    => [1.0, 2.0],
                 "CTransp"  => [0.0, 1.0],
                 "PotInst"  => [888.0, 777.0],
-                "Existing" => [0, 0],
-                "sfal"     => [0, 1],
-                "NGas"     => [0, 0],
-                "NAdF"     => [0, 0],
-                "Unidades" => [1, 1],
+                "Existing" => Int32[0, 0],
+                "sfal"     => Int32[0, 1],
+                "NGas"     => Int32[0, 0],
+                "NAdF"     => Int32[0, 0],
+                "Unidades" => Int32[1, 1],
                 "StartUp"  => [0.0, 2.0],
             )
         ]

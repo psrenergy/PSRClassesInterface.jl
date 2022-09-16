@@ -250,38 +250,12 @@ function initialize_study(
     return data
 end
 
-function _collection(
-    data::Data,
-    str::String,
-    remove_redundant = true,
-    sort_on = "",
-    query = "",
-)
-    if sort_on != ""
-        error("sort_on is not valid for the JSON reader")
-    end
-    if query != ""
-        error("query is not valid for the JSON reader")
-    end
-
-    # if haskey(data.collections, str)
-    #     return data.collections[str]
-    # else
-    #     collection = _collection(data, Symbol(str), remove_redundant, sort_on, query)
-    #     data.collections[str] = collection
-    #     return collection
-    # end
-    return error("method not implemented")
-end
-
 function max_elements(data::Data, collection::String)
-    raw = _raw(data)::Dict{String,<:Any}
-
+    raw = _raw(data)
     if haskey(raw, collection)
         return length(raw[collection])
-    else
-        return 0
     end
+    return 0
 end
 
 _default_value(::Type{T}) where {T<:Number} = zero(T)
@@ -292,7 +266,7 @@ function get_attribute_dim(attribute_struct::Attribute)
     return attribute_struct.dim
 end
 
-function get_attribute_key(
+function _get_attribute_key(
     attribute::String,
     dim::Integer,
     fix::Pair{<:Integer,<:Union{Integer,Nothing}}...,
@@ -331,7 +305,7 @@ function get_parm(
     # Retrieve attribute metadata
     attribute_struct = get_attribute_struct(data, collection, attribute)
 
-    # Basic checks 😎
+    # Basic checks
     _check_dim(attribute_struct, collection, attribute, dim1, dim2)
     _check_type(attribute_struct, T, collection, attribute)
     _check_parm(attribute_struct, collection, attribute)
@@ -342,7 +316,7 @@ function get_parm(
 
     # Format according to dimension
     dim = get_attribute_dim(attribute_struct)
-    key = get_attribute_key(attribute, dim, 1 => dim1, 2 => dim2)
+    key = _get_attribute_key(attribute, dim, 1 => dim1, 2 => dim2)
 
     # Here, a choice is made to return a default
     # value if there is no entry for a given key
@@ -393,7 +367,7 @@ function get_parm_1d(
     out = Vector{T}(undef, dim1)
 
     for i in 1:dim1
-        key = get_attribute_key(attribute, 1, 1 => i)
+        key = _get_attribute_key(attribute, 1, 1 => i)
 
         out[i] = if haskey(element, key)
             _cast(T, element[key], default)
@@ -445,7 +419,7 @@ function get_parm_2d(
     out = Matrix{T}(undef, dim1, dim2)
 
     for i in 1:dim1, j in 1:dim2
-        key = get_attribute_key(attribute, dim, 1 => i, 2 => j)
+        key = _get_attribute_key(attribute, dim, 1 => i, 2 => j)
 
         out[i, j] = if haskey(element, key)
             _cast(T, element[key], default)
@@ -458,21 +432,21 @@ function get_parm_2d(
 end
 
 function _get_element_axis_dim(
-    element::Dict{String,<:Any},
+    element,
     attribute::String,
     dim::Integer,
     axis::Integer;
     lower_bound::Int = 1,
     upper_bound::Int = 100,
 )
-    i::Int = lower_bound # Here, we assume that the first index is
-    j::Int = upper_bound #   within bounds but the second one is not.
+    i = lower_bound # Here, we assume that the first index is
+    j = upper_bound #   within bounds but the second one is not.
 
     # Binary search
     while i < j - 1
         k = (i + j) ÷ 2
 
-        key = get_attribute_key(attribute, dim, axis => k)
+        key = _get_attribute_key(attribute, dim, axis => k)
 
         if haskey(element, key)
             i = k
@@ -580,10 +554,9 @@ function get_nonempty_vector(data::Data, collection::String, attribute::String)
     _check_vector(attr_data, collection, attribute)
 
     dim = attr_data.dim
-    key = get_attribute_key(attribute, dim)
-    raw = _raw(data)
+    key = _get_attribute_key(attribute, dim)
 
-    for (idx, el) in enumerate(raw[collection])
+    for (idx, el) in enumerate(_get_collection(data, collection))
         if haskey(el, key)
             len = length(el[key])
             if (len == 1 && el[key][] !== nothing) || len > 1
@@ -613,7 +586,7 @@ function get_vector(
     _check_element_range(data, collection, index)
 
     dim = get_attribute_dim(attribute_struct)
-    key = get_attribute_key(attribute, dim, 1 => dim1, 2 => dim2)
+    key = _get_attribute_key(attribute, dim, 1 => dim1, 2 => dim2)
 
     element = _get_element(data, collection, index)
 
@@ -663,7 +636,7 @@ function get_vector_1d(
     out = Vector{Vector{T}}(undef, dim1)
 
     for i in 1:dim1
-        key = get_attribute_key(attribute, dim, 1 => i)
+        key = _get_attribute_key(attribute, dim, 1 => i)
 
         out[i] = if haskey(element, key)
             _cast_vector(T, element[key], default)
@@ -715,7 +688,7 @@ function get_vector_2d(
     out = Matrix{Vector{T}}(undef, dim1, dim2)
 
     for i in 1:dim1, j in 1:dim2
-        key = get_attribute_key(attribute, dim, 1 => i, 2 => j)
+        key = _get_attribute_key(attribute, dim, 1 => i, 2 => j)
 
         out[i, j] = if haskey(element, key)
             _cast_vector(T, element[key], default)
@@ -742,7 +715,7 @@ function configuration_parameter(
         return _cast(T, data.extra_config[parameter])
     end
 
-    raw_data = _raw(data)::Dict{String,<:Any}
+    raw_data = _raw(data)
     study_data = raw_data["PSRStudy"][begin]
 
     for key in ["ExecutionParameters", "ChronologicalData", "HourlyData"]
@@ -764,7 +737,7 @@ function configuration_parameter(
         return _cast.(T, data.extra_config[parameter])
     end
 
-    raw_data = _raw(data)::Dict{String,<:Any}
+    raw_data = _raw(data)
     study_data = raw_data["PSRStudy"][begin]
 
     for key in ["ExecutionParameters", "ChronologicalData", "HourlyData"]

@@ -111,27 +111,54 @@ const _RELATIONS = Dict{String, _INNER_DICT}(
     ),
 )
 
+function _get_relation(source::String, target::String, relation_type::RelationType)
+    return _RELATIONS[source][(target, relation_type)]
+end
+
+function check_relation_scalar(relation_type)
+    if is_vector_relation(relation_type)
+        error("Relation of type $relation_type is of type vector, not the expected scalar.")
+    end
+    return nothing
+end
+
+function check_relation_vector(relation_type)
+    if !is_vector_relation(relation_type)
+        error("Relation of type $relation_type is of type scalar, not the expected vector.")
+    end
+    return nothing
+end
+
 function validate_relation(lst_from::String, lst_to::String, type::RelationType)
 
+    direct = false
     reverse = false
-    if haskey(_RELATIONS, lst_to)
-        if haskey(_RELATIONS[lst_to], (lst_from, RELATION_1_TO_1)) 
-            reverse = true
+    reverse_type = nothing
+    if haskey(_RELATIONS, lst_from)
+        direct = true # there are relations from lst_from
+        if haskey(_RELATIONS[lst_from], (lst_to, type))
+            return nothing # valid relation found
         end
     end
-
-    if haskey(_RELATIONS, lst_from)
-        if !haskey(_RELATIONS[lst_from], (lst_to, type))
-            if reverse
-                error("No relation from $lst_from to $lst_to with type $type \n" *
-                    "There is an equivalent get_reverse_vector_map relation \n" *
-                    "Try: PSRI.get_reverse_vector_map(data, \"$lst_to\", \"$lst_from\"; original_relation_type = PSRI.RELATION_1_TO_1)")
-            else
-                error("No relation from $lst_from to $lst_to with type $type \n" *
-                    "Available relations from $lst_from are: \n" *
-                    "$(keys(_RELATIONS[lst_from]))")
+    if haskey(_RELATIONS, lst_to)
+        for (k, v) in _RELATIONS[lst_to]
+            if k[1] == lst_from
+                reverse = true # a reverse relation was found
+                reverse_type = k[2]
+                break
             end
         end
+    end
+    if reverse
+        error("No relation from $lst_from to $lst_to with type $type." *
+            " The there is a reverse relation from $lst_to to " * 
+            "$lst_from  with type $type.\n" *
+            "Try: PSRI.get_reverse_vector_map(data, \"$lst_to\", " *
+            "\"$lst_from\"; original_relation_type = $(reverse_type))")
+    elseif direct
+        error("No relation from $lst_from to $lst_to with type $type \n" *
+            "Available relations from $lst_from are: \n" *
+            "$(keys(_RELATIONS[lst_from]))")
     else
         error("No relations from $lst_from available")
     end
@@ -257,7 +284,7 @@ function get_map(
         return zeros(Int32, n_from)
     end
 
-    raw_field = _RELATIONS[lst_from][(lst_to, relation_type)]
+    raw_field = _get_relation(lst_from, lst_to, relation_type)
 
     out = zeros(Int32, n_from)
 
@@ -310,7 +337,7 @@ function get_vector_map(
         return Vector{Int32}[Int32[] for _ in 1:n_from]
     end
 
-    raw_field = _RELATIONS[lst_from][(lst_to, relation_type)]
+    raw_field = _get_relation(lst_from, lst_to, relation_type)
 
     out = Vector{Int32}[Int32[] for _ in 1:n_from]
 
@@ -336,4 +363,68 @@ function get_vector_map(
         end
     end
     return out
+end
+
+function get_related(
+    data::Data,
+    source::String,
+    target::String,
+    source_index::Integer;
+    relation_type::RelationType = RELATION_1_TO_1,
+)
+    check_relation_scalar(relation_type)
+    validate_relation(source, target, relation_type)
+    relation_field = _get_relation(source, target, relation_type)
+    source_element = _get_element(data, source, source_index)
+
+    if !haskey(source_element, relation_field)
+        # low level error
+        error("Element '$source_index' from collection '$source' has no field '$relation_field'")
+    end
+
+    target_id = source_element[relation_field]
+
+    # TODO: consider caching reference_id's
+    for (index, element) in enumerate(_get_collection(data, target))
+        if element["reference_id"] == target_id
+            return index
+        end
+    end
+
+    error("No element with id '$target_id' was found in collection '$target'")
+
+    return 0 # for type stability
+end
+
+function get_vector_related(
+    data::Data,
+    source::String,
+    target::String,
+    source_index::Integer,
+    relation_type::RelationType = RELATION_1_TO_N,
+)
+    check_relation_vector(relation_type)
+    validate_relation(source, target, relation_type)
+    source_element = _get_element(data, source, source_index)
+    relation_field = _get_relation(source, target, relation_type)
+
+    if !haskey(source_element, relation_field)
+        error("Element '$source_index' from collection '$source' has no field '$relation_field'")
+    end
+
+    target_id_set = Set{Int}(source_element[relation_field])
+
+    target_index_list = Int[]
+
+    for (index, element) in enumerate(_get_collection(data, target))
+        if element["reference_id"] ∈ target_id_set
+            push!(target_index_list, index)
+        end
+    end
+
+    if isempty(target_index_list)
+        error("No elements with id '$target_id' were found in collection '$target'")
+    end
+
+    return target_index_list
 end
