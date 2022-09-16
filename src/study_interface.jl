@@ -155,7 +155,7 @@ function get_vectors(
     attribute::String,
     ::Type{T};
     default::T = _default_value(T),
-) where T
+) where {T}
     n = max_elements(data, collection)
     out = Vector{Vector{T}}(undef, n)
     for i in 1:n
@@ -188,7 +188,7 @@ function get_vectors_1d(
     attribute::String,
     ::Type{T};
     default::T = _default_value(T),
-) where T
+) where {T}
     n = max_elements(data, collection)
     out = Vector{Vector{Vector{T}}}(undef, n)
     for i in 1:n
@@ -221,7 +221,7 @@ function get_vectors_2d(
     attribute::String,
     ::Type{T};
     default::T = _default_value(T),
-) where T
+) where {T}
     n = max_elements(data, collection)
     out = Vector{Matrix{Vector{T}}}(undef, n)
     for i in 1:n
@@ -317,7 +317,7 @@ PSRI.get_map(data, "PSRMaintenanceData", "PSRHydroPlant")
 PSRI.get_reverse_map(data, "PSRGenerator", "PSRThermalPlant")
 # which is the reverse of
 PSRI.get_map(data, "PSRGenerator", "PSRThermalPlant")
-``` 
+```
 """
 function get_reverse_map end
 
@@ -439,27 +439,26 @@ PSRI.get_parms(data, "PSRBattery", "DischargeRamp", Float64)
 """
 function get_parms(
     data::AbstractData,
-    col::String,
-    name::String,
+    collection::String,
+    attribute::String,
     ::Type{T};
     check_type::Bool = true,
     check_parm::Bool = true,
     ignore::Bool = false,
     default::T = _default_value(T),
-) where T
-
-    attr_struct = get_attribute_struct(data, col, name)
+) where {T}
+    attribute_struct = get_attribute_struct(data, collection, attribute)
     if check_type
-        _check_type(attr_struct, T, col, name)
+        _check_type(attribute_struct, T, collection, attribute)
     end
     if check_parm
-        _check_parm(attr_struct, col, name)
+        _check_parm(attribute_struct, collection, attribute)
     end
 
-    n = max_elements(data, col)
+    n = max_elements(data, collection)
     out = Vector{T}(undef, n)
     for i in 1:n
-        out[i] = get_parm(data, col, name, i, T; default = default)
+        out[i] = get_parm(data, collection, attribute, i, T; default = default)
     end
     return out
 end
@@ -488,27 +487,26 @@ PSRI.get_parm_1d(data, "PSRHydroPlant", "FP.VOL", Float64)
 """
 function get_parms_1d(
     data::AbstractData,
-    col::String,
-    name::String,
+    collection::String,
+    attribute::String,
     ::Type{T};
     check_type::Bool = true,
     check_parm::Bool = true,
     ignore::Bool = false,
     default::T = _default_value(T),
-) where T
-
-    attr_struct = get_attribute_struct(data, col, name)
+) where {T}
+    attribute_struct = get_attribute_struct(data, collection, attribute)
     if check_type
-        _check_type(attr_struct, T, col, name)
+        _check_type(attribute_struct, T, collection, attribute)
     end
     if check_parm
-        _check_parm(attr_struct, col, name)
+        _check_parm(attribute_struct, collection, attribute)
     end
 
-    n = max_elements(data, col)
+    n = max_elements(data, collection)
     out = Vector{Vector{T}}(undef, n)
     for i in 1:n
-        out[i] = get_parm_1d(data, col, name, i, T; default = default)
+        out[i] = get_parm_1d(data, collection, attribute, i, T; default = default)
     end
     return out
 end
@@ -538,27 +536,26 @@ PSRI.get_parms_2d(data, "PSRBattery", "DischargeRamp", Float64)
 """
 function get_parms_2d(
     data::AbstractData,
-    col::String,
-    name::String,
+    collection::String,
+    attribute::String,
     ::Type{T};
     check_type::Bool = true,
     check_parm::Bool = true,
     ignore::Bool = false,
     default::T = _default_value(T),
-) where T
-
-    attr_struct = get_attribute_struct(data, col, name)
+) where {T}
+    attribute_struct = get_attribute_struct(data, collection, attribute)
     if check_type
-        _check_type(attr_struct, T, col, name)
+        _check_type(attribute_struct, T, collection, attribute)
     end
     if check_parm
-        _check_parm(attr_struct, col, name)
+        _check_parm(attribute_struct, collection, attribute)
     end
 
-    n = max_elements(data, col)
+    n = max_elements(data, collection)
     out = Vector{Matrix{T}}(undef, n)
     for i in 1:n
-        out[i] = get_parm_2d(data, col, name, i, T; default = default)
+        out[i] = get_parm_2d(data, collection, attribute, i, T; default = default)
     end
     return out
 end
@@ -573,11 +570,8 @@ Example:
 PSRI.get_code(data, "PSRThermalPlant")
 ```
 """
-function get_code(
-    data::AbstractData,
-    col::String
-)
-    return get_parms(data, col, "code", Int32)
+function get_code(data::AbstractData, collection::String)
+    return get_parms(data, collection, "code", Int32)
 end
 
 """
@@ -591,11 +585,8 @@ PSRI.get_name(data, "PSRThermalPlant")
 PSRI.get_name(data, "PSRGaugingStation")
 ```
 """
-function get_name(
-    data::AbstractData,
-    col::String
-)
-    return get_parms(data, col, "name", String)
+function get_name(data::AbstractData, collection::String)
+    return get_parms(data, collection, "name", String)
 end
 
 """
@@ -611,7 +602,7 @@ end
         filters = String[], # for calling just within a subset instead of the full call
     ) where T
 
-Maps a `Vector{T}` containing the elements in `collection` to a vector in julia. When the function [`update_vectors!`](@ref) 
+Maps a `Vector{T}` containing the elements in `collection` to a vector in julia. When the function [`update_vectors!`](@ref)
 is called the elements of the vector will be updated to the according elements registered at the current `data.time_controller`.
 
 Example:
@@ -623,9 +614,9 @@ pot_inst = PSRI.mapped_vector(data, "PSRThermalPlant", "PotInst", Float64)
 For more information please read the example [Reading basic thermal generator parameters](@ref)
 
 !!! note "Differences between the OpenInterface and ClassicInterface"
-    When using `mapped_vector` in the `OpenInterface` mode the vector will be mapped 
-    with the correct values at first hand. When using `mapped_vector` in the 
-    `ClassicInterface` mode you should call [`update_vectors!`](@ref) to get the 
+    When using `mapped_vector` in the `OpenInterface` mode the vector will be mapped
+    with the correct values at first hand. When using `mapped_vector` in the
+    `ClassicInterface` mode you should call [`update_vectors!`](@ref) to get the
     good values for the collection, otherwise you might only get a vector of zeros.
 """
 function mapped_vector end
@@ -633,7 +624,7 @@ function mapped_vector end
 """
     go_to_stage(data::AbstractData, stage::Integer)
 
-Goes to the `stage` in the `data` time controller. 
+Goes to the `stage` in the `data` time controller.
 """
 function go_to_stage end
 
@@ -659,8 +650,6 @@ function go_to_dimension end
     update_vectors!(data::AbstractData)
 
 Update all mapped vectors according to the time controller inside `data`.
-
----------
 
     update_vectors!(data::AbstractData, filters::Vector{String})
 
@@ -745,8 +734,6 @@ function get_complex_map end
 
 Returns the duration, in hours, of the stage `t`.
 
----------
-
     stage_duration(data::AbstractData, date::Dates.Date)
 
 Returns the duration, in hours, at the stage corresponding to `date`.
@@ -758,13 +745,9 @@ function stage_duration end
 
 Returns the duration, in hours, of the `block` at the stage corresponding to `date`.
 
----------
-
     block_duration(data::AbstractData, stage::Int, block::Int)
 
 Returns the duration, in hours, of the `block` at `stage`.
-
----------
 
     block_duration(data::AbstractData, block::Int)
 
@@ -776,8 +759,6 @@ function block_duration end
     block_from_stage_hour(data::AbstractData, t::Int, h::Int)
 
 Returns the block `b` associated with hour `h` at stage `t`.
-
----------
 
     block_from_stage_hour(data::AbstractData, date::Dates.Date, h::Int)
 
@@ -809,7 +790,7 @@ function get_nonempty_vector end
 
 All the data from the databases must have one of these types.
 """
-const MainTypes = Union{Float64, Int32, String, Dates.Date}
+const MainTypes = Union{Float64,Int32,String,Dates.Date}
 
 """
     configuration_parameter(
@@ -820,13 +801,6 @@ const MainTypes = Union{Float64, Int32, String, Dates.Date}
 
 Returns the required configuration parameter from the case. If the parameter is not registered returns the default value.
 
-Example:
-```julia
-PSRI.configuration_parameter(data, "MaximoIteracoes", 0)
-PSRI.configuration_parameter(data, "MinOutflowPenalty", 0.0)
-```
----------
-
     configuration_parameter(
         data::AbstractData,
         attribute::String,
@@ -835,12 +809,172 @@ PSRI.configuration_parameter(data, "MinOutflowPenalty", 0.0)
 
 Returns the rquired configuration parameters from the case that are vectors that are vectors. If the parameter is not registered returns the default value.
 
-Example:
+## Examples:
+```julia
+PSRI.configuration_parameter(data, "MaximoIteracoes", 0)
+PSRI.configuration_parameter(data, "MinOutflowPenalty", 0.0)
+```
+
 ```julia
 PSRI.configuration_parameter(data, "DeficitCost", [0.0])
 ```
+
 """
 function configuration_parameter end
+
+"""
+    create_element(data::Data, collection::String)
+
+Creates a new instance of the given `collection` and returns its index.
+
+Example:
+```
+index = PSRI.create_element!(data, "PSRClass")
+
+PSRI.set_parm!(data, "PSRClass", index, "PSRAttr", value)
+```
+"""
+function create_element! end
+
+"""
+    get_parm(
+        data::Data,
+        collection::String,
+        attribute::String,
+        index::Integer,
+    )
+
+Retrieves the value of a scalar parameter.
+"""
+function get_parm end
+
+"""
+    set_parm!(
+        data::Data,
+        collection::String,
+        attribute::String,
+        index::Integer,
+        value::T,
+    ) where {T <: MainTypes}
+
+Defines the value of a scalar parameter.
+"""
+function set_parm! end
+
+"""
+    get_vector(
+        data::Data,
+        collection::String,
+        attribute::String,
+        index::Integer,
+    )
+
+Retrieves a copy of vectorial data.
+"""
+function get_vector end
+
+"""
+    function set_vector!(
+        data::Data,
+        collection::String,
+        attribute::String,
+        index::Int,
+        buffer::Vector{T}
+    ) where {T<:MainTypes}
+
+Updates a data vector according to the given `buffer`.
+*Note:* Modifying current vector length is not allowed: use `set_series!` instead.
+"""
+function set_vector! end
+
+"""
+    function get_series(
+        data::Data,
+        collection::String,
+        indexing_attribute::String,
+        index::Int,
+    )
+
+Retrieves the series i.e. `Dict{String, Vector}` indexed by `index_attr`.
+
+Example
+```
+julia> PSRI.get_series(data, "PSRThermalPlant", "Data", 1)
+Dict{String, Vector} with 13 entries:
+  "GerMin"   => [0.0]
+  "GerMax"   => [888.0]
+  "NGas"     => [nothing]
+  "IH"       => [0.0]
+  "ICP"      => [0.0]
+  "Data"     => ["1900-01-01"]
+  "CoefE"    => [1.0]
+  "PotInst"  => [888.0]
+  "Existing" => [0]
+  "sfal"     => [0]
+  "NAdF"     => [0]
+  "Unidades" => [1]
+  "StartUp"  => [0.0]
+```
+"""
+function get_series end
+
+"""
+    function set_series!(
+        data::Data,
+        collection::String,
+        index_attr::String,
+        index::Int,
+        buffer::Dict{String,Vector}
+    )
+
+Updates serial (indexed) data.
+All columns must be the same as before.
+The series length is allowed to be changed, but all vectors in the new series must have equal length.
+
+```
+julia> series = Dict{String, Vector}(
+         "GerMin" => [0.0, 1.0],
+         "GerMax" => [888.0, 777.0],
+         "NGas" => [nothing, nothing],
+         "IH" => [0.0, 0.0],
+         "CoefE" => [1.0, 2.0],
+         "PotInst" => [888.0, 777.0],
+         "ICP" => [0.0, 0.0],
+         "Data" => ["1900-01-01", "1900-01-02"],
+         "Existing" => [0, 0],
+         "sfal" => [0, 1],
+         "NAdF" => [0, 0],
+         "Unidades" => [1, 1],
+         "StartUp" => [0.0, 2.0]
+       );
+
+julia> PSRI.set_series!(data, "PSRThermalPlant", 1, "Data", series)
+
+julia> PSRI.get_series(data, "PSRThermalPlant", 1, "Data")
+Dict{String, Vector} with 13 entries:
+  "GerMin"   => [0.0, 1.0]
+  "GerMax"   => [888.0, 777.0]
+  "NGas"     => [nothing, nothing]
+  "IH"       => [0.0, 0.0]
+  "ICP"      => [0.0, 0.0]
+  "Data"     => ["1900-01-01", "1900-01-02"]
+  "CoefE"    => [1.0, 2.0]
+  "PotInst"  => [888.0, 777.0]
+  "Existing" => [0, 0]
+  "sfal"     => [0, 1]
+  "NAdF"     => [0, 0]
+  "Unidades" => [1, 1]
+  "StartUp"  => [0.0, 2.0]
+```
+"""
+function set_series! end
+
+"""
+    write_data(data::Data, path::String)
+
+Writes data to file in JSON format.
+"""
+function write_data end
 
 """
     get_attribute_dim1(
@@ -885,20 +1019,10 @@ end
     get_attribute_struct(
         data::AbstractData,
         collection::String,
-        attribute::string,
+        attribute::String,
     )
 
------
-
-    get_attribute_struct(
-        data::DataStruct,
-        collection::String,
-        attribute::string,
-    )
-
------
-
-Return a struct of type `Attribute` with fields:
+Returns a struct of type `Attribute` with fields:
 
 * name::String = attribute name
 * is_vector::Bool = true if attribute is a vector (tipically, varies in time)
@@ -909,13 +1033,15 @@ Return a struct of type `Attribute` with fields:
 function get_attribute_struct(data::AbstractData, collection::String, attribute::String)
     return get_attribute_struct(get_data_struct(data), collection, attribute)
 end
+
 function get_attribute_struct(data::DataStruct, collection::String, attribute::String)
     collection_struct = data[collection]
-    # check attribute existence
+
     if !haskey(collection_struct, attribute)
         error("Attribute $attribute not found in collection $collection")
     end
-    return collection_struct[attribute]
+
+    return collection_struct[attribute]::Attribute
 end
 
 """
@@ -926,8 +1052,46 @@ Return `Vector{String}` of valid attributes from `collection`.
 function get_attributes(data::AbstractData, collection::String)
     return get_attributes(get_data_struct(data), collection)
 end
+
 function get_attributes(data::DataStruct, collection::String)
-    return sort(collect(keys(data[collection])))
+    return sort!(collect(keys(data[collection])))
+end
+
+
+"""
+    get_attributes_indexed_by(
+        data::AbstractData,
+        collection::String,
+        indexing_attribute::String
+    )
+
+Return `Vector{String}` of valid vector attributes from `collection` that are
+indexed by `indexing_attribute`.
+"""
+function get_attributes_indexed_by(
+    data::AbstractData,
+    collection::String,
+    indexing_attribute::String
+)
+
+    data_struct = get_data_struct(data)
+    if !haskey(data_struct, collection)
+        error("PSR Class '$collection' is not available for this database.")
+    end
+
+    class_struct = data_struct[collection]
+
+    attributes = String[]
+
+    for (attribute, attribute_data) in class_struct
+        if attribute_data.index == indexing_attribute
+            push!(attributes, attribute)
+        end
+    end
+
+    sort!(attributes)
+
+    return attributes
 end
 
 """
@@ -938,6 +1102,7 @@ Return `Vector{String}` of valid collections (depends on loaded pmd files).
 function get_collections(data::AbstractData)
     return get_collections(get_data_struct(data))
 end
+
 function get_collections(data::DataStruct)
     return sort(collect(keys(data)))
 end
@@ -948,17 +1113,19 @@ end
 Returns a `Vector{Tuple{String, RelationType}}` with relating `collection`
 and their relation type associated to `collection`.
 """
-function get_relations(data::AbstractData, collection::String)
+function get_relations(::AbstractData, collection::String)
     return get_relations(collection)
 end
-function get_relations(data::DataStruct, collection::String)
+
+function get_relations(::DataStruct, collection::String)
     return get_relations(collection)
 end
+
 function get_relations(collection::String)
     if haskey(_RELATIONS, collection)
         return keys(_RELATIONS[collection])
     end
-    return Tuple{String, RelationType}[]
+    return Tuple{String,RelationType}[]
 end
 
 """
@@ -979,3 +1146,70 @@ check if attribute validation is active.
 function get_validate_attributes(data::AbstractData)
     return data.validate_attributes
 end
+
+"""
+    get_attribute_dim(attribute_struct::Attribute)
+"""
+function get_attribute_dim end
+
+"""
+    get_related(
+        data::AbstractData,
+        source::String,
+        target::String,
+        source_index::Integer,
+        relation_type = RELATION_1_TO_1,
+    )
+
+Returns the index of the element in collection `target` related to the element
+in the collection `source` element indexed by `source_index` according to the
+scalar relation `relation_type`.
+"""
+function get_related end
+
+"""
+    set_related!(
+        data::AbstractData,
+        source::String,
+        target::String,
+        source_index::Integer,
+        target_index::Integer;
+        relation_type = RELATION_1_TO_1,
+    )
+
+Sets the element `source_index` from collection `source` to be related to
+the element `target_index` from collection `target` in the scalar relation
+of type `relation_type`.
+"""
+function set_related! end
+
+"""
+    get_vector_related(
+        data::AbstractData,
+        source::String,
+        target::String,
+        source_index::Integer,
+        relation_type = RELATION_1_TO_N,
+    )
+
+Returns the vector of indices of the elements in collection `target` related to
+the element in the collection `source` element indexed by `source_index`
+according to the scalar relation `relation_type`.
+"""
+function get_vector_related end
+
+"""
+    set_vector_related!(
+        data::AbstractData,
+        source::String,
+        target::String,
+        source_index::Integer,
+        target_index::Vector{<:Integer};
+        relation_type = RELATION_1_TO_N,
+    )
+
+Sets the element `source_index` from collection `source` to be related to
+the elements in `target_index` from collection `target` in the vector relation
+of type `relation_type`.
+"""
+function set_vector_related! end

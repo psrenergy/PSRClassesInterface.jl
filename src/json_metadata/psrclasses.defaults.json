@@ -1,0 +1,93 @@
+{
+    "PSRStudy": {
+        "Idioma": 0,
+        "Objetivo": 1,
+        "Opcao": 1,
+        "Tipo_Etapa": 2,
+        "Vazoes": 2,
+        "Manutencao": 0,
+        "Configuracao": 1,
+        "Rede": 0,
+        "Perdas": 0,
+        "Horizonte": 1,
+        "Series_Simular": 0,
+        "Etapa_inicial": 1,
+        "Ano_inicial": 2013,
+        "NumeroEtapas": 2,
+        "Mes_Inicial_Hidro": 1,
+        "Ano_Inicial_Hidro": 1957,
+        "NumeroSistemas": 1,
+        "Series_Forward": 1,
+        "Series_Backward": 1,
+        "NumeroBlocosDemanda": 1,
+        "NumeroBlocosDemandaParm2": 0,
+        "NumeroAnosAdicionais": 0,
+        "NumeroAnosAdicionaisParm2": 0,
+        "NumeroAnosAdicionaisParm3": 0,
+        "MaximoIteracoes": 10,
+        "CriterioConvergencia": 0.0,
+        "NivelInformes": 0,
+        "TaxaDesconto": 0.0,
+        "MinOutflowPenalty": 5000.0,
+        "SpillagePenalty": 0.0,
+        "VersaoInfoCargaBarra": null,
+        "VersionRenewableBlockProfile": null,
+        "NumberSimulations": 1,
+        "NumberOpenings": 1,
+        "NumberBlocks": 1,
+        "CurrencyReference": "$",
+        "FlagCreateFutureCost": 0,
+        "FutureCostStage": 4,
+        "FutureCostYear": 1998,
+        "FutureCostEntryFileName": "arq04",
+        "FlagReadFutureCost": 0,
+        "FutureCostReadFileName": "arq03",
+        "FlagUseHotStart": 0,
+        "InitialStageFutureCost": 0,
+        "FinalStageFutureCost": 0,
+        "Duracao(1)": 100.0,
+        "MinSpillageUnit": null,
+        "SubHourlyDiscretization": null,
+        "DeficitSegment": [
+            100.0
+        ],
+        "DeficitCost": [
+            500.0
+        ],
+        "CodigoSistemas": [
+            1
+        ],
+        "IndexSeriesSimulacao": [],
+        "DataHourBlock": [],
+        "HourBlockMap": [],
+        "Currency": [
+            "$"
+        ],
+        "CurrencyFactor": [
+            1.0
+        ],
+        "DateChroDeficitCost": [
+            "01/01/1900"
+        ],
+        "ChroDeficitCost(1)": [
+            500.0
+        ],
+        "SubHourlyStage": [],
+        "SubHourlyScenario": [],
+        "SubHourlyDays": []
+    },
+    "PSRDemand": {},
+    "PSRDemandSegment": {},
+    "PSRElectrificationNetwork": {},
+    "PSRFuel": {},
+    "PSRGasNetwork": {},
+    "PSRGaugingStation": {},
+    "PSRHydroPlant": {},
+    "PSRHydrologicalNetwork": {},
+    "PSRHydrologicalPlantNetwork": {},
+    "PSRInterconnectionNetwork": {},
+    "PSRNetwork": {},
+    "PSRNetworkDC": {},
+    "PSRSystem": {},
+    "PSRThermalPlant": {}
+}

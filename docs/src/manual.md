@@ -49,6 +49,8 @@ PSRClassesInterface.get_map
 PSRClassesInterface.get_vector_map
 PSRClassesInterface.get_reverse_map
 PSRClassesInterface.get_reverse_vector_map
+PSRClassesInterface.get_related
+PSRClassesInterface.get_vector_related
 ```
 
 ### Scalar attributes
@@ -82,6 +84,7 @@ PSRClassesInterface.get_vectors
 PSRClassesInterface.get_vectors_1d
 PSRClassesInterface.get_vectors_2d
 PSRClassesInterface.get_nonempty_vector
+PSRClassesInterface.get_series
 ```
 
 ### Reflection
@@ -91,9 +94,25 @@ PSRClassesInterface.get_attribute_dim2
 PSRClassesInterface.get_collections
 PSRClassesInterface.get_attributes
 PSRClassesInterface.get_attribute_struct
+PSRClassesInterface.get_data_struct
 PSRClassesInterface.Attribute
+PSRClassesInterface.get_attributes_indexed_by
+PSRClassesInterface.get_relations
+PSRClassesInterface.get_attribute_dim
 ```
 
+### Modification API
+
+```@docs
+PSRClassesInterface.create_element!
+PSRClassesInterface.set_parm!
+PSRClassesInterface.set_vector!
+PSRClassesInterface.set_series!
+PSRClassesInterface.Attribute
+PSRClassesInterface.write_data
+PSRClassesInterface.set_related!
+PSRClassesInterface.set_vector_related!
+```
 
 ## Abstract reader and writer interface
 

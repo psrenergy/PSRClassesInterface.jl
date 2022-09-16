@@ -13,6 +13,26 @@ mutable struct VectorCache{T}
     vector::Vector{T}
     # date::Vector{Int32}
     # current_date::Int32
+
+    function VectorCache(
+        dim1_str::Union{String,Nothing},
+        dim2_str::Union{String,Nothing},
+        dim1::Union{Integer,Nothing},
+        dim2::Union{Integer,Nothing},
+        index_str::String,
+        stage::Integer,
+        vector::Vector{T},
+    ) where {T}
+        return new{T}(
+            isnothing(dim1_str) ? "" : dim1_str,
+            isnothing(dim2_str) ? "" : dim2_str,
+            isnothing(dim1) ? 0 : dim1,
+            isnothing(dim2) ? 0 : dim2,
+            index_str,
+            stage,
+            vector,
+        )
+    end
 end
 
 # TODO: rebuild "raw" stabilizing data types
@@ -28,43 +48,43 @@ Base.@kwdef mutable struct Data{T} <: AbstractData
     number_blocks::Int = 1
 
     # for variable duration and for hour block map
-    variable_duration::Union{Nothing, OpenBinary.Reader} = nothing
-    hour_to_block::Union{Nothing, OpenBinary.Reader} = nothing
+    variable_duration::Union{Nothing,OpenBinary.Reader} = nothing
+    hour_to_block::Union{Nothing,OpenBinary.Reader} = nothing
 
     first_year::Int
     first_stage::Int #maybe week or month, day...
     first_date::Dates.Date
 
-    data_struct::Dict{String, Dict{String, Attribute}}
+    data_struct::Dict{String,Dict{String,Attribute}}
     validate_attributes::Bool
     model_files_added::Set{String}
 
-    log_file::Union{IOStream, Nothing}
+    log_file::Union{IOStream,Nothing}
     verbose::Bool
 
     # main time controller
     controller_stage::Int = 1
     controller_stage_changed::Bool = false
     controller_date::Dates.Date
-    controller_dim::Dict{String, Int} = Dict{String, Int}()
+    controller_dim::Dict{String,Int} = Dict{String,Int}()
 
     # cache to only in data reference once (per element)
-    map_cache_data_idx::Dict{String, Dict{String, Vector{Int32}}} =
-        Dict{String, Dict{String, Vector{Int32}}}()
+    map_cache_data_idx::Dict{String,Dict{String,Vector{Int32}}} =
+        Dict{String,Dict{String,Vector{Int32}}}()
     # vectors returned to user
-    map_cache_real::Dict{String, Dict{String, VectorCache{Float64}}} =
-        Dict{String, Dict{String, VectorCache{Float64}}}()
-    map_cache_integer::Dict{String, Dict{String, VectorCache{Int32}}} =
-        Dict{String, Dict{String, VectorCache{Int32}}}()
-    map_cache_date::Dict{String, Dict{String, VectorCache{Dates.Date}}} =
-        Dict{String, Dict{String, VectorCache{Dates.Date}}}()
+    map_cache_real::Dict{String,Dict{String,VectorCache{Float64}}} =
+        Dict{String,Dict{String,VectorCache{Float64}}}()
+    map_cache_integer::Dict{String,Dict{String,VectorCache{Int32}}} =
+        Dict{String,Dict{String,VectorCache{Int32}}}()
+    map_cache_date::Dict{String,Dict{String,VectorCache{Dates.Date}}} =
+        Dict{String,Dict{String,VectorCache{Dates.Date}}}()
 
-    map_filter_real::Dict{String, Vector{Tuple{String, String}}} =
-        Dict{String, Vector{Tuple{String, String}}}()
-    map_filter_integer::Dict{String, Vector{Tuple{String, String}}} =
-        Dict{String, Vector{Tuple{String, String}}}()
+    map_filter_real::Dict{String,Vector{Tuple{String,String}}} =
+        Dict{String,Vector{Tuple{String,String}}}()
+    map_filter_integer::Dict{String,Vector{Tuple{String,String}}} =
+        Dict{String,Vector{Tuple{String,String}}}()
 
-    extra_config::Dict{String, Any} = Dict{String, Any}()
+    extra_config::Dict{String,Any} = Dict{String,Any}()
 
     # TODO: cache importante data
 end
@@ -82,15 +102,15 @@ function _simple_date(str::String)
 
     third_digit = str[3]
     if isnumeric(third_digit) # "1900-12-31" # AAAA/MM/DD
-        day   = parse(Int, str[9:10])
+        day = parse(Int, str[9:10])
         month = parse(Int, str[6:7])
-        year  = parse(Int, str[1:4])
+        year = parse(Int, str[1:4])
         return Dates.Date(year, month, day)
     end
     # "31/12/1900" # DD/MM/AAAA
-    day   = parse(Int, str[1:2])
+    day = parse(Int, str[1:2])
     month = parse(Int, str[4:5])
-    year  = parse(Int, str[7:10])
+    year = parse(Int, str[7:10])
     return Dates.Date(year, month, day)
 end
 
@@ -119,12 +139,12 @@ end
 
 function _merge_psr_transformer_and_psr_serie!(data::Data)
     raw = _raw(data)
-    if haskey(raw, "PSRSerie") && haskey(raw, "PSRTransformer") 
+    if haskey(raw, "PSRSerie") && haskey(raw, "PSRTransformer")
         append!(raw["PSRSerie"], raw["PSRTransformer"])
-    elseif haskey(raw, "PSRTransformer") 
+    elseif haskey(raw, "PSRTransformer")
         raw["PSRSerie"] = raw["PSRTransformer"]
     end
-    nothing
+    return nothing
 end
 
 function initialize_study(
@@ -162,9 +182,12 @@ function initialize_study(
     stage_type = StageType(study_data["Tipo_Etapa"])
     first_year = study_data["Ano_inicial"]
     first_stage = study_data["Etapa_inicial"]
-    first_date = Dates.Date(first_year, 1, 1) +
-            ifelse(stage_type == STAGE_MONTH,
-                Dates.Month(first_stage-1), Dates.Week(first_stage-1))
+    first_date =
+        Dates.Date(first_year, 1, 1) + ifelse(
+            stage_type == STAGE_MONTH,
+            Dates.Month(first_stage - 1),
+            Dates.Week(first_stage - 1),
+        )
     # TODO daily study
 
     if _netplan_database
@@ -178,16 +201,17 @@ function initialize_study(
     number_blocks = study_data["NumeroBlocosDemanda"]
     @assert number_blocks == study_data["NumberBlocks"]
 
-    duration_mode = if haskey(study_data, "HourlyData") && study_data["HourlyData"]["BMAP"] in [1, 2]
-        HOUR_BLOCK_MAP
-    elseif (
+    duration_mode =
+        if haskey(study_data, "HourlyData") && study_data["HourlyData"]["BMAP"] in [1, 2]
+            HOUR_BLOCK_MAP
+        elseif (
             haskey(study_data, "DurationModel") &&
             haskey(study_data["DurationModel"], "Duracao($number_blocks)")
         )
-        VARIABLE_DURATION
-    else
-        FIXED_DURATION
-    end
+            VARIABLE_DURATION
+        else
+            FIXED_DURATION
+        end
 
     data = Data(
         raw = raw,
@@ -200,10 +224,8 @@ function initialize_study(
         first_stage = first_stage,
         first_date = first_date,
         controller_date = first_date,
-
         duration_mode = duration_mode,
         number_blocks = number_blocks,
-
         log_file = file,
         verbose = verbose,
     )
@@ -228,181 +250,129 @@ function initialize_study(
     return data
 end
 
-function _collection(
-    data::Data,
-    str::String,
-    remove_redundant = true,
-    sort_on = "",
-    query = "",
-)
-    if sort_on != ""
-        error("sort_on is not valid for the JSON reader")
-    end
-    if query != ""
-        error("query is not valid for the JSON reader")
-    end
-
-    # if haskey(data.collections, str)
-    #     return data.collections[str]
-    # else
-    #     col = _collection(data, Symbol(str), remove_redundant, sort_on, query)
-    #     data.collections[str] = col
-    #     return col
-    # end
-    error("method not implemented")
-end
-
-function max_elements(data::Data, str::String)
+function max_elements(data::Data, collection::String)
     raw = _raw(data)
-    if haskey(raw, str)
-        return length(raw[str])
+    if haskey(raw, collection)
+        return length(raw[collection])
     end
     return 0
 end
 
-_default_value(::Type{T}) where T = zero(T)
+_default_value(::Type{T}) where {T<:Number} = zero(T)
 _default_value(::Type{String}) = ""
 _default_value(::Type{Dates.Date}) = Dates.Date(1900, 1, 1)
 
-function _check_type(attr_struct::Attribute, ::Type{T}, col::String, name::String) where T
-    if attr_struct.type != T
-        error("Attribute $name of collection $col is a of type $(attr_struct.type) not $T.")
-    end
-    return
+function get_attribute_dim(attribute_struct::Attribute)
+    return attribute_struct.dim
 end
-function _check_parm(attr_struct::Attribute, col::String, name::String)
-    if attr_struct.is_vector
-        error("Attribute $name of collection $col is a of type vector.")
+
+function _get_attribute_key(
+    attribute::String,
+    dim::Integer,
+    fix::Pair{<:Integer,<:Union{Integer,Nothing}}...,
+)
+    if dim == 0 # Attribute has no dimensions
+        return attribute
+    else
+        # Fill extra indices with ones
+        indices = ones(Int, dim)
+
+        for (i, k) in fix
+            # Discard indices out of range / empty
+            if i > dim || isnothing(k)
+                continue
+            end
+
+            indices[i] = k
+        end
+
+        raw_indices = join(indices, ",")
+
+        return "$attribute($raw_indices)"
     end
-    return
-end
-function _check_vector(attr_struct::Attribute, col::String, name::String)
-    if !attr_struct.is_vector
-        error("Attribute $name of collection $col is a of type parm.")
-    end
-    return
-end
-function _check_dim(attr_struct::Attribute, col::String, name::String, dim1::Integer, dim2::Integer)
-    dim = attr_struct.dim
-    @assert dim1 >= 0
-    @assert dim2 >= 0
-    if dim2 > 0 && dim1 == 0
-        error("Getting attribute $name of collection $col, got dim2 = $dims2 and dim1 = 0")
-    end
-    if dim == 0 && dim1 > 0
-        error("Attribute $name of collection $col, has 0 dims but got dim1 = $dim1")
-    end
-    if dim == 0 && dim2 > 0
-        error("Attribute $name of collection $col, has 0 dims but got dim2 = $dim2")
-    end
-    if dim == 1 && dim1 == 0
-        error("Attribute $name of collection $col, has 1 dim but got dim1 = 0")
-    end
-    if dim == 1 && dim2 > 0
-        error("Attribute $name of collection $col, has 1 dim but got dim2 = $dim2")
-    end
-    if dim == 2 && dim1 == 0
-        error("Attribute $name of collection $col, has 2 dims but got dim1 = 0")
-    end
-    if dim == 2 && dim2 == 0
-        error("Attribute $name of collection $col, has 2 dims but got dim2 = 0")
-    end
-    return dim
-end
-function _check_dim(attr_struct::Attribute, col::String, name::String, dim1::String, dim2::String)
-    dim = attr_struct.dim
-    if isempty(dim1) && !isempty(dim2)
-        error("Got dim1 empty, but dim2 = $dim2")
-    end
-    if dim == 0 && !isempty(dim1)
-        error("Got dim1 = $dim1 but attribute $name is no dimensioned")
-    end
-    if dim >= 1 && isempty(dim1)
-        error("Got dim1 empty but attribute $name has $dim dimension(s)")
-    end
-    if dim == 1 && !isempty(dim2)
-        error("Got dim2 = $dim2 but attribute $name has a single dimension")
-    end
-    return dim
-end
-function _check_element_range(data::AbstractData, col::String, index::Integer)
-    n = max_elements(data, col)
-    if n == 0
-        error("Collection $col is empty.")
-    end
-    if !(1 <= index <= n)
-        error("Index = $index is out of the range 1 to $n for collection $col")
-    end
-    return
 end
 
 function get_parm(
     data::Data,
-    col::String,
-    name::String,
+    collection::String,
+    attribute::String,
     index::Integer,
     ::Type{T};
     default::T = _default_value(T),
-    dim1::Integer = 0,
-    dim2::Integer = 0,
-) where T
+    dim1::Union{Integer,Nothing} = nothing,
+    dim2::Union{Integer,Nothing} = nothing,
+) where {T}
+    # Retrieve attribute metadata
+    attribute_struct = get_attribute_struct(data, collection, attribute)
 
-    attr_struct = get_attribute_struct(data, col, name)
+    # Basic checks
+    _check_dim(attribute_struct, collection, attribute, dim1, dim2)
+    _check_type(attribute_struct, T, collection, attribute)
+    _check_parm(attribute_struct, collection, attribute)
+    _check_element_range(data, collection, index)
 
-    dim = _check_dim(attr_struct, col, name, dim1, dim2)
-    _check_type(attr_struct, T, col, name)
-    _check_parm(attr_struct, col, name)
-    _check_element_range(data, col, index)
+    # This is assumed to be a mutable dictionary
+    element = _get_element(data, collection, index)
 
-    query_name = if dim == 0
-        name
-    elseif dim == 1
-        name * "($dim1)"
-    elseif dim == 2
-        name * "($dim1,$dim2)"
+    # Format according to dimension
+    dim = get_attribute_dim(attribute_struct)
+    key = _get_attribute_key(attribute, dim, 1 => dim1, 2 => dim2)
+
+    # Here, a choice is made to return a default
+    # value if there is no entry for a given key
+    # in the element.
+    if haskey(element, key)
+        return _cast(T, element[key], default)
+    else
+        return default
     end
-
-    raw = _raw(data)
-
-    element = raw[col][index]
-
-    if haskey(element, query_name)
-        return _cast(T, element[query_name], default)
-    end
-    return default
 end
 
 function get_parm_1d(
     data::Data,
-    col::String,
-    name::String,
+    collection::String,
+    attribute::String,
     index::Integer,
     ::Type{T};
     default::T = _default_value(T),
-) where T
+) where {T}
+    attribute_struct = get_attribute_struct(data, collection, attribute)
 
-    attr_struct = get_attribute_struct(data, col, name)
+    dim = get_attribute_dim(attribute_struct)
 
-    @assert attr_struct.dim == 1
-
-    _check_type(attr_struct, T, col, name)
-    _check_parm(attr_struct, col, name)
-    _check_element_range(data, col, index)
-
-    n_dim1 = get_attribute_dim1(data, col, name, index)
-
-    raw = _raw(data)
-    
-    element = raw[col][index]
-
-    out = Vector{T}(undef, n_dim1)
-
-    for i in 1:n_dim1
-        query_name = name * "($i)"
-        if haskey(element, query_name)
-            out[i] = _cast(T, element[query_name], default)
+    if dim != 1
+        if dim == 0
+            error("""
+                  Attribute '$attribute' from collection '$colllection' has no dimensions.
+                  Consider using `get_parm` instead.
+                  """)
         else
-            out[i] = default
+            error(
+                """
+                Attribute '$attribute' from collection '$colllection' has $(attribute_struct.dim) dimensions.
+                Consider using `get_parm_$(attribute_struct.dim)d` instead.
+                """,
+            )
+        end
+    end
+
+    _check_type(attribute_struct, T, collection, attribute)
+    _check_parm(attribute_struct, collection, attribute)
+    _check_element_range(data, collection, index)
+
+    dim1 = get_attribute_dim1(data, collection, attribute, index)
+
+    element = _get_element(data, collection, index)
+
+    out = Vector{T}(undef, dim1)
+
+    for i in 1:dim1
+        key = _get_attribute_key(attribute, 1, 1 => i)
+
+        out[i] = if haskey(element, key)
+            _cast(T, element[key], default)
+        else
+            default
         end
     end
 
@@ -411,162 +381,185 @@ end
 
 function get_parm_2d(
     data::Data,
-    col::String,
-    name::String,
+    collection::String,
+    attribute::String,
     index::Integer,
     ::Type{T};
     default::T = _default_value(T),
-) where T
+) where {T}
+    attribute_struct = get_attribute_struct(data, collection, attribute)
 
-    attr_struct = get_attribute_struct(data, col, name)
+    dim = get_attribute_dim(attribute_struct)
 
-    @assert attr_struct.dim == 2
-
-    _check_type(attr_struct, T, col, name)
-    _check_parm(attr_struct, col, name)
-    _check_element_range(data, col, index)
-
-    n_dim1 = get_attribute_dim1(data, col, name, index)
-    n_dim2 = get_attribute_dim2(data, col, name, index)
-
-    raw = _raw(data)
-    
-    element = raw[col][index]
-
-    out = Matrix{T}(undef, n_dim1, n_dim2)
-
-    for i in 1:n_dim1, j in 1:n_dim2
-        query_name = name * "($i,$j)"
-        if haskey(element, query_name)
-            out[i, j] = _cast(T, element[query_name], default)
+    if dim != 2
+        if dim == 0
+            error("""
+                  Attribute '$attribute' from collection '$colllection' has no dimensions.
+                  Consider using `get_parm` instead.
+                  """)
         else
-            out[i, j] = default
+            error(
+                """
+                Attribute '$attribute' from collection '$colllection' has $(dim) dimensions.
+                Consider using `get_parm_$(dim)d` instead.
+                """,
+            )
+        end
+    end
+
+    _check_type(attribute_struct, T, collection, attribute)
+    _check_parm(attribute_struct, collection, attribute)
+    _check_element_range(data, collection, index)
+
+    dim1 = get_attribute_dim1(data, collection, attribute, index)
+    dim2 = get_attribute_dim2(data, collection, attribute, index)
+
+    element = _get_element(data, collection, index)
+
+    out = Matrix{T}(undef, dim1, dim2)
+
+    for i in 1:dim1, j in 1:dim2
+        key = _get_attribute_key(attribute, dim, 1 => i, 2 => j)
+
+        out[i, j] = if haskey(element, key)
+            _cast(T, element[key], default)
+        else
+            default
         end
     end
 
     return out
 end
 
+function _get_element_axis_dim(
+    element,
+    attribute::String,
+    dim::Integer,
+    axis::Integer;
+    lower_bound::Int = 1,
+    upper_bound::Int = 100,
+)
+    i = lower_bound # Here, we assume that the first index is
+    j = upper_bound #   within bounds but the second one is not.
+
+    # Binary search
+    while i < j - 1
+        k = (i + j) ÷ 2
+
+        key = _get_attribute_key(attribute, dim, axis => k)
+
+        if haskey(element, key)
+            i = k
+        else
+            j = k
+        end
+    end
+
+    return i # The last index within bounds
+end
+
+function _get_attribute_axis_dim(
+    data::Data,
+    collection::String,
+    attribute::String,
+    axis::Integer,
+    index::Integer = 1;
+    lower_bound::Int = 1,
+    upper_bound::Int = 100,
+)
+    attribute_struct = get_attribute_struct(data, collection, attribute)
+
+    dim = get_attribute_dim(attribute_struct)
+
+    if dim == 0
+        error("Attribute '$attribute' from collection '$collection' has no dimensions")
+    end
+
+    _check_element_range(data, collection, index)
+
+    element = _get_element(data, collection, index)
+
+    return _get_element_axis_dim(
+        element,
+        attribute,
+        dim,
+        axis;
+        lower_bound = lower_bound,
+        upper_bound = upper_bound,
+    )
+end
+
 function get_attribute_dim1(
     data::Data,
-    col::String,
+    collection::String,
     attribute::String,
-    index::Integer;
-    max_check::Integer = 100,
+    index::Integer,
 )
-    attr_struct = get_attribute_struct(data, col, attribute)
-    dim = attr_struct.dim
-    if dim == 0
-        error("Attribute $attribute from collection $col has no extra dimensions")
-    end
-    _check_element_range(data, col, index)
-
-    raw = _raw(data)
-
-    element = raw[col][index]
-
-    for i in 1:max_check
-        query_name = if dim == 1
-            attribute * "($i)"
-        elseif dim == 2
-            attribute * "($i,1)"
-        end
-        if !haskey(element, query_name)
-            return i - 1
-        end
-    end
-    error("Attribute $attribute from collection $col has dim1 larger than $max_check")
-    return 999
+    return _get_attribute_axis_dim(data, collection, attribute, 1, index)
 end
 
 function get_attribute_dim2(
     data::Data,
-    col::String,
+    collection::String,
     attribute::String,
-    index::Integer;
-    max_check::Integer = 100,
+    index::Integer,
 )
-    attr_struct = get_attribute_struct(data, col, attribute)
-    if attr_struct.dim < 2
-        error("Attribute $attribute from collection $col has $(attr_struct.dim) < 2 dimensions")
-    end
-    _check_element_range(data, col, index)
-
-    raw = _raw(data)
-
-    element = raw[col][index]
-
-    for i in 1:max_check
-        query_name =  attribute * "(1,$i)"
-        if !haskey(element, query_name)
-            return i - 1
-        end
-    end
-    error("Attribute $attribute from collection $col has dim2 larger than $max_check")
-    return 999
+    return _get_attribute_axis_dim(data, collection, attribute, 2, index)
 end
 
-function description(data::Data)
+function description(::Data)
     return ""
 end
+
 function total_stages(data::Data)
-    _raw(data)["PSRStudy"][1]["NumeroEtapas"]
+    return _raw(data)["PSRStudy"][1]["NumeroEtapas"]
 end
+
 function total_scenarios(data::Data)
     # _raw(data)["PSRStudy"][1]["Series_Forward"]
-    _raw(data)["PSRStudy"][1]["NumberSimulations"]
+    return _raw(data)["PSRStudy"][1]["NumberSimulations"]
 end
+
 function total_openings(data::Data)
-    _raw(data)["PSRStudy"][1]["NumberOpenings"]
+    return _raw(data)["PSRStudy"][1]["NumberOpenings"]
 end
+
 function total_blocks(data::Data)
-    _raw(data)["PSRStudy"][1]["NumberBlocks"]
+    return _raw(data)["PSRStudy"][1]["NumberBlocks"]
 end
+
 function total_stages_per_year(data::Data)
     if data.stage_type == STAGE_MONTH
         return 12
     elseif data.stage_type == STAGE_WEEK
         return 52
     else
-        error("Stage type $(data.stage_type) not currently supported")
+        error("Stage type '$(data.stage_type)' is not currently supported")
     end
 end
 
 # TODO CEsp: many time does nto have the second dim
 
-function get_nonempty_vector(
-    data::Data,
-    col::String,
-    name::String,
-)
+function get_nonempty_vector(data::Data, collection::String, attribute::String)
+    n = max_elements(data, collection)
 
-    n = max_elements(data, col)
     if n == 0
         return Bool[]
     end
 
     out = zeros(Bool, n)
 
-    attr_data = get_attribute_struct(data, col, name)
+    attr_data = get_attribute_struct(data, collection, attribute)
 
-    _check_vector(attr_data, col, name)
+    _check_vector(attr_data, collection, attribute)
 
     dim = attr_data.dim
+    key = _get_attribute_key(attribute, dim)
 
-    query_name = if dim == 0
-        name
-    elseif dim == 1
-        name * "(1)"
-    elseif dim == 2
-        name * "(1,1)"
-    end
-
-    raw = _raw(data)
-
-    for (idx, el) in enumerate(raw[col])
-        if haskey(el, query_name)
-            len = length(el[query_name])
-            if (len == 1 && el[query_name][] !== nothing) || len > 1
+    for (idx, el) in enumerate(_get_collection(data, collection))
+        if haskey(el, key)
+            len = length(el[key])
+            if (len == 1 && el[key][] !== nothing) || len > 1
                 out[idx] = true
             end
         end
@@ -577,174 +570,184 @@ end
 
 function get_vector(
     data::Data,
-    col::String,
-    name::String,
+    collection::String,
+    attribute::String,
     index::Integer,
     ::Type{T};
-    dim1::Integer = 0,
-    dim2::Integer = 0,
+    dim1::Union{Integer,Nothing} = nothing,
+    dim2::Union{Integer,Nothing} = nothing,
     default::T = _default_value(T),
-) where T
+) where {T}
+    attribute_struct = get_attribute_struct(data, collection, attribute)
 
-    attr_struct = get_attribute_struct(data, col, name)
+    _check_dim(attribute_struct, collection, attribute, dim1, dim2)
+    _check_vector(attribute_struct, collection, attribute)
+    _check_type(attribute_struct, T, collection, attribute)
+    _check_element_range(data, collection, index)
 
-    _check_dim(attr_struct, col, name, dim1, dim2)
-    _check_vector(attr_struct, col, name)
-    _check_type(attr_struct, T, col, name)
-    _check_element_range(data, col, index)
+    dim = get_attribute_dim(attribute_struct)
+    key = _get_attribute_key(attribute, dim, 1 => dim1, 2 => dim2)
 
-    dim = attr_struct.dim
+    element = _get_element(data, collection, index)
 
-    query_name = if dim == 0
-        name
-    elseif dim == 1
-        name * "($dim1)"
-    elseif dim == 2
-        name * "($dim1,$dim2)"
+    if haskey(element, key)
+        return _cast_vector(T, element[key], default)
+    else
+        return T[]
     end
-
-    raw = _raw(data)
-
-    element = raw[col][index]
-
-    if haskey(element, query_name)
-        return _cast_vector(T, element[query_name], default)
-    end
-    return T[]
 end
 
 function get_vector_1d(
     data::Data,
-    col::String,
-    name::String,
+    collection::String,
+    attribute::String,
     index::Integer,
     ::Type{T};
     default::T = _default_value(T),
-) where T
+) where {T}
+    attribute_struct = get_attribute_struct(data, collection, attribute)
 
-    attr_struct = get_attribute_struct(data, col, name)
+    dim = get_attribute_dim(attribute_struct)
 
-    @assert attr_struct.dim == 1
-
-    _check_vector(attr_struct, col, name)
-    _check_type(attr_struct, T, col, name)
-    _check_element_range(data, col, index)
-
-    n_dim1 = get_attribute_dim1(data, col, name, index)
-
-    raw = _raw(data)
-
-    element = raw[col][index]
-
-    out = Vector{Vector{T}}(undef, n_dim1)
-
-    for i in 1:n_dim1
-        query_name = name * "($i)"
-        if haskey(element, query_name)
-            out[i] = _cast_vector(T, element[query_name], default)
+    if dim != 1
+        if dim == 0
+            error("""
+                  Attribute '$attribute' from collection '$colllection' has no dimensions.
+                  Consider using `get_parm` instead.
+                  """)
         else
-            out[i] = T[]
+            error(
+                """
+                Attribute '$attribute' from collection '$colllection' has $(dim) dimensions.
+                Consider using `get_parm_$(dim)d` instead.
+                """,
+            )
         end
     end
+
+    _check_vector(attribute_struct, collection, attribute)
+    _check_type(attribute_struct, T, collection, attribute)
+    _check_element_range(data, collection, index)
+
+    dim1 = get_attribute_dim1(data, collection, attribute, index)
+
+    element = _get_element(data, collection, index)
+
+    out = Vector{Vector{T}}(undef, dim1)
+
+    for i in 1:dim1
+        key = _get_attribute_key(attribute, dim, 1 => i)
+
+        out[i] = if haskey(element, key)
+            _cast_vector(T, element[key], default)
+        else
+            T[]
+        end
+    end
+
     return out
 end
 
 function get_vector_2d(
     data::Data,
-    col::String,
-    name::String,
+    collection::String,
+    attribute::String,
     index::Integer,
     ::Type{T};
     default::T = _default_value(T),
-) where T
+) where {T}
+    attribute_struct = get_attribute_struct(data, collection, attribute)
 
-    attr_struct = get_attribute_struct(data, col, name)
+    dim = get_attribute_dim(attribute_struct)
 
-    @assert attr_struct.dim == 2
-
-    _check_vector(attr_struct, col, name)
-    _check_type(attr_struct, T, col, name)
-    _check_element_range(data, col, index)
-
-    n_dim2 = get_attribute_dim2(data, col, name, index)
-    n_dim1 = get_attribute_dim1(data, col, name, index)
-
-    raw = _raw(data)
-
-    element = raw[col][index]
-
-    out = Matrix{Vector{T}}(undef, n_dim1, n_dim2)
-
-    for i in 1:n_dim1, j in 1:n_dim2
-        query_name = name * "($i,$j)"
-        if haskey(element, query_name)
-            out[i, j] = _cast_vector(T, element[query_name], default)
+    if dim != 2
+        if dim == 0
+            error("""
+                  Attribute '$attribute' from collection '$colllection' has no dimensions.
+                  Consider using `get_parm` instead.
+                  """)
         else
-            out[i, j] = T[]
+            error(
+                """
+                Attribute '$attribute' from collection '$collection' has $(dim) dimensions.
+                Consider using `get_parm_$(dim)d` instead.
+                """,
+            )
         end
     end
+
+    _check_vector(attribute_struct, collection, attribute)
+    _check_type(attribute_struct, T, collection, attribute)
+    _check_element_range(data, collection, index)
+
+    dim1 = get_attribute_dim1(data, collection, attribute, index)
+    dim2 = get_attribute_dim2(data, collection, attribute, index)
+
+    element = _get_element(data, collection, index)
+
+    out = Matrix{Vector{T}}(undef, dim1, dim2)
+
+    for i in 1:dim1, j in 1:dim2
+        key = _get_attribute_key(attribute, dim, 1 => i, 2 => j)
+
+        out[i, j] = if haskey(element, key)
+            _cast_vector(T, element[key], default)
+        else
+            T[]
+        end
+    end
+
     return out
 end
 
-const _GET_DICT = Dict{String, Any}()
-configuration_parameter(data::Data, name::String, default::Integer) =
-    configuration_parameter(data, name, Int32(default))
-function configuration_parameter(
-    data::Data,
-    name::String,
-    default::T
-) where T <: MainTypes
-    if haskey(data.extra_config, name)
-        val = dict[name]
-        return _cast(T, val)
-    end
-    raw = _raw(data)
-    study_data = raw["PSRStudy"][1]
-    exec = get(study_data, "ExecutionParameters", _GET_DICT)
-    chro = get(study_data, "ChronologicalData", _GET_DICT)
-    hour = get(study_data, "HourlyData", _GET_DICT)
-    if haskey(exec, name)
-        pre_out = exec[name]
-        return _cast(T, pre_out)
-    elseif haskey(chro, name)
-        pre_out = chro[name]
-        return _cast(T, pre_out)
-    elseif haskey(hour, name)
-        pre_out = hour[name]
-        return _cast(T, pre_out)
-    end
-    pre_out = get(study_data, name, default)
-    out = _cast(T, pre_out)
-    return out
+const _GET_DICT = Dict{String,Any}()
+
+function configuration_parameter(data::Data, parameter::String, default::Integer)
+    return configuration_parameter(data, parameter, Int32(default))
 end
 
 function configuration_parameter(
     data::Data,
-    name::String,
-    default::Vector{T}
-) where T <: MainTypes
-    if haskey(data.extra_config, name)
-        val = dict[name]
-        return _cast.(T, val)
+    parameter::String,
+    default::T,
+) where {T<:MainTypes}
+    if haskey(data.extra_config, parameter)
+        return _cast(T, data.extra_config[parameter])
     end
-    raw = _raw(data)
-    study_data = raw["PSRStudy"][1]
-    exec = get(study_data, "ExecutionParameters", _GET_DICT)
-    chro = get(study_data, "ChronologicalData", _GET_DICT)
-    hour = get(study_data, "HourlyData", _GET_DICT)
-    if haskey(exec, name)
-        pre_out = exec[name]
-        return _cast.(T, pre_out)
-    elseif haskey(chro, name)
-        pre_out = chro[name]
-        return _cast.(T, pre_out)
-    elseif haskey(hour, name)
-        pre_out = hour[name]
-        return _cast.(T, pre_out)
+
+    raw_data = _raw(data)
+    study_data = raw_data["PSRStudy"][begin]
+
+    for key in ["ExecutionParameters", "ChronologicalData", "HourlyData"]
+        data = get(study_data, key, _GET_DICT)
+        if haskey(data, parameter)
+            return _cast(T, data[parameter])
+        end
     end
-    pre_out = get(study_data, name, default)
-    out = _cast.(T, pre_out)
-    return out
+
+    return _cast(T, get(study_data, parameter, default))
+end
+
+function configuration_parameter(
+    data::Data,
+    parameter::String,
+    default::Vector{T},
+) where {T<:MainTypes}
+    if haskey(data.extra_config, parameter)
+        return _cast.(T, data.extra_config[parameter])
+    end
+
+    raw_data = _raw(data)
+    study_data = raw_data["PSRStudy"][begin]
+
+    for key in ["ExecutionParameters", "ChronologicalData", "HourlyData"]
+        data = get(study_data, key, _GET_DICT)
+        if haskey(data, parameter)
+            return _cast.(T, data[parameter])
+        end
+    end
+
+    return _cast.(T, get(study_data, parameter, default))
 end
 
 """
@@ -752,29 +755,51 @@ end
 
 Converts `val` to type `T`, if possible.
 """
-_cast(::Type{T}, val::T, default::T = _default_value(T)) where T = val
+_cast(::Type{T}, val::T, default::T = _default_value(T)) where {T} = val
 _cast(::Type{String}, val::String, default::String = _default_value(String)) = val
 _cast(::Type{Int32}, val::Integer, default::Int32 = _default_value(Int32)) = Int32(val)
 _cast(::Type{Float64}, val::Float64, default::Float64 = _default_value(Float64)) = val
-_cast(::Type{Dates.Date}, val::Dates.Date, default::Dates.Date = _default_value(Dates.Date)) = val
-function _cast(::Type{T}, val::String, default::T = _default_value(T)) where T
+_cast(::Type{T}, val::Nothing, default::T = _default_value(T)) where {T} = default
+
+function _cast(
+    ::Type{Dates.Date},
+    val::Dates.Date,
+    default::Dates.Date = _default_value(Dates.Date),
+)
+    return val
+end
+
+function _cast(::Type{T}, val::String, default::T = _default_value(T)) where {T}
     return parse(T, val)
 end
-_cast(::Type{Int32}, val::Integer, default::Int32 = _default_value(Int32)) = Int32(val)
-_cast(::Type{Dates.Date}, val::String, default::Dates.Date = _default_value(Dates.Date)) = _simple_date(val)
 
-_cast(::Type{T}, val::Nothing, default::T = _default_value(T)) where T = default
+function _cast(
+    ::Type{Dates.Date},
+    val::String,
+    default::Dates.Date = _default_value(Dates.Date),
+)
+    return _simple_date(val)
+end
 
 """
     _cast_vector(::Type{T}, vector, default::T = _default_value(T))
 
 Converts `vector` to vector of type `T`, if possible.
 """
-function _cast_vector(::Type{T}, vec::Vector{Any}, default::T = _default_value(T)) where T
-    out = T[]
-    for val in vec
-        push!(out, _cast(T, val, default))
+function _cast_vector(
+    ::Type{T},
+    vector::Vector{<:Any},
+    default::T = _default_value(T),
+) where {T}
+    out = Vector{T}(undef, length(vector))
+
+    for i in eachindex(vector)
+        out[i] = _cast(T, vector[i], default)
     end
+
     return out
 end
-_cast_vector(::Type{T}, vec::Vector{T}, default::T = _default_value(T)) where T = deepcopy(vec)
+
+function _cast_vector(::Type{T}, vector::Vector{T}, default::T = _default_value(T)) where {T}
+    return deepcopy(vector)
+end

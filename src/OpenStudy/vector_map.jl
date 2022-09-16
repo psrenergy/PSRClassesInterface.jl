@@ -1,53 +1,48 @@
 # see main definition
 function mapped_vector(
     data::Data,
-    col::String,
-    name::String,
+    collection::String,
+    attribute::String,
     ::Type{T},
-    dim1::String="",
-    dim2::String="";
-    ignore::Bool=false,
-    map_key = col, # reference for PSRMap pointer, if empty use class name
+    dim1::Union{String,Nothing} = nothing,
+    dim2::Union{String,Nothing} = nothing;
+    ignore::Bool = false,
+    map_key = collection, # reference for PSRMap pointer, if empty use class name
     filters = String[], # for calling just within a subset instead of the full call
-) where T #<: Union{Float64, Int32}
-
+) where {T} #<: Union{Float64, Int32}
     raw = _raw(data)
 
-    n = max_elements(data, col)
+    n = max_elements(data, collection)
+    
     if n == 0
         return T[]
     end
 
-    attr_struct = get_attribute_struct(data, col, name)
+    attribute_struct = get_attribute_struct(data, collection, attribute)
 
-    _check_type(attr_struct, T, col, name)
-    _check_vector(attr_struct, col, name)
-
-    # validate dimensions
-    dim = _check_dim(attr_struct, col, name, dim1, dim2)
+    _check_type(attribute_struct, T, collection, attribute)
+    _check_vector(attribute_struct, collection, attribute)
+    _check_dim(attribute_struct, collection, attribute, dim1, dim2)
+    
+    dim = get_attribute_dim(attribute_struct)
 
     dim1_val = _add_get_dim_val(data, dim1)
     dim2_val = _add_get_dim_val(data, dim2)
 
-    total_dim = dim1_val + dim2_val
-    if total_dim != dim
-        error("Dimension mismatch, data structure should have $(total_dim) but has $dim in the data file")
-    end
-
-    index = attr_struct.index
+    index = attribute_struct.index
     stage = data.controller_stage
 
     cache = _get_cache(data, T)
 
-    col_cache = get!(cache, col, Dict{String, VectorCache{T}}())
+    collection_cache = get!(cache, collection, Dict{String,VectorCache{T}}())
 
-    if haskey(col_cache, name)
-        error("Attribute $name was already mapped.")
+    if haskey(collection_cache, attribute)
+        error("Attribute $attribute was already mapped.")
     end
 
     out = T[_default_value(T) for _ in 1:n] #zeros(T, n)
 
-    date_cache = get!(data.map_cache_data_idx, col, Dict{String, Vector{Int32}}())
+    date_cache = get!(data.map_cache_data_idx, collection, Dict{String,Vector{Int32}}())
 
     need_up_dates = false
     if isempty(index)
@@ -63,18 +58,17 @@ function mapped_vector(
         vec
     end
 
-    vec_cache = VectorCache(
-        dim1, dim2, dim1_val, dim2_val, index, stage, out)#, date_ref)
-    col_cache[name] = vec_cache
+    vector_cache = VectorCache(dim1, dim2, dim1_val, dim2_val, index, stage, out)#, date_ref)
+    collection_cache[attribute] = vector_cache
 
     if need_up_dates
-        _update_dates!(data, raw[col], date_ref, index)
+        _update_dates!(data, raw[collection], date_ref, index)
     end
-    _update_vector!(data, raw[col], date_ref, vec_cache, name)
+    _update_vector!(data, raw[collection], date_ref, vector_cache, attribute)
 
-    _add_filter(data, map_key, col, name, T)
+    _add_filter(data, map_key, collection, attribute, T)
     for f in filters
-        _add_filter(data, f, col, name, T)
+        _add_filter(data, f, collection, attribute, T)
     end
 
     return out
@@ -97,8 +91,8 @@ function _update_vector!(
     collection,
     date_ref::Vector{Int32},
     cache::VectorCache{T},
-    attr::String
-) where T
+    attr::String,
+) where {T}
     if !isempty(cache.dim1_str)
         cache.dim1 = data.controller_dim[cache.dim1_str]
         if !isempty(cache.dim2_str)
@@ -118,26 +112,29 @@ end
 function _get_cache(data, ::Type{Float64})
     return data.map_cache_real
 end
+
 function _get_cache(data, ::Type{Int32})
     return data.map_cache_integer
 end
+
 function _get_cache(data, ::Type{Dates.Date})
     return data.map_cache_date
 end
 
 """
 """
-function _add_get_dim_val(data, dim1)
-    dim1_val = 0
-    if !isempty(dim1)
-        if !haskey(data.controller_dim, dim1)
-            data.controller_dim[dim1] = 1
-            dim1_val = 1
+function _add_get_dim_val(data, axis)
+    if !isnothing(axis) && !isempty(axis)
+        if !haskey(data.controller_dim, axis)
+            data.controller_dim[axis] = 1
+
+            return 1
         else
-            dim1_val = data.controller_dim[dim1]
+            return data.controller_dim[axis]
         end
+    else
+        return 0
     end
-    return dim1_val
 end
 
 # see main definition
@@ -162,7 +159,6 @@ end
 
 # see main definition
 function update_vectors!(data::Data)
-
     _update_all_dates!(data)
 
     _update_all_vectors!(data, data.map_cache_real)
@@ -254,7 +250,7 @@ end
 
 """
 """
-function _build_name(name, cache) where T<:Integer
+function _build_name(name, cache) where {T<:Integer}
     if !isempty(cache.dim1_str)
         if !isempty(cache.dim2_str)
             return string(name, '(', cache.dim1, ',', cache.dim2, ')')
