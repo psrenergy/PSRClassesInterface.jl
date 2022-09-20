@@ -22,22 +22,12 @@ function mapped_vector(
 
     _check_type(attribute_struct, T, collection, attribute)
     _check_vector(attribute_struct, collection, attribute)
-
-    # validate dimensions
     _check_dim(attribute_struct, collection, attribute, dim1, dim2)
     
     dim = get_attribute_dim(attribute_struct)
 
     dim1_val = _add_get_dim_val(data, dim1)
     dim2_val = _add_get_dim_val(data, dim2)
-
-    total_dim = dim1_val + dim2_val
-
-    if total_dim != dim
-        error(
-            "Dimension mismatch, data structure should have $(total_dim) but has $dim in the data file",
-        )
-    end
 
     index = attribute_struct.index
     stage = data.controller_stage

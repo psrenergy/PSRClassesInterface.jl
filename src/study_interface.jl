@@ -317,7 +317,7 @@ PSRI.get_map(data, "PSRMaintenanceData", "PSRHydroPlant")
 PSRI.get_reverse_map(data, "PSRGenerator", "PSRThermalPlant")
 # which is the reverse of
 PSRI.get_map(data, "PSRGenerator", "PSRThermalPlant")
-``` 
+```
 """
 function get_reverse_map end
 
@@ -602,7 +602,7 @@ end
         filters = String[], # for calling just within a subset instead of the full call
     ) where T
 
-Maps a `Vector{T}` containing the elements in `collection` to a vector in julia. When the function [`update_vectors!`](@ref) 
+Maps a `Vector{T}` containing the elements in `collection` to a vector in julia. When the function [`update_vectors!`](@ref)
 is called the elements of the vector will be updated to the according elements registered at the current `data.time_controller`.
 
 Example:
@@ -614,9 +614,9 @@ pot_inst = PSRI.mapped_vector(data, "PSRThermalPlant", "PotInst", Float64)
 For more information please read the example [Reading basic thermal generator parameters](@ref)
 
 !!! note "Differences between the OpenInterface and ClassicInterface"
-    When using `mapped_vector` in the `OpenInterface` mode the vector will be mapped 
-    with the correct values at first hand. When using `mapped_vector` in the 
-    `ClassicInterface` mode you should call [`update_vectors!`](@ref) to get the 
+    When using `mapped_vector` in the `OpenInterface` mode the vector will be mapped
+    with the correct values at first hand. When using `mapped_vector` in the
+    `ClassicInterface` mode you should call [`update_vectors!`](@ref) to get the
     good values for the collection, otherwise you might only get a vector of zeros.
 """
 function mapped_vector end
@@ -624,7 +624,7 @@ function mapped_vector end
 """
     go_to_stage(data::AbstractData, stage::Integer)
 
-Goes to the `stage` in the `data` time controller. 
+Goes to the `stage` in the `data` time controller.
 """
 function go_to_stage end
 
@@ -891,7 +891,7 @@ function set_vector! end
     function get_series(
         data::Data,
         collection::String,
-        index_attr::String,
+        indexing_attribute::String,
         index::Int,
     )
 
@@ -899,13 +899,13 @@ Retrieves the series i.e. `Dict{String, Vector}` indexed by `index_attr`.
 
 Example
 ```
-julia> PSRI.get_series(data, "PSRThermalPlant", 1, "Data")
+julia> PSRI.get_series(data, "PSRThermalPlant", "Data", 1)
 Dict{String, Vector} with 13 entries:
-  "GerMin"   => [0.0]    
-  "GerMax"   => [888.0]  
+  "GerMin"   => [0.0]
+  "GerMax"   => [888.0]
   "NGas"     => [nothing]
-  "IH"       => [0.0]    
-  "ICP"      => [0.0]    
+  "IH"       => [0.0]
+  "ICP"      => [0.0]
   "Data"     => ["1900-01-01"]
   "CoefE"    => [1.0]
   "PotInst"  => [888.0]
@@ -932,13 +932,13 @@ All columns must be the same as before.
 The series length is allowed to be changed, but all vectors in the new series must have equal length.
 
 ```
-julia> series = Dict{String, Vector}(     
-         "GerMin" => [0.0, 1.0],        
-         "GerMax" => [888.0, 777.0],    
-         "NGas" => [nothing, nothing],  
+julia> series = Dict{String, Vector}(
+         "GerMin" => [0.0, 1.0],
+         "GerMax" => [888.0, 777.0],
+         "NGas" => [nothing, nothing],
          "IH" => [0.0, 0.0],
          "CoefE" => [1.0, 2.0],
-         "PotInst" => [888.0, 777.0],   
+         "PotInst" => [888.0, 777.0],
          "ICP" => [0.0, 0.0],
          "Data" => ["1900-01-01", "1900-01-02"],
          "Existing" => [0, 0],
@@ -1054,7 +1054,44 @@ function get_attributes(data::AbstractData, collection::String)
 end
 
 function get_attributes(data::DataStruct, collection::String)
-    return sort(collect(keys(data[collection])))
+    return sort!(collect(keys(data[collection])))
+end
+
+
+"""
+    get_attributes_indexed_by(
+        data::AbstractData,
+        collection::String,
+        indexing_attribute::String
+    )
+
+Return `Vector{String}` of valid vector attributes from `collection` that are
+indexed by `indexing_attribute`.
+"""
+function get_attributes_indexed_by(
+    data::AbstractData,
+    collection::String,
+    indexing_attribute::String
+)
+
+    data_struct = get_data_struct(data)
+    if !haskey(data_struct, collection)
+        error("PSR Class '$collection' is not available for this database.")
+    end
+
+    class_struct = data_struct[collection]
+
+    attributes = String[]
+
+    for (attribute, attribute_data) in class_struct
+        if attribute_data.index == indexing_attribute
+            push!(attributes, attribute)
+        end
+    end
+
+    sort!(attributes)
+
+    return attributes
 end
 
 """
@@ -1124,12 +1161,14 @@ function get_attribute_dim end
         relation_type = RELATION_1_TO_1,
     )
 
-Returns the index of the `target` instance related to the `source` element indexed by `source_index` according to `relation_type`.
+Returns the index of the element in collection `target` related to the element
+in the collection `source` element indexed by `source_index` according to the
+scalar relation `relation_type`.
 """
 function get_related end
 
 """
-    set_relation!(
+    set_related!(
         data::AbstractData,
         source::String,
         target::String,
@@ -1137,6 +1176,10 @@ function get_related end
         target_index::Integer;
         relation_type = RELATION_1_TO_1,
     )
+
+Sets the element `source_index` from collection `source` to be related to
+the element `target_index` from collection `target` in the scalar relation
+of type `relation_type`.
 """
 function set_related! end
 
@@ -1148,6 +1191,10 @@ function set_related! end
         source_index::Integer,
         relation_type = RELATION_1_TO_N,
     )
+
+Returns the vector of indices of the elements in collection `target` related to
+the element in the collection `source` element indexed by `source_index`
+according to the scalar relation `relation_type`.
 """
 function get_vector_related end
 
@@ -1157,8 +1204,12 @@ function get_vector_related end
         source::String,
         target::String,
         source_index::Integer,
-        target_index::Integer;
+        target_index::Vector{<:Integer};
         relation_type = RELATION_1_TO_N,
     )
+
+Sets the element `source_index` from collection `source` to be related to
+the elements in `target_index` from collection `target` in the vector relation
+of type `relation_type`.
 """
 function set_vector_related! end
