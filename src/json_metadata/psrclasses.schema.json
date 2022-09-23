@@ -1,30 +1,364 @@
 {
-    "$schema": "http://json-schema.org/draft-04/schema#",
-    "title": "PSRClasses JSON Schema",
-    "type": "object",
-    "required": [
-        "PSRStudy"
-    ],
-    "properties": {
-        "PSRStudy": {
-            "type": "object",
-            "required" : [
-                "reference_id"
-            ]
-        },
-        "PSRDemand": {},
-        "PSRDemandSegment": {},
-        "PSRElectrificationNetwork": {},
-        "PSRFuel": {},
-        "PSRGasNetwork": {},
-        "PSRGaugingStation": {},
-        "PSRHydroPlant": {},
-        "PSRHydrologicalNetwork": {},
-        "PSRHydrologicalPlantNetwork": {},
-        "PSRInterconnectionNetwork": {},
-        "PSRNetwork": {},
-        "PSRNetworkDC": {},
-        "PSRSystem": {},
-        "PSRThermalPlant": {}
+    "PSRStudy": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "PSRStudy JSON Schema",
+        "type": "object",
+        "required": [
+            "Idioma",
+            "Objetivo",
+            "Opcao",
+            "Tipo_Etapa",
+            "Vazoes",
+            "Manutencao",
+            "Configuracao",
+            "Rede",
+            "Perdas",
+            "Horizonte",
+            "Series_Simular",
+            "Etapa_inicial",
+            "Ano_inicial",
+            "NumeroEtapas",
+            "Mes_Inicial_Hidro",
+            "Ano_Inicial_Hidro",
+            "NumeroSistemas",
+            "Series_Forward",
+            "Series_Backward",
+            "NumeroBlocosDemanda",
+            "NumeroBlocosDemandaParm2",
+            "NumeroAnosAdicionais",
+            "NumeroAnosAdicionaisParm2",
+            "NumeroAnosAdicionaisParm3",
+            "MaximoIteracoes",
+            "CriterioConvergencia",
+            "NivelInformes",
+            "TaxaDesconto",
+            "MinOutflowPenalty",
+            "SpillagePenalty",
+            "VersaoInfoCargaBarra",
+            "VersionRenewableBlockProfile",
+            "NumberSimulations",
+            "NumberOpenings",
+            "NumberBlocks",
+            "CurrencyReference",
+            "FlagCreateFutureCost",
+            "FutureCostStage",
+            "FutureCostYear",
+            "FutureCostEntryFileName",
+            "FlagReadFutureCost",
+            "FutureCostReadFileName",
+            "FlagUseHotStart",
+            "InitialStageFutureCost",
+            "FinalStageFutureCost",
+            "Duracao(1)",
+            "Duracao(2)",
+            "Duracao(3)",
+            "Duracao(4)",
+            "MinSpillageUnit",
+            "SubHourlyDiscretization",
+            "DeficitSegment",
+            "DeficitCost",
+            "CodigoSistemas",
+            "IndexSeriesSimulacao",
+            "DataHourBlock",
+            "HourBlockMap",
+            "Currency",
+            "CurrencyFactor",
+            "DateChroDeficitCost",
+            "ChroDeficitCost(1)",
+            "SubHourlyStage",
+            "SubHourlyScenario",
+            "SubHourlyDays"
+        ],
+        "properties": {
+            "Idioma": {
+                "type": "integer"
+            },
+            "Objetivo": {
+                "type": "integer"
+            },
+            "Opcao": {
+                "type": "integer"
+            },
+            "Tipo_Etapa": {
+                "type": "integer"
+            },
+            "Vazoes": {
+                "type": "integer"
+            },
+            "Manutencao": {
+                "type": "integer"
+            },
+            "Configuracao": {
+                "type": "integer"
+            },
+            "Rede": {
+                "type": "integer"
+            },
+            "Perdas": {
+                "type": "integer"
+            },
+            "Horizonte": {
+                "type": "integer"
+            },
+            "Series_Simular": {
+                "type": "integer"
+            },
+            "Etapa_inicial": {
+                "type": "integer"
+            },
+            "Ano_inicial": {
+                "type": "integer"
+            },
+            "NumeroEtapas": {
+                "type": "integer"
+            },
+            "Mes_Inicial_Hidro": {
+                "type": "integer"
+            },
+            "Ano_Inicial_Hidro": {
+                "type": "integer"
+            },
+            "NumeroSistemas": {
+                "type": "integer"
+            },
+            "Series_Forward": {
+                "type": "integer"
+            },
+            "Series_Backward": {
+                "type": "integer"
+            },
+            "NumeroBlocosDemanda": {
+                "type": "integer"
+            },
+            "NumeroBlocosDemandaParm2": {
+                "type": "integer"
+            },
+            "NumeroAnosAdicionais": {
+                "type": "integer"
+            },
+            "NumeroAnosAdicionaisParm2": {
+                "type": "integer"
+            },
+            "NumeroAnosAdicionaisParm3": {
+                "type": "integer"
+            },
+            "MaximoIteracoes": {
+                "type": "integer"
+            },
+            "CriterioConvergencia": {
+                "type": "number"
+            },
+            "NivelInformes": {
+                "type": "integer"
+            },
+            "TaxaDesconto": {
+                "type": "number"
+            },
+            "MinOutflowPenalty": {
+                "type": "number"
+            },
+            "SpillagePenalty": {
+                "type": "number"
+            },
+            "VersaoInfoCargaBarra": {},
+            "VersionRenewableBlockProfile": {},
+            "NumberSimulations": {
+                "type": "integer"
+            },
+            "NumberOpenings": {
+                "type": "integer"
+            },
+            "NumberBlocks": {
+                "type": "integer"
+            },
+            "CurrencyReference": {
+                "type": "integer"
+            },
+            "FlagCreateFutureCost": {
+                "type": "integer"
+            },
+            "FutureCostStage": {
+                "type": "integer"
+            },
+            "FutureCostYear": {
+                "type": "integer"
+            },
+            "FutureCostEntryFileName": {
+                "type": "string"
+            },
+            "FlagReadFutureCost": {
+                "type": "integer"
+            },
+            "FutureCostReadFileName": {
+                "type": "string"
+            },
+            "FlagUseHotStart": {
+                "type": "integer"
+            },
+            "InitialStageFutureCost": {
+                "type": "integer"
+            },
+            "FinalStageFutureCost": {
+                "type": "integer"
+            },
+            "Duracao(1)": 100.0,
+            "MinSpillageUnit": {},
+            "SubHourlyDiscretization": {},
+            "DeficitSegment": {
+                "type": "array",
+                "items": {
+                    "type": "number"
+                }
+            },
+            "DeficitCost": {
+                "type": "array",
+                "items": {
+                    "type": "number"
+                }
+            },
+            "CodigoSistemas": {
+                "type": "array",
+                "items": {
+                    "type": "integer"
+                }
+            },
+            "IndexSeriesSimulacao": {
+                "type": "array"
+            },
+            "DataHourBlock": {
+                "type": "array"
+            },
+            "HourBlockMap": {
+                "type": "array"
+            },
+            "Currency": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "CurrencyFactor": {
+                "type": "array",
+                "items": {
+                    "type": "number"
+                }
+            },
+            "DateChroDeficitCost": {
+                "type": "array",
+                "items": {
+                    "type": "string"
+                }
+            },
+            "ChroDeficitCost(1)": [
+                500.0
+            ],
+            "SubHourlyStage": {
+                "type": "array"
+            },
+            "SubHourlyScenario": {
+                "type": "array"
+            },
+            "SubHourlyDays": {
+                "type": "array"
+            }
+        }
+    },
+    "PSRDemand": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "PSRDemand JSON Schema",
+        "type": "object",
+        "required": [],
+        "properties": {}
+    },
+    "PSRDemandSegment": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "PSRDemandSegment JSON Schema",
+        "type": "object",
+        "required": [],
+        "properties": {}
+    },
+    "PSRElectrificationNetwork": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "PSRElectrificationNetwork JSON Schema",
+        "type": "object",
+        "required": [],
+        "properties": {}
+    },
+    "PSRFuel": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "PSRFuel JSON Schema",
+        "type": "object",
+        "required": [],
+        "properties": {}
+    },
+    "PSRGasNetwork": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "PSRGasNetwork JSON Schema",
+        "type": "object",
+        "required": [],
+        "properties": {}
+    },
+    "PSRGaugingStation": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "PSRGaugingStation JSON Schema",
+        "type": "object",
+        "required": [],
+        "properties": {}
+    },
+    "PSRHydroPlant": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "PSRHydroPlant JSON Schema",
+        "type": "object",
+        "required": [],
+        "properties": {}
+    },
+    "PSRHydrologicalNetwork": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "PSRHydrologicalNetwork JSON Schema",
+        "type": "object",
+        "required": [],
+        "properties": {}
+    },
+    "PSRHydrologicalPlantNetwork": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "PSRHydrologicalPlantNetwork JSON Schema",
+        "type": "object",
+        "required": [],
+        "properties": {}
+    },
+    "PSRInterconnectionNetwork": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "PSRInterconnectionNetwork JSON Schema",
+        "type": "object",
+        "required": [],
+        "properties": {}
+    },
+    "PSRNetwork": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "PSRNetwork JSON Schema",
+        "type": "object",
+        "required": [],
+        "properties": {}
+    },
+    "PSRNetworkDC": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "PSRNetworkDC JSON Schema",
+        "type": "object",
+        "required": [],
+        "properties": {}
+    },
+    "PSRSystem": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "PSRSystem JSON Schema",
+        "type": "object",
+        "required": [],
+        "properties": {}
+    },
+    "PSRThermalPlant": {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "PSRThermalPlant JSON Schema",
+        "type": "object",
+        "required": [],
+        "properties": {}
     }
 }
