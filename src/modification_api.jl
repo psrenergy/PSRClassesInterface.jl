@@ -269,24 +269,7 @@ function set_vector_related!(
 end
 
 function Base.show(io::IO, data::Data)
-    collections = get_collections(data)
-
-    if isempty(collections)
-        return print(
-            io,
-            """
-            PSRClasses Interface Data with no collections
-            """,
-        )
-    else
-        return print(
-            io,
-            """
-            PSRClasses Interface Data with $(length(collections)) collections:
-                $(join(collections, "\n    "))
-            """,
-        )
-    end
+    summary(io, data)
 end
 
 function create_study(
@@ -470,4 +453,71 @@ function create_element!(data::Data, collection::String, attributes::Dict{String
     index = _insert_element!(data, collection, element)
 
     return index
+end
+
+summary(io::IO, args...) = print(io, summary(args...))
+
+function summary(data::Data)
+    collections = get_collections(data)
+
+    if isempty(collections)
+        return """
+            PSRClasses Study with no collections
+            """
+    else
+        return """
+            PSRClasses Study with $(length(collections)) collections:
+                $(join(collections, "\n    "))
+            """
+    end
+end
+
+function is_vector_attribute(data::Data, collection::String, attribute::String)
+    return get_attribute_struct(data, collection, attribute).is_vector
+end
+
+function get_attribute_index(data::Data, collection::String, attribute::String)
+    index = get_attribute_struct(data, collection, attribute).index
+
+    if isnothing(index) || isempty(index)
+        return nothing
+    else
+        return index
+    end
+end
+
+function summary(data::Data, collection::String)
+    attributes = sort(get_attributes(data, collection))
+
+    if isempty(attributes)
+        return """
+            PSRClasses Collection '$collection' with no attributes
+            """
+    else
+        max_length = maximum(length.(attributes))
+        lines = String[]
+
+        for attribute in attributes
+            name = rpad(attribute, max_length)
+            type = get_attribute_type(data, collection, attribute)
+            line = if is_vector_attribute(data, collection, attribute)
+                index = get_attribute_index(data, collection, attribute)
+
+                if isnothing(index)
+                    "$name ::Vector{$type}"
+                else
+                    "$(name) ::Vector{$type} ← '$index'"
+                end
+            else
+                "$name ::$type"
+            end
+
+            push!(lines, line)
+        end
+
+        return """
+            PSRClasses Collection '$collection' with $(length(attributes)) attributes:
+                $(join(lines, "\n    "))
+            """
+    end
 end

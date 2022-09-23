@@ -1220,3 +1220,21 @@ function set_vector_related! end
 Returns the `Data` object of a new study.
 """
 function create_study end
+
+"""
+    summary(data::Data)
+    summary(io::IO, data::Data)
+
+Shows information about all collections in a study.
+
+    summary(data::Data, collection::String)
+    summary(io::IO, data::Data, collection::String)
+
+Shows information about all attributes of a collection.
+    
+    summary(data::Data, collection::String, attribute::String)
+    summary(io::IO, data::Data, collection::String, attribute::String)
+
+Shows information about an attribute of a collection.
+"""
+function summary end
