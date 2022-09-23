@@ -390,6 +390,24 @@ function _validate_attribute(
     return nothing
 end
 
+function _list_attributes_and_types(data::Data, collection::String, attributes::Set{String})
+    items = String[]
+    
+    for attr in sort(collect(attributes))
+        attr_struct = get_attribute_struct(data, collection, attr)
+
+        type = if attr_struct.is_vector
+            "Vector{$(attr_struct.type)}"
+        else
+            "$(attr_struct.type)"
+        end
+        
+        push!(items, "$attr :: $type")
+    end
+
+    return join(items, "\n    ")
+end
+
 function _validate_element(data::Data, collection::String, element::Dict{String,Any})
     data_struct = get_data_struct(data)
 
@@ -403,7 +421,7 @@ function _validate_element(data::Data, collection::String, element::Dict{String,
     if !isempty(missing_keys)
         error("""
               Missing attributes for collection '$collection':
-                  $(join(missing_keys, "\n    "))
+                  $(_list_attributes_and_types(data, collection, missing_keys))
               """)
     end
 
