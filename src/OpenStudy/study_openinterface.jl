@@ -252,8 +252,11 @@ end
 
 function max_elements(data::Data, collection::String)
     raw = _raw(data)
+    
     if haskey(raw, collection)
         return length(raw[collection])
+    else
+        return 0
     end
 end
 

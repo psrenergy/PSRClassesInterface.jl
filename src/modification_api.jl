@@ -1,5 +1,7 @@
-const PSRCLASSES_DEFAULTS =
-    JSON.parsefile(joinpath(@__DIR__, "json_metadata", "psrclasses.defaults.json"))
+const PSRCLASSES_DEFAULT =
+    JSON.parsefile(joinpath(@__DIR__, "json_metadata", "psrclasses.default.json"))
+const PSRCLASSES_SCHEMAS =
+    JSON.parsefile(joinpath(@__DIR__, "json_metadata", "psrclasses.schema.json"))
 
 function _get_indexed_attributes(
     data::Data,
@@ -25,30 +27,20 @@ function _get_indexed_attributes(
     return attributes
 end
 
-function create_element!(data::Data, collection::String)
-    if !haskey(PSRCLASSES_DEFAULTS, collection)
-        error("Unknown PSR Class '$collection'")
-    end
-
-    element = deepcopy(PSRCLASSES_DEFAULTS[collection])
-
-    index = _insert_element!(data, collection, element)
-
-    return index
-end
-
 function _check_collection_in_study(data::Data, collection::String)
     raw_data = _raw(data)
+
     if !haskey(raw_data, collection)
         error("Collection '$collection' is not available for this study")
     end
+
     return nothing
 end
 
 function _insert_element!(data::Data, collection::String, element::Any)
-    raw_data = _raw(data)
+    _check_collection_in_study(data, collection)
 
-    _check_collection_in_study(raw_data, collection)
+    raw_data = _raw(data)
 
     objects = raw_data[collection]::Vector
 
@@ -219,9 +211,13 @@ function set_series!(
     return nothing
 end
 
-function write_data(data::Data, path::String)
+function write_data(data::Data, path::Union{AbstractString,Nothing} = nothing)
     # Retrieves JSON-like raw data
     raw_data = _raw(data)
+
+    if isnothing(path)
+        path = joinpath(data.data_path, "psrclasses.json")
+    end
 
     # Writes to file
     Base.open(path, "w") do io
@@ -257,7 +253,7 @@ function set_vector_related!(
     source_index::Integer,
     target_indices::Vector{T},
     relation_type::RelationType = RELATION_1_TO_N,
-) where {T <:Integer}
+) where {T<:Integer}
     check_relation_vector(relation_type)
     validate_relation(source, target, relation_type)
     source_element = _get_element(data, source, source_index)
@@ -266,10 +262,7 @@ function set_vector_related!(
     source_element[relation_field] = Int[]
     for target_index in target_indices
         target_element = _get_element(data, target, target_index)
-        push!(
-            source_element[relation_field],
-            target_element["reference_id"],
-        )
+        push!(source_element[relation_field], target_element["reference_id"])
     end
 
     return nothing
@@ -278,11 +271,185 @@ end
 function Base.show(io::IO, data::Data)
     collections = get_collections(data)
 
-    print(
-        io,
-        """
-        PSRClasses Interface Data with $(length(collections)) collections:
-            $(join(collections, "\n    "))
-        """
+    if isempty(collections)
+        return print(
+            io,
+            """
+            PSRClasses Interface Data with no collections
+            """,
+        )
+    else
+        return print(
+            io,
+            """
+            PSRClasses Interface Data with $(length(collections)) collections:
+                $(join(collections, "\n    "))
+            """,
+        )
+    end
+end
+
+function create_study(
+    ::OpenInterface;
+    data_path::AbstractString = pwd(),
+    pmd_files::Vector{String} = String[],
+    pmds_path::AbstractString = PMD._PMDS_BASE_PATH,
+    netplan::Bool = false,
+    kws...,
+)
+    if !isdir(data_path)
+        error("data_path = '$data_path' must be a directory")
+    end
+
+    json_path = joinpath(data_path, "psrclasses.json")
+
+    # Select mapping
+    model_class_map = if netplan
+        PMD._MODEL_TO_CLASS_NETPLAN
+    else
+        PMD._MODEL_TO_CLASS_SDDP
+    end
+
+    data_struct, model_files_added = PMD.load_model(pmds_path, pmd_files, model_class_map)
+
+    data = Data(
+        raw = Dict{String,Any}(),
+        data_path = data_path,
+        data_struct = data_struct,
+        validate_attributes = false,
+        model_files_added = model_files_added,
+        stage_type = STAGE_WEEK,
+        first_year = 2023,
+        first_stage = 1,
+        first_date = Dates.Date(2023, 1, 1),
+        controller_date = Dates.Date(2023, 1, 1),
+        duration_mode = FIXED_DURATION,
+        number_blocks = 1,
+        log_file = nothing,
+        verbose = true,
     )
+
+    write_data(data, json_path)
+
+    return data
+end
+
+function _validate_collection(data::Data, collection::String)
+    data_struct = get_data_struct(data)
+
+    if !haskey(data_struct, collection)
+        error("Collection '$collection' is not available for this study")
+    end
+
+    return nothing
+end
+
+function _validate_attribute(::Data, ::String, attribute::String, ::T) where {T<:Any}
+    return error("Invalid type '$T' assigned to attribute '$attribute'")
+end
+
+function _validate_attribute(
+    data::Data,
+    collection::String,
+    attribute::String,
+    value::Vector{T},
+) where {T<:MainTypes}
+    attribute_struct = get_attribute_struct(data, collection, attribute)
+
+    if !attribute_struct.is_vector
+        error("Vectorial value '$value' assigned to scalar attribute '$attribute'")
+    end
+
+    if !(T <: attribute_struct.type)
+        error(
+            "Invalid element type '$T' for attribute '$attribute' of type '$(attribute_struct.type)'",
+        )
+    end
+
+    return nothing
+end
+
+function _validate_attribute(
+    data::Data,
+    collection::String,
+    attribute::String,
+    value::T,
+) where {T<:MainTypes}
+    attribute_struct = get_attribute_struct(data, collection, attribute)
+
+    if attribute_struct.is_vector
+        error("Scalar value '$value' assigned to vector attribute '$attribute'")
+    end
+
+    if !(T <: attribute_struct.type)
+        error(
+            "Invalid type '$T' for attribute '$attribute' of type '$(attribute_struct.type)'",
+        )
+    end
+
+    return nothing
+end
+
+function _validate_element(data::Data, collection::String, element::Dict{String,Any})
+    data_struct = get_data_struct(data)
+
+    collection_struct = data_struct[collection]
+    collection_keys = Set{String}(keys(collection_struct))
+
+    element_keys = Set{String}(keys(element))
+    missing_keys = setdiff(collection_keys, element_keys)
+    invalid_keys = setdiff(element_keys, collection_keys)
+
+    if !isempty(missing_keys)
+        error("""
+              Missing attributes for collection '$collection':
+                  $(join(missing_keys, "\n    "))
+              """)
+    end
+
+    if !isempty(invalid_keys)
+        error("""
+              Invalid attributes for collection '$collection':
+                  $(join(invalid_keys, "\n    "))
+              """)
+    end
+
+    for (attribute, value) in element
+        _validate_attribute(data, collection, attribute, value)
+    end
+
+    return nothing
+end
+
+function create_element!(data::Data, collection::String, ps::Pair{String,<:Any}...)
+    attributes = Dict{String,Any}(ps...)
+
+    return create_element!(data, collection, attributes)
+end
+
+function create_element!(data::Data, collection::String, attributes::Dict{String,Any})
+    _validate_collection(data, collection)
+
+    if haskey(PSRCLASSES_DEFAULT, collection)
+        element = deepcopy(PSRCLASSES_DEFAULT[collection])
+    else
+        @warn "No default initialization values for collection '$collection'"
+        element = Dict{String,Any}()
+    end
+
+    # Default attributes are overriden
+    merge!(element, attributes)
+
+    _validate_element(data, collection, element)
+
+    raw_data = _raw(data)
+
+    # Create instance list if not exists
+    if !haskey(raw_data, collection)
+        raw_data[collection] = []
+    end
+
+    index = _insert_element!(data, collection, element)
+
+    return index
 end

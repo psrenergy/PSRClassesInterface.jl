@@ -1213,3 +1213,10 @@ the elements in `target_index` from collection `target` in the vector relation
 of type `relation_type`.
 """
 function set_vector_related! end
+
+"""
+    create_study(::AbstractStudyInterface; kwargs...)
+
+Returns the `Data` object of a new study.
+"""
+function create_study end
