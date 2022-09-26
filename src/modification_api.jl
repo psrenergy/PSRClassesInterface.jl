@@ -312,7 +312,7 @@ function create_study(
         verbose = true,
     )
 
-    write_data(data, json_path)
+    create_element!(data, "PSRStudy")
 
     return data
 end
