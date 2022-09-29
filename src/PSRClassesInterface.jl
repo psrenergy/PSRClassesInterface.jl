@@ -2,7 +2,6 @@ module PSRClassesInterface
 
 import Dates
 import JSON
-import JSONSchema
 
 @static if VERSION < v"1.6"
     error("Julia version $VERSION not supported by PSRClassesInterface, upgrade to 1.6 or later")

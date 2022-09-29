@@ -1,7 +1,7 @@
 const PSRCLASSES_DEFAULT =
     JSON.parsefile(joinpath(@__DIR__, "json_metadata", "psrclasses.default.json"))
-const PSRCLASSES_SCHEMAS =
-    JSON.parsefile(joinpath(@__DIR__, "json_metadata", "psrclasses.schema.json"))
+# const PSRCLASSES_SCHEMAS =
+#     JSON.parsefile(joinpath(@__DIR__, "json_metadata", "psrclasses.schema.json"))
 
 function _get_indexed_attributes(
     data::Data,
