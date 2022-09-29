@@ -327,7 +327,7 @@ function _validate_collection(data::Data, collection::String)
     return nothing
 end
 
-function _validate_attribute(::Data, ::String, attribute::String, ::T) where {T<:Any}
+function _validate_attribute(::Data, ::String, attribute::String, ::T) where {T}
     return error("Invalid type '$T' assigned to attribute '$attribute'")
 end
 
