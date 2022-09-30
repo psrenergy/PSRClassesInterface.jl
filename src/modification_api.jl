@@ -554,11 +554,7 @@ function summary(data::Data, collection::String)
 end
 
 function _get_index(data::Data, reference_id::Integer)
-    if !haskey(data.data_index.index, reference_id)
-        error("Invalid reference_id '$reference_id'")
-    end
-
-    return data.data_index.index[reference_id]
+    return _get_index(data.data_index, reference_id)
 end
 
 function get_element(data::Data, reference_id::Integer)
@@ -568,11 +564,7 @@ function get_element(data::Data, reference_id::Integer)
 end
 
 function _set_index!(data::Data, reference_id::Integer, collection::String, index::Integer)
-    if haskey(data.data_index.index, reference_id)
-        @warn "Replacing reference_id = '$reference_id'"
-    end
-
-    data.data_index.index[reference_id] = (collection, index)
+    _set_index!(data.data_index, reference_id, collection, index)
 
     return nothing
 end
@@ -591,4 +583,8 @@ function _build_index!(data::Data)
     end
     
     return nothing
+end
+
+function _generate_reference_id(data::Data)
+
 end

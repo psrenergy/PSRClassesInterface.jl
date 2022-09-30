@@ -38,18 +38,58 @@ end
 # TODO: rebuild "raw" stabilizing data types
 # TODO fuel consumption updater
 
-struct DataIndex
+mutable struct DataIndex
     # `index` takes a `reference_id` as key and returns a pair
     # containing the collection from which the referenced item
     # belongs but also its index in the vector of instances of
     # the collection.
     index::Dict{Int,Tuple{String,Int}}
 
+    # This should be equal to `Set{Int}(keys(data_index.index))`
+    key_set::Set{Int}    
+
+    # This is defined as the greatest `reference_id` indexed so
+    # far, that is, `maximum(data_index.key_set)`.
+    max_id::Int
+
     function DataIndex()
         new(
-            Dict{Int,Tuple{String,Int}}()
+            Dict{Int,Tuple{String,Int}}(),
+            Set{Int}(),
+            0,
         )
     end
+end
+
+function _get_index(data_index::DataIndex, reference_id::Integer)
+    if !haskey(data_index.index, reference_id)
+        error("Invalid reference_id '$reference_id'")
+    end
+
+    return data_index.index[reference_id]
+end
+
+function _set_index!(data_index::DataIndex, reference_id::Integer, collection::String, index::Integer)
+    if reference_id ∈ data_index.key_set
+        previous_collection, _ = _get_index(data_index, reference_id)
+
+        @warn """
+        Replacing reference_id = '$reference_id' from '$previous_collection' to '$collection'
+        """
+    else
+        data_index.max_id = max(data_index.max_id, reference_id)
+        push!(data_index.key_set, reference_id)
+    end
+
+    data_index.index[reference_id] = (collection, index)
+
+    return nothing
+end
+
+function _generate_reference_id(data_index::DataIndex)
+    @assert data_index.max_id < typemax(Int)
+
+    return data_index.max_id + 1
 end
 
 Base.@kwdef mutable struct Data{T} <: AbstractData
