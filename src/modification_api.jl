@@ -28,9 +28,9 @@ function _get_indexed_attributes(
 end
 
 function _check_collection_in_study(data::Data, collection::String)
-    raw_data = _raw(data)
+    data_struct = get_data_struct(data)
 
-    if !haskey(raw_data, collection)
+    if !haskey(data_struct, collection)
         error("Collection '$collection' is not available for this study")
     end
 
@@ -40,13 +40,11 @@ end
 function _insert_element!(data::Data, collection::String, element::Any)
     _check_collection_in_study(data, collection)
 
-    raw_data = _raw(data)
+    elements = _get_elements!(data, collection)
 
-    objects = raw_data[collection]::Vector
+    push!(elements, element)
 
-    push!(objects, element)
-
-    return length(objects)
+    return length(elements)
 end
 
 """
@@ -63,6 +61,26 @@ function _get_elements(data::Data, collection::String)
 end
 
 """
+    _get_elements!(data::Data, collection::String)
+
+Gathers a list containing all instances of the referenced collection.
+
+!!! info
+    If the instance vector is not present but the collection is still expected, an entry for it will be created.
+"""
+function _get_elements!(data::Data, collection::String)
+    _check_collection_in_study(data, collection)
+    
+    raw_data = _raw(data)
+
+    if !haskey(raw_data, collection)
+        raw_data[collection] = []
+    end
+
+    return raw_data[collection]::Vector
+end
+
+"""
     _get_element(
         data::Data,
         collection::String,
@@ -74,8 +92,10 @@ form of a `Dict{String, <:MainTypes}`. It performs basic checks for bounds and
 existence of `index` and `collection` according to `data`.
 """
 function _get_element(data::Data, collection::String, index::Integer)
-    elements = _get_elements(data, collection)
     _check_element_range(data, collection, index)
+    
+    elements = _get_elements(data, collection)
+    
     return elements[index]
 end
 
@@ -87,10 +107,14 @@ function set_parm!(
     value::T,
 ) where {T<:MainTypes}
     attribute_struct = get_attribute_struct(data, collection, attribute)
+
     _check_parm(attribute_struct, collection, attribute)
     _check_type(attribute_struct, T, collection, attribute)
+    
     element = _get_element(data, collection, index)
+    
     element[attribute] = value
+    
     return nothing
 end
 
@@ -107,6 +131,7 @@ function set_vector!(
     buffer::Vector{T},
 ) where {T<:MainTypes}
     attribute_struct = get_attribute_struct(data, collection, attribute)
+
     _check_vector(attribute_struct, collection, attribute)
     _check_type(attribute_struct, T, collection, attribute)
 
@@ -554,7 +579,7 @@ end
 
 function _build_index!(data::Data)
     for collection in get_collections(data)
-        for (index, element) in enumerate(_get_elements(data, collection))
+        for (index, element) in enumerate(_get_elements!(data, collection))
             if haskey(element, "reference_id")
                 reference_id = element["reference_id"]::Integer
 
