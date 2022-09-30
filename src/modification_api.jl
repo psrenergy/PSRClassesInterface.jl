@@ -49,10 +49,16 @@ function _insert_element!(data::Data, collection::String, element::Any)
     return length(objects)
 end
 
-function _get_collection(data::Data, collection::String)
+"""
+    _get_elements(data::Data, collection::String)
+
+Gathers a list containing all instances of the referenced collection.
+"""
+function _get_elements(data::Data, collection::String)
     _check_collection_in_study(data, collection)
+    
     raw_data = _raw(data)
-    # Gathers a list containing all elements of the class referenced above.
+
     return raw_data[collection]::Vector
 end
 
@@ -68,7 +74,7 @@ form of a `Dict{String, <:MainTypes}`. It performs basic checks for bounds and
 existence of `index` and `collection` according to `data`.
 """
 function _get_element(data::Data, collection::String, index::Integer)
-    elements = _get_collection(data, collection)
+    elements = _get_elements(data, collection)
     _check_element_range(data, collection, index)
     return elements[index]
 end
@@ -520,4 +526,44 @@ function summary(data::Data, collection::String)
                 $(join(lines, "\n    "))
             """
     end
+end
+
+function _get_index(data::Data, reference_id::Integer)
+    if !haskey(data.data_index.index, reference_id)
+        error("Invalid reference_id '$reference_id'")
+    end
+
+    return data.data_index.index[reference_id]
+end
+
+function get_element(data::Data, reference_id::Integer)
+    collection, index = _get_index(data, reference_id)
+
+    return _get_element(data, collection, index)
+end
+
+function _set_index!(data::Data, reference_id::Integer, collection::String, index::Integer)
+    if haskey(data.data_index.index, reference_id)
+        @warn "Replacing reference_id = '$reference_id'"
+    end
+
+    data.data_index.index[reference_id] = (collection, index)
+
+    return nothing
+end
+
+function _build_index!(data::Data)
+    for collection in get_collections(data)
+        for (index, element) in enumerate(_get_elements(data, collection))
+            if haskey(element, "reference_id")
+                reference_id = element["reference_id"]::Integer
+
+                _set_index!(data, reference_id, collection, index)
+            else
+                # TODO: Track unreferenced items?
+            end
+        end
+    end
+    
+    return nothing
 end

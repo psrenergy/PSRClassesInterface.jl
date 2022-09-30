@@ -38,6 +38,20 @@ end
 # TODO: rebuild "raw" stabilizing data types
 # TODO fuel consumption updater
 
+struct DataIndex
+    # `index` takes a `reference_id` as key and returns a pair
+    # containing the collection from which the referenced item
+    # belongs but also its index in the vector of instances of
+    # the collection.
+    index::Dict{Int,Tuple{String,Int}}
+
+    function DataIndex()
+        new(
+            Dict{Int,Tuple{String,Int}}()
+        )
+    end
+end
+
 Base.@kwdef mutable struct Data{T} <: AbstractData
     raw::T
     stage_type::StageType
@@ -87,6 +101,9 @@ Base.@kwdef mutable struct Data{T} <: AbstractData
     extra_config::Dict{String,Any} = Dict{String,Any}()
 
     # TODO: cache importante data
+
+    # Reference Indexing
+    data_index::DataIndex = DataIndex()
 end
 
 _raw(data::Data) = data.raw
@@ -246,6 +263,10 @@ function initialize_study(
             error("Files $extra_config_file not found")
         end
     end
+
+    # Assigns to every `reference_id` the corresponding instance index
+    # as a pair (collection, index)
+    _build_index!(data)
 
     return data
 end
@@ -558,7 +579,7 @@ function get_nonempty_vector(data::Data, collection::String, attribute::String)
     dim = attr_data.dim
     key = _get_attribute_key(attribute, dim)
 
-    for (idx, el) in enumerate(_get_collection(data, collection))
+    for (idx, el) in enumerate(_get_elements(data, collection))
         if haskey(el, key)
             len = length(el[key])
             if (len == 1 && el[key][] !== nothing) || len > 1

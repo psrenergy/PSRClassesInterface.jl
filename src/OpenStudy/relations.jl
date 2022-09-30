@@ -385,7 +385,7 @@ function get_related(
     target_id = source_element[relation_field]
 
     # TODO: consider caching reference_id's
-    for (index, element) in enumerate(_get_collection(data, target))
+    for (index, element) in enumerate(_get_elements(data, target))
         if element["reference_id"] == target_id
             return index
         end
@@ -416,7 +416,7 @@ function get_vector_related(
 
     target_index_list = Int[]
 
-    for (index, element) in enumerate(_get_collection(data, target))
+    for (index, element) in enumerate(_get_elements(data, target))
         if element["reference_id"] ∈ target_id_set
             push!(target_index_list, index)
         end
