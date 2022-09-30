@@ -481,7 +481,15 @@ function create_element!(data::Data, collection::String, attributes::Dict{String
         raw_data[collection] = []
     end
 
+    if !haskey(element, "reference_id")
+        reference_id = _generate_reference_id(data)
+
+        element["reference_id"] = reference_id
+    end
+
     index = _insert_element!(data, collection, element)
+
+    _set_index!(data, reference_id, collection, index)
 
     return index
 end
@@ -586,5 +594,5 @@ function _build_index!(data::Data)
 end
 
 function _generate_reference_id(data::Data)
-
+    return _generate_reference_id(data.data_index)
 end
