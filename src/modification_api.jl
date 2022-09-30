@@ -74,7 +74,7 @@ function _get_elements!(data::Data, collection::String)
     raw_data = _raw(data)
 
     if !haskey(raw_data, collection)
-        raw_data[collection] = []
+        raw_data[collection] = Dict{String,Any}[]
     end
 
     return raw_data[collection]::Vector
@@ -469,18 +469,12 @@ function create_element!(data::Data, collection::String, attributes::Dict{String
         element = Dict{String,Any}()
     end
 
-    # Default attributes are overriden
+    # Default attributes are overriden by the provided ones
     merge!(element, attributes)
 
     _validate_element(data, collection, element)
 
-    raw_data = _raw(data)
-
-    # Create instance list if not exists
-    if !haskey(raw_data, collection)
-        raw_data[collection] = []
-    end
-
+    # If not reference_id is assigned to the element, a new one is created
     if !haskey(element, "reference_id")
         reference_id = _generate_reference_id(data)
 
@@ -489,6 +483,7 @@ function create_element!(data::Data, collection::String, attributes::Dict{String
 
     index = _insert_element!(data, collection, element)
 
+    # Assigns to the given (collection, index) pair its own reference_id
     _set_index!(data, reference_id, collection, index)
 
     return index
@@ -579,13 +574,17 @@ end
 
 function _build_index!(data::Data)
     for collection in get_collections(data)
-        for (index, element) in enumerate(_get_elements!(data, collection))
+        if max_elements(data, collection) == 0
+            continue
+        end
+
+        for (index, element) in enumerate(_get_elements(data, collection))
             if haskey(element, "reference_id")
                 reference_id = element["reference_id"]::Integer
 
                 _set_index!(data, reference_id, collection, index)
             else
-                # TODO: Track unreferenced items?
+                @warn "Missing reference_id for element in collection '$collection' with index '$index'"
             end
         end
     end
