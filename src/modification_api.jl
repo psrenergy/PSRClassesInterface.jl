@@ -54,7 +54,7 @@ Gathers a list containing all instances of the referenced collection.
 """
 function _get_elements(data::Data, collection::String)
     _check_collection_in_study(data, collection)
-    
+
     raw_data = _raw(data)
 
     return raw_data[collection]::Vector
@@ -70,7 +70,7 @@ Gathers a list containing all instances of the referenced collection.
 """
 function _get_elements!(data::Data, collection::String)
     _check_collection_in_study(data, collection)
-    
+
     raw_data = _raw(data)
 
     if !haskey(raw_data, collection)
@@ -93,9 +93,9 @@ existence of `index` and `collection` according to `data`.
 """
 function _get_element(data::Data, collection::String, index::Integer)
     _check_element_range(data, collection, index)
-    
+
     elements = _get_elements(data, collection)
-    
+
     return elements[index]
 end
 
@@ -110,11 +110,11 @@ function set_parm!(
 
     _check_parm(attribute_struct, collection, attribute)
     _check_type(attribute_struct, T, collection, attribute)
-    
+
     element = _get_element(data, collection, index)
-    
+
     element[attribute] = value
-    
+
     return nothing
 end
 
@@ -300,7 +300,7 @@ function set_vector_related!(
 end
 
 function Base.show(io::IO, data::Data)
-    summary(io, data)
+    return summary(io, data)
 end
 
 function create_study(
@@ -406,7 +406,7 @@ end
 
 function _list_attributes_and_types(data::Data, collection::String, attributes::Set{String})
     items = String[]
-    
+
     for attr in sort(collect(attributes))
         attr_struct = get_attribute_struct(data, collection, attr)
 
@@ -415,7 +415,7 @@ function _list_attributes_and_types(data::Data, collection::String, attributes::
         else
             "$(attr_struct.type)"
         end
-        
+
         push!(items, "$attr :: $type")
     end
 
@@ -438,7 +438,7 @@ function _validate_element(data::Data, collection::String, element::Dict{String,
                   $(_list_attributes_and_types(data, collection, missing_keys))
               """)
     end
-
+    
     if !isempty(invalid_keys)
         error("""
               Invalid attributes for collection '$collection':
@@ -448,6 +448,20 @@ function _validate_element(data::Data, collection::String, element::Dict{String,
 
     for (attribute, value) in element
         _validate_attribute(data, collection, attribute, value)
+    end
+
+    return nothing
+end
+
+function _cast_element!(data::Data, collection::String, element::Dict{String,Any})
+    for (attribute, value) in element
+        T = get_attribute_type(data, collection, attribute)
+
+        if is_vector_attribute(data, collection, attribute)
+            element[attribute] = _cast_vector(T, value)
+        else
+            element[attribute] = _cast(T, value)
+        end
     end
 
     return nothing
@@ -468,6 +482,9 @@ function create_element!(data::Data, collection::String, attributes::Dict{String
         @warn "No default initialization values for collection '$collection'"
         element = Dict{String,Any}()
     end
+
+    # Cast values from json default 
+    _cast_element!(data, collection, element)
 
     # Default attributes are overriden by the provided ones
     merge!(element, attributes)
@@ -588,7 +605,7 @@ function _build_index!(data::Data)
             end
         end
     end
-    
+
     return nothing
 end
 
