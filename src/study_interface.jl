@@ -837,18 +837,6 @@ PSRI.set_parm!(data, "PSRClass", index, "PSRAttr", value)
 function create_element! end
 
 """
-    get_parm(
-        data::Data,
-        collection::String,
-        attribute::String,
-        index::Integer,
-    )
-
-Retrieves the value of a scalar parameter.
-"""
-function get_parm end
-
-"""
     set_parm!(
         data::Data,
         collection::String,
@@ -860,18 +848,6 @@ function get_parm end
 Defines the value of a scalar parameter.
 """
 function set_parm! end
-
-"""
-    get_vector(
-        data::Data,
-        collection::String,
-        attribute::String,
-        index::Integer,
-    )
-
-Retrieves a copy of vectorial data.
-"""
-function get_vector end
 
 """
     function set_vector!(

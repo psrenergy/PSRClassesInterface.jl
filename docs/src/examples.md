@@ -216,7 +216,7 @@ And now the struct may be instantiated by setting its appropriate parameters:
 batteries = Batteries()
 batteries.names = PSRI.get_name(data, "PSRBattery")
 batteries.codes = PSRI.get_code(data, "PSRBattery")
-batteries.charge_eff = PSRI.mapped_vector(data, "PSRBattery", "ChargeEffic", Int32)
+batteries.charge_eff = PSRI.mapped_vector(data, "PSRBattery", "ChargeEffic", Float64)
 batteries.bat2sys = PSRI.get_map(data, "PSRBattery", "PSRSystem")
 ```
 
@@ -306,7 +306,7 @@ end
 demand_values
 ```
 We can discover the elasticity of each demand by calling `get_parms` with the parameter `Elastico`:
-```@example seg_to_dem
+```@example demand
 demands_elasticity = PSRI.get_parms(data, "PSRDemand", "Elastico", Int32)
 ```
 If `demands_elasticity[i] == 0` it means that the demand at index `i` is inelastic, and elastic if `demands_elasticity[i] == 1`.
