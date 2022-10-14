@@ -13,6 +13,7 @@ mutable struct VectorCache{T}
     vector::Vector{T}
     # date::Vector{Int32}
     # current_date::Int32
+    default::T
 
     function VectorCache(
         dim1_str::Union{String,Nothing},
@@ -22,6 +23,7 @@ mutable struct VectorCache{T}
         index_str::String,
         stage::Integer,
         vector::Vector{T},
+        default::T
     ) where {T}
         return new{T}(
             isnothing(dim1_str) ? "" : dim1_str,
@@ -31,6 +33,7 @@ mutable struct VectorCache{T}
             index_str,
             stage,
             vector,
+            default,
         )
     end
 end
@@ -758,7 +761,7 @@ Converts `val` to type `T`, if possible.
 _cast(::Type{T}, val::T, default::T = _default_value(T)) where {T} = val
 _cast(::Type{String}, val::String, default::String = _default_value(String)) = val
 _cast(::Type{Int32}, val::Integer, default::Int32 = _default_value(Int32)) = Int32(val)
-_cast(::Type{Float64}, val::Float64, default::Float64 = _default_value(Float64)) = val
+_cast(::Type{Float64}, val::Real, default::Float64 = _default_value(Float64)) = val
 _cast(::Type{T}, val::Nothing, default::T = _default_value(T)) where {T} = default
 
 function _cast(
