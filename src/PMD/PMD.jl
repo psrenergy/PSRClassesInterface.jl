@@ -4,6 +4,14 @@ import Dates
 
 """
     Attribute
+
+struct Attribute
+    name::String
+    is_vector::Bool
+    type::DataType
+    dim::Int
+    index::String
+end
 """
 struct Attribute
     name::String
