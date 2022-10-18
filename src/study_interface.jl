@@ -1030,33 +1030,14 @@ Returns a struct of type `Attribute` with fields:
 * dim::Int = number of additional dimensions
 * index::String = if a vector represents the indexing vector (might be empty)
 """
-function get_attribute_struct(data::AbstractData, collection::String, attribute::String)
-    return get_attribute_struct(get_data_struct(data), collection, attribute)
-end
-
-function get_attribute_struct(data::DataStruct, collection::String, attribute::String)
-    collection_struct = data[collection]
-
-    if !haskey(collection_struct, attribute)
-        error("Attribute $attribute not found in collection $collection")
-    end
-
-    return collection_struct[attribute]::Attribute
-end
+function get_attribute_struct end
 
 """
     get_attributes(data::AbstractData, collection::String)
 
 Return `Vector{String}` of valid attributes from `collection`.
 """
-function get_attributes(data::AbstractData, collection::String)
-    return get_attributes(get_data_struct(data), collection)
-end
-
-function get_attributes(data::DataStruct, collection::String)
-    return sort!(collect(keys(data[collection])))
-end
-
+function get_attributes end
 
 """
     get_attributes_indexed_by(
@@ -1099,13 +1080,7 @@ end
 
 Return `Vector{String}` of valid collections (depends on loaded pmd files).
 """
-function get_collections(data::AbstractData)
-    return get_collections(get_data_struct(data))
-end
-
-function get_collections(data::DataStruct)
-    return sort(collect(keys(data)))
-end
+function get_collections end
 
 """
     get_relations(data::AbstractData, collection::String)
@@ -1113,20 +1088,7 @@ end
 Returns a `Vector{Tuple{String, RelationType}}` with relating `collection`
 and their relation type associated to `collection`.
 """
-function get_relations(::AbstractData, collection::String)
-    return get_relations(collection)
-end
-
-function get_relations(::DataStruct, collection::String)
-    return get_relations(collection)
-end
-
-function get_relations(collection::String)
-    if haskey(_RELATIONS, collection)
-        return keys(_RELATIONS[collection])
-    end
-    return Tuple{String,RelationType}[]
-end
+function get_relations end
 
 """
     set_validate_attributes(data::AbstractData, val::Bool)
