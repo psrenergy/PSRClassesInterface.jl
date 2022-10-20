@@ -27,9 +27,8 @@ function get_attribute_struct(data::DataStruct, collection::String, attribute::S
     
     attribute = trim_multidimensional_attribute(attribute)
 
-
     if !haskey(collection_struct, attribute)
-        error("Attribute '$attribute' not found in collection '$collection'")
+        error("No information for attribute '$attribute' found in collection '$collection'")
     else
         return collection_struct[attribute]::Attribute
     end

@@ -823,7 +823,12 @@ PSRI.configuration_parameter(data, "DeficitCost", [0.0])
 function configuration_parameter end
 
 """
-    create_element(data::Data, collection::String)
+    create_element!(
+        data::Data,
+        collection::String,
+        ps::Pair{String,<:Any};
+        default::Union{Dict{String,Any},Nothing} = nothing
+    )
 
 Creates a new instance of the given `collection` and returns its index.
 

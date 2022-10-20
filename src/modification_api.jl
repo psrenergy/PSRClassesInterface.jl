@@ -1,5 +1,7 @@
 const PSRCLASSES_DEFAULT =
     JSON.parsefile(joinpath(@__DIR__, "json_metadata", "psrclasses.default.json"))
+
+@info "HourlyData" ∈ keys(PSRCLASSES_DEFAULT["PSRStudy"])
 # const PSRCLASSES_SCHEMAS =
 #     JSON.parsefile(joinpath(@__DIR__, "json_metadata", "psrclasses.schema.json"))
 
@@ -308,6 +310,7 @@ function create_study(
     data_path::AbstractString = pwd(),
     pmd_files::Vector{String} = String[],
     pmds_path::AbstractString = PMD._PMDS_BASE_PATH,
+    default::Dict{String,Any} = PSRCLASSES_DEFAULT,
     netplan::Bool = false,
     kws...,
 )
@@ -343,7 +346,7 @@ function create_study(
         verbose = true,
     )
 
-    create_element!(data, "PSRStudy")
+    create_element!(data, "PSRStudy"; default = default)
 
     return data
 end
@@ -438,7 +441,7 @@ function _validate_element(data::Data, collection::String, element::Dict{String,
                   $(_list_attributes_and_types(data, collection, missing_keys))
               """)
     end
-    
+
     if !isempty(invalid_keys)
         error("""
               Invalid attributes for collection '$collection':
@@ -467,19 +470,41 @@ function _cast_element!(data::Data, collection::String, element::Dict{String,Any
     return nothing
 end
 
-function create_element!(data::Data, collection::String, ps::Pair{String,<:Any}...)
-    attributes = Dict{String,Any}(ps...)
-
-    return create_element!(data, collection, attributes)
+function create_element!(
+    data::Data,
+    collection::String;
+    default::Dict{String,Any} = PSRCLASSES_DEFAULT,
+)
+    return create_element!(data, collection, Dict{String,Any}(), default)
 end
 
-function create_element!(data::Data, collection::String, attributes::Dict{String,Any})
+function create_element!(
+    data::Data,
+    collection::String,
+    ps::Pair{String,<:Any}...;
+    default::Union{Dict{String,Any},Nothing} = PSRCLASSES_DEFAULT,
+)
+    attributes = Dict{String,Any}(ps...)
+
+    return create_element!(data, collection, attributes, default)
+end
+
+function create_element!(
+    data::Data,
+    collection::String,
+    attributes::Dict{String,Any},
+    default::Union{Dict{String,Any},Nothing} = PSRCLASSES_DEFAULT,
+)
     _validate_collection(data, collection)
 
-    if haskey(PSRCLASSES_DEFAULT, collection)
-        element = deepcopy(PSRCLASSES_DEFAULT[collection])
+    if !isnothing(default)
+        if haskey(default, collection)
+            element = deepcopy(default[collection])
+        else
+            @warn "No default initialization values for collection '$collection'"
+            element = Dict{String,Any}()
+        end
     else
-        @warn "No default initialization values for collection '$collection'"
         element = Dict{String,Any}()
     end
 

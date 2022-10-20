@@ -139,7 +139,9 @@ function test_api2(data_path) # Creates element
         "sfal" => Int32[0],
     )
 
-    @test PSRI.write_data(data)
+    PSRI.write_data(data)
+
+    return nothing
 end
 
 function test_api3() # Tests creating study
