@@ -1,192 +1,22 @@
 {
-    "PSRArea": {
-        "_id": "",
-        "classType": 5,
-        "code": 0,
-        "generic_id": "",
-        "modeldimensions": [
-            {
-                "id": "block",
-                "value": 21
-            }
-        ],
-        "name": "Area00000",
-        "reference_id": 36810432
-    },
-    "PSRBattery": {
-        "ChargeEffic": [
-            0.95
-        ],
-        "ChargeRamp": -1.0,
-        "Data": [
-            "1900-01-01"
-        ],
-        "DischargeEffic": [
-            0.87
-        ],
-        "DischargeRamp": -1.0,
-        "Einic": 0.0,
-        "Emax": [
-            1.0
-        ],
-        "Emin": [
-            0.0
-        ],
-        "Existing": [
-            0
-        ],
-        "FlagInterStage": 0,
-        "Pmax": [
-            0.2
-        ],
-        "RegTime": 24,
-        "bus": 36845864,
-        "classType": 51,
-        "code": 3,
-        "generic_id": "BAT03",
-        "name": "BAT03",
-        "reference_id": 36631024,
-        "system": 36583320,
-        "tipo_devc": 15
-    },
-    "PSRBus": {
-        "Kv": 0.48,
-        "area": 36810432,
-        "classType": 4,
-        "code": 610,
-        "generic_id": "id-610-BUS_610",
-        "icca": 0,
-        "name": "BUS_610",
-        "reference_id": 36838904,
-        "region": 0,
-        "system": 36583320,
-        "tipo_barra": 0
-    },
-    "PSRDemand": {
-        "CoefVariation(1)": [],
-        "CurtCost": null,
-        "Data": [],
-        "Duracao(1)": 100.0,
-        "Elastico": 0,
-        "IsFlexible": null,
-        "MaxCurt": null,
-        "MaxShiftDown": null,
-        "MaxShiftUp": null,
-        "SourceType": null,
-        "Window": null,
-        "classType": 25,
-        "code": 1,
-        "generic_id": "1-System 1-s1",
-        "modeldimensions": [
-            {
-                "id": "block",
-                "value": 21
-            }
-        ],
-        "name": "System 1",
-        "reference_id": 14759456,
-        "system": 29529296
-    },
-    "PSRDemandSegment": {
-        "Custo(1)": [],
-        "Data": [
-            "2013-01-01"
-        ],
-        "DataCusto": [],
-        "DataHourDemand": [],
-        "DataHourDemandPrice": [],
-        "DataHourDemandScen": [],
-        "Demanda(1)": [
-            12.57
-        ],
-        "Demanda(2)": [
-            0.64914
-        ],
-        "Demanda(3)": [
-            1.5579
-        ],
-        "HourDemand": [],
-        "HourDemandPrice": [],
-        "HourDemandScen": [],
-        "classType": 36,
-        "demand": 14759456,
-        "generic_id": "1-System 1-s1-1",
-        "modeldimensions": [
-            {
-                "id": "block",
-                "value": 21
-            }
-        ],
-        "reference_id": 29528400,
-        "system": 29529296
-    },
-    "PSRElectrificationNetwork": {
-        "classType": 93,
-        "generic_id": "",
-        "reference_id": 29338624
-    },
-    "PSRElement": {
-        "classType": 57,
-        "generic_id": "",
-        "reference_id": 29527728
-    },
-    "PSRFuel": {
-        "Availability": [],
-        "ConsumptionMax": [],
-        "Custo": [
-            1.2
-        ],
-        "Data": [
-            "1900-01-01"
-        ],
-        "DataAvailability": [],
-        "DataConsumptionMax": [],
-        "EmiCO2": 0.0,
-        "FlagScenario": 0,
-        "ScenarioCost": [],
-        "UComb": "UC",
-        "UE": "MWh",
-        "classType": 24,
-        "code": 2,
-        "generic_id": "",
-        "name": "Fuel 2",
-        "reference_id": 14076016,
-        "system": 29529296
-    },
     "PSRFuelConsumption": {
-        "CEsp(1,1)": [
-            12.5
-        ],
-        "CEsp(2,1)": [
-            null
-        ],
-        "CEsp(3,1)": [
-            null
-        ],
-        "CTransp": [
-            0.0
-        ],
-        "Data": [
-            "1900-01-01"
-        ],
-        "DataCesp": [
-            "1900-01-01"
-        ],
         "G(1)": [
             100.0
-        ],
-        "G(2)": [
-            null
-        ],
-        "G(3)": [
-            null
         ],
         "O&MCost": [
             0.0
         ],
-        "classType": 50,
-        "fuel": 14076016,
-        "generic_id": "",
+        "plant": 29532736,
+        "CEsp(3,1)": [
+            null
+        ],
+        "G(2)": [
+            null
+        ],
+        "reference_id": 29525088,
+        "G(3)": [
+            null
+        ],
         "modeldimensions": [
             {
                 "id": "block",
@@ -197,160 +27,34 @@
                 "value": 3
             }
         ],
-        "plant": 29532736,
-        "reference_id": 29525088
-    },
-    "PSRGasEmission": {
-        "CoefEmission(1)": [
-            2.0
-        ],
-        "DateCoefEmission": [
-            "2020-10-05"
-        ],
-        "DateEmissionCost": [
+        "generic_id": "",
+        "DataCesp": [
             "1900-01-01"
         ],
-        "EmissionCost": [
+        "fuel": 14076016,
+        "classType": 50,
+        "CTransp": [
             0.0
         ],
-        "Unit": "pu",
-        "classType": 73,
-        "code": 1,
-        "generic_id": "",
-        "modeldimensions": [
-            {
-                "id": "plant",
-                "value": 1
-            }
-        ],
-        "name": "e1",
-        "plants": [
-            29241440
-        ],
-        "reference_id": 29686120
-    },
-    "PSRGasNetwork": {
-        "classType": 28,
-        "generic_id": "",
-        "reference_id": 28587648
-    },
-    "PSRGaugingStation": {
-        "Av": [
-            0.0
+        "CEsp(1,1)": [
+            12.5
         ],
         "Data": [
-            "1956-01-01"
+            "1900-01-01"
         ],
-        "Fi(1)": [
-            0.0
-        ],
-        "Fi(2)": [
-            0.0
-        ],
-        "Fi(3)": [
-            0.0
-        ],
-        "Fi(4)": [
-            0.0
-        ],
-        "Fi(5)": [
-            0.0
-        ],
-        "Fi(6)": [
-            0.0
-        ],
-        "Ordem": [
-            0
-        ],
-        "Sd": [
-            0.0
-        ],
-        "Teta": [
-            1.0
-        ],
-        "Vazao": [
-            0.0
-        ],
-        "classType": 32,
-        "code": 102,
-        "downstream": 13605944,
-        "generic_id": "",
-        "modeldimensions": [
-            {
-                "id": "lag",
-                "value": 12
-            }
-        ],
-        "name": "Hydro 2",
-        "reference_id": 13606016
-    },
-    "PSRGenerationConstraintData": {
-        "Data": [
-            "2013-01-01",
-            "2013-02-01",
-            "2013-03-01",
-            "2013-04-01",
-            "2013-05-01",
-            "2013-06-01",
-            "2013-07-01",
-            "2013-08-01",
-            "2013-09-01",
-            "2013-10-01",
-            "2013-11-01",
-            "2013-12-01"
-        ],
-        "Penalty": -1.0,
-        "Restricao(1)": [
-            1.0,
-            2.0,
-            3.0,
-            4.0,
-            5.0,
-            6.0,
-            7.0,
-            8.0,
-            9.0,
-            0.0,
-            1.0,
-            2.0
-        ],
-        "batteries": [],
-        "classType": 52,
-        "code": 1,
-        "generic_id": "",
-        "modeldimensions": [
-            {
-                "id": "block",
-                "value": 21
-            }
-        ],
-        "name": "GenCon1",
-        "reference_id": 14116472,
-        "sign": ":<:",
-        "system": 29529296,
-        "usinas": [
-            29241440,
-            13312000,
-            29532736
+        "CEsp(2,1)": [
+            null
         ]
-    },
-    "PSRGenerator": {
-        "bus": 36836864,
-        "classType": 13,
-        "code": 1,
-        "generic_id": "SUBSTATION",
-        "name": "SUBSTATION",
-        "plant": 20967016,
-        "reference_id": 36632568,
-        "tipo_devc": 2
     },
     "PSRGndGaugingStation": {
         "HourGeneration": [
             0.0
         ],
+        "name": "GND1",
+        "reference_id": 20632912,
         "SourceType": 1,
-        "TechType": 0,
         "classType": 56,
+        "TechType": 0,
         "code": 1,
         "generic_id": "",
         "modeldimensions": [
@@ -359,331 +63,43 @@
                 "value": 21
             }
         ],
-        "name": "GND1",
-        "reference_id": 20632912,
-        "system": 36583320
-    },
-    "PSRGndPlant": {
-        "CurtailmentCost": [
-            0.0
-        ],
-        "Data": [
-            "1900-01-01"
-        ],
-        "Existing": [
-            0
-        ],
-        "FatOpe": [
-            1.0
-        ],
-        "HourGeneration": [
-            0.0
-        ],
-        "ICP": [
-            0.0
-        ],
-        "O&MCost": [
-            0.0
-        ],
-        "PotInst": [
-            0.8
-        ],
-        "TechType": 0,
-        "Unidades": [
-            1
-        ],
-        "classType": 39,
-        "code": 4,
-        "generic_id": "4-GND4-id-39",
-        "modeldimensions": [
-            {
-                "id": "block",
-                "value": 21
-            }
-        ],
-        "name": "GND4",
-        "reference_id": 39069664,
-        "sfal": [
-            0
-        ],
-        "station": 20632912,
         "system": 36583320
     },
     "PSRHydroPlant": {
-        "AlertStorage": [],
-        "AlertStoragePenalty": null,
-        "AreaConst": null,
-        "AreaType": 0,
-        "Data": [
-            "1900-01-01"
-        ],
-        "DataAlertStorage": [],
-        "DataFloodControlStorage": [],
-        "DataLossFactor": [],
-        "DataMaxSecondaryReserve": [],
-        "DataMaxSpillage": [],
-        "DataMaxTO": [],
-        "DataMaxTurbining": [],
-        "DataMinSpillage": [],
-        "DataMinTO": [],
-        "DataPriceSecondaryReserve": [],
-        "DataRegTime": [],
-        "DataRieg": [
-            "2013-01-01"
-        ],
-        "DataSpinningReserve": [],
-        "DataVolVNC": [
-            "01/01/1900"
-        ],
-        "DataVolumeMaximum": [],
-        "DataVolumeMinimum": [],
-        "DateDeadStorage": null,
-        "DfTotMin": [
-            0.0
-        ],
-        "DischargeRampDown": null,
-        "DischargeRampUp": null,
-        "DsPolCoefficients(1)": [],
-        "DsPolCount": null,
-        "DsPolOrder": null,
-        "DsPolReference": null,
-        "DurationDeadStorage": null,
-        "Eaflu": [
-            0
-        ],
-        "EndDateMaintenance": [],
-        "Evap(1)": 0.0,
-        "Evap(10)": 0.0,
-        "Evap(11)": 0.0,
-        "Evap(12)": 0.0,
-        "Evap(2)": 0.0,
-        "Evap(3)": 0.0,
-        "Evap(4)": 0.0,
-        "Evap(5)": 0.0,
-        "Evap(6)": 0.0,
-        "Evap(7)": 0.0,
-        "Evap(8)": 0.0,
-        "Evap(9)": 0.0,
-        "Existing": [
-            0
-        ],
-        "FP(1)": 0.0,
-        "FP(2)": 0.0,
-        "FP(3)": 0.0,
-        "FP(4)": 0.0,
-        "FP(5)": 0.0,
-        "FP.VOL(1)": 0.0,
-        "FP.VOL(2)": 0.0,
-        "FP.VOL(3)": 0.0,
-        "FP.VOL(4)": 0.0,
-        "FP.VOL(5)": 0.0,
-        "FPMed": [
-            0.3
-        ],
-        "FiltConst": null,
-        "FiltType": 0,
-        "FlagConstantOutflow": null,
-        "FlagConstantSpilling": null,
-        "FlagConstantTurbining": null,
-        "FloodControlStorage": [],
-        "ICP": [
-            0.0
-        ],
-        "IH": [
-            0.0
-        ],
-        "Indicador": [
-            0
-        ],
-        "InitialDateMaintenance": [],
-        "InitialValueDeadStorage": null,
-        "LossFactor": [],
+        "SxH_Head(4)": 0.0,
+        "SxH_Storage(5)": 0.0,
         "MaintenanceValue": [],
-        "MaxSecondaryReserve(1)": [],
-        "MaxSpillage": [],
-        "MaxSpillagePenalty": null,
-        "MaxTO": [],
-        "MaxTOPenalty": null,
-        "MaxTurbining": [],
-        "MaxTurbiningPenalty": null,
-        "MeanTailLevel": null,
-        "MinSpillage": [],
-        "MinSpillagePenalty": null,
-        "MinTO": [],
-        "MinTOPenalty": null,
-        "O&MCost": [
-            null
-        ],
+        "FlagConstantSpilling": null,
         "OutSampling": 0,
-        "OxE_Date": [],
-        "OxE_Efficiency(1)": [],
-        "OxE_Outflow(1)": [],
-        "OxT_Outflow(1)": [
-            0.0
-        ],
         "OxT_Outflow(2)": [
             0.0
         ],
-        "OxT_Outflow(3)": [
-            0.0
-        ],
-        "OxT_Outflow(4)": [
-            0.0
-        ],
-        "OxT_Outflow(5)": [
-            0.0
-        ],
-        "OxT_Tail(1)": [
-            0.0
-        ],
-        "OxT_Tail(2)": [
-            0.0
-        ],
-        "OxT_Tail(3)": [
-            0.0
-        ],
-        "OxT_Tail(4)": [
-            0.0
-        ],
-        "OxT_Tail(5)": [
-            0.0
-        ],
-        "PolA0": null,
-        "PolA1": null,
-        "PolA2": null,
-        "PolA3": null,
-        "PolA4": null,
-        "PolU": null,
         "PotInst": [
             16.5
         ],
-        "PrdEsp": null,
-        "PrdHid": null,
-        "PriceSecondaryReserve(1)": [],
-        "ProdTypePol": 0,
-        "ProdTypeSim": 0,
-        "Qmax": [
-            55.0
-        ],
-        "Qmin": [
-            0.0
-        ],
-        "RampDown": null,
-        "RampUp": null,
-        "RegFactor": null,
-        "RegTime": [],
-        "Rieg": [
-            3.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0
-        ],
-        "RiegPenalty": 1,
-        "RiegPenaltyValue": 0.0,
-        "RunRiverType": null,
-        "SpillCost": null,
-        "SpillCostType": 0,
-        "SpillLossFactor": 0.0,
-        "SpinningReserve(1)": [],
-        "SxA_Area(1)": 0.0,
-        "SxA_Area(2)": 0.0,
-        "SxA_Area(3)": 0.0,
-        "SxA_Area(4)": 0.0,
-        "SxA_Area(5)": 0.0,
-        "SxA_Storage(1)": 0.0,
-        "SxA_Storage(2)": 0.0,
-        "SxA_Storage(3)": 0.0,
-        "SxA_Storage(4)": 0.0,
-        "SxA_Storage(5)": 0.0,
-        "SxF_Filtration(1)": 0.0,
-        "SxF_Filtration(2)": 0.0,
-        "SxF_Filtration(3)": 0.0,
-        "SxF_Filtration(4)": 0.0,
-        "SxF_Filtration(5)": 0.0,
-        "SxF_Storage(1)": 0.0,
-        "SxF_Storage(2)": 0.0,
-        "SxF_Storage(3)": 0.0,
-        "SxF_Storage(4)": 0.0,
-        "SxF_Storage(5)": 0.0,
-        "SxH_Head(1)": 0.0,
         "SxH_Head(2)": 0.0,
-        "SxH_Head(3)": 0.0,
-        "SxH_Head(4)": 0.0,
         "SxH_Head(5)": 0.0,
-        "SxH_Storage(1)": 0.0,
-        "SxH_Storage(2)": 0.0,
-        "SxH_Storage(3)": 0.0,
-        "SxH_Storage(4)": 0.0,
-        "SxH_Storage(5)": 0.0,
-        "SxQ_Date": [],
-        "SxQ_MaxTurbining(1)": [],
-        "SxQ_Storage(1)": [],
-        "TailwaterFlag": 0,
-        "TotIn(1)": [
-            0.0
-        ],
-        "TotIn(2)": [
-            0.0
-        ],
-        "TotIn(3)": [
-            0.0
-        ],
-        "TotIn(4)": [
-            0.0
-        ],
-        "TotIn(5)": [
-            0.0
-        ],
-        "TravelTimeSpil": null,
-        "TravelTimeTurb": null,
         "TurIn(1)": [
             0.0
         ],
-        "TurIn(2)": [
-            0.0
+        "DataMaxSecondaryReserve": [],
+        "Indicador": [
+            0
         ],
-        "TurIn(3)": [
-            0.0
-        ],
-        "TurIn(4)": [
-            0.0
-        ],
-        "TurIn(5)": [
-            0.0
-        ],
-        "TurbGenEffic": null,
-        "TurbLossFactor": 0.0,
-        "Unidades": [
-            1
-        ],
+        "Evap(8)": 0.0,
+        "SxF_Storage(1)": 0.0,
+        "SpillCost": null,
+        "SpinningReserve(1)": [],
         "VNC": 0,
-        "Vinic": 0.0,
-        "VinicType": 0,
-        "Vmax": [
-            0.0
+        "Evap(10)": 0.0,
+        "O&MCost": [
+            null
         ],
-        "Vmin": [
-            0.0
-        ],
-        "VolMaxPenalty": null,
-        "VolMinPenalty": null,
-        "VolVNC": [
-            111.0
-        ],
+        "SxA_Storage(3)": 0.0,
+        "FP.VOL(2)": 0.0,
+        "SxF_Filtration(2)": 0.0,
         "VolumeMaximum": [],
-        "VolumeMinimum": [],
-        "classType": 17,
-        "code": 2,
-        "filtration": 13312000,
-        "generic_id": "2-Hydro 2-s1-17",
+        "SxF_Storage(3)": 0.0,
         "modeldimensions": [
             {
                 "id": "block",
@@ -702,315 +118,887 @@
                 "value": 12
             }
         ],
-        "name": "Hydro 2",
-        "reference_id": 13312000,
-        "spilling": 13312000,
+        "SxA_Area(1)": 0.0,
+        "TurIn(5)": [
+            0.0
+        ],
+        "SxH_Storage(2)": 0.0,
+        "DataRegTime": [],
+        "ICP": [
+            0.0
+        ],
+        "DataVolVNC": [
+            "01/01/1900"
+        ],
+        "DataSpinningReserve": [],
+        "SxA_Area(5)": 0.0,
+        "InitialDateMaintenance": [],
+        "DataRieg": [
+            "2013-01-01"
+        ],
+        "OxE_Efficiency(1)": [],
+        "DurationDeadStorage": null,
+        "RunRiverType": null,
+        "TotIn(2)": [
+            0.0
+        ],
+        "DataAlertStorage": [],
+        "SxH_Storage(1)": 0.0,
+        "TotIn(4)": [
+            0.0
+        ],
+        "SxH_Head(3)": 0.0,
+        "Evap(12)": 0.0,
+        "OxT_Tail(5)": [
+            0.0
+        ],
+        "Rieg": [
+            3.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+        ],
+        "SxQ_MaxTurbining(1)": [],
+        "generic_id": "2-Hydro 2-s1-17",
+        "PolA2": null,
+        "Qmax": [
+            55.0
+        ],
+        "RegTime": [],
         "station": 13606016,
-        "storedenergy": 13312000,
-        "system": 29529296,
-        "turbinning": 13312000
-    },
-    "PSRHydrologicalNetwork": {
-        "classType": 30,
-        "generic_id": "",
-        "reference_id": 28587216
-    },
-    "PSRHydrologicalPlantConnection": {
-        "IsFiltration": 1,
-        "IsStoredEnergy": 1,
-        "IsTurbinamento": 1,
-        "IsVertimento": 1,
-        "classType": 54,
-        "generic_id": "",
-        "plant1": 13311688,
-        "plant2": 13312000,
-        "reference_id": 29527920
-    },
-    "PSRHydrologicalPlantNetwork": {
-        "classType": 31,
-        "generic_id": "",
-        "reference_id": 28587360
-    },
-    "PSRInterconnection": {
-        "Capacity->(1)": [
-            null
+        "TurIn(4)": [
+            0.0
         ],
-        "Capacity<-(1)": [
-            null
+        "DischargeRampDown": null,
+        "TurbLossFactor": 0.0,
+        "MaxSpillage": [],
+        "RampUp": null,
+        "OxT_Tail(3)": [
+            0.0
         ],
-        "Currency": "$",
+        "SxA_Area(4)": 0.0,
+        "FP(5)": 0.0,
+        "SxH_Head(1)": 0.0,
+        "VolMaxPenalty": null,
+        "OxT_Outflow(5)": [
+            0.0
+        ],
+        "FiltConst": null,
+        "PrdEsp": null,
+        "DataMinTO": [],
         "Data": [
             "1900-01-01"
         ],
-        "DataCapacity->": [
+        "DataMinSpillage": [],
+        "OxE_Date": [],
+        "OxT_Tail(1)": [
+            0.0
+        ],
+        "SxF_Storage(4)": 0.0,
+        "DsPolCoefficients(1)": [],
+        "SxA_Storage(1)": 0.0,
+        "TurbGenEffic": null,
+        "SxA_Area(3)": 0.0,
+        "VinicType": 0,
+        "FP.VOL(3)": 0.0,
+        "Evap(11)": 0.0,
+        "VolMinPenalty": null,
+        "SxF_Filtration(4)": 0.0,
+        "OxE_Outflow(1)": [],
+        "code": 2,
+        "FlagConstantOutflow": null,
+        "reference_id": 13312000,
+        "spilling": 13312000,
+        "DischargeRampUp": null,
+        "MinSpillagePenalty": null,
+        "SxF_Filtration(3)": 0.0,
+        "SxF_Filtration(5)": 0.0,
+        "RampDown": null,
+        "FP.VOL(1)": 0.0,
+        "RiegPenaltyValue": 0.0,
+        "AlertStoragePenalty": null,
+        "Evap(1)": 0.0,
+        "DfTotMin": [
+            0.0
+        ],
+        "Evap(3)": 0.0,
+        "FPMed": [
+            0.3
+        ],
+        "DateDeadStorage": null,
+        "TailwaterFlag": 0,
+        "SxA_Storage(4)": 0.0,
+        "MinTOPenalty": null,
+        "SpillCostType": 0,
+        "Evap(4)": 0.0,
+        "VolVNC": [
+            111.0
+        ],
+        "filtration": 13312000,
+        "ProdTypePol": 0,
+        "system": 29529296,
+        "name": "Hydro 2",
+        "SxA_Area(2)": 0.0,
+        "OxT_Outflow(1)": [
+            0.0
+        ],
+        "PolA4": null,
+        "Existing": [
+            0
+        ],
+        "TotIn(3)": [
+            0.0
+        ],
+        "SxH_Storage(4)": 0.0,
+        "TravelTimeSpil": null,
+        "DataFloodControlStorage": [],
+        "Vinic": 0.0,
+        "FP.VOL(4)": 0.0,
+        "DsPolReference": null,
+        "DataMaxSpillage": [],
+        "PriceSecondaryReserve(1)": [],
+        "TravelTimeTurb": null,
+        "SxH_Storage(3)": 0.0,
+        "MinSpillage": [],
+        "Evap(5)": 0.0,
+        "Vmin": [
+            0.0
+        ],
+        "FlagConstantTurbining": null,
+        "TotIn(5)": [
+            0.0
+        ],
+        "SxQ_Date": [],
+        "SpillLossFactor": 0.0,
+        "PolA0": null,
+        "storedenergy": 13312000,
+        "DsPolOrder": null,
+        "VolumeMinimum": [],
+        "Evap(6)": 0.0,
+        "DsPolCount": null,
+        "DataLossFactor": [],
+        "FP.VOL(5)": 0.0,
+        "SxF_Storage(5)": 0.0,
+        "turbinning": 13312000,
+        "RiegPenalty": 1,
+        "TurIn(3)": [
+            0.0
+        ],
+        "FP(4)": 0.0,
+        "Eaflu": [
+            0
+        ],
+        "FP(3)": 0.0,
+        "MaxTO": [],
+        "PolU": null,
+        "EndDateMaintenance": [],
+        "PrdHid": null,
+        "MeanTailLevel": null,
+        "Evap(2)": 0.0,
+        "AreaConst": null,
+        "LossFactor": [],
+        "MinTO": [],
+        "IH": [
+            0.0
+        ],
+        "SxQ_Storage(1)": [],
+        "DataPriceSecondaryReserve": [],
+        "FP(2)": 0.0,
+        "PolA1": null,
+        "TurIn(2)": [
+            0.0
+        ],
+        "MaxSpillagePenalty": null,
+        "MaxSecondaryReserve(1)": [],
+        "SxF_Storage(2)": 0.0,
+        "OxT_Outflow(3)": [
+            0.0
+        ],
+        "Evap(7)": 0.0,
+        "DataMaxTO": [],
+        "SxA_Storage(2)": 0.0,
+        "Evap(9)": 0.0,
+        "MaxTurbining": [],
+        "MaxTurbiningPenalty": null,
+        "RegFactor": null,
+        "OxT_Tail(2)": [
+            0.0
+        ],
+        "DataMaxTurbining": [],
+        "DataVolumeMaximum": [],
+        "Vmax": [
+            0.0
+        ],
+        "FloodControlStorage": [],
+        "TotIn(1)": [
+            0.0
+        ],
+        "Qmin": [
+            0.0
+        ],
+        "AreaType": 0,
+        "PolA3": null,
+        "DataVolumeMinimum": [],
+        "SxA_Storage(5)": 0.0,
+        "MaxTOPenalty": null,
+        "Unidades": [
+            1
+        ],
+        "OxT_Outflow(4)": [
+            0.0
+        ],
+        "AlertStorage": [],
+        "FP(1)": 0.0,
+        "SxF_Filtration(1)": 0.0,
+        "FiltType": 0,
+        "OxT_Tail(4)": [
+            0.0
+        ],
+        "InitialValueDeadStorage": null,
+        "classType": 17,
+        "ProdTypeSim": 0
+    },
+    "PSRGndPlant": {
+        "code": 4,
+        "O&MCost": [
+            0.0
+        ],
+        "system": 36583320,
+        "name": "GND4",
+        "reference_id": 39069664,
+        "FatOpe": [
+            1.0
+        ],
+        "PotInst": [
+            0.8
+        ],
+        "TechType": 0,
+        "modeldimensions": [
+            {
+                "id": "block",
+                "value": 21
+            }
+        ],
+        "generic_id": "4-GND4-id-39",
+        "classType": 39,
+        "HourGeneration": [
+            0.0
+        ],
+        "ICP": [
+            0.0
+        ],
+        "CurtailmentCost": [
+            0.0
+        ],
+        "Data": [
             "1900-01-01"
+        ],
+        "Existing": [
+            0
+        ],
+        "sfal": [
+            0
+        ],
+        "station": 20632912,
+        "Unidades": [
+            1
+        ]
+    },
+    "PSRInterconnection": {
+        "Currency": "$",
+        "LossFactor->": [
+            null
         ],
         "DataCapacity<-": [
             "1900-01-01"
         ],
-        "DataLossFactor->": [
+        "LossFactor<-": [
+            null
+        ],
+        "DataCapacity->": [
             "1900-01-01"
         ],
-        "DataLossFactor<-": [
-            "1900-01-01"
-        ],
+        "reference_id": 29301688,
         "DataLossFactorBlk->": [
             "1900-01-01"
         ],
         "DataLossFactorBlk<-": [
             "1900-01-01"
         ],
-        "Existing": [
-            0
-        ],
-        "LossFactor->": [
+        "Capacity->(1)": [
             null
         ],
-        "LossFactor<-": [
-            null
+        "modeldimensions": [
+            {
+                "id": "block",
+                "value": 21
+            }
         ],
-        "LossFactorBlk->(1)": [
-            null
-        ],
+        "generic_id": "Interc12",
+        "no1": 29529296,
         "LossFactorBlk<-(1)": [
             null
         ],
         "classType": 34,
-        "generic_id": "Interc12",
-        "modeldimensions": [
-            {
-                "id": "block",
-                "value": 21
-            }
-        ],
-        "no1": 29529296,
         "no2": 29530008,
-        "reference_id": 29301688
-    },
-    "PSRInterconnectionNetwork": {
-        "classType": 40,
-        "generic_id": "",
-        "reference_id": 28585248
-    },
-    "PSRInterconnectionSumData": {
-        "Coefficients": [
-            -1.0
+        "Capacity<-(1)": [
+            null
         ],
         "Data": [
             "1900-01-01"
         ],
-        "DataLB": [
+        "Existing": [
+            0
+        ],
+        "DataLossFactor<-": [
             "1900-01-01"
         ],
-        "DataUB": [
+        "LossFactorBlk->(1)": [
+            null
+        ],
+        "DataLossFactor->": [
             "1900-01-01"
-        ],
-        "LB(1)": [
-            10.0
-        ],
-        "UB(1)": [
-            11.0
-        ],
-        "classType": 61,
-        "code": 1,
-        "elements": [
-            29301688
-        ],
-        "generic_id": "",
-        "modeldimensions": [
-            {
-                "id": "block",
-                "value": 21
-            }
-        ],
-        "name": "IntSum1",
-        "reference_id": 14077776
-    },
-    "PSRLoad": {
-        "Data": [
-            "2021-01-01"
-        ],
-        "P(1)": [
-            0.02
-        ],
-        "P(2)": [
-            0.02
-        ],
-        "P(3)": [
-            0.02
-        ],
-        "bus": 36836144,
-        "classType": 14,
-        "code": 114,
-        "demand": 22014176,
-        "generic_id": "BUS_114",
-        "modeldimensions": [
-            {
-                "id": "block",
-                "value": 21
-            }
-        ],
-        "name": "BUS_114",
-        "reference_id": 36954152,
-        "tipo_devc": 3
+        ]
     },
     "PSRMaintenanceData": {
-        "Data": [
-            "2013-01-01"
-        ],
         "Manutencao": [
             90.0
         ],
-        "actiontype": 1,
-        "classType": 29,
-        "generic_id": "",
-        "plant": 13311688,
         "reference_id": 29597192,
-        "system": 29529296,
-        "type": 2
-    },
-    "PSRNetwork": {
-        "classType": 7,
-        "generic_id": "",
-        "reference_id": 13331288
-    },
-    "PSRNetworkDC": {
-        "classType": 37,
-        "generic_id": "",
-        "reference_id": 15527040
-    },
-    "PSRReserveGenerationConstraintData": {
-        "CompensateNoSel": 0,
-        "CompensateSel": 0,
+        "classType": 29,
         "Data": [
             "2013-01-01"
         ],
-        "DefaultPenalty": 1,
-        "Penalty": -1.0,
-        "Restricao(1)": [
+        "actiontype": 1,
+        "plant": 13311688,
+        "generic_id": "",
+        "system": 29529296,
+        "type": 2
+    },
+    "PSRGaugingStation": {
+        "Teta": [
             1.0
         ],
-        "Type": 1,
-        "Unit": 0,
-        "backed": [],
-        "batteries": [],
-        "classType": 53,
-        "code": 1,
+        "Fi(1)": [
+            0.0
+        ],
+        "Sd": [
+            0.0
+        ],
+        "code": 102,
+        "downstream": 13605944,
+        "name": "Hydro 2",
+        "Fi(6)": [
+            0.0
+        ],
+        "reference_id": 13606016,
+        "Ordem": [
+            0
+        ],
+        "Av": [
+            0.0
+        ],
+        "modeldimensions": [
+            {
+                "id": "lag",
+                "value": 12
+            }
+        ],
         "generic_id": "",
+        "Fi(2)": [
+            0.0
+        ],
+        "classType": 32,
+        "Fi(3)": [
+            0.0
+        ],
+        "Fi(5)": [
+            0.0
+        ],
+        "Vazao": [
+            0.0
+        ],
+        "Data": [
+            "1956-01-01"
+        ],
+        "Fi(4)": [
+            0.0
+        ]
+    },
+    "PSRLoad": {
+        "code": 114,
+        "bus": 36836144,
+        "P(1)": [
+            0.02
+        ],
+        "tipo_devc": 3,
+        "name": "BUS_114",
+        "reference_id": 36954152,
         "modeldimensions": [
             {
                 "id": "block",
                 "value": 21
             }
         ],
-        "name": "ResCon1",
-        "reference_id": 29367272,
-        "system": 29529296,
-        "usinas": [
-            13311688,
-            29241440,
-            28862520
+        "generic_id": "BUS_114",
+        "classType": 14,
+        "demand": 22014176,
+        "P(3)": [
+            0.02
+        ],
+        "Data": [
+            "2021-01-01"
+        ],
+        "P(2)": [
+            0.02
         ]
     },
-    "PSRReservoirSet": {
-        "AlertEnergy": [
-            1.0
-        ],
-        "AlertEnergyPenalty": -1.0,
-        "DataAlertEnergy": [
-            "2013-01-01"
-        ],
-        "classType": 82,
+    "PSRElement": {
+        "reference_id": 29527728,
+        "classType": 57,
+        "generic_id": ""
+    },
+    "PSRDemand": {
+        "MaxShiftUp": null,
+        "Elastico": 0,
         "code": 1,
-        "generic_id": "",
-        "name": "JCAlert1",
-        "reference_id": 29685400,
-        "reservoirs": [
-            13311688,
-            13312000
-        ]
+        "system": 29529296,
+        "Duracao(1)": 100.0,
+        "name": "System 1",
+        "reference_id": 14759456,
+        "MaxShiftDown": null,
+        "SourceType": null,
+        "modeldimensions": [
+            {
+                "id": "block",
+                "value": 21
+            }
+        ],
+        "generic_id": "1-System 1-s1",
+        "classType": 25,
+        "CoefVariation(1)": [],
+        "CurtCost": null,
+        "Window": null,
+        "Data": [],
+        "MaxCurt": null,
+        "IsFlexible": null
     },
-    "PSRSerie": {
+    "PSRHydrologicalPlantConnection": {
+        "IsVertimento": 1,
+        "reference_id": 29527920,
+        "classType": 54,
+        "IsTurbinamento": 1,
+        "IsFiltration": 1,
+        "IsStoredEnergy": 1,
+        "generic_id": "",
+        "plant1": 13311688,
+        "plant2": 13312000
+    },
+    "PSRBus": {
+        "AVId": "string",
+        "name": "string",
+        "Kv": 0.0,
+        "code": 0,
+        "icca": 0
+    },
+    "PSRFuel": {
+        "DataConsumptionMax": [],
+        "UComb": "UC",
+        "code": 2,
+        "ScenarioCost": [],
+        "system": 29529296,
+        "Custo": [
+            1.2
+        ],
+        "name": "Fuel 2",
+        "reference_id": 14076016,
+        "UE": "MWh",
+        "DataAvailability": [],
+        "FlagScenario": 0,
+        "generic_id": "",
+        "Availability": [],
+        "classType": 24,
+        "ConsumptionMax": [],
+        "EmiCO2": 0.0,
         "Data": [
             "1900-01-01"
+        ]
+    },
+    "PSRGenerator": {
+        "name": "SUBSTATION",
+        "reference_id": 36632568,
+        "classType": 13,
+        "code": 1,
+        "bus": 36836864,
+        "generic_id": "SUBSTATION",
+        "plant": 20967016,
+        "tipo_devc": 2
+    },
+    "PSRSystem": {
+        "DataRiskAversionCurve": [],
+        "MOD:Demanda": {
+            "MOD:Demanda2Pat": {},
+            "MOD:Demanda3Pat": {},
+            "MOD:Demanda-Modificacoes": {},
+            "MOD:Demanda5Pat": {},
+            "MOD:Demanda4Pat": {},
+            "MOD:Demanda1Pat": {}
+        },
+        "TipoInfoManutencaoTermica": null,
+        "_id": "s2",
+        "code": 2,
+        "TipoInfoManutencaoHidro": 1,
+        "EmissionCost": [],
+        "name": "System 2",
+        "reference_id": 29530008,
+        "TipoUnidadeReservaGirante": null,
+        "TipoUnidadeReservaGeracao": 3,
+        "generic_id": "s2",
+        "Ignored": 1,
+        "RiskAversionCurve": [],
+        "TipoInfoReservaGeracao": 2,
+        "TipoUnidadeManutencaoHidro": 2,
+        "TipoUnidadeManutencaoTermica": null,
+        "TimeZoneOffset": null,
+        "classType": 2,
+        "MOD:Resultados": {
+            "MOD:SDDP": {
+                "RESULT:Demanda": {}
+            }
+        },
+        "RiskAversionCurvePenalty": null,
+        "UnM": "$",
+        "DataEmissionCost": [],
+        "restricao": [
+            14116472
         ],
-        "FlagContingency": 0,
+        "reserveGeneration": [
+            29367272
+        ],
+        "TipoInfoReservaGirante": null
+    },
+    "PSRNetworkDC": {
+        "reference_id": 15527040,
+        "classType": 37,
+        "generic_id": ""
+    },
+    "PSRSerie": {
         "FlagMonitored": 1,
-        "I": [
-            0
-        ],
-        "Iflh": [
-            0
-        ],
-        "MVAr": [
+        "Tmx": [
             null
         ],
-        "Pmn": [
+        "code": 134,
+        "tipo_devc": 4,
+        "name": "sw_300_350",
+        "Re": [
             null
+        ],
+        "reference_id": 36997352,
+        "Status": [
+            1
         ],
         "Pmx": [
             null
         ],
-        "Prob": [
-            null
+        "modeldimensions": [
+            {
+                "id": "block",
+                "value": 21
+            }
         ],
-        "R": [
-            0.0
-        ],
-        "Re": [
-            null
-        ],
-        "Rn": [
-            888.0
-        ],
-        "Status": [
-            1
-        ],
+        "generic_id": "sw_300_350",
+        "no1": 36838304,
         "Tmn": [
-            null
-        ],
-        "Tmx": [
             null
         ],
         "X": [
             0.001
         ],
         "classType": 8,
-        "code": 134,
-        "generic_id": "sw_300_350",
+        "no2": 36841064,
+        "MVAr": [
+            null
+        ],
+        "FlagContingency": 0,
+        "I": [
+            0
+        ],
+        "Prob": [
+            null
+        ],
+        "Data": [
+            "1900-01-01"
+        ],
+        "R": [
+            0.0
+        ],
+        "Iflh": [
+            0
+        ],
+        "Pmn": [
+            null
+        ],
+        "Rn": [
+            888.0
+        ]
+    },
+    "PSRReservoirSet": {
+        "AlertEnergyPenalty": -1.0,
+        "name": "JCAlert1",
+        "reference_id": 29685400,
+        "classType": 82,
+        "DataAlertEnergy": [
+            "2013-01-01"
+        ],
+        "reservoirs": [
+            13311688,
+            13312000
+        ],
+        "AlertEnergy": [
+            1.0
+        ],
+        "code": 1,
+        "generic_id": ""
+    },
+    "PSRBattery": {
+        "code": 3,
+        "bus": 36845864,
+        "system": 36583320,
+        "tipo_devc": 15,
+        "name": "BAT03",
+        "reference_id": 36631024,
+        "Emax": [
+            1.0
+        ],
+        "generic_id": "BAT03",
+        "Pmax": [
+            0.2
+        ],
+        "Emin": [
+            0.0
+        ],
+        "classType": 51,
+        "FlagInterStage": 0,
+        "RegTime": 24,
+        "DischargeEffic": [
+            0.87
+        ],
+        "ChargeEffic": [
+            0.95
+        ],
+        "Einic": 0.0,
+        "Data": [
+            "1900-01-01"
+        ],
+        "DischargeRamp": -1.0,
+        "Existing": [
+            0
+        ],
+        "ChargeRamp": -1.0
+    },
+    "PSRTransformer": {
+        "FlagMonitored": 1,
+        "Tmx": [
+            null
+        ],
+        "code": 129,
+        "tipo_devc": 5,
+        "name": "sw_150_149",
+        "Re": [
+            null
+        ],
+        "reference_id": 36995272,
+        "Status": [
+            0
+        ],
+        "Pmx": [
+            null
+        ],
         "modeldimensions": [
             {
                 "id": "block",
                 "value": 21
             }
         ],
-        "name": "sw_300_350",
-        "no1": 36838304,
-        "no2": 36841064,
-        "reference_id": 36997352,
-        "tipo_devc": 4
+        "generic_id": "sw_150_149",
+        "no1": 36836864,
+        "Tmn": [
+            null
+        ],
+        "X": [
+            0.001
+        ],
+        "classType": 9,
+        "no2": 36837584,
+        "MVAr": [
+            null
+        ],
+        "FlagContingency": 0,
+        "I": [
+            0
+        ],
+        "Prob": [
+            null
+        ],
+        "Data": [
+            "1900-01-01"
+        ],
+        "R": [
+            0.0
+        ],
+        "Iflh": [
+            0
+        ],
+        "Pmn": [
+            null
+        ],
+        "Rn": [
+            888.0
+        ]
+    },
+    "PSRGasEmission": {
+        "CoefEmission(1)": [
+            2.0
+        ],
+        "EmissionCost": [
+            0.0
+        ],
+        "code": 1,
+        "Unit": "pu",
+        "name": "e1",
+        "DateEmissionCost": [
+            "1900-01-01"
+        ],
+        "reference_id": 29686120,
+        "modeldimensions": [
+            {
+                "id": "plant",
+                "value": 1
+            }
+        ],
+        "generic_id": "",
+        "plants": [
+            29241440
+        ],
+        "classType": 73,
+        "DateCoefEmission": [
+            "2020-10-05"
+        ]
+    },
+    "PSRGenerationConstraintData": {
+        "code": 1,
+        "system": 29529296,
+        "name": "GenCon1",
+        "batteries": [],
+        "reference_id": 14116472,
+        "modeldimensions": [
+            {
+                "id": "block",
+                "value": 21
+            }
+        ],
+        "generic_id": "",
+        "classType": 52,
+        "Restricao(1)": [
+            1.0,
+            2.0,
+            3.0,
+            4.0,
+            5.0,
+            6.0,
+            7.0,
+            8.0,
+            9.0,
+            0.0,
+            1.0,
+            2.0
+        ],
+        "sign": ":<:",
+        "usinas": [
+            29241440,
+            13312000,
+            29532736
+        ],
+        "Penalty": -1.0,
+        "Data": [
+            "2013-01-01",
+            "2013-02-01",
+            "2013-03-01",
+            "2013-04-01",
+            "2013-05-01",
+            "2013-06-01",
+            "2013-07-01",
+            "2013-08-01",
+            "2013-09-01",
+            "2013-10-01",
+            "2013-11-01",
+            "2013-12-01"
+        ]
+    },
+    "PSRHydrologicalPlantNetwork": {
+        "reference_id": 28587360,
+        "classType": 31,
+        "generic_id": ""
+    },
+    "PSRInterconnectionSumData": {
+        "LB(1)": [
+            10.0
+        ],
+        "UB(1)": [
+            11.0
+        ],
+        "elements": [
+            29301688
+        ],
+        "code": 1,
+        "name": "IntSum1",
+        "reference_id": 14077776,
+        "modeldimensions": [
+            {
+                "id": "block",
+                "value": 21
+            }
+        ],
+        "generic_id": "",
+        "classType": 61,
+        "DataLB": [
+            "1900-01-01"
+        ],
+        "Coefficients": [
+            -1.0
+        ],
+        "DataUB": [
+            "1900-01-01"
+        ],
+        "Data": [
+            "1900-01-01"
+        ]
+    },
+    "PSRHydrologicalNetwork": {
+        "reference_id": 28587216,
+        "classType": 30,
+        "generic_id": ""
+    },
+    "PSRNetwork": {
+        "reference_id": 13331288,
+        "classType": 7,
+        "generic_id": ""
     },
     "PSRStudy": {
         "DateChroDeficitCost": [
             "1900-01-01"
         ],
-        "FutureCostStage": 0,
-        "NumberOpenings": 0,
-        "Series_Backward": 0,
-        "VersionRenewableBlockProfile": 0,
-        "DeficitCost": [
-            0.0
-        ],
-        "DataHourBlock": [
-            "1900-01-01"
-        ],
-        "Vazoes": 0,
         "VersaoInfoCargaBarra": "string",
-        "AVId": "string",
         "Ano_inicial": 0,
         "Configuracao": 0,
-        "Horizonte": 0,
-        "MinSpillageUnit": 0,
         "DeficitSegment": [
             0.0
         ],
@@ -1022,291 +1010,282 @@
             0
         ],
         "Perdas": 0,
-        "SubHourlyDiscretization": 0,
         "FutureCostEntryFileName": "string",
-        "CodigoSistemas": [
-            0
-        ],
         "MinOutflowPenalty": 0.0,
         "NumeroSistemas": 0,
         "CurrencyFactor": [
             0.0
         ],
-        "Objetivo": 0,
         "Idioma": 0,
         "Currency": [
             "string"
         ],
-        "NumeroBlocosDemanda": 0,
         "NumberSimulations": 0,
         "ChroDeficitCost": [
             0.0
         ],
-        "code": 0,
-        "FutureCostReadFileName": "string",
-        "SpillagePenalty": 0.0,
-        "TaxaDesconto": 0.0,
         "FlagReadFutureCost": 0,
-        "Rede": 0,
         "name": "string",
         "FutureCostYear": 0,
         "HourBlockMap": [
             0
         ],
-        "Ano_Inicial_Hidro": 0,
-        "NumeroAnosAdicionais": 0,
         "Series_Forward": 0,
         "NumeroEtapas": 0,
-        "Series_Simular": 0,
         "SubHourlyStage": [
             "1900-01-01"
         ],
         "Tipo_Etapa": 0,
-        "NumeroAnosAdicionaisParm3": 0,
-        "InitialStageFutureCost": 0,
-        "CriterioConvergencia": 0.0,
-        "NivelInformes": 0,
         "FinalStageFutureCost": 0,
-        "MaximoIteracoes": 0,
         "NumberBlocks": 0,
         "IndexSeriesSimulacao": [
             0
         ],
-        "CurrencyReference": "string",
         "Manutencao": 0,
         "FlagUseHotStart": 0,
+        "NumeroBlocosDemandaParm2": 0,
+        "FutureCostStage": 0,
+        "NumberOpenings": 0,
+        "Series_Backward": 0,
+        "VersionRenewableBlockProfile": 0,
+        "DeficitCost": [
+            0.0
+        ],
+        "DataHourBlock": [
+            "1900-01-01"
+        ],
+        "Vazoes": 0,
+        "AVId": "string",
+        "Horizonte": 0,
+        "MinSpillageUnit": 0,
+        "SubHourlyDiscretization": 0,
+        "CodigoSistemas": [
+            0
+        ],
+        "Objetivo": 0,
+        "NumeroBlocosDemanda": 0,
+        "code": 0,
+        "FutureCostReadFileName": "string",
+        "SpillagePenalty": 0.0,
+        "TaxaDesconto": 0.0,
+        "Rede": 0,
+        "NumeroAnosAdicionais": 0,
+        "Ano_Inicial_Hidro": 0,
+        "Series_Simular": 0,
+        "NumeroAnosAdicionaisParm3": 0,
+        "InitialStageFutureCost": 0,
+        "CriterioConvergencia": 0.0,
+        "NivelInformes": 0,
+        "MaximoIteracoes": 0,
+        "CurrencyReference": "string",
         "SubHourlyDays": [
             0
         ],
-        "Opcao": 0,
-        "NumeroBlocosDemandaParm2": 0
+        "Opcao": 0
     },
-    "PSRSystem": {
-        "DataEmissionCost": [],
-        "DataRiskAversionCurve": [],
-        "EmissionCost": [],
-        "Ignored": 1,
-        "MOD:Demanda": {
-            "MOD:Demanda-Modificacoes": {},
-            "MOD:Demanda1Pat": {},
-            "MOD:Demanda2Pat": {},
-            "MOD:Demanda3Pat": {},
-            "MOD:Demanda4Pat": {},
-            "MOD:Demanda5Pat": {}
-        },
-        "MOD:Resultados": {
-            "MOD:SDDP": {
-                "RESULT:Demanda": {}
+    "PSRArea": {
+        "name": "Area00000",
+        "_id": "",
+        "reference_id": 36810432,
+        "classType": 5,
+        "code": 0,
+        "modeldimensions": [
+            {
+                "id": "block",
+                "value": 21
             }
-        },
-        "RiskAversionCurve": [],
-        "RiskAversionCurvePenalty": null,
-        "TimeZoneOffset": null,
-        "TipoInfoManutencaoHidro": 1,
-        "TipoInfoManutencaoTermica": null,
-        "TipoInfoReservaGeracao": 2,
-        "TipoInfoReservaGirante": null,
-        "TipoUnidadeManutencaoHidro": 2,
-        "TipoUnidadeManutencaoTermica": null,
-        "TipoUnidadeReservaGeracao": 3,
-        "TipoUnidadeReservaGirante": null,
-        "UnM": "$",
-        "_id": "s2",
-        "classType": 2,
-        "code": 2,
-        "generic_id": "s2",
-        "name": "System 2",
-        "reference_id": 29530008,
-        "reserveGeneration": [
-            29367272
         ],
-        "restricao": [
-            14116472
-        ]
+        "generic_id": ""
+    },
+    "PSRElectrificationNetwork": {
+        "reference_id": 29338624,
+        "classType": 93,
+        "generic_id": ""
     },
     "PSRThermalPlant": {
-        "CEsp(1,1)": [
-            12.5
-        ],
-        "CEsp(2,1)": [
+        "MaintenanceValue": [
             0.0
         ],
-        "CEsp(3,1)": [
+        "SpinningReserve": [
             0.0
         ],
-        "CTransp": [
-            0.0
-        ],
-        "ChroGerMin(1)": [],
-        "ChroGerMinPenalty": null,
-        "ChronologicalStartup(1)": [],
-        "CoefE": [
-            0.0
-        ],
-        "ComT": 0,
-        "Data": [
+        "DataChroGerMin": [
             "1900-01-01"
         ],
-        "DataCesp": [
+        "PotInst": [
+            0.0
+        ],
+        "MaxShutDowns": 0,
+        "EndDateMaintenance": [
             "1900-01-01"
         ],
-        "DataChroGerMin": [],
-        "DataChronologicalStartup": [],
-        "DataMaxSecondaryReserve": [],
-        "DataPriceSecondaryReserve": [],
-        "DataSpinningReserve": [],
-        "EndDateMaintenance": [],
-        "Existing": [
+        "RampUp": 0.0,
+        "DataMaxSecondaryReserve": [
+            "1900-01-01"
+        ],
+        "ShutDownCost": 0.0,
+        "StartUp": [
+            0.0
+        ],
+        "MaxStartUps": 0,
+        "O&MCost": [
+            0.0
+        ],
+        "name": "string",
+        "NGas": [
             0
-        ],
-        "G(1)": [
-            100.0
-        ],
-        "G(2)": [
-            0.0
-        ],
-        "G(3)": [
-            0.0
-        ],
-        "GerMax": [
-            20.0
-        ],
-        "GerMin": [
-            0.0
-        ],
-        "ICP": [
-            0.0
         ],
         "IH": [
             0.0
         ],
-        "InitialDateMaintenance": [],
-        "MaintenanceValue": [],
-        "MaxSecondaryReserve(1)": [],
-        "MaxShutDowns": null,
-        "MaxStartUps": null,
-        "MinDowntime": null,
-        "MinUptime": null,
-        "NAF(1)": [
-            null
+        "DataPriceSecondaryReserve": [
+            "1900-01-01"
         ],
-        "NAF(2)": [
-            null
-        ],
-        "NAF(3)": [
-            null
-        ],
-        "NAdF": [
+        "NAF": [
             0
         ],
-        "NGas": [
-            null
+        "DataCesp": [
+            "1900-01-01"
         ],
-        "O&MCost": [
+        "ICP": [
             0.0
         ],
-        "PotInst": [
-            20.0
-        ],
-        "PriceSecondaryReserve(1)": [],
-        "RampDown": null,
-        "RampUp": null,
-        "ShutDownCost": null,
-        "SpinningReserve(1)": [
-            null
-        ],
-        "StartUp": [
-            0.0
-        ],
-        "ThermalType": 0,
-        "Unidades": [
-            1
-        ],
-        "classType": 16,
-        "code": 3,
-        "fuels": [
-            14076016
-        ],
-        "generic_id": "3-Thermal 3-s1-16",
-        "modeldimensions": [
-            {
-                "id": "block",
-                "value": 21
-            },
-            {
-                "id": "segment",
-                "value": 3
-            },
-            {
-                "id": "fuels",
-                "value": 3
-            }
-        ],
-        "name": "Thermal 3",
-        "reference_id": 29532736,
-        "sfal": [
-            0
-        ],
-        "system": 29529296
-    },
-    "PSRTransformer": {
         "Data": [
             "1900-01-01"
         ],
-        "FlagContingency": 0,
-        "FlagMonitored": 1,
-        "I": [
+        "Existing": [
             0
         ],
-        "Iflh": [
-            0
+        "DataSpinningReserve": [
+            "1900-01-01"
         ],
-        "MVAr": [
-            null
+        "InitialDateMaintenance": [
+            "1900-01-01"
         ],
-        "Pmn": [
-            null
-        ],
-        "Pmx": [
-            null
-        ],
-        "Prob": [
-            null
-        ],
-        "R": [
+        "GerMin": [
             0.0
         ],
-        "Re": [
-            null
+        "AVId": "string",
+        "CTransp": [
+            0.0
         ],
-        "Rn": [
-            888.0
+        "DataChronologicalStartup": [
+            "1900-01-01"
         ],
-        "Status": [
+        "MinUptime": 0.0,
+        "sfal": [
             0
         ],
-        "Tmn": [
-            null
+        "Unidades": [
+            0
         ],
-        "Tmx": [
-            null
+        "code": 0,
+        "GerMax": [
+            0.0
         ],
-        "X": [
-            0.001
+        "ChronologicalStartup": [
+            0.0
         ],
-        "classType": 9,
-        "code": 129,
-        "generic_id": "sw_150_149",
+        "ComT": 0,
+        "CoefE": [
+            0.0
+        ],
+        "ChroGerMin": [
+            0.0
+        ],
+        "ChroGerMinPenalty": 0.0,
+        "G": [
+            0.0
+        ],
+        "PriceSecondaryReserve": [
+            0.0
+        ],
+        "CEsp": [
+            0.0
+        ],
+        "MinDowntime": 0.0,
+        "RampDown": 0.0,
+        "MaxSecondaryReserve": [
+            0.0
+        ],
+        "NAdF": [
+            0
+        ]
+    },
+    "PSRDemandSegment": {
+        "DataHourDemand": [],
+        "system": 29529296,
+        "DataHourDemandPrice": [],
+        "HourDemandScen": [],
+        "reference_id": 29528400,
+        "DataCusto": [],
         "modeldimensions": [
             {
                 "id": "block",
                 "value": 21
             }
         ],
-        "name": "sw_150_149",
-        "no1": 36836864,
-        "no2": 36837584,
-        "reference_id": 36995272,
-        "tipo_devc": 5
+        "generic_id": "1-System 1-s1-1",
+        "Demanda(2)": [
+            0.64914
+        ],
+        "Custo(1)": [],
+        "classType": 36,
+        "demand": 14759456,
+        "HourDemand": [],
+        "DataHourDemandScen": [],
+        "Demanda(3)": [
+            1.5579
+        ],
+        "Data": [
+            "2013-01-01"
+        ],
+        "HourDemandPrice": [],
+        "Demanda(1)": [
+            12.57
+        ]
+    },
+    "PSRInterconnectionNetwork": {
+        "reference_id": 28585248,
+        "classType": 40,
+        "generic_id": ""
+    },
+    "PSRGasNetwork": {
+        "reference_id": 28587648,
+        "classType": 28,
+        "generic_id": ""
+    },
+    "PSRReserveGenerationConstraintData": {
+        "code": 1,
+        "system": 29529296,
+        "CompensateSel": 0,
+        "DefaultPenalty": 1,
+        "Unit": 0,
+        "name": "ResCon1",
+        "batteries": [],
+        "reference_id": 29367272,
+        "modeldimensions": [
+            {
+                "id": "block",
+                "value": 21
+            }
+        ],
+        "generic_id": "",
+        "CompensateNoSel": 0,
+        "classType": 53,
+        "backed": [],
+        "Restricao(1)": [
+            1.0
+        ],
+        "usinas": [
+            13311688,
+            29241440,
+            28862520
+        ],
+        "Penalty": -1.0,
+        "Data": [
+            "2013-01-01"
+        ],
+        "Type": 1
     }
 }
