@@ -96,40 +96,7 @@ function test_api2() # Tests creating study
 
     data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
 
-    index = PSRI.create_element!(data,"PSRThermalPlant")
-    index = PSRI.create_element!(data,"PSRBus")
-    index = PSRI.create_element!(data,"PSRSerie")
-    index = PSRI.create_element!(data,"PSRSystem")
-    index = PSRI.create_element!(data,"PSRArea")
-    index = PSRI.create_element!(data,"PSRLoad")
-    index = PSRI.create_element!(data,"PSRFuelConsumption")
-    index = PSRI.create_element!(data,"PSRGndGaugingStation")
-    index = PSRI.create_element!(data,"PSRHydroPlant")
-    index = PSRI.create_element!(data,"PSRGndPlant")
-    index = PSRI.create_element!(data,"PSRInterconnection")
-    index = PSRI.create_element!(data,"PSRGaugingStation")
-    index = PSRI.create_element!(data,"PSRDemand")
-    
-    # index = PSRI.create_element!(data,"PSRHydrologicalPlantConnection")
-    # index = PSRI.create_element!(data,"PSRFuel")
-    # index = PSRI.create_element!(data,"PSRGenerator")
-    # index = PSRI.create_element!(data,"PSRNetworkDC")
-    # index = PSRI.create_element!(data,"PSRReservoirSet")
-    # index = PSRI.create_element!(data,"PSRBattery")
-    # index = PSRI.create_element!(data,"PSRTransformer")
-    # index = PSRI.create_element!(data,"PSRGasEmission")
-    # index = PSRI.create_element!(data,"PSRGenerationConstraintData")
-    # index = PSRI.create_element!(data,"PSRHydrologicalPlantNetwork")
-    # index = PSRI.create_element!(data,"PSRInterconnectionSumData")
-    # index = PSRI.create_element!(data,"PSRHydrologicalNetwork")
-    # index = PSRI.create_element!(data,"PSRNetwork")
-    # index = PSRI.create_element!(data,"PSRElectrificationNetwork")
-    # index = PSRI.create_element!(data,"PSRDemandSegment")
-    # index = PSRI.create_element!(data,"PSRInterconnectionNetwork")
-    # index = PSRI.create_element!(data,"PSRGasNetwork")
-    # index = PSRI.create_element!(data,"PSRReserveGenerationConstraintData")
-
-
+    index = PSRI.create_element!(data,"PSRThermalPlant","ShutDownCost"=>1.0)
 
     PSRI.write_data(data)
 
