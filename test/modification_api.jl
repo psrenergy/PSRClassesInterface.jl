@@ -88,7 +88,7 @@ function test_api(data_path::String)
 end
 
 
-function test_api2() # Tests creating study
+function test_api2() # Tests creating study and element
     temp_path = joinpath(tempdir(), "PSRI")
     json_path = joinpath(temp_path, "psrclasses.json")
 
@@ -104,5 +104,27 @@ function test_api2() # Tests creating study
 
 end
 
+function test_api3() # Tests creating study and wrong collection
+    temp_path = joinpath(tempdir(), "PSRI")
+    json_path = joinpath(temp_path, "psrclasses.json")
+
+    mkpath(temp_path)
+
+    data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
+
+    try
+        PSRI.create_element!(data,"RandomCollection123","ShutDownCost"=>1.0)
+    catch error
+        buf = IOBuffer()
+        showerror(buf, error)
+        message = String(take!(buf))
+        @test message == "Collection 'RandomCollection123' is not available for this study"
+    end
+
+
+end
+
+
 test_api(PATH_CASE_0)
 test_api2() 
+test_api3()
