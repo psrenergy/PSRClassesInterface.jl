@@ -101,8 +101,10 @@ function test_api2() # Tests creating study and element
     PSRI.write_data(data)
 
     parm =  PSRI.get_parm(data, "PSRThermalPlant", "ShutDownCost", 1, Float64)
+    summary = PSRI.summary(data)
     @test index isa Integer
     @test parm isa Float64
+    @test ! isempty(summary)
 
 end
 
@@ -121,6 +123,12 @@ function test_api3() # Tests creating study and wrong collection
         showerror(buf, error)
         message = String(take!(buf))
         @test message == "Collection 'RandomCollection123' is not available for this study"
+    end
+
+    try
+        PSRI.create_element!(data,"PSRThermalPlant","Random"=>1.0)
+    catch error
+        @test typeof(error) == ErrorException
     end
 
 end
@@ -143,9 +151,6 @@ function test_api4() # Tests set_related!() and set_vector_related!() methods
     try
         PSRI.set_related!(data, "PSRThermalPlant", "PSRThermalPlant", index1, index2)
     catch error
-        buf = IOBuffer()
-        showerror(buf, error)
-        message = String(take!(buf))
         @test typeof(error) == ErrorException
     end
 
@@ -160,6 +165,7 @@ function test_api4() # Tests set_related!() and set_vector_related!() methods
 
     PSRI.write_data(data)
 end
+
 
 test_api(PATH_CASE_0)
 test_api2() 
