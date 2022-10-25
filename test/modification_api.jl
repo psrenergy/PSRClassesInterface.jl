@@ -146,7 +146,7 @@ function test_api4() # Tests set_related!() and set_vector_related!() methods
         buf = IOBuffer()
         showerror(buf, error)
         message = String(take!(buf))
-        @test message == "No relation from PSRThermalPlant to PSRThermalPlant with type RELATION_1_TO_1 \nAvailable relations from PSRThermalPlant are: \nTuple{String, PSRClassesInterface.RelationType}[(\"PSRSystem\", PSRClassesInterface.RELATION_1_TO_1), (\"PSRFuel\", PSRClassesInterface.RELATION_1_TO_N)]"
+        @test typeof(error) == ErrorException
     end
 
     PSRI.set_related!(data, "PSRThermalPlant", "PSRSystem", index1, index3, relation_type = PSRI.RELATION_1_TO_1)
