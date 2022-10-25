@@ -100,7 +100,9 @@ function test_api2() # Tests creating study and element
 
     PSRI.write_data(data)
 
+    parm =  PSRI.get_parm(data, "PSRThermalPlant", "ShutDownCost", 1, Float64)
     @test index isa Integer
+    @test parm isa Float64
 
 end
 
@@ -121,10 +123,45 @@ function test_api3() # Tests creating study and wrong collection
         @test message == "Collection 'RandomCollection123' is not available for this study"
     end
 
-
 end
 
+function test_api4() # Tests set_related!() and set_vector_related!() methods
+    temp_path = joinpath(tempdir(), "PSRI")
+    json_path = joinpath(temp_path, "psrclasses.json")
+
+    mkpath(temp_path)
+
+    data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
+
+    index1 = PSRI.create_element!(data,"PSRThermalPlant","ShutDownCost"=>1.0)
+    index2 = PSRI.create_element!(data,"PSRThermalPlant","ShutDownCost"=>2.0)
+    index3 = PSRI.create_element!(data,"PSRSystem")
+    index4 = PSRI.create_element!(data,"PSRFuel")
+    index5 = PSRI.create_element!(data,"PSRFuel")
+    index6 = PSRI.create_element!(data,"PSRFuel")
+
+    try
+        PSRI.set_related!(data, "PSRThermalPlant", "PSRThermalPlant", index1, index2)
+    catch error
+        buf = IOBuffer()
+        showerror(buf, error)
+        message = String(take!(buf))
+        @test message == "No relation from PSRThermalPlant to PSRThermalPlant with type RELATION_1_TO_1 \nAvailable relations from PSRThermalPlant are: \nTuple{String, PSRClassesInterface.RelationType}[(\"PSRSystem\", PSRClassesInterface.RELATION_1_TO_1), (\"PSRFuel\", PSRClassesInterface.RELATION_1_TO_N)]"
+    end
+
+    PSRI.set_related!(data, "PSRThermalPlant", "PSRSystem", index1, index3, relation_type = PSRI.RELATION_1_TO_1)
+    map = PSRI.get_map(data, "PSRThermalPlant", "PSRSystem")
+    @test map == [1,0]
+
+    PSRI.set_vector_related!(data, "PSRThermalPlant", "PSRFuel", index1, [index4,index5,index6])
+    map_vec = PSRI.get_vector_map(data,"PSRThermalPlant", "PSRFuel")
+    @test map_vec == [[1,2,3],[]]
+
+
+    PSRI.write_data(data)
+end
 
 test_api(PATH_CASE_0)
 test_api2() 
 test_api3()
+test_api4()
