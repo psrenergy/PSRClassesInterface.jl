@@ -63,6 +63,10 @@ const _RELATIONS = Dict{String, _INNER_DICT}(
     ),
     # TODO:
     # merge series an trafos
+    "PSRLinkDC" => _INNER_DICT(
+        ("PSRBus", RELATION_FROM) => "no1",
+        ("PSRBus", RELATION_TO) => "no2",
+    ),
     "PSRSerie" => _INNER_DICT(
         ("PSRBus", RELATION_FROM) => "no1",
         ("PSRBus", RELATION_TO) => "no2",
