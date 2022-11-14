@@ -166,8 +166,29 @@ function test_api4() # Tests set_related!() and set_vector_related!() methods
     PSRI.write_data(data)
 end
 
+function test_api5() #tests get_element and _get_index_by_code for code
+    temp_path = joinpath(tempdir(), "PSRI")
+    json_path = joinpath(temp_path, "psrclasses.json")
+
+    mkpath(temp_path)
+
+    data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
+
+    index = PSRI.create_element!(data,"PSRBus","code"=> Int32(5))
+
+    retrieved_index = PSRI._get_index_by_code(data,"PSRBus", 5)
+
+    @test (index == retrieved_index)
+
+    element = PSRI.get_element(data,"PSRBus", 5)
+
+    @test element["code"] == 5
+    
+end
+
 
 test_api(PATH_CASE_0)
 test_api2() 
 test_api3()
 test_api4()
+test_api5()

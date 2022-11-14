@@ -602,8 +602,31 @@ function _get_index(data::Data, reference_id::Integer)
     return _get_index(data.data_index, reference_id)
 end
 
+function _get_index_by_code(data:: Data, collection::String, code::Integer)
+    collection_vector = data.raw[collection]
+
+    for (index,element) in enumerate(collection_vector)
+        if element["code"] == code
+            return index
+        end
+    end
+    
+    error("Code '$code' not found in collection '$collection'")
+end
+
 function get_element(data::Data, reference_id::Integer)
     collection, index = _get_index(data, reference_id)
+    return _get_element(data, collection, index)
+end
+
+function get_element(data::Data, collection::String, code::Integer)
+    collection_struct = data.data_struct[collection]
+    index = 0
+    if haskey(collection_struct,"code")
+        index = _get_index_by_code(data, collection, code)
+    else
+        error("Collection '$collection' does not have a code attribute")
+    end
 
     return _get_element(data, collection, index)
 end
