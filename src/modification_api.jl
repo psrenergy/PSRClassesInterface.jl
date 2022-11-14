@@ -279,6 +279,18 @@ function set_related!(
     return nothing
 end
 
+function set_related_by_code!(
+    data::Data,
+    source::String,
+    target::String,
+    source_index::Integer,
+    target_code::Integer;
+    relation_type::RelationType = RELATION_1_TO_1,
+)
+    target_index = _get_index_by_code(data, target, target_code)
+    return set_related!(data, source, target, source_index, target_index, relation_type = relation_type)
+end
+
 function set_vector_related!(
     data::Data,
     source::String,
