@@ -3,6 +3,7 @@
 
 Returns true is `relation` is a vector relation.
 """
+
 function is_vector_relation(relation)
     return relation == RELATION_1_TO_N || relation == RELATION_BACKED
 end
@@ -118,6 +119,74 @@ const _RELATIONS = Dict{String, _INNER_DICT}(
 function _get_relation(source::String, target::String, relation_type::RelationType)
     return _RELATIONS[source][(target, relation_type)]
 end
+
+function _get_target_index_from_relation(data::Data, source::String, target::String, source_index::Integer, relation_attribute::String)
+    source_element = data.raw[source][source_index]
+    target_index = _get_index(data.data_index,source_element[relation_attribute])
+    return target_index[2]
+end
+
+function _get_sources_indices_from_relations(data::Data, source::String, target::String, target_id::Integer, relation_attribute::String,)
+    possible_elements = data.raw[source]
+
+    indices = Vector{Int32}()
+    for (index,element) in enumerate(possible_elements)
+        if haskey(element, relation_attribute)
+            if element[relation_attribute] == target_id
+                append!(indices, index)
+            end
+        end
+    end
+    return indices
+end
+
+
+function _get_element_related(data::Data, collection::String, index::Integer)
+    element = data.raw[collection][index]
+
+    # source_collection, target_collection, source_index, target_index
+    relations = Dict{Tuple{String, String, Int, Int}, String}()
+    
+
+    # Relations where the element is source
+    for ((target, relation), attribute) in _RELATIONS[collection]
+        if haskey(element,attribute) # has a relation as source
+            target_index = _get_target_index_from_relation(data,collection, target, index, attribute)
+            
+            relations[(collection, target, index, target_index)] = attribute
+        end
+    end
+
+
+    # Relations where the element is target
+    for (source, _) in _RELATIONS
+        for ((target, relation), attribute) in _RELATIONS[source]
+            if haskey(data.raw, source)
+                if target == collection
+                    sources_indices = _get_sources_indices_from_relations(data, source, target, element["reference_id"], attribute)
+                    if ! isempty(sources_indices)
+                        for source_index in sources_indices
+                            relations[(source, collection, source_index, index)] = attribute
+                        end
+                    end
+                end
+            end
+        end
+    end
+    return relations
+end
+
+function hasRelations(data::Data, collection:: String, index::Integer)
+
+    relations = _get_element_related(data, collection, index)
+
+    if ! isempty(relations)
+        return true
+    end
+
+    return false
+end
+
 
 function check_relation_scalar(relation_type)
     if is_vector_relation(relation_type)
