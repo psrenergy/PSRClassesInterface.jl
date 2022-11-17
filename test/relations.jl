@@ -43,7 +43,7 @@ function test_relations2() # tests _get_sources_indices_from_relations
 end
 
 
-function test_relations3() # tests hasRelations
+function test_relations3() # tests has_relations
     temp_path = joinpath(tempdir(), "PSRI")
     json_path = joinpath(temp_path, "psrclasses.json")
 
@@ -59,8 +59,8 @@ function test_relations3() # tests hasRelations
     PSRI.set_related!(data, "PSRSerie", "PSRBus", 1, 1, relation_type = PSRI.RELATION_FROM)
     PSRI.set_related!(data, "PSRSerie", "PSRBus", 1, 2, relation_type = PSRI.RELATION_TO)
 
-    @test PSRI.hasRelations(data, "PSRSerie", 1)
-    @test PSRI.hasRelations(data, "PSRBus", 1)
+    @test PSRI.has_relations(data, "PSRSerie", 1)
+    @test PSRI.has_relations(data, "PSRBus", 1)
 end
 
 test_relations1()

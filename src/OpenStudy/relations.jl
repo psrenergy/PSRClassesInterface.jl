@@ -133,7 +133,7 @@ function _get_sources_indices_from_relations(data::Data, source::String, target:
     for (index,element) in enumerate(possible_elements)
         if haskey(element, relation_attribute)
             if element[relation_attribute] == target_id
-                append!(indices, index)
+                push!(indices, index)
             end
         end
     end
@@ -176,7 +176,7 @@ function _get_element_related(data::Data, collection::String, index::Integer)
     return relations
 end
 
-function hasRelations(data::Data, collection:: String, index::Integer)
+function has_relations(data::Data, collection:: String, index::Integer)
 
     relations = _get_element_related(data, collection, index)
 
