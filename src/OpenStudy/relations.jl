@@ -107,8 +107,12 @@ const _RELATIONS = Dict{String,_INNER_DICT}(
         ("PSRGndPlant", RELATION_BACKED) => "backed",
     ),
     # TODO maybe rename?
-    "PSRReservoirSet" =>
-        _INNER_DICT(("PSRHydroPlant", RELATION_1_TO_N) => "reservoirs"),
+    "PSRReservoirSet" => _INNER_DICT(
+        ("PSRHydroPlant", RELATION_1_TO_N) => "reservoirs",
+    ),
+    "PSRPowerInjection" => _INNER_DICT(
+        ("PSRBus", RELATION_1_TO_1) => "bus",
+    ),
 )
 
 function _get_relation(source::String, target::String, relation_type::RelationType)

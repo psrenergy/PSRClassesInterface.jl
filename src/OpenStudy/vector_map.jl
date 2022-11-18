@@ -9,6 +9,7 @@ function mapped_vector(
     ignore::Bool = false,
     map_key = collection, # reference for PSRMap pointer, if empty use class name
     filters = String[], # for calling just within a subset instead of the full call
+    default = _default_value(T),
 ) where {T} #<: Union{Float64, Int32}
     raw = _raw(data)
 
@@ -40,7 +41,7 @@ function mapped_vector(
         error("Attribute $attribute was already mapped.")
     end
 
-    out = T[_default_value(T) for _ in 1:n] #zeros(T, n)
+    out = T[default for _ in 1:n] #zeros(T, n)
 
     date_cache = get!(data.map_cache_data_idx, collection, Dict{String,Vector{Int32}}())
 
@@ -58,7 +59,8 @@ function mapped_vector(
         vec
     end
 
-    vector_cache = VectorCache(dim1, dim2, dim1_val, dim2_val, index, stage, out)#, date_ref)
+    vector_cache = VectorCache(
+        dim1, dim2, dim1_val, dim2_val, index, stage, out, default)#, date_ref)
     collection_cache[attribute] = vector_cache
 
     if need_up_dates
@@ -102,7 +104,12 @@ function _update_vector!(
     cache.stage = data.controller_stage
     query_name = _build_name(attr, cache)
     for (idx, el) in enumerate(collection)
-        cache.vector[idx] = el[query_name][date_ref[idx]]
+        val = el[query_name][date_ref[idx]]
+        if val === nothing
+            cache.vector[idx] = cache.default
+        else
+            cache.vector[idx] = val
+        end
     end
     return nothing
 end

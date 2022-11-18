@@ -109,7 +109,6 @@ PSRClassesInterface.create_element!
 PSRClassesInterface.set_parm!
 PSRClassesInterface.set_vector!
 PSRClassesInterface.set_series!
-PSRClassesInterface.Attribute
 PSRClassesInterface.write_data
 PSRClassesInterface.set_related!
 PSRClassesInterface.set_vector_related!
