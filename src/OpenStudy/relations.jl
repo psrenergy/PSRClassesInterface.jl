@@ -118,13 +118,13 @@ end
 function _get_target_index_from_relation(
     data::Data,
     source::String,
-    target::String,
     source_index::Integer,
     relation_attribute::String,
 )
     source_element = data.raw[source][source_index]
-    target_index = _get_index(data.data_index, source_element[relation_attribute])
-    return target_index[2]
+    target_reference_id = source_element[relation_attribute]
+    _, target_index = _get_index(data.data_index, target_reference_id)
+    return target_index
 end
 
 function _get_sources_indices_from_relations(
@@ -154,10 +154,10 @@ function _get_element_related(data::Data, collection::String, index::Integer)
     relations = Dict{Tuple{String,String,Int,Int},String}()
 
     # Relations where the element is source
-    for ((target, relation), attribute) in _RELATIONS[collection]
+    for ((target, _), attribute) in _RELATIONS[collection]
         if haskey(element, attribute) # has a relation as source
             target_index =
-                _get_target_index_from_relation(data, collection, target, index, attribute)
+                _get_target_index_from_relation(data, collection, index, attribute)
 
             relations[(collection, target, index, target_index)] = attribute
         end
@@ -165,7 +165,7 @@ function _get_element_related(data::Data, collection::String, index::Integer)
 
     # Relations where the element is target
     for (source, _) in _RELATIONS
-        for ((target, relation), attribute) in _RELATIONS[source]
+        for ((target, _), attribute) in _RELATIONS[source]
             if haskey(data.raw, source)
                 if target == collection
                     sources_indices = _get_sources_indices_from_relations(
@@ -197,9 +197,10 @@ function has_relations(data::Data, collection::String, index::Integer)
     return false
 end
 
-function summary_relations(data::Data, collection::String, index::Integer)
-    if has_relations(data, collection, index) == false
-        return "This element does not have any relations"
+function relations_summary(data::Data, collection::String, index::Integer)
+    if !has_relations(data, collection, index)
+        println("This element does not have any relations")
+        return
     end
 
     relations = _get_element_related(data, collection, index)
@@ -209,13 +210,9 @@ function summary_relations(data::Data, collection::String, index::Integer)
         ((source_collection, target_collection, source_index, target_index), _),
     ) in enumerate(relations)
         if source_collection == collection && source_index == index
-            println("Relation $relation_index (Source):")
-            println("Source: '$source_collection' - index: $source_index")
-            println("Target: '$target_collection' - index: $target_index\n")
+            println("$relation_index: $source_collection[$source_index] → $target_collection[$target_index]")
         else
-            println("Relation $relation_index (Target): ")
-            println("Source: '$source_collection' - index: $source_index")
-            println("Target: '$target_collection' - index: $target_index\n")
+            println("$relation_index: $target_collection[$target_index] ← $source_collection[$source_index]")
         end
     end
     return

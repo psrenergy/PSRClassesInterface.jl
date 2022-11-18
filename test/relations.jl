@@ -15,7 +15,7 @@ function test_relations1() # tests _get_target_index_from_relation
     PSRI.set_related!(data, "PSRSerie", "PSRBus", 1, 1, relation_type = PSRI.RELATION_FROM)
     PSRI.set_related!(data, "PSRSerie", "PSRBus", 1, 2, relation_type = PSRI.RELATION_TO)
 
-    target_index = PSRI._get_target_index_from_relation(data, "PSRSerie", "PSRBus", 1, "no1")
+    target_index = PSRI._get_target_index_from_relation(data, "PSRSerie", 1, "no1")
 
     @test target_index == index1
 end

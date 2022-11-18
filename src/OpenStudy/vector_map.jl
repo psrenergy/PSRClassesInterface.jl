@@ -250,7 +250,7 @@ end
 
 """
 """
-function _build_name(name, cache) where {T<:Integer}
+function _build_name(name, cache)
     if !isempty(cache.dim1_str)
         if !isempty(cache.dim2_str)
             return string(name, '(', cache.dim1, ',', cache.dim2, ')')
