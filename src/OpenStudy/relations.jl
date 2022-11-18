@@ -8,9 +8,9 @@ function is_vector_relation(relation)
     return relation == RELATION_1_TO_N || relation == RELATION_BACKED
 end
 
-const _INNER_KEY = Tuple{String, RelationType}
-const _INNER_DICT = Dict{_INNER_KEY, String}
-const _RELATIONS = Dict{String, _INNER_DICT}(
+const _INNER_KEY = Tuple{String,RelationType}
+const _INNER_DICT = Dict{_INNER_KEY,String}
+const _RELATIONS = Dict{String,_INNER_DICT}(
     "PSRThermalPlant" => _INNER_DICT(
         ("PSRFuel", RELATION_1_TO_N) => "fuels",
         ("PSRSystem", RELATION_1_TO_1) => "system",
@@ -31,9 +31,8 @@ const _RELATIONS = Dict{String, _INNER_DICT}(
         ("PSRGndGaugingStation", RELATION_1_TO_1) => "station",
         ("PSRSystem", RELATION_1_TO_1) => "system",
     ),
-    "PSRGaugingStation" => _INNER_DICT(
-        ("PSRGaugingStation", RELATION_1_TO_1) => "downstream",
-    ),
+    "PSRGaugingStation" =>
+        _INNER_DICT(("PSRGaugingStation", RELATION_1_TO_1) => "downstream"),
     "PSRBattery" => _INNER_DICT(
         ("PSRBus", RELATION_1_TO_1) => "bus",
         ("PSRSystem", RELATION_1_TO_1) => "system",
@@ -51,9 +50,7 @@ const _RELATIONS = Dict{String, _INNER_DICT}(
         ("PSRDemand", RELATION_1_TO_1) => "demand",
         ("PSRSystem", RELATION_1_TO_1) => "system",
     ),
-    "PSRDemand" => _INNER_DICT(
-        ("PSRSystem", RELATION_1_TO_1) => "system",
-    ),
+    "PSRDemand" => _INNER_DICT(("PSRSystem", RELATION_1_TO_1) => "system"),
     "PSRLoad" => _INNER_DICT(
         ("PSRBus", RELATION_1_TO_1) => "bus",
         ("PSRDemand", RELATION_1_TO_1) => "demand",
@@ -89,9 +86,8 @@ const _RELATIONS = Dict{String, _INNER_DICT}(
         ("PSRBattery", RELATION_1_TO_N) => "batteries",
     ),
     # TODO maybe rename?
-    "PSRInterconnectionSumData" => _INNER_DICT(
-        ("PSRInterconnection", RELATION_1_TO_N) => "elements",
-    ),
+    "PSRInterconnectionSumData" =>
+        _INNER_DICT(("PSRInterconnection", RELATION_1_TO_N) => "elements"),
     # TODO maybe rename?
     "PSRMaintenanceData" => _INNER_DICT(
         ("PSRSystem", RELATION_1_TO_1) => "system",
@@ -111,26 +107,37 @@ const _RELATIONS = Dict{String, _INNER_DICT}(
         ("PSRGndPlant", RELATION_BACKED) => "backed",
     ),
     # TODO maybe rename?
-    "PSRReservoirSet" => _INNER_DICT(
-        ("PSRHydroPlant", RELATION_1_TO_N) => "reservoirs",
-    ),
+    "PSRReservoirSet" =>
+        _INNER_DICT(("PSRHydroPlant", RELATION_1_TO_N) => "reservoirs"),
 )
 
 function _get_relation(source::String, target::String, relation_type::RelationType)
     return _RELATIONS[source][(target, relation_type)]
 end
 
-function _get_target_index_from_relation(data::Data, source::String, target::String, source_index::Integer, relation_attribute::String)
+function _get_target_index_from_relation(
+    data::Data,
+    source::String,
+    target::String,
+    source_index::Integer,
+    relation_attribute::String,
+)
     source_element = data.raw[source][source_index]
-    target_index = _get_index(data.data_index,source_element[relation_attribute])
+    target_index = _get_index(data.data_index, source_element[relation_attribute])
     return target_index[2]
 end
 
-function _get_sources_indices_from_relations(data::Data, source::String, target::String, target_id::Integer, relation_attribute::String,)
+function _get_sources_indices_from_relations(
+    data::Data,
+    source::String,
+    target::String,
+    target_id::Integer,
+    relation_attribute::String,
+)
     possible_elements = data.raw[source]
 
     indices = Vector{Int32}()
-    for (index,element) in enumerate(possible_elements)
+    for (index, element) in enumerate(possible_elements)
         if haskey(element, relation_attribute)
             if element[relation_attribute] == target_id
                 push!(indices, index)
@@ -140,31 +147,35 @@ function _get_sources_indices_from_relations(data::Data, source::String, target:
     return indices
 end
 
-
 function _get_element_related(data::Data, collection::String, index::Integer)
     element = data.raw[collection][index]
 
     # source_collection, target_collection, source_index, target_index
-    relations = Dict{Tuple{String, String, Int, Int}, String}()
-    
+    relations = Dict{Tuple{String,String,Int,Int},String}()
 
     # Relations where the element is source
     for ((target, relation), attribute) in _RELATIONS[collection]
-        if haskey(element,attribute) # has a relation as source
-            target_index = _get_target_index_from_relation(data,collection, target, index, attribute)
-            
+        if haskey(element, attribute) # has a relation as source
+            target_index =
+                _get_target_index_from_relation(data, collection, target, index, attribute)
+
             relations[(collection, target, index, target_index)] = attribute
         end
     end
-
 
     # Relations where the element is target
     for (source, _) in _RELATIONS
         for ((target, relation), attribute) in _RELATIONS[source]
             if haskey(data.raw, source)
                 if target == collection
-                    sources_indices = _get_sources_indices_from_relations(data, source, target, element["reference_id"], attribute)
-                    if ! isempty(sources_indices)
+                    sources_indices = _get_sources_indices_from_relations(
+                        data,
+                        source,
+                        target,
+                        element["reference_id"],
+                        attribute,
+                    )
+                    if !isempty(sources_indices)
                         for source_index in sources_indices
                             relations[(source, collection, source_index, index)] = attribute
                         end
@@ -176,17 +187,39 @@ function _get_element_related(data::Data, collection::String, index::Integer)
     return relations
 end
 
-function has_relations(data::Data, collection:: String, index::Integer)
-
+function has_relations(data::Data, collection::String, index::Integer)
     relations = _get_element_related(data, collection, index)
 
-    if ! isempty(relations)
+    if !isempty(relations)
         return true
     end
 
     return false
 end
 
+function summary_relations(data::Data, collection::String, index::Integer)
+    if has_relations(data, collection, index) == false
+        return "This element does not have any relations"
+    end
+
+    relations = _get_element_related(data, collection, index)
+
+    for (
+        relation_index,
+        ((source_collection, target_collection, source_index, target_index), _),
+    ) in enumerate(relations)
+        if source_collection == collection && source_index == index
+            println("Relation $relation_index (Source):")
+            println("Source: '$source_collection' - index: $source_index")
+            println("Target: '$target_collection' - index: $target_index\n")
+        else
+            println("Relation $relation_index (Target): ")
+            println("Source: '$source_collection' - index: $source_index")
+            println("Target: '$target_collection' - index: $target_index\n")
+        end
+    end
+    return
+end
 
 function check_relation_scalar(relation_type)
     if is_vector_relation(relation_type)
@@ -203,7 +236,6 @@ function check_relation_vector(relation_type)
 end
 
 function validate_relation(lst_from::String, lst_to::String, type::RelationType)
-
     direct = false
     reverse = false
     reverse_type = nothing
@@ -223,15 +255,19 @@ function validate_relation(lst_from::String, lst_to::String, type::RelationType)
         end
     end
     if reverse
-        error("No relation from $lst_from to $lst_to with type $type." *
-            " The there is a reverse relation from $lst_to to " * 
+        error(
+            "No relation from $lst_from to $lst_to with type $type." *
+            " The there is a reverse relation from $lst_to to " *
             "$lst_from  with type $type.\n" *
             "Try: PSRI.get_reverse_vector_map(data, \"$lst_to\", " *
-            "\"$lst_from\"; original_relation_type = $(reverse_type))")
+            "\"$lst_from\"; original_relation_type = $(reverse_type))",
+        )
     elseif direct
-        error("No relation from $lst_from to $lst_to with type $type \n" *
+        error(
+            "No relation from $lst_from to $lst_to with type $type \n" *
             "Available relations from $lst_from are: \n" *
-            "$(keys(_RELATIONS[lst_from]))")
+            "$(keys(_RELATIONS[lst_from]))",
+        )
     else
         error("No relations from $lst_from available")
     end
@@ -257,14 +293,16 @@ function get_reverse_map(
             lst_from,
             lst_to,
             allow_empty = allow_empty,
-            relation_type = original_relation_type
+            relation_type = original_relation_type,
         )
-        for (f,vector_to) in enumerate(vector_map)
+        for (f, vector_to) in enumerate(vector_map)
             for t in vector_to
                 if out[t] == 0
                     out[t] = f
                 else
-                    error("The element $t maps to two elements ($(out[t]) and $f), use get_reverse_vector_map instead.")
+                    error(
+                        "The element $t maps to two elements ($(out[t]) and $f), use get_reverse_vector_map instead.",
+                    )
                 end
             end
         end
@@ -274,16 +312,18 @@ function get_reverse_map(
         lst_from,
         lst_to,
         allow_empty = allow_empty,
-        relation_type = original_relation_type
+        relation_type = original_relation_type,
     )
-    for (f,t) in enumerate(map)
+    for (f, t) in enumerate(map)
         if t == 0
             continue
         end
         if out[t] == 0
             out[t] = f
         else
-            error("The element $t maps to two elements ($(out[t]) and $f), use get_reverse_vector_map instead.")
+            error(
+                "The element $t maps to two elements ($(out[t]) and $f), use get_reverse_vector_map instead.",
+            )
         end
     end
     return out
@@ -308,9 +348,9 @@ function get_reverse_vector_map(
             lst_from,
             lst_to,
             allow_empty = allow_empty,
-            relation_type = original_relation_type
+            relation_type = original_relation_type,
         )
-        for (f,vector_to) in enumerate(vector_map)
+        for (f, vector_to) in enumerate(vector_map)
             for t in vector_to
                 push!(out[t], f)
             end
@@ -321,9 +361,9 @@ function get_reverse_vector_map(
         lst_from,
         lst_to,
         allow_empty = allow_empty,
-        relation_type = original_relation_type
+        relation_type = original_relation_type,
     )
-    for (f,t) in enumerate(map)
+    for (f, t) in enumerate(map)
         if t == 0
             continue
         end
@@ -339,7 +379,6 @@ function get_map(
     allow_empty::Bool = true,
     relation_type::RelationType = RELATION_1_TO_1, # type of the direct relation
 )
-
     if is_vector_relation(relation_type)
         error("For relation relation_type = $relation_type use get_vector_map")
     end
@@ -369,7 +408,7 @@ function get_map(
         id_to = get(el_from, raw_field, -1)
 
         found = false
-        for (idx,el) in enumerate(vec_to)
+        for (idx, el) in enumerate(vec_to)
             id = el["reference_id"]
             if id_to == id
                 out[idx_from] = idx
@@ -391,7 +430,6 @@ function get_vector_map(
     allow_empty::Bool = true,
     relation_type::RelationType = RELATION_1_TO_N,
 )
-
     if !is_vector_relation(relation_type)
         error("For relation relation_type = $relation_type use get_map")
     end
@@ -422,7 +460,7 @@ function get_vector_map(
         vec_id_to = get(el_from, raw_field, Any[])
         for id_to in vec_id_to
             # found = false
-            for (idx,el) in enumerate(vec_to)
+            for (idx, el) in enumerate(vec_to)
                 id = el["reference_id"]
                 if id_to == id
                     push!(out[idx_from], idx)
@@ -452,7 +490,9 @@ function get_related(
 
     if !haskey(source_element, relation_field)
         # low level error
-        error("Element '$source_index' from collection '$source' has no field '$relation_field'")
+        error(
+            "Element '$source_index' from collection '$source' has no field '$relation_field'",
+        )
     end
 
     target_id = source_element[relation_field]
@@ -482,7 +522,9 @@ function get_vector_related(
     relation_field = _get_relation(source, target, relation_type)
 
     if !haskey(source_element, relation_field)
-        error("Element '$source_index' from collection '$source' has no field '$relation_field'")
+        error(
+            "Element '$source_index' from collection '$source' has no field '$relation_field'",
+        )
     end
 
     target_id_set = Set{Int}(source_element[relation_field])
