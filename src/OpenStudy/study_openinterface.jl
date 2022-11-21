@@ -48,19 +48,12 @@ mutable struct DataIndex
     # the collection.
     index::Dict{Int,Tuple{String,Int}}
 
-    # This should be equal to `Set{Int}(keys(data_index.index))`
-    key_set::Set{Int}    
-
     # This is defined as the greatest `reference_id` indexed so
-    # far, that is, `maximum(data_index.key_set)`.
+    # far, that is, `maximum(keys(data_index.index))`.
     max_id::Int
 
     function DataIndex()
-        new(
-            Dict{Int,Tuple{String,Int}}(),
-            Set{Int}(),
-            0,
-        )
+        new(Dict{Int,Tuple{String,Int}}(), 0)
     end
 end
 
@@ -73,7 +66,7 @@ function _get_index(data_index::DataIndex, reference_id::Integer)
 end
 
 function _set_index!(data_index::DataIndex, reference_id::Integer, collection::String, index::Integer)
-    if reference_id ∈ data_index.key_set
+    if haskey(data_index.index, reference_id)
         previous_collection, _ = _get_index(data_index, reference_id)
 
         @warn """
@@ -81,7 +74,6 @@ function _set_index!(data_index::DataIndex, reference_id::Integer, collection::S
         """
     else
         data_index.max_id = max(data_index.max_id, reference_id)
-        push!(data_index.key_set, reference_id)
     end
 
     data_index.index[reference_id] = (collection, index)
