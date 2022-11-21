@@ -18,9 +18,6 @@ const DataStruct = PMD.DataStruct
 include("study_interface.jl")
 include("reader_writer_interface.jl")
 
-# abstract implementation
-include("study_abstract.jl")
-
 # utilities
 include("reader_mapper.jl")
 include("time_series_utils.jl")

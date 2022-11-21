@@ -509,14 +509,14 @@ function create_element!(
 )
     _validate_collection(data, collection)
 
-    if !isnothing(defaults)
-        if haskey(defaults, collection)
-            element = deepcopy(default[collection])
-        else
-            @warn "No default initialization values for collection '$collection'"
-            element = Dict{String,Any}()
-        end
+    if isnothing(defaults)
+        defaults = JSON.parsefile(PSRCLASSES_DEFAULTS_PATH)
+    end
+
+    if haskey(defaults, collection)
+        element = deepcopy(defaults[collection])
     else
+        @warn "No default initialization values for collection '$collection'"
         element = Dict{String,Any}()
     end
 
