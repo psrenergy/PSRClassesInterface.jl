@@ -1,10 +1,3 @@
-const PSRCLASSES_DEFAULT =
-    JSON.parsefile(joinpath(@__DIR__, "json_metadata", "psrclasses.default.json"))
-
-@info "HourlyData" ∈ keys(PSRCLASSES_DEFAULT["PSRStudy"])
-# const PSRCLASSES_SCHEMAS =
-#     JSON.parsefile(joinpath(@__DIR__, "json_metadata", "psrclasses.schema.json"))
-
 function _get_indexed_attributes(
     data::Data,
     collection::String,
@@ -322,7 +315,8 @@ function create_study(
     data_path::AbstractString = pwd(),
     pmd_files::Vector{String} = String[],
     pmds_path::AbstractString = PMD._PMDS_BASE_PATH,
-    default::Dict{String,Any} = PSRCLASSES_DEFAULT,
+    defaults_path::Union{AbstractString,Nothing} = PSRCLASSES_DEFAULTS_PATH,
+    defaults::Union{Dict{String,Any},Nothing} = nothing,
     netplan::Bool = false,
     kws...,
 )
@@ -330,7 +324,13 @@ function create_study(
         error("data_path = '$data_path' must be a directory")
     end
 
-    json_path = joinpath(data_path, "psrclasses.json")
+    if isnothing(defaults)
+        defaults = Dict{String,Any}()
+    end
+
+    if !isnothing(defaults_path)
+        merge!(defaults, JSON.parsefile(defaults_path))
+    end
 
     # Select mapping
     model_class_map = if netplan
@@ -358,7 +358,7 @@ function create_study(
         verbose = true,
     )
 
-    create_element!(data, "PSRStudy"; default = default)
+    create_element!(data, "PSRStudy"; defaults = defaults)
 
     return data
 end
@@ -485,32 +485,32 @@ end
 function create_element!(
     data::Data,
     collection::String;
-    default::Dict{String,Any} = PSRCLASSES_DEFAULT,
+    defaults::Union{Dict{String,Any},Nothing} = nothing,
 )
-    return create_element!(data, collection, Dict{String,Any}(), default)
+    return create_element!(data, collection, Dict{String,Any}(), defaults)
 end
 
 function create_element!(
     data::Data,
     collection::String,
     ps::Pair{String,<:Any}...;
-    default::Union{Dict{String,Any},Nothing} = PSRCLASSES_DEFAULT,
+    defaults::Union{Dict{String,Any},Nothing} = nothing,
 )
     attributes = Dict{String,Any}(ps...)
 
-    return create_element!(data, collection, attributes, default)
+    return create_element!(data, collection, attributes, defaults)
 end
 
 function create_element!(
     data::Data,
     collection::String,
     attributes::Dict{String,Any},
-    default::Union{Dict{String,Any},Nothing} = PSRCLASSES_DEFAULT,
+    defaults::Union{Dict{String,Any},Nothing} = nothing,
 )
     _validate_collection(data, collection)
 
-    if !isnothing(default)
-        if haskey(default, collection)
+    if !isnothing(defaults)
+        if haskey(defaults, collection)
             element = deepcopy(default[collection])
         else
             @warn "No default initialization values for collection '$collection'"

@@ -171,3 +171,15 @@ function _year_stage(
         error("Stage type $stage_type not currently supported")
     end
 end
+
+function _trim_multidimensional_attribute(attribute::String)
+    regex = r"([a-zA-Z_&]+)\([0-9]+(\,[0-9]+)*\)"
+
+    m = match(regex, attribute)
+
+    if isnothing(m)
+        return attribute
+    else
+        return m[1]
+    end
+end

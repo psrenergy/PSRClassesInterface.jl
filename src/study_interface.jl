@@ -1181,3 +1181,51 @@ Shows information about all attributes of a collection.
 Shows information about an attribute of a collection.
 """
 function summary end
+
+function get_attributes(data::AbstractData, collection::String)
+    return get_attributes(get_data_struct(data), collection)
+end
+
+function get_attributes(data::DataStruct, collection::String)
+    return sort!(collect(keys(data[collection])))
+end
+
+function get_attribute_struct(data::AbstractData, collection::String, attribute::String)
+    return get_attribute_struct(get_data_struct(data), collection, attribute)
+end
+
+function get_attribute_struct(data::DataStruct, collection::String, attribute::String)
+    collection_struct = data[collection]
+    
+    attribute = trim_multidimensional_attribute(attribute)
+
+    if !haskey(collection_struct, attribute)
+        error("No information for attribute '$attribute' found in collection '$collection'")
+    else
+        return collection_struct[attribute]::Attribute
+    end
+end
+
+function get_collections(data::AbstractData)
+    return get_collections(get_data_struct(data))
+end
+
+function get_collections(data::DataStruct)
+    return sort(collect(keys(data)))
+end
+
+function get_relations(::AbstractData, collection::String)
+    return get_relations(collection)
+end
+
+function get_relations(::DataStruct, collection::String)
+    return get_relations(collection)
+end
+
+function get_relations(collection::String)
+    if haskey(_RELATIONS, collection)
+        return collect(keys(_RELATIONS[collection]))
+    end
+
+    return Tuple{String,RelationType}[]
+end

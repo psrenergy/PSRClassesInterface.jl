@@ -199,12 +199,15 @@ end
 
 function _merge_psr_transformer_and_psr_serie!(data::Data)
     raw = _raw(data)
+
     if haskey(raw, "PSRSerie") && haskey(raw, "PSRTransformer")
         append!(raw["PSRSerie"], raw["PSRTransformer"])
         delete!(raw, "PSRTransformer")
     elseif haskey(raw, "PSRTransformer")
         raw["PSRSerie"] = raw["PSRTransformer"]
+        delete!(raw, "PSRTransformer")
     end
+    
     return nothing
 end
 
