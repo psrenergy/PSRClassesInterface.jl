@@ -164,6 +164,16 @@ function test_api4() # Tests set_related!() and set_vector_related!() methods
 
 
     PSRI.write_data(data)
+
+
+    data_copy = PSRI.initialize_study(PSRI.OpenInterface(), data_path = temp_path)
+
+    map_copy = PSRI.get_map(data_copy, "PSRThermalPlant", "PSRSystem")
+    @test map_copy == map
+
+    map_vec_copy = PSRI.get_vector_map(data_copy,"PSRThermalPlant", "PSRFuel")
+    @test map_vec_copy == map_vec
+
 end
 
 function test_api5() #tests get_element and _get_index_by_code for code
