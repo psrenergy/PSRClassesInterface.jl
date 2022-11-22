@@ -545,18 +545,15 @@ end
 
 function delete_element!(data::Data, collection::String, index::Int)
     if ! has_relations(data, collection, index)
-        collections_vector = data.raw[collection]
-        collections_length = length(collections_vector)
+        elements = _get_elements(data, collection)
 
-        element_id = collections_vector[index]["reference_id"]
-        delete!(data.data_index.index, element_id) # removes element reference from data_index by its id
+        element_id = elements[index]["reference_id"]
 
-        new_collections_vector = Vector{Dict{String,Any}}()
+        # Remove element reference from data_index by its id
+        delete!(data.data_index.index, element_id)
 
-        append!(new_collections_vector, collections_vector[1:index-1])
-        append!(new_collections_vector, collections_vector[index+1:collections_length])
-
-        data.raw[collection] = new_collections_vector
+        # Remove element from collection vector by its index
+        deleteat!(elements, index)
     else
         error("Element $collection cannot be deleted because it has relations with other elements")
     end
