@@ -321,7 +321,25 @@ function delete_relation!(
 
     delete!(source_element, relation_attribute)
 
-    return
+    return nothing
+end
+
+function delete_vector_relation!(
+    data::Data,
+    source::String,
+    target::String,
+    source_index::Integer,
+    target_indices::Vector{Int}
+)
+    source_relations = _get_element_related(data, source, source_index)
+
+    relation_attribute = source_relations[(source,target,source_index,target_indices[1])]
+
+    source_element  = _get_element(data, source, source_index)
+
+    delete!(source_element, relation_attribute)
+
+    return nothing
 end
 
 function Base.show(io::IO, data::Data)

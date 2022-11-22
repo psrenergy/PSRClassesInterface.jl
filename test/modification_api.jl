@@ -285,6 +285,36 @@ function test_api8() #tests delete_relation!
     @test PSRI.get_map(data_copy, "PSRSerie", "PSRBus", relation_type = PSRI.RELATION_TO) == [0]
 end
 
+function test_api9() #tests delete_vector_relation!
+    temp_path = joinpath(tempdir(), "PSRI_9")
+    json_path = joinpath(temp_path, "psrclasses.json")
+
+    mkpath(temp_path)
+
+    data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
+   
+    index1 = PSRI.create_element!(data,"PSRThermalPlant","ShutDownCost"=>1.0)
+    index2 = PSRI.create_element!(data,"PSRFuel")
+    index3 = PSRI.create_element!(data,"PSRFuel")
+    index4 = PSRI.create_element!(data,"PSRFuel")
+
+    PSRI.set_vector_related!(data, "PSRThermalPlant", "PSRFuel", index1, [index2,index3,index4])
+    map_vec = PSRI.get_vector_map(data,"PSRThermalPlant", "PSRFuel")
+    @test map_vec == Vector{Int32}[[1,2,3]]
+    PSRI.write_data(data)
+
+    PSRI.delete_vector_relation!(data, "PSRThermalPlant", "PSRFuel", index1, [index2,index3,index4])
+    
+    PSRI.write_data(data)
+
+    data_copy = PSRI.initialize_study(PSRI.OpenInterface(); data_path = temp_path)
+    
+    map_vec_copy = PSRI.get_vector_map(data_copy,"PSRThermalPlant", "PSRFuel")
+    @test map_vec_copy == Vector{Int32}[[]]
+    
+
+end
+
 test_api(PATH_CASE_0)
 test_api2() 
 test_api3()
@@ -293,3 +323,4 @@ test_api5()
 test_api6()
 test_api7()
 test_api8()
+test_api9()
