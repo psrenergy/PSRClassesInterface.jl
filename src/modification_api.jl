@@ -580,7 +580,7 @@ function create_element!(
 end
 
 function delete_element!(data::Data, collection::String, index::Int)
-    if ! has_relations(data, collection, index)
+    if !has_relations(data, collection, index)
         elements = _get_elements(data, collection)
 
         element_id = elements[index]["reference_id"]
