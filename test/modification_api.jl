@@ -219,9 +219,36 @@ function test_api6() #tests set_related_by_code!
 end
 
 
+function test_api7() #tests delete_element!
+    temp_path = joinpath(tempdir(), "PSRI")
+    json_path = joinpath(temp_path, "psrclasses.json")
+
+    mkpath(temp_path)
+
+    data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
+
+    index1 = PSRI.create_element!(data,"PSRBus","code"=> Int32(5))
+    index2 = PSRI.create_element!(data,"PSRBus","code"=> Int32(6))
+    index3 = PSRI.create_element!(data,"PSRBus","code"=> Int32(7))
+    index4 = PSRI.create_element!(data,"PSRBus","code"=> Int32(8))
+
+    PSRI.write_data(data)
+
+    PSRI.delete_element!(data, "PSRBus", 3)
+    PSRI.write_data(data)
+
+    data_copy = PSRI.initialize_study(PSRI.OpenInterface(); data_path = temp_path)
+
+    @test data_copy.raw["PSRBus"][3]["code"] == 8
+    @test length(data_copy.raw["PSRBus"]) == 3
+    @test !haskey(data_copy.data_index.index, 4)
+    
+end
+
 test_api(PATH_CASE_0)
 test_api2() 
 test_api3()
 test_api4()
 test_api5()
 test_api6()
+test_api7()
