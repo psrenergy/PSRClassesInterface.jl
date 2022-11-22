@@ -315,6 +315,21 @@ function test_api9() #tests delete_vector_relation!
 
 end
 
+function test_api10() #tests delete_vector_relation!
+    temp_path = joinpath(tempdir(), "PSRI_10")
+    json_path = joinpath(temp_path, "psrclasses.json")
+
+    mkpath(temp_path)
+
+    data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
+   
+    PSRI.add_attribute!(data, "PSRBus", "extra", false, String, 0)
+
+    @test PSRI.create_element!(data, "PSRBus", "extra" => "") == 1
+    
+
+end
+
 test_api(PATH_CASE_0)
 test_api2() 
 test_api3()
@@ -324,3 +339,4 @@ test_api6()
 test_api7()
 test_api8()
 test_api9()
+test_api10()

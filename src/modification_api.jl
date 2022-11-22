@@ -518,6 +518,15 @@ function _cast_element!(data::Data, collection::String, element::Dict{String,Any
     return nothing
 end
 
+
+function add_attribute!(data::Data, collection::String, attribute::String, is_vector::Bool, ::Type{T}, dimension::Int) where {T<:MainTypes}
+    _validate_collection(data, collection)
+     
+    data.data_struct[collection][attribute] = Attribute(attribute, is_vector, T, dimension, "")
+
+    return nothing
+end
+
 function create_element!(
     data::Data,
     collection::String;
