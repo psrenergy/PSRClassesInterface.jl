@@ -306,6 +306,24 @@ function set_vector_related!(
     return nothing
 end
 
+function delete_relation!(
+    data::Data,
+    source::String,
+    target::String,
+    source_index::Integer,
+    target_index::Integer
+)
+    source_relations = _get_element_related(data, source, source_index)
+
+    relation_attribute = source_relations[(source,target,source_index,target_index)]
+
+    source_element  = _get_element(data, source, source_index)
+
+    delete!(source_element, relation_attribute)
+
+    return
+end
+
 function Base.show(io::IO, data::Data)
     return summary(io, data)
 end
