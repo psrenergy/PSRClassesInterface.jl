@@ -557,3 +557,16 @@ function get_vector_related(
 
     return target_index_list
 end
+
+function add_relation!(data::Data, source::String, target::String, relation_type::RelationType, attribute_name::String)
+    _validate_collection(data, source)
+    _validate_collection(data, target)
+    relation_tuple = (target, relation_type)
+    if haskey(_RELATIONS, source)
+        _RELATIONS[source][(relation_tuple)] = attribute_name
+    else
+        _RELATIONS[source] = _INNER_DICT(relation_tuple => attribute_name)
+    end
+
+    return nothing
+end
