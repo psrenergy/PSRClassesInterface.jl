@@ -89,7 +89,7 @@ end
 
 
 function test_api2() # Tests creating study and element
-    temp_path = joinpath(tempdir(), "PSRI")
+    temp_path = joinpath(tempdir(), "PSRI_2")
     json_path = joinpath(temp_path, "psrclasses.json")
 
     mkpath(temp_path)
@@ -109,7 +109,7 @@ function test_api2() # Tests creating study and element
 end
 
 function test_api3() # Tests creating study and wrong collection
-    temp_path = joinpath(tempdir(), "PSRI")
+    temp_path = joinpath(tempdir(), "PSRI_3")
     json_path = joinpath(temp_path, "psrclasses.json")
 
     mkpath(temp_path)
@@ -134,7 +134,7 @@ function test_api3() # Tests creating study and wrong collection
 end
 
 function test_api4() # Tests set_related!() and set_vector_related!() methods
-    temp_path = joinpath(tempdir(), "PSRI")
+    temp_path = joinpath(tempdir(), "PSRI_4")
     json_path = joinpath(temp_path, "psrclasses.json")
 
     mkpath(temp_path)
@@ -177,7 +177,7 @@ function test_api4() # Tests set_related!() and set_vector_related!() methods
 end
 
 function test_api5() #tests get_element and _get_index_by_code for code
-    temp_path = joinpath(tempdir(), "PSRI")
+    temp_path = joinpath(tempdir(), "PSRI_5")
     json_path = joinpath(temp_path, "psrclasses.json")
 
     mkpath(temp_path)
@@ -197,7 +197,7 @@ function test_api5() #tests get_element and _get_index_by_code for code
 end
 
 function test_api6() #tests set_related_by_code!
-    temp_path = joinpath(tempdir(), "PSRI")
+    temp_path = joinpath(tempdir(), "PSRI_6")
     json_path = joinpath(temp_path, "psrclasses.json")
 
     mkpath(temp_path)
@@ -220,7 +220,7 @@ end
 
 
 function test_api7() #tests delete_element!
-    temp_path = joinpath(tempdir(), "PSRI")
+    temp_path = joinpath(tempdir(), "PSRI_7")
     json_path = joinpath(temp_path, "psrclasses.json")
 
     mkpath(temp_path)

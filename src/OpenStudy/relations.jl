@@ -127,8 +127,17 @@ function _get_target_index_from_relation(
 )
     source_element = data.raw[source][source_index]
     target_reference_id = source_element[relation_attribute]
-    _, target_index = _get_index(data.data_index, target_reference_id)
-    return target_index
+    target_indices = Vector{Int}()
+    if typeof(target_reference_id) == Vector{Int}
+        for id in target_reference_id
+            _, target_index =  _get_index(data.data_index, id)
+            push!(target_indices, target_index)
+        end
+    else
+        _, target_index = _get_index(data.data_index, target_reference_id)
+        push!(target_indices, target_index)
+    end
+    return target_indices
 end
 
 function _get_sources_indices_from_relations(
@@ -152,7 +161,7 @@ function _get_sources_indices_from_relations(
 end
 
 function _get_element_related(data::Data, collection::String, index::Integer)
-    element = data.raw[collection][index]
+    element = _get_element(data, collection, index)
 
     # source_collection, target_collection, source_index, target_index
     relations = Dict{Tuple{String,String,Int,Int},String}()
@@ -160,10 +169,12 @@ function _get_element_related(data::Data, collection::String, index::Integer)
     # Relations where the element is source
     for ((target, _), attribute) in _RELATIONS[collection]
         if haskey(element, attribute) # has a relation as source
-            target_index =
-                _get_target_index_from_relation(data, collection, index, attribute)
 
-            relations[(collection, target, index, target_index)] = attribute
+            target_indices =
+                _get_target_index_from_relation(data, collection, index, attribute)
+            for target_index in target_indices
+                relations[(collection, target, index, target_index)] = attribute
+            end
         end
     end
 
