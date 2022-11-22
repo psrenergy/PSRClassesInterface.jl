@@ -313,13 +313,22 @@ function delete_relation!(
     source_index::Integer,
     target_index::Integer
 )
+
+
     source_relations = _get_element_related(data, source, source_index)
+    if haskey(source_relations, (source,target,source_index,target_index))
+        relation_attribute = source_relations[(source,target,source_index,target_index)]
+        source_element  = _get_element(data, source, source_index)
 
-    relation_attribute = source_relations[(source,target,source_index,target_index)]
-
-    source_element  = _get_element(data, source, source_index)
-
-    delete!(source_element, relation_attribute)
+        target_indices = _get_target_index_from_relation(data, source, source_index, relation_attribute)
+        if length(target_indices) > 1
+            deleteat!(source_element[relation_attribute], target_indices .== target_index)
+        else
+            delete!(source_element, relation_attribute)
+        end
+    else
+        error("Relation '$source'(Source) with '$target'(Target) does not exist")
+    end
 
     return nothing
 end
