@@ -1,0 +1,1351 @@
+{
+    "PSRGndGaugingStation": {
+        "AVId": "string",
+        "HourGeneration": [
+            0.0
+        ],
+        "name": "string",
+        "SourceType": 0,
+        "DataGeneration": [
+            "1900-01-01"
+        ],
+        "TechType": 0,
+        "code": 0,
+        "Generation": [
+            0.0
+        ]
+    },
+    "PSRInterconnection": {
+        "Currency": "string",
+        "LossFactor->": [
+            0.0
+        ],
+        "LossFactor<-": [
+            0.0
+        ],
+        "code": 0,
+        "AVId": "string",
+        "name": "string",
+        "Cost<-": [
+            0.0
+        ],
+        "DataCost<-": [
+            "1900-01-01"
+        ],
+        "Capacity<-": [
+            0.0
+        ],
+        "DataCost->": [
+            "1900-01-01"
+        ],
+        "Capacity->": [
+            0.0
+        ],
+        "Data": [
+            "1900-01-01"
+        ],
+        "Existing": [
+            0
+        ],
+        "Cost->": [
+            0.0
+        ]
+    },
+    "PSRGasPipeLine": {
+        "LossFactor->": [
+            0.0
+        ],
+        "Capacity<-": [
+            0.0
+        ],
+        "LossFactor<-": [
+            0.0
+        ],
+        "code": 0,
+        "UnM": "string",
+        "AVId": "string",
+        "TranspCost": [
+            0.0
+        ],
+        "Capacity->": [
+            0.0
+        ],
+        "name": "string",
+        "Data": [
+            "1900-01-01"
+        ],
+        "Existing": [
+            0
+        ]
+    },
+    "PSRDemand": {
+        "MaxShiftUp": 0.0,
+        "Elastico": 0,
+        "code": 0,
+        "Duracao": 0.0,
+        "AVId": "string",
+        "name": "string",
+        "MaxShiftDown": 0.0,
+        "SourceType": 0,
+        "CoefVariation": [
+            0.0
+        ],
+        "CurtCost": 0.0,
+        "Window": 0.0,
+        "Data": [
+            "1900-01-01"
+        ],
+        "MaxCurt": 0.0,
+        "IsFlexible": 0
+    },
+    "PSRFuel": {
+        "DataConsumptionMax": [
+            "1900-01-01"
+        ],
+        "UComb": "string",
+        "code": 0,
+        "ScenarioCost": [
+            0.0
+        ],
+        "AVId": "string",
+        "Custo": [
+            0.0
+        ],
+        "name": "string",
+        "UE": "string",
+        "DataAvailability": [
+            "1900-01-01"
+        ],
+        "FlagScenario": 0,
+        "Availability": [
+            0.0
+        ],
+        "ConsumptionMax": [
+            0.0
+        ],
+        "EmiCO2": 0.0,
+        "Data": [
+            "1900-01-01"
+        ]
+    },
+    "PSRBattery": {
+        "code": 0,
+        "AVId": "string",
+        "name": "string",
+        "Emax": [
+            0.0
+        ],
+        "Pmax": [
+            0.0
+        ],
+        "Emin": [
+            0.0
+        ],
+        "FlagInterStage": 0,
+        "RegTime": 0,
+        "DischargeEffic": [
+            0.0
+        ],
+        "ChargeEffic": [
+            0.0
+        ],
+        "Einic": 0.0,
+        "Data": [
+            "1900-01-01"
+        ],
+        "DischargeRamp": 0.0,
+        "Existing": [
+            0
+        ],
+        "ChargeRamp": 0.0
+    },
+    "PSRGenerationConstraintData": {
+        "AVId": "string",
+        "name": "string",
+        "sign": "string",
+        "Penalty": 0.0,
+        "Data": [
+            "1900-01-01"
+        ],
+        "Restricao": [
+            0.0
+        ],
+        "code": 0
+    },
+    "PSRFuelReservoir": {
+        "MaxCapacity": [
+            0.0
+        ],
+        "code": 0,
+        "DataChroMaxInjection": [
+            "1900-01-01"
+        ],
+        "AVId": "string",
+        "ChroMaxWithdrawal": [
+            0.0
+        ],
+        "name": "string",
+        "MaxWithdrawal": 0.0,
+        "ChroMaxInjection": [
+            0.0
+        ],
+        "Data": [
+            "1900-01-01"
+        ],
+        "DataChroMaxWithdrawal": [
+            "1900-01-01"
+        ],
+        "MaxInjection": 0.0,
+        "InitialCondition": 0.0
+    },
+    "PSRLinkDC": {
+        "InitialDateMaintenance": [
+            "1900-01-01"
+        ],
+        "LossFactor->": [
+            0.0
+        ],
+        "LossFactor<-": [
+            0.0
+        ],
+        "MaintenanceValue": [
+            0.0
+        ],
+        "code": 0,
+        "AVId": "string",
+        "name": "string",
+        "FlagQuadraticLoss": 0,
+        "CapacityEmergency<-": [
+            0.0
+        ],
+        "EndDateMaintenance": [
+            "1900-01-01"
+        ],
+        "Capacity<-": [
+            0.0
+        ],
+        "CapacityEmergency->": [
+            0.0
+        ],
+        "Capacity->": [
+            0.0
+        ],
+        "Data": [
+            "1900-01-01"
+        ],
+        "Existing": [
+            0
+        ],
+        "R": [
+            0.0
+        ]
+    },
+    "PSRGndPlant": {
+        "InitialDateMaintenance": [
+            "1900-01-01"
+        ],
+        "MaintenanceValue": [
+            0.0
+        ],
+        "code": 0,
+        "O&MCost": [
+            0.0
+        ],
+        "Generation": [
+            0.0
+        ],
+        "AVId": "string",
+        "name": "string",
+        "FatOpe": [
+            0.0
+        ],
+        "DataGeneration": [
+            "1900-01-01"
+        ],
+        "PotInst": [
+            0.0
+        ],
+        "TechType": 0,
+        "EndDateMaintenance": [
+            "1900-01-01"
+        ],
+        "HourGeneration": [
+            0.0
+        ],
+        "ICP": [
+            0.0
+        ],
+        "CurtailmentCost": [
+            0.0
+        ],
+        "Data": [
+            "1900-01-01"
+        ],
+        "Existing": [
+            0
+        ],
+        "sfal": [
+            0
+        ],
+        "Unidades": [
+            0
+        ]
+    },
+    "PSRLoad": {
+        "AVId": "string",
+        "name": "string",
+        "P": [
+            0.0
+        ],
+        "PerF": [
+            0.0
+        ],
+        "Data": [
+            "1900-01-01"
+        ],
+        "Pind": [
+            0.0
+        ],
+        "code": 0,
+        "icca": [
+            0
+        ]
+    },
+    "PSRHydrologicalPlantConnection": {
+        "AVId": "string",
+        "IsVertimento": 0,
+        "name": "string",
+        "IsTurbinamento": 0,
+        "IsFiltration": 0,
+        "IsStoredEnergy": 0,
+        "code": 0,
+        "IsAssociatedReservoir": 0
+    },
+    "PSRBus": {
+        "AVId": "string",
+        "name": "string",
+        "Kv": 0.0,
+        "code": 0,
+        "icca": 0
+    },
+    "PSRSystem": {
+        "DataRiskAversionCurve": [
+            "1900-01-01"
+        ],
+        "TipoInfoManutencaoTermica": 0,
+        "code": 0,
+        "EmissionCost": [
+            0.0
+        ],
+        "TipoInfoManutencaoHidro": 0,
+        "AVId": "string",
+        "name": "string",
+        "TipoUnidadeReservaGirante": 0,
+        "id": "string",
+        "TipoUnidadeReservaGeracao": 0,
+        "Ignored": 0,
+        "RiskAversionCurve": [
+            0.0
+        ],
+        "TipoInfoReservaGeracao": 0,
+        "TipoUnidadeManutencaoHidro": 0,
+        "TipoUnidadeManutencaoTermica": 0,
+        "TimeZoneOffset": 0,
+        "UnM": "string",
+        "RiskAversionCurvePenalty": 0.0,
+        "DataEmissionCost": [
+            "1900-01-01"
+        ],
+        "TipoInfoReservaGirante": 0
+    },
+    "PSRReservoirSet": {
+        "AlertEnergyUnit": 0,
+        "DataMinimumEnergy": [
+            "1900-01-01"
+        ],
+        "code": 0,
+        "MinimumEnergy": [
+            0.0
+        ],
+        "AVId": "string",
+        "name": "string",
+        "DataAlertEnergy": [
+            "1900-01-01"
+        ],
+        "MinimumEnergyPenalty": 0.0,
+        "DataFloodControl": [
+            "1900-01-01"
+        ],
+        "MinimumEnergyUnit": 0,
+        "FloodControlPenalty": 0.0,
+        "FloodControlUnit": 0,
+        "AlertEnergyPenalty": 0.0,
+        "FloodControl": [
+            0.0
+        ],
+        "AlertEnergy": [
+            0.0
+        ]
+    },
+    "PSRFuelConsumption": {
+        "AVId": "string",
+        "name": "string",
+        "Data": [
+            "1900-01-01"
+        ],
+        "CTransp": [
+            0.0
+        ],
+        "G": [
+            0.0
+        ],
+        "O&MCost": [
+            0.0
+        ],
+        "CEsp": [
+            0.0
+        ],
+        "code": 0,
+        "DataCesp": [
+            "1900-01-01"
+        ]
+    },
+    "PSRSerie": {
+        "RnScen": [
+            0.0
+        ],
+        "FlagConstraint": 0,
+        "FlagMonitored": 0,
+        "DataInternationalCost->": [
+            "1900-01-01"
+        ],
+        "InitialDateMaintenance": [
+            "1900-01-01"
+        ],
+        "Tmx": [
+            0.0
+        ],
+        "Dchr": 0,
+        "MaintenanceValue": [
+            0.0
+        ],
+        "code": 0,
+        "AVId": "string",
+        "name": "string",
+        "FlagDC": 0,
+        "FlagTariff": 0,
+        "InternationalCost->": [
+            0.0
+        ],
+        "Re": [
+            0.0
+        ],
+        "Status": [
+            0
+        ],
+        "Pmx": [
+            0.0
+        ],
+        "EndDateMaintenance": [
+            "1900-01-01"
+        ],
+        "Tmn": [
+            0.0
+        ],
+        "X": [
+            0.0
+        ],
+        "InternationalCost<-": [
+            0.0
+        ],
+        "InternationalCurrency": "string",
+        "MVAr": [
+            0.0
+        ],
+        "FlagContingency": 0,
+        "I": [
+            0
+        ],
+        "Prob": [
+            0.0
+        ],
+        "Data": [
+            "1900-01-01"
+        ],
+        "DataInternationalCost<-": [
+            "1900-01-01"
+        ],
+        "R": [
+            0.0
+        ],
+        "Iflh": [
+            0
+        ],
+        "Pmn": [
+            0.0
+        ],
+        "Rn": [
+            0.0
+        ]
+    },
+    "PSRGasNode": {
+        "AVId": "string",
+        "name": "string",
+        "ChroProdCost": [
+            0.0
+        ],
+        "MaxProd": [
+            0.0
+        ],
+        "MinProd": [
+            0.0
+        ],
+        "Data": [
+            "1900-01-01"
+        ],
+        "Existing": [
+            0
+        ],
+        "ProdCost": [
+            0.0
+        ],
+        "code": 0,
+        "DataChroProdCost": [
+            "1900-01-01"
+        ]
+    },
+    "PSRGasEmission": {
+        "code": 0,
+        "EmissionCost": [
+            0.0
+        ],
+        "AVId": "string",
+        "DateConstraintEnd": [
+            "1900-01-01"
+        ],
+        "Quota": [
+            0.0
+        ],
+        "DateEmissionCost": [
+            "1900-01-01"
+        ],
+        "Unit": "string",
+        "name": "string",
+        "DateConstraint": [
+            "1900-01-01"
+        ],
+        "CoefEmission": [
+            0.0
+        ],
+        "Penalty": [
+            0.0
+        ],
+        "DateCoefEmission": [
+            "1900-01-01"
+        ]
+    },
+    "PSRInterconnectionSumData": {
+        "AVId": "string",
+        "name": "string",
+        "Coefficients": [
+            0.0
+        ],
+        "Data": [
+            "1900-01-01"
+        ],
+        "UB": [
+            0.0
+        ],
+        "code": 0,
+        "LB": [
+            0.0
+        ]
+    },
+    "PSRStudy": {
+        "DateChroDeficitCost": [
+            "1900-01-01"
+        ],
+        "VersaoInfoCargaBarra": "string",
+        "Ano_inicial": 0,
+        "Configuracao": 0,
+        "DeficitSegment": [
+            0.0
+        ],
+        "Etapa_inicial": 0,
+        "NumeroAnosAdicionaisParm2": 0,
+        "Mes_Inicial_Hidro": 0,
+        "FlagCreateFutureCost": 0,
+        "SubHourlyScenario": [
+            0
+        ],
+        "Perdas": 0,
+        "FutureCostEntryFileName": "string",
+        "MinOutflowPenalty": 0.0,
+        "NumeroSistemas": 0,
+        "CurrencyFactor": [
+            0.0
+        ],
+        "Idioma": 0,
+        "Currency": [
+            "string"
+        ],
+        "NumberSimulations": 0,
+        "ChroDeficitCost": [
+            0.0
+        ],
+        "FlagReadFutureCost": 0,
+        "name": "string",
+        "FutureCostYear": 0,
+        "HourBlockMap": [
+            0
+        ],
+        "Series_Forward": 0,
+        "NumeroEtapas": 0,
+        "SubHourlyStage": [
+            "1900-01-01"
+        ],
+        "Tipo_Etapa": 0,
+        "FinalStageFutureCost": 0,
+        "NumberBlocks": 0,
+        "IndexSeriesSimulacao": [
+            0
+        ],
+        "Manutencao": 0,
+        "FlagUseHotStart": 0,
+        "NumeroBlocosDemandaParm2": 0,
+        "FutureCostStage": 0,
+        "NumberOpenings": 0,
+        "Series_Backward": 0,
+        "VersionRenewableBlockProfile": 0,
+        "DeficitCost": [
+            0.0
+        ],
+        "DataHourBlock": [
+            "1900-01-01"
+        ],
+        "Vazoes": 0,
+        "AVId": "string",
+        "Horizonte": 0,
+        "MinSpillageUnit": 0,
+        "SubHourlyDiscretization": 0,
+        "CodigoSistemas": [
+            0
+        ],
+        "Objetivo": 0,
+        "NumeroBlocosDemanda": 0,
+        "code": 0,
+        "FutureCostReadFileName": "string",
+        "SpillagePenalty": 0.0,
+        "TaxaDesconto": 0.0,
+        "Rede": 0,
+        "NumeroAnosAdicionais": 0,
+        "Ano_Inicial_Hidro": 0,
+        "Series_Simular": 0,
+        "NumeroAnosAdicionaisParm3": 0,
+        "InitialStageFutureCost": 0,
+        "CriterioConvergencia": 0.0,
+        "NivelInformes": 0,
+        "MaximoIteracoes": 0,
+        "CurrencyReference": "string",
+        "SubHourlyDays": [
+            0
+        ],
+        "Opcao": 0
+    },
+    "PSRArea": {
+        "AVId": "string",
+        "name": "string",
+        "Import": [
+            0.0
+        ],
+        "Data": [
+            "1900-01-01"
+        ],
+        "code": 0,
+        "Export": [
+            0.0
+        ]
+    },
+    "PSRThermalPlant": {
+        "MaintenanceValue": [
+            0.0
+        ],
+        "SpinningReserve": [
+            0.0
+        ],
+        "DataChroGerMin": [
+            "1900-01-01"
+        ],
+        "PotInst": [
+            0.0
+        ],
+        "MaxShutDowns": 0,
+        "EndDateMaintenance": [
+            "1900-01-01"
+        ],
+        "RampUp": 0.0,
+        "DataMaxSecondaryReserve": [
+            "1900-01-01"
+        ],
+        "ShutDownCost": 0.0,
+        "StartUp": [
+            0.0
+        ],
+        "MaxStartUps": 0,
+        "O&MCost": [
+            0.0
+        ],
+        "name": "string",
+        "NGas": [
+            0
+        ],
+        "IH": [
+            0.0
+        ],
+        "DataPriceSecondaryReserve": [
+            "1900-01-01"
+        ],
+        "NAF": [
+            0
+        ],
+        "DataCesp": [
+            "1900-01-01"
+        ],
+        "ICP": [
+            0.0
+        ],
+        "Data": [
+            "1900-01-01"
+        ],
+        "Existing": [
+            0
+        ],
+        "DataSpinningReserve": [
+            "1900-01-01"
+        ],
+        "InitialDateMaintenance": [
+            "1900-01-01"
+        ],
+        "GerMin": [
+            0.0
+        ],
+        "AVId": "string",
+        "CTransp": [
+            0.0
+        ],
+        "DataChronologicalStartup": [
+            "1900-01-01"
+        ],
+        "MinUptime": 0.0,
+        "sfal": [
+            0
+        ],
+        "Unidades": [
+            0
+        ],
+        "code": 0,
+        "GerMax": [
+            0.0
+        ],
+        "ChronologicalStartup": [
+            0.0
+        ],
+        "ComT": 0,
+        "CoefE": [
+            0.0
+        ],
+        "ChroGerMin": [
+            0.0
+        ],
+        "ChroGerMinPenalty": 0.0,
+        "G": [
+            0.0
+        ],
+        "PriceSecondaryReserve": [
+            0.0
+        ],
+        "CEsp": [
+            0.0
+        ],
+        "MinDowntime": 0.0,
+        "RampDown": 0.0,
+        "MaxSecondaryReserve": [
+            0.0
+        ],
+        "NAdF": [
+            0
+        ]
+    },
+    "PSRDemandSegment": {
+        "DataHourDemand": [
+            "1900-01-01"
+        ],
+        "Demanda": [
+            0.0
+        ],
+        "code": 0,
+        "AVId": "string",
+        "Custo": [
+            0.0
+        ],
+        "DataHourDemandPrice": [
+            "1900-01-01"
+        ],
+        "name": "string",
+        "HourDemandScen": [
+            0.0
+        ],
+        "DataCusto": [
+            "1900-01-01"
+        ],
+        "HourDemand": [
+            0.0
+        ],
+        "DataHourDemandScen": [
+            "1900-01-01"
+        ],
+        "Data": [
+            "1900-01-01"
+        ],
+        "HourDemandPrice": [
+            0.0
+        ]
+    },
+    "PSRPoweInjection": {
+        "AVId": "string",
+        "name": "string",
+        "code": 0,
+        "HourInjection": [
+            0.0
+        ],
+        "HourPriceInjection": [
+            0.0
+        ]
+    },
+    "PSRThermalCombinedCycle": {
+        "AVId": "string",
+        "name": "string",
+        "DataOperativeState": [
+            "1900-01-01"
+        ],
+        "OperativeState": [
+            0
+        ],
+        "code": 0
+    },
+    "PSRReserveGenerationConstraintData": {
+        "CoefA": 0.0,
+        "DCLinkFlowLimit": 0,
+        "ReserveType": 0,
+        "code": 0,
+        "CoefB": 0.0,
+        "CompensateSel": 0,
+        "AVId": "string",
+        "DefaultPenalty": 0,
+        "Unit": 0,
+        "LimitType": 0,
+        "Exclusive": 0,
+        "CompensateNoSel": 0,
+        "Restricao": [
+            0.0
+        ],
+        "HourReserve": [
+            0.0
+        ],
+        "Penalty": 0.0,
+        "Data": [
+            "1900-01-01"
+        ],
+        "CoefBacked": [
+            0.0
+        ],
+        "RHSType": 0,
+        "Type": 0
+    },
+    "PSRHydroPlant": {
+        "DischargeRampDown": 0.0,
+        "MaintenanceValue": [
+            0.0
+        ],
+        "TurbLossFactor": 0.0,
+        "AlertStoragePenalty": 0.0,
+        "FlagConstantSpilling": 0,
+        "DfTotMin": [
+            0.0
+        ],
+        "SpinningReserve": [
+            0.0
+        ],
+        "OxT_Tail_S": [
+            0.0
+        ],
+        "OutSampling": 0,
+        "MaxTO": [
+            0.0
+        ],
+        "PotInst": [
+            0.0
+        ],
+        "SxH_Storage": 0.0,
+        "MaxSpillage": [
+            0.0
+        ],
+        "PolU": 0,
+        "EndDateMaintenance": [
+            "1900-01-01"
+        ],
+        "FPMed": [
+            0.0
+        ],
+        "PrdHid": 0.0,
+        "DateDeadStorage": "1900-01-01",
+        "DataMaxSecondaryReserve": [
+            "1900-01-01"
+        ],
+        "Indicador": [
+            0
+        ],
+        "RampUp": 0.0,
+        "OxT_Date": [
+            "1900-01-01"
+        ],
+        "TailwaterFlag": 0,
+        "MeanTailLevel": 0.0,
+        "MinTOPenalty": 0.0,
+        "SpillCostType": 0,
+        "SpillCost": 0.0,
+        "Power": [
+            0.0
+        ],
+        "VolVNC": [
+            0.0
+        ],
+        "AreaConst": 0.0,
+        "VNC": 0,
+        "OxT_Tail": [
+            0.0
+        ],
+        "LossFactor": [
+            0.0
+        ],
+        "TotIn": [
+            0.0
+        ],
+        "UnitsGroupEfQ": 0.0,
+        "ProdTypePol": 0,
+        "MinTO": [
+            0.0
+        ],
+        "SxH_Head": 0.0,
+        "O&MCost": [
+            0.0
+        ],
+        "name": "string",
+        "IH": [
+            0.0
+        ],
+        "Evap": 0.0,
+        "DataPriceSecondaryReserve": [
+            "1900-01-01"
+        ],
+        "PolA1": 0.0,
+        "SxA_Storage": 0.0,
+        "SxQ_Storage": [
+            0.0
+        ],
+        "VolMaxPenalty": 0.0,
+        "VolumeMaximum": [
+            0.0
+        ],
+        "FP": 0.0,
+        "MaxSpillagePenalty": 0.0,
+        "SxA_Area": 0.0,
+        "FiltConst": 0.0,
+        "PrdEsp": 0.0,
+        "PolA4": 0.0,
+        "DataMinTO": [
+            "1900-01-01"
+        ],
+        "DataMaxTO": [
+            "1900-01-01"
+        ],
+        "DataRegTime": [
+            "1900-01-01"
+        ],
+        "ICP": [
+            0.0
+        ],
+        "OxT_Outflow": [
+            0.0
+        ],
+        "Data": [
+            "1900-01-01"
+        ],
+        "DataMinSpillage": [
+            "1900-01-01"
+        ],
+        "DataVolVNC": [
+            "1900-01-01"
+        ],
+        "Existing": [
+            0
+        ],
+        "OxE_Date": [
+            "1900-01-01"
+        ],
+        "SxF_Storage": 0.0,
+        "MaxTurbining": [
+            0.0
+        ],
+        "DataSpinningReserve": [
+            "1900-01-01"
+        ],
+        "MaxTurbiningPenalty": 0.0,
+        "InitialDateMaintenance": [
+            "1900-01-01"
+        ],
+        "DataRieg": [
+            "1900-01-01"
+        ],
+        "RegFactor": 0.0,
+        "DurationDeadStorage": 0,
+        "DataFloodControlStorage": [
+            "1900-01-01"
+        ],
+        "TravelTimeSpil": 0,
+        "Vinic": 0.0,
+        "AVId": "string",
+        "DataMaxTurbining": [
+            "1900-01-01"
+        ],
+        "DataVolumeMaximum": [
+            "1900-01-01"
+        ],
+        "Vmax": [
+            0.0
+        ],
+        "TurbGenEffic": 0.0,
+        "FloodControlStorage": [
+            0.0
+        ],
+        "DsPolReference": 0.0,
+        "DataMaxSpillage": [
+            "1900-01-01"
+        ],
+        "Qmin": [
+            0.0
+        ],
+        "AreaType": 0,
+        "TurIn": [
+            0.0
+        ],
+        "HxP_Date": [
+            "1900-01-01"
+        ],
+        "RunRiverType": 0,
+        "DataAlertStorage": [
+            "1900-01-01"
+        ],
+        "NetHead": [
+            0.0
+        ],
+        "PolA3": 0.0,
+        "TravelTimeTurb": 0,
+        "VinicType": 0,
+        "DataVolumeMinimum": [
+            "1900-01-01"
+        ],
+        "MinSpillage": [
+            0.0
+        ],
+        "DsPolCoefficients": [
+            0.0
+        ],
+        "MaxTOPenalty": 0.0,
+        "Unidades": [
+            0
+        ],
+        "VolMinPenalty": 0.0,
+        "SxF_Filtration": 0.0,
+        "OxE_Efficiency": [
+            0.0
+        ],
+        "UnitsGroupCode": 0,
+        "AlertStorage": [
+            0.0
+        ],
+        "SxQ_MaxTurbining": [
+            0.0
+        ],
+        "Vmin": [
+            0.0
+        ],
+        "OxE_Outflow": [
+            0.0
+        ],
+        "FlagConstantOutflow": 0,
+        "code": 0,
+        "FiltType": 0,
+        "FlagConstantTurbining": 0,
+        "Rieg": [
+            0.0
+        ],
+        "InitialValueDeadStorage": 0.0,
+        "SxQ_Date": [
+            "1900-01-01"
+        ],
+        "SpillLossFactor": 0.0,
+        "PolA0": 0.0,
+        "OxT_Outflow_S": [
+            0.0
+        ],
+        "FP.VOL": 0.0,
+        "DsPolOrder": 0,
+        "UnitsGroupCount": 0,
+        "UnitsGroupEfH": 0.0,
+        "UnitsGroupEfP": 0.0,
+        "PolA2": 0.0,
+        "UnitsGroupTotal": 0,
+        "VolumeMinimum": [
+            0.0
+        ],
+        "Qmax": [
+            0.0
+        ],
+        "TurbineType": 0,
+        "DsPolCount": 0,
+        "RegTime": [
+            0.0
+        ],
+        "DataLossFactor": [
+            "1900-01-01"
+        ],
+        "DischargeRampUp": 0.0,
+        "MinSpillagePenalty": 0.0,
+        "PriceSecondaryReserve": [
+            0.0
+        ],
+        "RampDown": 0.0,
+        "MaxSecondaryReserve": [
+            0.0
+        ],
+        "RiegPenalty": 0,
+        "ProdTypeSim": 0,
+        "Eaflu": [
+            0
+        ],
+        "RiegPenaltyValue": 0.0
+    },
+    "PSRFuelContract": {
+        "Cost": [
+            0.0
+        ],
+        "Availability": [
+            0.0
+        ],
+        "MaxOfftake": [
+            0.0
+        ],
+        "UnitConsumedAmount": 0,
+        "code": 0,
+        "ConsumedAmount": 0.0,
+        "AVId": "string",
+        "MaxTransferRenewal": 0.0,
+        "ExtraTakeOrPayCost": 0.0,
+        "InitialDate": "1900-01-01",
+        "name": "string",
+        "TakeOrPayCost": 0.0,
+        "TakeOrPayAmount": 0.0,
+        "Type": 0,
+        "NumberRenewals": 0,
+        "DataAvailability": [
+            "1900-01-01"
+        ],
+        "DataMaxOfftake": [
+            "1900-01-01"
+        ],
+        "FinalDate": "1900-01-01",
+        "MaxOfftakeRate": 0.0,
+        "ContractedAmount": 0.0,
+        "DataCost": [
+            "1900-01-01"
+        ]
+    },
+    "PSRMaintenanceData": {
+        "Manutencao": [
+            90.0
+        ],
+        "reference_id": 29597192,
+        "classType": 29,
+        "Data": [
+            "2013-01-01"
+        ],
+        "actiontype": 1,
+        "plant": 13311688,
+        "generic_id": "",
+        "system": 29529296,
+        "type": 2
+    },
+    "PSRGaugingStation": {
+        "AVId": "string",
+        "name": "string",
+        "Teta": [
+            0.0
+        ],
+        "Vazao": [
+            0.0
+        ],
+        "Fi": [
+            0.0
+        ],
+        "Ordem": [
+            0
+        ],
+        "Data": [
+            "1900-01-01"
+        ],
+        "Av": [
+            0.0
+        ],
+        "code": 0,
+        "Sd": [
+            0.0
+        ]
+    },
+    "PSRCircuitSumData": {
+        "AVId": "string",
+        "name": "string",
+        "Coefficients": [
+            0.0
+        ],
+        "Data": [
+            "1900-01-01"
+        ],
+        "UB": [
+            0.0
+        ],
+        "code": 0,
+        "LB": [
+            0.0
+        ]
+    },
+    "PSRCspPlant": {
+        "SM": [
+            0.0
+        ],
+        "code": 0,
+        "Generation": [
+            0.0
+        ],
+        "AVId": "string",
+        "name": "string",
+        "Vmax": [
+            0.0
+        ],
+        "DataGeneration": [
+            "1900-01-01"
+        ],
+        "PotInst": [
+            0.0
+        ],
+        "HourGeneration": [
+            0.0
+        ],
+        "Data": [
+            "1900-01-01"
+        ],
+        "Existing": [
+            0
+        ],
+        "Unidades": [
+            0
+        ],
+        "Efficiency": [
+            0.0
+        ]
+    },
+    "PSRTransformer": {
+        "RnScen": [
+            0.0
+        ],
+        "FlagConstraint": 0,
+        "FlagMonitored": 0,
+        "DataInternationalCost->": [
+            "1900-01-01"
+        ],
+        "InitialDateMaintenance": [
+            "1900-01-01"
+        ],
+        "Tmx": [
+            0.0
+        ],
+        "Dchr": 0,
+        "MaintenanceValue": [
+            0.0
+        ],
+        "code": 0,
+        "AVId": "string",
+        "name": "string",
+        "FlagDC": 0,
+        "FlagTariff": 0,
+        "InternationalCost->": [
+            0.0
+        ],
+        "Re": [
+            0.0
+        ],
+        "Status": [
+            0
+        ],
+        "Pmx": [
+            0.0
+        ],
+        "EndDateMaintenance": [
+            "1900-01-01"
+        ],
+        "Tmn": [
+            0.0
+        ],
+        "X": [
+            0.0
+        ],
+        "InternationalCost<-": [
+            0.0
+        ],
+        "InternationalCurrency": "string",
+        "MVAr": [
+            0.0
+        ],
+        "FlagContingency": 0,
+        "I": [
+            0
+        ],
+        "Prob": [
+            0.0
+        ],
+        "Data": [
+            "1900-01-01"
+        ],
+        "DataInternationalCost<-": [
+            "1900-01-01"
+        ],
+        "R": [
+            0.0
+        ],
+        "Iflh": [
+            0
+        ],
+        "Pmn": [
+            0.0
+        ],
+        "Rn": [
+            0.0
+        ]
+    },
+    "PSRCurrency":{
+        "AVId": "string",
+        "Currency": "string",
+        "code": 0,
+        "name": "string"
+    }
+}

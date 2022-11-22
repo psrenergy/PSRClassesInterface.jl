@@ -41,6 +41,52 @@ end
 # TODO: rebuild "raw" stabilizing data types
 # TODO fuel consumption updater
 
+mutable struct DataIndex
+    # `index` takes a `reference_id` as key and returns a pair
+    # containing the collection from which the referenced item
+    # belongs but also its index in the vector of instances of
+    # the collection.
+    index::Dict{Int,Tuple{String,Int}}
+
+    # This is defined as the greatest `reference_id` indexed so
+    # far, that is, `maximum(keys(data_index.index))`.
+    max_id::Int
+
+    function DataIndex()
+        new(Dict{Int,Tuple{String,Int}}(), 0)
+    end
+end
+
+function _get_index(data_index::DataIndex, reference_id::Integer)
+    if !haskey(data_index.index, reference_id)
+        error("Invalid reference_id '$reference_id'")
+    end
+
+    return data_index.index[reference_id]
+end
+
+function _set_index!(data_index::DataIndex, reference_id::Integer, collection::String, index::Integer)
+    if haskey(data_index.index, reference_id)
+        previous_collection, _ = _get_index(data_index, reference_id)
+
+        @warn """
+        Replacing reference_id = '$reference_id' from '$previous_collection' to '$collection'
+        """
+    else
+        data_index.max_id = max(data_index.max_id, reference_id)
+    end
+
+    data_index.index[reference_id] = (collection, index)
+
+    return nothing
+end
+
+function _generate_reference_id(data_index::DataIndex)
+    @assert data_index.max_id < typemax(Int)
+
+    return data_index.max_id + 1
+end
+
 Base.@kwdef mutable struct Data{T} <: AbstractData
     raw::T
     stage_type::StageType
@@ -90,6 +136,9 @@ Base.@kwdef mutable struct Data{T} <: AbstractData
     extra_config::Dict{String,Any} = Dict{String,Any}()
 
     # TODO: cache importante data
+
+    # Reference Indexing
+    data_index::DataIndex = DataIndex()
 end
 
 _raw(data::Data) = data.raw
@@ -142,11 +191,15 @@ end
 
 function _merge_psr_transformer_and_psr_serie!(data::Data)
     raw = _raw(data)
+
     if haskey(raw, "PSRSerie") && haskey(raw, "PSRTransformer")
         append!(raw["PSRSerie"], raw["PSRTransformer"])
+        delete!(raw, "PSRTransformer")
     elseif haskey(raw, "PSRTransformer")
         raw["PSRSerie"] = raw["PSRTransformer"]
+        delete!(raw, "PSRTransformer")
     end
+    
     return nothing
 end
 
@@ -173,7 +226,7 @@ function initialize_study(
     end
 
     file = if !isempty(log_file)
-        open(file, "w")
+        Base.open(file, "w")
     else
         nothing
     end
@@ -250,15 +303,21 @@ function initialize_study(
         end
     end
 
+    # Assigns to every `reference_id` the corresponding instance index
+    # as a pair (collection, index)
+    _build_index!(data)
+
     return data
 end
 
 function max_elements(data::Data, collection::String)
     raw = _raw(data)
+    
     if haskey(raw, collection)
         return length(raw[collection])
+    else
+        return 0
     end
-    return 0
 end
 
 _default_value(::Type{T}) where {T<:Number} = zero(T)
@@ -559,7 +618,7 @@ function get_nonempty_vector(data::Data, collection::String, attribute::String)
     dim = attr_data.dim
     key = _get_attribute_key(attribute, dim)
 
-    for (idx, el) in enumerate(_get_collection(data, collection))
+    for (idx, el) in enumerate(_get_elements(data, collection))
         if haskey(el, key)
             len = length(el[key])
             if (len == 1 && el[key][] !== nothing) || len > 1

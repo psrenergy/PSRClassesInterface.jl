@@ -37,5 +37,8 @@ end
     end
     @testset "Modification API" begin
         @time include("modification_api.jl")
+    end 
+    @testset "Relations" begin
+        @time include("relations.jl")
     end
 end

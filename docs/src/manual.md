@@ -104,6 +104,7 @@ PSRClassesInterface.get_attribute_dim
 ### Modification API
 
 ```@docs
+PSRClassesInterface.create_study
 PSRClassesInterface.create_element!
 PSRClassesInterface.set_parm!
 PSRClassesInterface.set_vector!

@@ -4,20 +4,18 @@ function test_api(data_path::String)
 
     mkpath(temp_path)
 
-    src_data = PSRI.initialize_study(PSRI.OpenInterface(); data_path=data_path)
+    src_data = PSRI.initialize_study(PSRI.OpenInterface(); data_path = data_path)
     raw_data = PSRI._raw(src_data)
 
     PSRI.write_data(src_data, json_path)
 
-    dest_data = PSRI.initialize_study(PSRI.OpenInterface(); data_path=temp_path)
+    dest_data = PSRI.initialize_study(PSRI.OpenInterface(); data_path = temp_path)
 
     @test PSRI._raw(dest_data) == raw_data
 
     # set_parm!
     parm_data = Dict(
-        "PSRThermalPlant" => [
-            "ComT" => Int32(33),
-        ]
+        "PSRThermalPlant" => ["ComT" => Int32(33)],
         # TODO: Add more test cases later, as in:
         #   "PSRClass" => ["attribute" => value...]
     )
@@ -34,9 +32,7 @@ function test_api(data_path::String)
 
     # set_vector!
     vector_data = Dict(
-        "PSRThermalPlant" => [
-            "Data" => Dates.Date.(["1900-01-02"]),
-        ]
+        "PSRThermalPlant" => ["Data" => Dates.Date.(["1900-01-02"])],
         # TODO: Add more test cases later, as in:
         #   "PSRClass" => ["attribute" => [value...]...]
     )
@@ -54,24 +50,24 @@ function test_api(data_path::String)
     # set_series!
     series_data = Dict(
         "PSRThermalPlant" => [
-            "Data" => Dict{String, Vector}(
-                "GerMin"   => [0.0, 1.0],
-                "GerMax"   => [888.0, 777.0],
-                "O&MCost"  => [0.0, 1.0],
-                "IH"       => [0.0, 0.0],
-                "ICP"      => [0.0, 0.0],
-                "Data"     => Dates.Date.(["1900-01-01", "1900-01-02"]),
-                "CoefE"    => [1.0, 2.0],
-                "CTransp"  => [0.0, 1.0],
-                "PotInst"  => [888.0, 777.0],
+            "Data" => Dict{String,Vector}(
+                "GerMin" => [0.0, 1.0],
+                "GerMax" => [888.0, 777.0],
+                "O&MCost" => [0.0, 1.0],
+                "IH" => [0.0, 0.0],
+                "ICP" => [0.0, 0.0],
+                "Data" => Dates.Date.(["1900-01-01", "1900-01-02"]),
+                "CoefE" => [1.0, 2.0],
+                "CTransp" => [0.0, 1.0],
+                "PotInst" => [888.0, 777.0],
                 "Existing" => Int32[0, 0],
-                "sfal"     => Int32[0, 1],
-                "NGas"     => Int32[0, 0],
-                "NAdF"     => Int32[0, 0],
+                "sfal" => Int32[0, 1],
+                "NGas" => Int32[0, 0],
+                "NAdF" => Int32[0, 0],
                 "Unidades" => Int32[1, 1],
-                "StartUp"  => [0.0, 2.0],
-            )
-        ]
+                "StartUp" => [0.0, 2.0],
+            ),
+        ],
         # TODO: Add more test cases later, as in:
         #   "PSRClass" => [
         #       "index_attr" => Dict{String, Vector}(
@@ -91,4 +87,141 @@ function test_api(data_path::String)
     end
 end
 
+
+function test_api2() # Tests creating study and element
+    temp_path = joinpath(tempdir(), "PSRI")
+    json_path = joinpath(temp_path, "psrclasses.json")
+
+    mkpath(temp_path)
+
+    data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
+
+    index = PSRI.create_element!(data,"PSRThermalPlant","ShutDownCost"=>1.0)
+
+    PSRI.write_data(data)
+
+    parm =  PSRI.get_parm(data, "PSRThermalPlant", "ShutDownCost", 1, Float64)
+    summary = PSRI.summary(data)
+    @test index isa Integer
+    @test parm isa Float64
+    @test ! isempty(summary)
+
+end
+
+function test_api3() # Tests creating study and wrong collection
+    temp_path = joinpath(tempdir(), "PSRI")
+    json_path = joinpath(temp_path, "psrclasses.json")
+
+    mkpath(temp_path)
+
+    data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
+
+    try
+        PSRI.create_element!(data,"RandomCollection123","ShutDownCost"=>1.0)
+    catch error
+        buf = IOBuffer()
+        showerror(buf, error)
+        message = String(take!(buf))
+        @test message == "Collection 'RandomCollection123' is not available for this study"
+    end
+
+    try
+        PSRI.create_element!(data,"PSRThermalPlant","Random"=>1.0)
+    catch error
+        @test typeof(error) == ErrorException
+    end
+
+end
+
+function test_api4() # Tests set_related!() and set_vector_related!() methods
+    temp_path = joinpath(tempdir(), "PSRI")
+    json_path = joinpath(temp_path, "psrclasses.json")
+
+    mkpath(temp_path)
+
+    data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
+
+    index1 = PSRI.create_element!(data,"PSRThermalPlant","ShutDownCost"=>1.0)
+    index2 = PSRI.create_element!(data,"PSRThermalPlant","ShutDownCost"=>2.0)
+    index3 = PSRI.create_element!(data,"PSRSystem")
+    index4 = PSRI.create_element!(data,"PSRFuel")
+    index5 = PSRI.create_element!(data,"PSRFuel")
+    index6 = PSRI.create_element!(data,"PSRFuel")
+
+    try
+        PSRI.set_related!(data, "PSRThermalPlant", "PSRThermalPlant", index1, index2)
+    catch error
+        @test typeof(error) == ErrorException
+    end
+
+    PSRI.set_related!(data, "PSRThermalPlant", "PSRSystem", index1, index3, relation_type = PSRI.RELATION_1_TO_1)
+    map = PSRI.get_map(data, "PSRThermalPlant", "PSRSystem")
+    @test map == [1,0]
+
+    PSRI.set_vector_related!(data, "PSRThermalPlant", "PSRFuel", index1, [index4,index5,index6])
+    map_vec = PSRI.get_vector_map(data,"PSRThermalPlant", "PSRFuel")
+    @test map_vec == [[1,2,3],[]]
+
+
+    PSRI.write_data(data)
+
+
+    data_copy = PSRI.initialize_study(PSRI.OpenInterface(), data_path = temp_path)
+
+    map_copy = PSRI.get_map(data_copy, "PSRThermalPlant", "PSRSystem")
+    @test map_copy == map
+
+    map_vec_copy = PSRI.get_vector_map(data_copy,"PSRThermalPlant", "PSRFuel")
+    @test map_vec_copy == map_vec
+
+end
+
+function test_api5() #tests get_element and _get_index_by_code for code
+    temp_path = joinpath(tempdir(), "PSRI")
+    json_path = joinpath(temp_path, "psrclasses.json")
+
+    mkpath(temp_path)
+
+    data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
+
+    index = PSRI.create_element!(data,"PSRBus","code"=> Int32(5))
+
+    retrieved_index = PSRI._get_index_by_code(data,"PSRBus", 5)
+
+    @test (index == retrieved_index)
+
+    element = PSRI.get_element(data,"PSRBus", 5)
+
+    @test element["code"] == 5
+    
+end
+
+function test_api6() #tests set_related_by_code!
+    temp_path = joinpath(tempdir(), "PSRI")
+    json_path = joinpath(temp_path, "psrclasses.json")
+
+    mkpath(temp_path)
+
+    data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
+
+    index1 = PSRI.create_element!(data,"PSRBus","code"=> Int32(5))
+    index2 = PSRI.create_element!(data,"PSRBus","code"=> Int32(6))
+    index3 = PSRI.create_element!(data,"PSRLinkDC")
+
+    PSRI.set_related_by_code!(data, "PSRLinkDC", "PSRBus", index3, 5, relation_type =  PSRI.RELATION_TO)
+    PSRI.set_related_by_code!(data, "PSRLinkDC", "PSRBus", index3, 6, relation_type =  PSRI.RELATION_FROM)
+
+    element = data.raw["PSRLinkDC"][index3]
+
+    @test element["no1"] == 3
+    @test element["no2"] == 2
+    
+end
+
+
 test_api(PATH_CASE_0)
+test_api2() 
+test_api3()
+test_api4()
+test_api5()
+test_api6()

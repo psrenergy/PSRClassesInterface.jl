@@ -823,7 +823,12 @@ PSRI.configuration_parameter(data, "DeficitCost", [0.0])
 function configuration_parameter end
 
 """
-    create_element(data::Data, collection::String)
+    create_element!(
+        data::Data,
+        collection::String,
+        ps::Pair{String,<:Any};
+        default::Union{Dict{String,Any},Nothing} = nothing
+    )
 
 Creates a new instance of the given `collection` and returns its index.
 
@@ -1012,9 +1017,11 @@ end
 
 function get_attribute_struct(data::DataStruct, collection::String, attribute::String)
     collection_struct = data[collection]
+    
+    attribute = _trim_multidimensional_attribute(attribute)
 
     if !haskey(collection_struct, attribute)
-        error("Attribute $attribute not found in collection $collection")
+        error("No information for attribute '$attribute' found in collection '$collection'")
     end
 
     return collection_struct[attribute]::Attribute
@@ -1032,7 +1039,6 @@ end
 function get_attributes(data::DataStruct, collection::String)
     return sort!(collect(keys(data[collection])))
 end
-
 
 """
     get_attributes_indexed_by(
@@ -1099,7 +1105,7 @@ end
 
 function get_relations(collection::String)
     if haskey(_RELATIONS, collection)
-        return keys(_RELATIONS[collection])
+        return collect(keys(_RELATIONS[collection]))
     end
     return Tuple{String,RelationType}[]
 end
@@ -1189,3 +1195,28 @@ the elements in `target_index` from collection `target` in the vector relation
 of type `relation_type`.
 """
 function set_vector_related! end
+
+"""
+    create_study(::AbstractStudyInterface; kwargs...)
+
+Returns the `Data` object of a new study.
+"""
+function create_study end
+
+"""
+    summary(data::Data)
+    summary(io::IO, data::Data)
+
+Shows information about all collections in a study.
+
+    summary(data::Data, collection::String)
+    summary(io::IO, data::Data, collection::String)
+
+Shows information about all attributes of a collection.
+    
+    summary(data::Data, collection::String, attribute::String)
+    summary(io::IO, data::Data, collection::String, attribute::String)
+
+Shows information about an attribute of a collection.
+"""
+function summary end

@@ -7,6 +7,8 @@ import JSON
     error("Julia version $VERSION not supported by PSRClassesInterface, upgrade to 1.6 or later")
 end
 
+const PSRCLASSES_DEFAULTS_PATH = joinpath(@__DIR__, "json_metadata", "psrclasses.default.json")
+
 # submodules
 include("PMD/PMD.jl")
 const Attribute = PMD.Attribute
