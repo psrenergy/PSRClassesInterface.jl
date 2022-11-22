@@ -152,7 +152,7 @@ function _get_sources_indices_from_relations(
     indices = Vector{Int32}()
     for (index, element) in enumerate(possible_elements)
         if haskey(element, relation_attribute)
-            if element[relation_attribute] == target_id
+            if target_id in element[relation_attribute] 
                 push!(indices, index)
             end
         end
@@ -167,13 +167,15 @@ function _get_element_related(data::Data, collection::String, index::Integer)
     relations = Dict{Tuple{String,String,Int,Int},String}()
 
     # Relations where the element is source
-    for ((target, _), attribute) in _RELATIONS[collection]
-        if haskey(element, attribute) # has a relation as source
+    if haskey(_RELATIONS, collection)
+        for ((target, _), attribute) in _RELATIONS[collection]
+            if haskey(element, attribute) # has a relation as source
 
-            target_indices =
-                _get_target_index_from_relation(data, collection, index, attribute)
-            for target_index in target_indices
-                relations[(collection, target, index, target_index)] = attribute
+                target_indices =
+                    _get_target_index_from_relation(data, collection, index, attribute)
+                for target_index in target_indices
+                    relations[(collection, target, index, target_index)] = attribute
+                end
             end
         end
     end
