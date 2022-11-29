@@ -154,3 +154,28 @@ function test_non_unique_agents()
 end
 
 test_non_unique_agents()
+
+function test_bin_hdr_array_to_file()
+    FILE_PATH = joinpath(".", "test_bin_hdr_array_to_file")
+    n_blocks = 2
+    n_scenarios = 3
+    n_stages = 4
+    n_agents = 5
+    time_series_data = ones(Float64, n_agents, n_blocks, n_scenarios, n_stages)
+
+    PSRI.array_to_file(
+        PSRI.OpenBinary.Writer,
+        FILE_PATH,
+        time_series_data,
+        agents = ["Agent 1", "Agent 2", "Agent 3", "Agent 4", "Agent 5"],
+        unit = "MW";
+        initial_stage = 3,
+        initial_year = 2006,
+    )
+
+    @test isfile("test_bin_hdr_array_to_file.bin")
+    @test isfile("test_bin_hdr_array_to_file.hdr")
+    rm_bin_hdr("test_bin_hdr_array_to_file")
+end
+
+test_bin_hdr_array_to_file()
