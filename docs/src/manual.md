@@ -12,18 +12,16 @@ using PSRClassesInterface
 const PSRI = PSRClassesInterface
 ```
 
-## Abstract study interface
-
-### Main
+## Initialize Study
 ```@docs
 PSRClassesInterface.AbstractData
 PSRClassesInterface.AbstractStudyInterface
 PSRClassesInterface.initialize_study
-PSRClassesInterface.max_elements
 PSRClassesInterface.description
+PSRClassesInterface.max_elements
 ```
 
-### Study dimensions
+## Study dimensions
 ```@docs
 PSRClassesInterface.StageType
 PSRClassesInterface.total_stages
@@ -33,7 +31,7 @@ PSRClassesInterface.total_openings
 PSRClassesInterface.total_stages_per_year
 ```
 
-### Study duration and blocking
+## Study duration and blocking
 ```
 PSRClassesInterface.BlockDurationMode
 PSRClassesInterface.stage_duration
@@ -41,19 +39,7 @@ PSRClassesInterface.block_duration
 PSRClassesInterface.block_from_stage_hour
 ```
 
-### Relations between collections
-```@docs
-PSRClassesInterface.RelationType
-PSRClassesInterface.is_vector_relation
-PSRClassesInterface.get_map
-PSRClassesInterface.get_vector_map
-PSRClassesInterface.get_reverse_map
-PSRClassesInterface.get_reverse_vector_map
-PSRClassesInterface.get_related
-PSRClassesInterface.get_vector_related
-```
-
-### Scalar attributes
+## Read Scalar Attributes
 ```@docs
 PSRClassesInterface.configuration_parameter
 PSRClassesInterface.get_code
@@ -64,10 +50,8 @@ PSRClassesInterface.get_parms
 PSRClassesInterface.get_parms_1d
 ```
 
-### Vector attributed
-
-#### Time controller
-
+## Read Vector Attributes
+### Time controller
 ```@docs
 PSRClassesInterface.mapped_vector
 PSRClassesInterface.go_to_stage
@@ -75,7 +59,7 @@ PSRClassesInterface.go_to_dimension
 PSRClassesInterface.update_vectors!
 ```
 
-#### Direct access
+### Direct access
 ```@docs
 PSRClassesInterface.get_vector
 PSRClassesInterface.get_vector_1d
@@ -87,7 +71,19 @@ PSRClassesInterface.get_nonempty_vector
 PSRClassesInterface.get_series
 ```
 
-### Reflection
+## Relations between collections
+```@docs
+PSRClassesInterface.RelationType
+PSRClassesInterface.is_vector_relation
+PSRClassesInterface.get_map
+PSRClassesInterface.get_vector_map
+PSRClassesInterface.get_reverse_map
+PSRClassesInterface.get_reverse_vector_map
+PSRClassesInterface.get_related
+PSRClassesInterface.get_vector_related
+```
+
+## Reflection
 ```@docs
 PSRClassesInterface.get_attribute_dim1
 PSRClassesInterface.get_attribute_dim2
@@ -101,31 +97,33 @@ PSRClassesInterface.get_relations
 PSRClassesInterface.get_attribute_dim
 ```
 
-### Modification API
-
+## Write Graf files
+### Open and Close
 ```@docs
-PSRClassesInterface.create_study
-PSRClassesInterface.create_element!
-PSRClassesInterface.set_parm!
-PSRClassesInterface.set_vector!
-PSRClassesInterface.set_series!
-PSRClassesInterface.write_data
-PSRClassesInterface.set_related!
-PSRClassesInterface.set_vector_related!
-```
-
-## Abstract reader and writer interface
-
-### Reader
-```@docs
-PSRClassesInterface.AbstractReader
-PSRClassesInterface.file_to_array
-PSRClassesInterface.file_to_array_and_header
+PSRClassesInterface.AbstractWriter
 PSRClassesInterface.open
 PSRClassesInterface.close
 ```
 
-#### Header information
+### Write entire file
+```@docs
+PSRClassesInterface.array_to_file
+```
+
+### Write registry
+```@docs
+PSRClassesInterface.write_registry
+```
+
+## Read Graf files
+### Open and Close
+```@docs
+PSRClassesInterface.AbstractReader
+PSRClassesInterface.open
+PSRClassesInterface.close
+```
+
+### Header information
 ```@docs
 PSRClassesInterface.is_hourly
 PSRClassesInterface.hour_discretization
@@ -142,7 +140,13 @@ PSRClassesInterface.data_unit
 PSRClassesInterface.agent_names
 ```
 
-#### Read in loop
+### Read entire file
+```@docs
+PSRClassesInterface.file_to_array
+PSRClassesInterface.file_to_array_and_header
+```
+
+### Read registry
 ```@docs
 PSRClassesInterface.current_stage
 PSRClassesInterface.current_scenario
@@ -151,25 +155,28 @@ PSRClassesInterface.goto
 PSRClassesInterface.next_registry
 ```
 
-### Writer
-```@docs
-PSRClassesInterface.AbstractWriter
-PSRClassesInterface.open
-PSRClassesInterface.close
-PSRClassesInterface.array_to_file
-PSRClassesInterface.write_registry
-```
-
-### File conversion
+## File conversion
 ```@docs
 PSRClassesInterface.convert_file
 PSRClassesInterface.add_reader!
 ```
 
-### Reader mapper
+## Reader mapper
 ```@docs
 PSRClassesInterface.ReaderMapper
 PSRClassesInterface.add_reader!
 PSRClassesInterface.goto
 PSRClassesInterface.close
+```
+
+## Modification API
+```@docs
+PSRClassesInterface.create_study
+PSRClassesInterface.create_element!
+PSRClassesInterface.set_parm!
+PSRClassesInterface.set_vector!
+PSRClassesInterface.set_series!
+PSRClassesInterface.write_data
+PSRClassesInterface.set_related!
+PSRClassesInterface.set_vector_related!
 ```
