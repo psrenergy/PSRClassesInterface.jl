@@ -12,7 +12,12 @@ makedocs(;
     pages=[
         "Home" => "index.md",
         "manual.md",
-        "examples.md"
+        "Examples"=>String[
+            "examples/reading_parameters.md",
+            "examples/reading_relations.md",
+            "examples/graf_files.md",
+            "examples/reading_demands.md",
+        ],
     ],
 )
 
