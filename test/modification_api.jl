@@ -323,11 +323,11 @@ function test_api10() #tests custom attribute
 
     data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
    
-    # PSRI.create_attribute!(data, "PSRBus", "extra", false, Int32, 0)
+    PSRI.create_attribute!(data, "PSRBus", "extra", false, Int32, 0)
 
-    # @test PSRI.create_element!(data, "PSRBus", "extra" => Int32(10)) == 1
+    @test PSRI.create_element!(data, "PSRBus", "extra" => Int32(10)) == 1
     
-    # @test data.raw["PSRBus"][1]["extra"] == Int32(10)
+    @test data.raw["PSRBus"][1]["extra"] == Int32(10)
 end
 
 test_api(PATH_CASE_0)

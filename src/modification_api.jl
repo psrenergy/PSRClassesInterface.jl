@@ -537,12 +537,12 @@ function create_attribute!(
     attribute::String, 
     is_vector::Bool, 
     ::Type{T}, 
-    dimension::Int, 
-    has_default::Bool=true,
-    default::Type{T} = _default_value(T)
+    dimension::Int,
+    has_default::Bool = false,
+    default::T = _default_value(T)
     ) where {T<:MainTypes}
     _validate_collection(data, collection)
-     
+
     data.data_struct[collection][attribute] = Attribute(attribute, is_vector, T, dimension, "")
 
     if has_default
