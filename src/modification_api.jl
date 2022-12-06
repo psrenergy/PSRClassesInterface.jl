@@ -1,5 +1,5 @@
-const _EXTRA_ATTRIBUTE = Dict{String,Any}
-const _CUSTOM_COLLECTION = Dict{String,Vector{_EXTRA_ATTRIBUTE}}()
+# const _EXTRA_ATTRIBUTE = Dict{String,Any}
+const _CUSTOM_COLLECTION = Dict{String,Any}()
 
 function _get_indexed_attributes(
     data::Data,
@@ -538,19 +538,36 @@ function create_attribute!(
     is_vector::Bool, 
     ::Type{T}, 
     dimension::Int,
-    has_default::Bool = false,
+    has_default::Bool = true,
     default::T = _default_value(T)
     ) where {T<:MainTypes}
     _validate_collection(data, collection)
 
     data.data_struct[collection][attribute] = Attribute(attribute, is_vector, T, dimension, "")
 
+    if !haskey(_CUSTOM_COLLECTION, collection)
+        _CUSTOM_COLLECTION[collection] = Dict{String,Any}()
+    end
     if has_default
-        _CUSTOM_COLLECTION[collection] = _EXTRA_ATTRIBUTE(attribute => default)
+        push!(_CUSTOM_COLLECTION[collection], (attribute => default))
     end
 
     return nothing
 end
+
+function create_collection!(
+    data::Data,
+    collection::String
+    )
+    if haskey(data.data_struct, collection)
+        error("Collection '$collection' is already part of this study")
+    end
+    
+    data.data_struct[collection] = Dict{String,Attribute}()
+
+    return nothing
+end
+
 
 function create_element!(
     data::Data,
@@ -585,9 +602,13 @@ function create_element!(
 
     if haskey(defaults, collection)
         element = deepcopy(defaults[collection])
-    else
-        @warn "No default initialization values for collection '$collection'"
-        element = Dict{String,Any}()
+    else 
+        if haskey(_CUSTOM_COLLECTION, collection)
+            element = deepcopy(_CUSTOM_COLLECTION[collection])
+        else
+            @warn "No default initialization values for collection '$collection'"
+            element = Dict{String,Any}()
+        end
     end
 
     # Cast values from json default 
@@ -719,6 +740,7 @@ function get_element(data::Data, reference_id::Integer)
 end
 
 function get_element(data::Data, collection::String, code::Integer)
+    _validate_collection(data, collection)
     collection_struct = data.data_struct[collection]
     index = 0
     if haskey(collection_struct,"code")
