@@ -1,3 +1,6 @@
+const _EXTRA_ATTRIBUTE = Dict{String,Any}
+const _CUSTOM_COLLECTION = Dict{String,Vector{_EXTRA_ATTRIBUTE}}()
+
 function _get_indexed_attributes(
     data::Data,
     collection::String,
@@ -528,10 +531,23 @@ function _cast_element!(data::Data, collection::String, element::Dict{String,Any
 end
 
 
-function create_attribute!(data::Data, collection::String, attribute::String, is_vector::Bool, ::Type{T}, dimension::Int) where {T<:MainTypes}
+function create_attribute!(
+    data::Data, 
+    collection::String, 
+    attribute::String, 
+    is_vector::Bool, 
+    ::Type{T}, 
+    dimension::Int, 
+    has_default::Bool=true,
+    default::Type{T} = _default_value(T)
+    ) where {T<:MainTypes}
     _validate_collection(data, collection)
      
     data.data_struct[collection][attribute] = Attribute(attribute, is_vector, T, dimension, "")
+
+    if has_default
+        _CUSTOM_COLLECTION[collection] = _EXTRA_ATTRIBUTE(attribute => default)
+    end
 
     return nothing
 end
