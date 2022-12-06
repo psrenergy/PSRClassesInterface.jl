@@ -315,7 +315,7 @@ function test_api9() #tests delete_vector_relation!
 
 end
 
-function test_api10() #tests delete_vector_relation!
+function test_api10() #tests custom attribute
     temp_path = joinpath(tempdir(), "PSRI_10")
     json_path = joinpath(temp_path, "psrclasses.json")
 
@@ -323,11 +323,11 @@ function test_api10() #tests delete_vector_relation!
 
     data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
    
-    PSRI.add_attribute!(data, "PSRBus", "extra", false, String, 0)
+    PSRI.create_attribute!(data, "PSRBus", "extra", false, Int32, 0)
 
-    @test PSRI.create_element!(data, "PSRBus", "extra" => "") == 1
+    @test PSRI.create_element!(data, "PSRBus", "extra" => Int32(10)) == 1
     
-
+    @test data.raw["PSRBus"][1]["extra"] == Int32(10)
 end
 
 test_api(PATH_CASE_0)
