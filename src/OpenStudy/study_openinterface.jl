@@ -216,6 +216,8 @@ function initialize_study(
     model_class_map = PMD._MODEL_TO_CLASS_SDDP,
     #merge collections
     add_transformers_to_series::Bool = true,
+    #json api 
+    json_struct_path::Union{Nothing,Vector{String},String} = nothing
 )
     if !isdir(data_path)
         error("$data_path is not a valid directory")
@@ -303,11 +305,79 @@ function initialize_study(
         end
     end
 
+    load_json_struct!(data, json_struct_path)
+
     # Assigns to every `reference_id` the corresponding instance index
     # as a pair (collection, index)
     _build_index!(data)
 
     return data
+end
+
+function load_json_struct!(::Data, ::Nothing) end
+
+function load_json_struct!(data::Data, paths::Vector{String})
+    for path in paths
+        load_json_struct!(data, path)
+    end
+    return nothing
+end
+
+function load_json_struct!(data::Data, path::String)
+    if isdir(path)
+        for subpath in readdir(path)
+            if isfile(subpath) && last(splitext(subpath)) == ".json"
+                load_json_struct!(data, subpath)
+            end
+        end
+        return nothing
+    end
+
+    if !(isfile(path) && last(splitext(path)) == ".json")
+        error("Invalid JSON file path '$path'")
+    end
+
+    raw_struct = JSON.parsefile(path)
+
+    for (collection,attr_list) in raw_struct
+        if !haskey(data.data_struct, collection)
+            data.data_struct[collection] =  Dict{String,Attribute}()
+        end
+
+        for (attr_name,attr_data) in attr_list
+            data.data_struct[collection][attr_name] = Attribute(
+                attr_data["name"],
+                attr_data["is_vector"],
+                _get_json_type(attr_data["type"]),
+                attr_data["dim"],
+                attr_data["index"]
+            )
+        end
+    end
+
+    return nothing
+end
+
+function _get_json_type(type::String)
+    if type == "Int32"
+        return Int32
+    elseif type == "Float64"
+        return Float64
+    elseif type == "String"
+        return String
+    elseif type == "Dates.Date"
+        return Dates.Date
+    elseif type == "Ptr{Nothing}"
+        return Ptr{Nothing}
+    else
+        error("Unknown type '$type'")
+    end
+end
+
+function dump_json_struct(data::Data, path::String)
+    Base.open(path, "w") do io
+        return JSON.print(io, data.data_struct)
+    end
 end
 
 function max_elements(data::Data, collection::String)

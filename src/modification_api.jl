@@ -1,4 +1,3 @@
-# const _EXTRA_ATTRIBUTE = Dict{String,Any}
 const _CUSTOM_COLLECTION = Dict{String,Any}()
 
 function _get_indexed_attributes(
@@ -567,7 +566,6 @@ function create_collection!(
 
     return nothing
 end
-
 
 function create_element!(
     data::Data,

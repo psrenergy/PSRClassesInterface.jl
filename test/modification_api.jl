@@ -361,12 +361,20 @@ function test_api11() #tests custom collection
 
     PSRI.write_data(data)
 
-    # data_copy = PSRI.initialize_study(PSRI.OpenInterface(); data_path = temp_path)
+    cpath = joinpath(temp_path, "custom.json")
+    PSRI.dump_json_struct(data, cpath)
 
-    # element_copy = PSRI.get_element(data_copy, "PSRExtra", Int32(6))
+    data_copy = PSRI.initialize_study(
+        PSRI.OpenInterface(); 
+        data_path = temp_path,
+        json_struct_path = cpath
+        )
+    
 
-    # @test element_copy["extra1"] == Int32(10)
-    # @test element_copy["extra2"] == "Test"
+    element_copy = PSRI.get_element(data_copy, "PSRExtra", Int32(6))
+
+    @test element_copy["extra1"] == Int32(10)
+    @test element_copy["extra2"] == "Test"
 
 end
 
