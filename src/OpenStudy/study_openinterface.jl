@@ -139,6 +139,9 @@ Base.@kwdef mutable struct Data{T} <: AbstractData
 
     # Reference Indexing
     data_index::DataIndex = DataIndex()
+
+    # Model Templates 
+    model_templates::Dict{String,Set{String}} = Dict{String,Set{String}}()
 end
 
 _raw(data::Data) = data.raw
@@ -378,6 +381,40 @@ function dump_json_struct(data::Data, path::String)
     Base.open(path, "w") do io
         return JSON.print(io, data.data_struct)
     end
+end
+
+function dump_model_templates(data::Data, path::String)
+
+    list = []
+
+    for (collection,models) in data.model_templates
+        push!(list, Dict{String,Any}(
+            "classname" => collection,
+            "models" => collect(models)
+            ))
+    end
+
+    Base.open(path, "w") do io
+        return JSON.print(io, list)
+    end
+end
+
+function load_model_templates!(data::Data, path::String)
+
+    raw_struct = JSON.parsefile(path)
+
+    for item in raw_struct
+        collection = item["classname"]
+        models = item["models"]
+
+        if !haskey(data.model_templates, collection)
+            data.model_templates[collection] = Set{String}()
+        end
+
+        union!(data.model_templates[collection], models)
+    end
+    
+    return nothing
 end
 
 function max_elements(data::Data, collection::String)

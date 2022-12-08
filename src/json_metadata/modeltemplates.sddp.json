@@ -1,0 +1,224 @@
+[
+    {
+        "classname": "PSRStudy",
+        "models": [
+            "SDDP_V10.2_ConfiguracaoEstudo"
+        ]
+    },
+    {
+        "classname": "PSRSystem",
+        "models": [
+            "SDDP_V10.2_Sistema"
+        ]
+    },
+    {
+        "classname": "PSRArea",
+        "models": [
+            "SDDP_V10.2_Area"
+        ]
+    },
+    {
+        "classname": "PSRLoad",
+        "models": [
+            "SDDP_V10.2_CargaBarra"
+        ]
+    },
+    {
+        "classname": "PSRDemand",
+        "models": [
+            "SDDP_V10.2_Demanda"
+        ]
+    },
+    {
+        "classname": "PSRDemandSegment",
+        "models": [
+            "SDDP_V10.2_SegmentoDemanda"
+        ]
+    },
+    {
+        "classname": "PSRInterconnection",
+        "models": [
+            "SDDP_V10.2_Interconnection"
+        ]
+    },
+    {
+        "classname": "PSRBus",
+        "models": [
+            "SDDP_V10.2_Bus"
+        ]
+    },
+    {
+        "classname": "PSRSerie",
+        "models": [
+            "SDDP_V10.2_Circuito"
+        ]
+    },
+    {
+        "classname": "PSRTransformer",
+        "models": [
+            "SDDP_Transformador"
+        ]
+    },
+    {
+        "classname": "PSRThermalPlant",
+        "models": [
+            "SDDP_V10.2_Termica"
+        ]
+    },
+    {
+        "classname": "PSRHydroPlant",
+        "models": [
+            "SDDP_V10.2_Hidro"
+        ]
+    },
+    {
+        "classname": "PSRGndPlant",
+        "models": [
+            "SDDP_V10.2_Gnd"
+        ]
+    },
+    {
+        "classname": "PSRGndGaugingStation",
+        "models": [
+            "SDDP_PostoMedicaoGnd"
+        ]
+    },
+    {
+        "classname": "PSRCspPlant",
+        "models": [
+            "SDDP_Csp"
+        ]
+    },
+    {
+        "classname": "PSRFuel",
+        "models": [
+            "SDDP_V10.2_Combustivel"
+        ]
+    },
+    {
+        "classname": "PSRMaintenanceData",
+        "models": [
+            "SDDP_V10.2_Manutencao"
+        ]
+    },
+    {
+        "classname": "PSRGenerationConstraintData",
+        "models": [
+            "SDDP_V10.2_RestricaoGeracao"
+        ]
+    },
+    {
+        "classname": "PSRReserveGenerationConstraintData",
+        "models": [
+            "SDDP_V10.2_ReservaGeracao"
+        ]
+    },
+    {
+        "classname": "PSRHydrologicalPlantConnection",
+        "models": [
+            "SDDP_V10.2_ConexaoHidreletrica"
+        ]
+    },
+    {
+        "classname": "PSRGaugingStation",
+        "models": [
+            "SDDP_V10.2_PostoHidrologico"
+        ]
+    },
+    {
+        "classname": "PSRLinkDC",
+        "models": [
+            "SDDP_V10.2_DCLink"
+        ]
+    },
+    {
+        "classname": "PSRGasNode",
+        "models": [
+            "SDDP_V10.2_NoGas"
+        ]
+    },
+    {
+        "classname": "PSRGasPipeline",
+        "models": [
+            "SDDP_V10.2_Gasoduto"
+        ]
+    },
+    {
+        "classname": "PSRBattery",
+        "models": [
+            "SDDP_V10.2_Bateria"
+        ]
+    },
+    {
+        "classname": "PSRFuelConsumption",
+        "models": [
+            "SDDP_ConsumoCombustivel"
+        ]
+    },
+    {
+        "classname": "PSRPowerInjection",
+        "models": [
+            "SDDP_V10.2_InjecaoPotencia"
+        ]
+    },
+    {
+        "classname": "PSRFuelContract",
+        "models": [
+            "SDDP_ContratoCombustivel"
+        ]
+    },
+    {
+        "classname": "PSRFuelReservoir",
+        "models": [
+            "SDDP_ReservatorioCombustivel"
+        ]
+    },
+    {
+        "classname": "PSRInterconnectionSumData",
+        "models": [
+            "SDDP_RestricaoSomaInterconexao"
+        ]
+    },
+    {
+        "classname": "PSRCircuitSumData",
+        "models": [
+            "SDDP_RestricaoSomaCircuito"
+        ]
+    },
+    {
+        "classname": "PSRThermalCombinedCycle",
+        "models": [
+            "SDDP_CicloCombinadoTermica"
+        ]
+    },
+    {
+        "classname": "PSRGasEmission",
+        "models": [
+            "SDDP_EmissaoGas"
+        ]
+    },
+    {
+        "classname": "PSRReservoirSet",
+        "models": [
+            "SDDP_ConjuntoReservatorios"
+        ]
+    },
+    {
+        "classname": "PSRCurrency",
+        "models": [
+            "SDDP_V10.2_Currency"
+        ]
+    },
+    {
+        "classname": "_PSRConstraintData",
+        "models": [
+            "SDDP_V10.2_Restricao"
+        ]
+    },
+    {
+        "classname": "_PSRSumConstraintData",
+        "models": [
+            "SDDP_V10.2_RestricaoSoma"
+        ]
+    }
+]
