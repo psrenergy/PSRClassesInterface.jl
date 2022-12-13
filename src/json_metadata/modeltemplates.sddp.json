@@ -20,7 +20,7 @@
     {
         "classname": "PSRLoad",
         "models": [
-            "SDDP_V10.2_CargaBarra"
+            "SDDP_V10.2_CargaBarra", "SDDP_V10.3_CargaBarra"
         ]
     },
     {
