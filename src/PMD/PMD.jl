@@ -26,6 +26,8 @@ const DataStruct = Dict{String, Dict{String, Attribute}}
 
 const _PMDS_BASE_PATH = joinpath(@__DIR__(), "pmds")
 
+const PMD_MODEL_TEMPLATES_PATH = joinpath(@__DIR__(), "modeltemplates.sddp.json")
+
 const _MODEL_TO_CLASS_SDDP = Dict(
     "SDDP_V10.2_ConfiguracaoEstudo" => "PSRStudy",
     "SDDP_V10.2_Sistema" => "PSRSystem",

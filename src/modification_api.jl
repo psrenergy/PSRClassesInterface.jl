@@ -380,13 +380,14 @@ function create_study(
     end
 
     # Select mapping
-    model_class_map = if netplan
-        PMD._MODEL_TO_CLASS_NETPLAN
+    model_templates_path = joinpath(@__DIR__, "PMD")
+    model_templates = if netplan
+        load_model_templates!(joinpath(model_templates_path, "modeltemplates.netplan.json"))
     else
-        PMD._MODEL_TO_CLASS_SDDP
+        load_model_templates!(joinpath(model_templates_path, "modeltemplates.sddp.json"))
     end
 
-    data_struct, model_files_added = PMD.load_model(pmds_path, pmd_files, model_class_map)
+    data_struct, model_files_added = PMD.load_model(pmds_path, pmd_files, model_templates)
 
     data = Data(
         raw = Dict{String,Any}(),

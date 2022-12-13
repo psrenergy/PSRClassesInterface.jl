@@ -216,7 +216,7 @@ function initialize_study(
     extra_config_file::String = "",
     validate_attributes::Bool = true,
     _netplan_database::Bool = false,
-    model_class_map = PMD._MODEL_TO_CLASS_SDDP,
+    model_templates_path:: String = PMD.PMD_MODEL_TEMPLATES_PATH,
     #merge collections
     add_transformers_to_series::Bool = true,
     #json api 
@@ -251,10 +251,9 @@ function initialize_study(
         )
     # TODO daily study
 
-    if _netplan_database
-        model_class_map = PMD._MODEL_TO_CLASS_NETPLAN
-    end
-    data_struct, model_files_added = PMD.load_model(path_pmds, pmd_files, model_class_map)
+    model_templates = load_model_templates!(model_templates_path)
+
+    data_struct, model_files_added = PMD.load_model(path_pmds, pmd_files, model_templates)
     if isempty(model_files_added)
         error("No Model definition (.pmd) file found")
     end
