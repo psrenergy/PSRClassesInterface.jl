@@ -22,7 +22,9 @@ struct Attribute
     # interval::String
 end
 
-const DataStruct = Dict{String, Dict{String, Attribute}}
+const DataStruct = Dict{String,Dict{String,Attribute}}
+
+include("model_templates.jl")
 
 const _PMDS_BASE_PATH = joinpath(@__DIR__(), "pmds")
 
@@ -63,7 +65,7 @@ const _MODEL_TO_CLASS_SDDP = Dict(
     "SDDP_CicloCombinadoTermica" => "PSRThermalCombinedCycle",
     "SDDP_EmissaoGas" => "PSRGasEmission",
     "SDDP_ConjuntoReservatorios" => "PSRReservoirSet",
-    "SDDP_V10.2_Currency"=>"PSRCurrency",
+    "SDDP_V10.2_Currency" => "PSRCurrency",
     "SDDP_V10.2_Restricao" => "_PSRConstraintData",
     "SDDP_V10.2_RestricaoSoma" => "_PSRSumConstraintData",
 )
@@ -140,6 +142,141 @@ end
 
 const _MAX_MERGE = 10
 
+abstract type PMD_STATE end
+
+struct PMD_STATE_IDLE <: PMD_STATE end
+
+struct PMD_STATE_MODEL <: PMD_STATE
+    collection::String
+    num_merges::Int
+
+    PMD_STATE_MODEL(collection::String, num_merges::Integer = 0) = new(collection, num_merges)
+end
+
+function _parse_pmd!(
+    data_struct::DataStruct,
+    filepath::AbstractString,
+    model_template::ModelTemplate,
+)
+    if !isfile(filepath) || !endswith(filepath, ".pmd")
+        error("'$filepath' is not a valid .pmd file")
+    end
+
+    open(filepath, "r") do fp
+        return _parse_pmd!(fp, data_struct, model_template)
+    end
+
+    return data_struct
+end
+
+function _parse_pmd_line!(
+    data_struct::DataStruct,
+    model_template::ModelTemplate,
+    line::AbstractString,
+    state::PMD_STATE_IDLE,
+)
+    m = match(r"DEFINE_MODEL\s+MODL:([\S]+)", line)
+
+    if !isnothing(m)
+        model_name = m[1]
+
+        if _hasinv(model_template, model_name)
+            collection = model_template.inv[model_name]
+
+            data_struct[collection] = Dict{String,Attribute}()
+
+            # default attributes tha belong to "all collectiones"
+            data_struct[collection]["name"] = Attribute("name", false, String, 0, "")
+            data_struct[collection]["code"] = Attribute("code", false, Int32, 0, "")
+            data_struct[collection]["AVId"] = Attribute("AVId", false, String, 0, "")
+
+            if collection == "PSRSystem"
+                data_struct[collection]["id"] = Attribute("id", false, String, 0, "")
+            end
+
+            return PMD_STATE_MODEL(collection)
+        end
+    end
+
+    return state
+end
+
+function _parse_pmd_line!(
+    data_struct::DataStruct,
+    model_template::ModelTemplate,
+    line::AbstractString,
+    state::PMD_STATE_MODEL,
+)
+    if startswith(line, "END_MODEL")
+        return PMD_STATE_IDLE()
+    end
+
+    m = match(r"MERGE_MODEL\s+MODL:([\S]+)", line)
+
+    if !isnothing(m)
+        model_name = m[1]
+
+        for i in 1:_MAX_MERGE
+            if !haskey(data_struct[state.collection], "_MERGE_$i")
+                data_struct[state.collection]["_MERGE_$i"] = Attribute(model_template.inv[model_name], false, DataType, 0, "")
+                
+                return PMD_STATE_MODEL(state.collection, state.num_merges + 1)
+            end
+        end
+
+        @warn "Number of merges in class $(state.collection) exceeded the maximum of $(_MAX_MERGE)"
+
+        return state
+    end
+
+    m = match(r"(PARM|VECTOR|VETOR)\s+([\S]+)\s+([\S]+)\s+(DIM\(([\S]+(,[\S]+)*)\)\s+)?(INDEX\s+([\S]+))?", line)
+
+    if !isnothing(m)
+        kind  = m[1]
+        type  = m[2]
+        name  = m[3]
+        dims  = m[5]
+        index = m[8]
+
+        data_struct[state.collection][name] = Attribute(
+            name,
+            PMD._is_vector(kind),
+            PMD._get_type(type),
+            count(",", something(dims, "")) + 1,
+            something(index, "")x,
+            # interval,
+        )
+    end
+
+    return state
+end
+
+function _parse_pmd!(io::IO, data_struct::DataStruct, model_template::ModelTemplate)
+    state = PMD_STATE_IDLE()
+
+    for line in strip.(readlines(io))
+        if isempty(line) || startswith(line, "//")
+            continue # comment or empty line
+        end
+
+        state = _parse_pmd_line!(data_struct, model_template, line, state)
+    end
+
+    # apply merges
+    for collection in keys(data_struct)
+        _merge_class(data_struct, collection, String[collection])
+    end
+
+    # delete temporary classes (starting with "_")
+    for collection in keys(data_struct)
+        if startswith(collection, "_")
+            delete!(data_struct, collection)
+        end
+    end
+
+    return data_struct
+end
+
 function _parse_pmd!(data_struct, FILE, MODEL_CLASS_MAP)
     # PSRThermalPlant => GerMax => Attr
     @assert FILE[end-3:end] == ".pmd"
@@ -151,11 +288,11 @@ function _parse_pmd!(data_struct, FILE, MODEL_CLASS_MAP)
     total_merges = 0
     for line in readlines(FILE)
         clean_line = strip(replace(line, '\t' => ' '))
-        if startswith(clean_line ,"//") || isempty(clean_line)
+        if startswith(clean_line, "//") || isempty(clean_line)
             continue
         end
         if inside_model
-            if startswith(clean_line ,"END_MODEL")
+            if startswith(clean_line, "END_MODEL")
                 inside_model = false
                 current_class = ""
                 continue
@@ -207,11 +344,18 @@ function _parse_pmd!(data_struct, FILE, MODEL_CLASS_MAP)
                     for i in 1:_MAX_MERGE
                         if !haskey(data_struct[current_class], "_MERGE_$i")
                             data_struct[current_class]["_MERGE_$i"] = Attribute(
-                                MODEL_CLASS_MAP[words[2][6:end]], false, DataType, 0, "")
+                                MODEL_CLASS_MAP[words[2][6:end]],
+                                false,
+                                DataType,
+                                0,
+                                "",
+                            )
                             break
                         end
                         if i == _MAX_MERGE
-                            println("Number of merges in class $current_class exceeded the maximum of $(_MAX_MERGE)")
+                            println(
+                                "Number of merges in class $current_class exceeded the maximum of $(_MAX_MERGE)",
+                            )
                         end
                     end
                 end
@@ -224,17 +368,17 @@ function _parse_pmd!(data_struct, FILE, MODEL_CLASS_MAP)
                 if haskey(MODEL_CLASS_MAP, model_name)
                     current_class = MODEL_CLASS_MAP[model_name]
                     inside_model = true
-                    data_struct[current_class] = Dict{String, Attribute}()
+                    data_struct[current_class] = Dict{String,Attribute}()
                     # default attributes tha belong to "all classes"
-                    data_struct[current_class]["name"] = Attribute(
-                        "name", false, String, 0, "")
-                    data_struct[current_class]["code"] = Attribute(
-                        "code", false, Int32, 0, "")
-                    data_struct[current_class]["AVId"] = Attribute(
-                        "AVId", false, String, 0, "")
+                    data_struct[current_class]["name"] =
+                        Attribute("name", false, String, 0, "")
+                    data_struct[current_class]["code"] =
+                        Attribute("code", false, Int32, 0, "")
+                    data_struct[current_class]["AVId"] =
+                        Attribute("AVId", false, String, 0, "")
                     if current_class == "PSRSystem"
-                        data_struct[current_class]["id"] = Attribute(
-                            "id", false, String, 0, "")
+                        data_struct[current_class]["id"] =
+                            Attribute("id", false, String, 0, "")
                     end
                     continue
                 end
@@ -271,7 +415,9 @@ function _merge_class(data_struct, class_name, merge_path)
                     continue
                 end
                 if haskey(class, k)
-                    error("Class $class already has attribute $k being merged from $to_merge")
+                    error(
+                        "Class $class already has attribute $k being merged from $to_merge",
+                    )
                 end
                 class[k] = v
             end
@@ -319,20 +465,10 @@ function _load_model!(
     return nothing
 end
 
-function load_model(
-    path_pmds::AbstractString,
-    files::Vector{String},
-    model_class_map,
-)
+function load_model(path_pmds::AbstractString, files::Vector{String}, model_class_map)
     data_struct = DataStruct()
     files_added = Set{String}()
-    _load_model!(
-        data_struct,
-        path_pmds,
-        files,
-        files_added,
-        model_class_map,
-    )
+    _load_model!(data_struct, path_pmds, files, files_added, model_class_map)
     return data_struct, files_added
 end
 
