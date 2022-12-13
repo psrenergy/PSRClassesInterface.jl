@@ -28,7 +28,7 @@ include("model_templates.jl")
 
 const _PMDS_BASE_PATH = joinpath(@__DIR__(), "pmds")
 
-const PMD_MODEL_TEMPLATES_PATH = joinpath(@__DIR__(), "modeltemplates.sddp.json")
+const PMD_MODEL_TEMPLATES_PATH = joinpath(@__DIR__(), "..", "json_metadata", "modeltemplates.sddp.json")
 
 const _MODEL_TO_CLASS_SDDP = Dict(
     "SDDP_V10.2_ConfiguracaoEstudo" => "PSRStudy",
@@ -163,7 +163,7 @@ function _parse_pmd!(
     end
 
     open(filepath, "r") do fp
-        return _parse_pmd!(fp, data_struct, model_template)
+        _parse_pmd!(fp, data_struct, model_template)
     end
 
     return data_struct
@@ -229,8 +229,9 @@ function _parse_pmd_line!(
         return state
     end
 
-    m = match(r"(PARM|VECTOR|VETOR)\s+([\S]+)\s+([\S]+)\s+(DIM\(([\S]+(,[\S]+)*)\)\s+)?(INDEX\s+([\S]+))?", line)
-
+    m = match(r"(PARM|VECTOR|VETOR)\s+([\S]+)\s+([\S]+)(\s+DIM\(([\S]+(,[\S]+)*)\))?(\s+INDEX\s+([\S]+))?", line)
+    
+    # @show m
     if !isnothing(m)
         kind  = m[1]
         type  = m[2]
@@ -238,12 +239,14 @@ function _parse_pmd_line!(
         dims  = m[5]
         index = m[8]
 
+        # @show dims
+
         data_struct[state.collection][name] = Attribute(
             name,
             PMD._is_vector(kind),
             PMD._get_type(type),
-            count(",", something(dims, "")) + 1,
-            something(index, "")x,
+            isnothing(dims) ? 0 : count(",", dims) + 1,
+            something(index, ""),
             # interval,
         )
     end
@@ -275,6 +278,12 @@ function _parse_pmd!(io::IO, data_struct::DataStruct, model_template::ModelTempl
     end
 
     return data_struct
+end
+
+function _parse_pmd(filepath::AbstractString, model_template::ModelTemplate)
+    data_struct = DataStruct()
+
+    return _parse_pmd!(data_struct, filepath, model_template)
 end
 
 function _parse_pmd!(data_struct, FILE, MODEL_CLASS_MAP)
@@ -431,7 +440,7 @@ function _load_model!(
     path_pmds::AbstractString,
     files::Vector{String},
     FILES_ADDED::Set{String},
-    model_class_map,
+    model_template::ModelTemplate,
 )
     str = "Model"
     ext = "pmd"
@@ -445,7 +454,7 @@ function _load_model!(
                 error("$str $file should contain a .$ext extension")
             end
             if !in(name, FILES_ADDED)
-                _parse_pmd!(data_struct, file, model_class_map)
+                _parse_pmd!(data_struct, file, model_template)
                 push!(FILES_ADDED, name)
             end
         end
@@ -456,7 +465,7 @@ function _load_model!(
             if splitext(name)[2] == ".$ext"
                 if !in(name, FILES_ADDED)
                     file = joinpath(path_pmds, name)
-                    _parse_pmd!(data_struct, file, model_class_map)
+                    _parse_pmd!(data_struct, file, model_template)
                     push!(FILES_ADDED, name)
                 end
             end
@@ -465,10 +474,10 @@ function _load_model!(
     return nothing
 end
 
-function load_model(path_pmds::AbstractString, files::Vector{String}, model_class_map)
+function load_model(path_pmds::AbstractString, files::Vector{String}, model_template::ModelTemplate)
     data_struct = DataStruct()
     files_added = Set{String}()
-    _load_model!(data_struct, path_pmds, files, files_added, model_class_map)
+    _load_model!(data_struct, path_pmds, files, files_added, model_template)
     return data_struct, files_added
 end
 

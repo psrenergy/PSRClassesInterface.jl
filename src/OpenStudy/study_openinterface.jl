@@ -251,9 +251,10 @@ function initialize_study(
         )
     # TODO daily study
 
-    model_templates = load_model_templates!(model_templates_path)
+    model_template = PMD.ModelTemplate()
+    PMD.load_model_template!(model_templates_path, model_template)
 
-    data_struct, model_files_added = PMD.load_model(path_pmds, pmd_files, model_templates)
+    data_struct, model_files_added = PMD.load_model(path_pmds, pmd_files, model_template)
     if isempty(model_files_added)
         error("No Model definition (.pmd) file found")
     end
