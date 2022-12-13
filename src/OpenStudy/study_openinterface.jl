@@ -141,7 +141,7 @@ Base.@kwdef mutable struct Data{T} <: AbstractData
     data_index::DataIndex = DataIndex()
 
     # Model Templates 
-    model_templates::Dict{String,Set{String}} = Dict{String,Set{String}}()
+    model_template::PMD.ModelTemplate = PMD.ModelTemplate()
 end
 
 _raw(data::Data) = data.raw
@@ -383,36 +383,14 @@ function dump_json_struct(data::Data, path::String)
     end
 end
 
-function dump_model_templates(data::Data, path::String)
+function PMD.dump_model_template(path::String, data::Data)
+    PMD.dump_model_template(path, data.model_template)
 
-    list = []
-
-    for (collection,models) in data.model_templates
-        push!(list, Dict{String,Any}(
-            "classname" => collection,
-            "models" => collect(models)
-            ))
-    end
-
-    Base.open(path, "w") do io
-        return JSON.print(io, list)
-    end
+    return nothing
 end
 
-function load_model_templates!(data::Data, path::String)
-
-    raw_struct = JSON.parsefile(path)
-
-    for item in raw_struct
-        collection = item["classname"]
-        models = item["models"]
-
-        if !haskey(data.model_templates, collection)
-            data.model_templates[collection] = Set{String}()
-        end
-
-        union!(data.model_templates[collection], models)
-    end
+function PMD.load_model_template!(path::String, data::Data)
+    PMD.load_model_template!(path, data.model_template)
     
     return nothing
 end
