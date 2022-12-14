@@ -14,13 +14,17 @@ function test_mt1()
         model_template_path = mt_path
         )
    
-    @test PSRI.create_element!(data, "PSRLoad",use_defaults=false,
-        "AVId" => "", 
-        "Data" => [Dates.Date(2022,1,1)], 
+    @test PSRI.create_element!(
+        data,
+        "PSRLoad",
+        "AVId"  => "", 
+        "Data"  => [Dates.Date(2022,1,1)], 
         "HourP" => [0.0], 
-        "P" => [0.0], 
-        "code" => Int32(0), 
-        "name" => "") == 1
+        "P"     => [0.0], 
+        "code"  => Int32(0), 
+        "name"  => "";
+        defaults=nothing,
+    ) == 1
     
 end
 

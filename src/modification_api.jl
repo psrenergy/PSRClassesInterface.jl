@@ -578,55 +578,46 @@ end
 function create_element!(
     data::Data,
     collection::String;
-    defaults::Union{Dict{String,Any},Nothing} = nothing,
-    use_defaults::Bool = true
+    defaults::Union{Dict{String,Any},Nothing} = _load_defaults!(),
 )
-    return create_element!(data, collection, Dict{String,Any}(), defaults, use_defaults)
+    return create_element!(data, collection, Dict{String,Any}(); defaults=defaults)
 end
 
 function create_element!(
     data::Data,
     collection::String,
     ps::Pair{String,<:Any}...;
-    defaults::Union{Dict{String,Any},Nothing} = nothing,
-    use_defaults::Bool = true
+    defaults::Union{Dict{String,Any},Nothing} = _load_defaults!(),
 )
     attributes = Dict{String,Any}(ps...)
 
-    return create_element!(data, collection, attributes, defaults,use_defaults)
+    return create_element!(data, collection, attributes; defaults=defaults)
 end
 
 function create_element!(
     data::Data,
     collection::String,
-    attributes::Dict{String,Any},
-    defaults::Union{Dict{String,Any},Nothing} = nothing,
-    use_defaults::Bool = true
+    attributes::Dict{String,Any};
+    defaults::Union{Dict{String,Any},Nothing} = _load_defaults!(),
 )
     _validate_collection(data, collection)
     
-    if use_defaults
-        if isnothing(defaults)
-            defaults = JSON.parsefile(PSRCLASSES_DEFAULTS_PATH)
+    element = if isnothing(defaults)
+        Dict{String,Any}()
+    elseif haskey(defaults, collection)
+        deepcopy(defaults[collection])
+    else 
+        if haskey(_CUSTOM_COLLECTION, collection)
+            deepcopy(_CUSTOM_COLLECTION[collection])
+        else
+            @warn "No default initialization values for collection '$collection'"
+
+            Dict{String,Any}()
         end
-
-        if haskey(defaults, collection)
-            element = deepcopy(defaults[collection])
-        else 
-            if haskey(_CUSTOM_COLLECTION, collection)
-                element = deepcopy(_CUSTOM_COLLECTION[collection])
-            else
-                @warn "No default initialization values for collection '$collection'"
-                element = Dict{String,Any}()
-            end
-        end
-
-        # Cast values from json default 
-        _cast_element!(data, collection, element)
-
-    else
-        element = Dict{String,Any}()
     end
+
+    # Cast values from json default 
+    _cast_element!(data, collection, element)
 
     # Default attributes are overriden by the provided ones
     merge!(element, attributes)
