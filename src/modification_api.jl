@@ -365,6 +365,7 @@ function create_study(
     defaults_path::Union{AbstractString,Nothing} = PSRCLASSES_DEFAULTS_PATH,
     defaults::Union{Dict{String,Any},Nothing} = nothing,
     netplan::Bool = false,
+    model_template_path::Union{String,Nothing} = nothing,
     kws...,
 )
     if !isdir(data_path)
@@ -381,13 +382,17 @@ function create_study(
 
     # Select mapping
     model_template = PMD.ModelTemplate()
-    model_templates_path = joinpath(@__DIR__, "json_metadata")
-    if netplan
-        PMD.load_model_template!(joinpath(model_templates_path, "modeltemplates.netplan.json"), model_template)
-    else
-        PMD.load_model_template!(joinpath(model_templates_path, "modeltemplates.sddp.json"), model_template)
+    if isnothing(model_template_path)
+        mt_path = joinpath(@__DIR__, "json_metadata")
+        if netplan
+            PMD.load_model_template!(joinpath(mt_path, "modeltemplates.netplan.json"), model_template)
+        else
+            PMD.load_model_template!(joinpath(mt_path, "modeltemplates.sddp.json"), model_template)
+        end
+    else 
+        PMD.load_model_template!(model_template_path, model_template)
     end
-
+ 
     data_struct, model_files_added = PMD.load_model(pmds_path, pmd_files, model_template)
 
     data = Data(
@@ -405,6 +410,7 @@ function create_study(
         number_blocks = 1,
         log_file = nothing,
         verbose = true,
+        model_template = model_template
     )
 
     create_element!(data, "PSRStudy"; defaults = defaults)
@@ -573,8 +579,9 @@ function create_element!(
     data::Data,
     collection::String;
     defaults::Union{Dict{String,Any},Nothing} = nothing,
+    use_defaults::Bool = true
 )
-    return create_element!(data, collection, Dict{String,Any}(), defaults)
+    return create_element!(data, collection, Dict{String,Any}(), defaults, use_defaults)
 end
 
 function create_element!(
@@ -582,10 +589,11 @@ function create_element!(
     collection::String,
     ps::Pair{String,<:Any}...;
     defaults::Union{Dict{String,Any},Nothing} = nothing,
+    use_defaults::Bool = true
 )
     attributes = Dict{String,Any}(ps...)
 
-    return create_element!(data, collection, attributes, defaults)
+    return create_element!(data, collection, attributes, defaults,use_defaults)
 end
 
 function create_element!(
@@ -593,26 +601,32 @@ function create_element!(
     collection::String,
     attributes::Dict{String,Any},
     defaults::Union{Dict{String,Any},Nothing} = nothing,
+    use_defaults::Bool = true
 )
     _validate_collection(data, collection)
-
-    if isnothing(defaults)
-        defaults = JSON.parsefile(PSRCLASSES_DEFAULTS_PATH)
-    end
-
-    if haskey(defaults, collection)
-        element = deepcopy(defaults[collection])
-    else 
-        if haskey(_CUSTOM_COLLECTION, collection)
-            element = deepcopy(_CUSTOM_COLLECTION[collection])
-        else
-            @warn "No default initialization values for collection '$collection'"
-            element = Dict{String,Any}()
+    
+    if use_defaults
+        if isnothing(defaults)
+            defaults = JSON.parsefile(PSRCLASSES_DEFAULTS_PATH)
         end
-    end
 
-    # Cast values from json default 
-    _cast_element!(data, collection, element)
+        if haskey(defaults, collection)
+            element = deepcopy(defaults[collection])
+        else 
+            if haskey(_CUSTOM_COLLECTION, collection)
+                element = deepcopy(_CUSTOM_COLLECTION[collection])
+            else
+                @warn "No default initialization values for collection '$collection'"
+                element = Dict{String,Any}()
+            end
+        end
+
+        # Cast values from json default 
+        _cast_element!(data, collection, element)
+
+    else
+        element = Dict{String,Any}()
+    end
 
     # Default attributes are overriden by the provided ones
     merge!(element, attributes)
