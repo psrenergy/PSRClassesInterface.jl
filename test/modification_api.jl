@@ -362,7 +362,7 @@ function test_api11() #tests custom collection
     PSRI.write_data(data)
 
     cpath = joinpath(temp_path, "custom.json")
-    PSRI.dump_json_struct(data, cpath)
+    PSRI.dump_json_struct(cpath, data)
 
     data_copy = PSRI.initialize_study(
         PSRI.OpenInterface(); 

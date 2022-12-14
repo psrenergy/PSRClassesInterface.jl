@@ -216,7 +216,7 @@ function initialize_study(
     extra_config_file::String = "",
     validate_attributes::Bool = true,
     _netplan_database::Bool = false,
-    model_templates_path:: String = PMD.PMD_MODEL_TEMPLATES_PATH,
+    model_template_path::Union{String,Nothing} = nothing,
     #merge collections
     add_transformers_to_series::Bool = true,
     #json api 
@@ -252,8 +252,12 @@ function initialize_study(
     # TODO daily study
 
     model_template = PMD.ModelTemplate()
-    PMD.load_model_template!(model_templates_path, model_template)
-
+    if isnothing(model_template_path)
+        mt_path = joinpath(@__DIR__,"..", "json_metadata")
+        PMD.load_model_template!(joinpath(mt_path, "modeltemplates.sddp.json"), model_template)
+    else
+        PMD.load_model_template!(model_template_path, model_template)
+    end
     data_struct, model_files_added = PMD.load_model(path_pmds, pmd_files, model_template)
     if isempty(model_files_added)
         error("No Model definition (.pmd) file found")
@@ -289,6 +293,7 @@ function initialize_study(
         number_blocks = number_blocks,
         log_file = file,
         verbose = verbose,
+        model_template = model_template
     )
     if add_transformers_to_series
         _merge_psr_transformer_and_psr_serie!(data)
@@ -377,7 +382,7 @@ function _get_json_type(type::String)
     end
 end
 
-function dump_json_struct(data::Data, path::String)
+function dump_json_struct(path::String, data::Data)
     Base.open(path, "w") do io
         return JSON.print(io, data.data_struct)
     end

@@ -17,16 +17,50 @@ function test_mt1()
     @test PSRI.create_element!(
         data,
         "PSRLoad",
-        "AVId"  => "", 
+        "AVId"  => "test", 
         "Data"  => [Dates.Date(2022,1,1)], 
         "HourP" => [0.0], 
         "P"     => [0.0], 
-        "code"  => Int32(0), 
+        "code"  => Int32(5), 
         "name"  => "";
         defaults=nothing,
     ) == 1
     
+    PSRI.write_data(data)
+
+    data_struct_path = joinpath(temp_path, "struct.json")
+    
+    PSRI.dump_json_struct(data_struct_path, data)
+
+    mt_copy_path = joinpath(temp_path,"modeltemplate.copy.json")
+    
+    PSRI.PMD.dump_model_template(mt_copy_path, data)
+
+    data_copy = PSRI.initialize_study(
+        PSRI.OpenInterface();
+        data_path = temp_path,
+        json_struct_path = data_struct_path,
+        model_template_path = mt_copy_path
+    )
+
+    element = PSRI.get_element(data_copy, "PSRLoad", Int32(5))
+
+    @test element["AVId"] == "test"
+
+    @test PSRI.create_element!(
+        data_copy,
+        "PSRLoad",
+        "AVId"  => "test", 
+        "Data"  => [Dates.Date(2022,1,1)], 
+        "HourP" => [0.0], 
+        "P"     => [0.0], 
+        "code"  => Int32(7), 
+        "name"  => "";
+        defaults=nothing,
+    ) == 2
+
 end
+
 
 
 
