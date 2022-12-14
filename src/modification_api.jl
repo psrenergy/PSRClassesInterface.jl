@@ -363,9 +363,10 @@ function create_study(
     pmd_files::Vector{String} = String[],
     pmds_path::AbstractString = PMD._PMDS_BASE_PATH,
     defaults_path::Union{AbstractString,Nothing} = PSRCLASSES_DEFAULTS_PATH,
-    defaults::Union{Dict{String,Any},Nothing} = nothing,
+    defaults::Union{Dict{String,Any},Nothing} = _load_defaults!(),
     netplan::Bool = false,
     model_template_path::Union{String,Nothing} = nothing,
+    required::Union{String,Vector{String},Nothing} = "PSRStudy",
     kws...,
 )
     if !isdir(data_path)
@@ -413,9 +414,25 @@ function create_study(
         model_template = model_template
     )
 
-    create_element!(data, "PSRStudy"; defaults = defaults)
+    _create_required!(data, required, defaults)
 
     return data
+end
+
+function _create_required!(::Data, ::Nothing, ::Union{Dict{String,Any},Nothing}) end
+
+function _create_required!(data::Data, required::Vector{String}, defaults::Union{Dict{String,Any},Nothing})
+    for collection in required
+        _create_required!(data, collection, defaults)
+    end
+
+    return nothing
+end
+
+function _create_required!(data::Data, collection::String, defaults::Union{Dict{String,Any},Nothing})
+    create_element!(data, collection; defaults = defaults)
+
+    return nothing
 end
 
 function _validate_collection(data::Data, collection::String)
