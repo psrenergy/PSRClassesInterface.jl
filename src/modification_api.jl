@@ -366,7 +366,7 @@ function create_study(
     defaults::Union{Dict{String,Any},Nothing} = _load_defaults!(),
     netplan::Bool = false,
     model_template_path::Union{String,Nothing} = nothing,
-    required::Union{String,Vector{String},Nothing} = "PSRStudy",
+    study_collection::String = "PSRStudy",
     kws...,
 )
     if !isdir(data_path)
@@ -383,12 +383,18 @@ function create_study(
 
     # Select mapping
     model_template = PMD.ModelTemplate()
+
     if isnothing(model_template_path)
-        mt_path = joinpath(@__DIR__, "json_metadata")
         if netplan
-            PMD.load_model_template!(joinpath(mt_path, "modeltemplates.netplan.json"), model_template)
+            PMD.load_model_template!(
+                joinpath(JSON_METADATA_PATH, "modeltemplates.netplan.json"),
+                model_template,
+            )
         else
-            PMD.load_model_template!(joinpath(mt_path, "modeltemplates.sddp.json"), model_template)
+            PMD.load_model_template!(
+                joinpath(JSON_METADATA_PATH, "modeltemplates.sddp.json"),
+                model_template,
+            )
         end
     else 
         PMD.load_model_template!(model_template_path, model_template)
@@ -414,22 +420,20 @@ function create_study(
         model_template = model_template
     )
 
-    _create_required!(data, required, defaults)
+    _create_study_collection(data, study_collection, defaults)
 
     return data
 end
 
-function _create_required!(::Data, ::Nothing, ::Union{Dict{String,Any},Nothing}) end
-
-function _create_required!(data::Data, required::Vector{String}, defaults::Union{Dict{String,Any},Nothing})
+function _create_study_collection(data::Data, required::Vector{String}, defaults::Union{Dict{String,Any},Nothing})
     for collection in required
-        _create_required!(data, collection, defaults)
+        _create_study_collection(data, collection, defaults)
     end
 
     return nothing
 end
 
-function _create_required!(data::Data, collection::String, defaults::Union{Dict{String,Any},Nothing})
+function _create_study_collection(data::Data, collection::String, defaults::Union{Dict{String,Any},Nothing})
     create_element!(data, collection; defaults = defaults)
 
     return nothing

@@ -437,41 +437,53 @@ function _merge_class(data_struct, class_name, merge_path)
 end
 
 function _load_model!(
-    data_struct,
-    path_pmds::AbstractString,
-    files::Vector{String},
-    FILES_ADDED::Set{String},
+    data_struct::DataStruct,
+    filepath::AbstractString,
+    loaded_files::Set{String},
     model_template::ModelTemplate,
 )
-    str = "Model"
-    ext = "pmd"
+    if !isfile(filepath)
+        error("'$filepath' is not a valid file")
+    end
+
+    if last(splitext(filepath)) != ".pmd"
+        error("'$filepath' should contain a .pmd extension")
+    end
+
+    filename = basename(filepath)
+
+    if !in(filename, loaded_files)
+        _parse_pmd!(data_struct, filepath, model_template)
+
+        push!(loaded_files, filename)
+    end
+
+    return nothing
+end
+
+function _load_model!(
+    data_struct::DataStruct,
+    path_pmds::AbstractString,
+    files::Vector{String},
+    loaded_files::Set{String},
+    model_template::ModelTemplate,
+)
     if !isempty(files)
-        for file in files
-            if !isfile(file)
-                error("$str $file not found")
-            end
-            name = basename(file)
-            if splitext(name)[2] != ".$ext"
-                error("$str $file should contain a .$ext extension")
-            end
-            if !in(name, FILES_ADDED)
-                _parse_pmd!(data_struct, file, model_template)
-                push!(FILES_ADDED, name)
-            end
+        for filepath in files
+            _load_model!(data_struct, filepath, loaded_files, model_template)
         end
     else
-        names = readdir(path_pmds)
-        # names should be basename'd
-        for name in names
-            if splitext(name)[2] == ".$ext"
-                if !in(name, FILES_ADDED)
-                    file = joinpath(path_pmds, name)
-                    _parse_pmd!(data_struct, file, model_template)
-                    push!(FILES_ADDED, name)
-                end
+        if !isdir(path_pmds)
+            error("'$path_pmds' is not a valid directory")
+        end
+
+        for filepath in readdir(path_pmds; join = true)
+            if isfile(filepath) && last(splitext(filepath)) == ".pmd"
+                _load_model!(data_struct, filepath, loaded_files, model_template)
             end
         end
     end
+
     return nothing
 end
 
