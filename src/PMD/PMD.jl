@@ -154,6 +154,12 @@ struct PMD_STATE_MODEL <: PMD_STATE
     PMD_STATE_MODEL(collection::String, num_merges::Integer = 0) = new(collection, num_merges)
 end
 
+function _parse_pmd(filepath::AbstractString, model_template::ModelTemplate)
+    data_struct = DataStruct()
+
+    return _parse_pmd!(data_struct, filepath, model_template)
+end
+
 function _parse_pmd!(
     data_struct::DataStruct,
     filepath::AbstractString,
@@ -165,6 +171,32 @@ function _parse_pmd!(
 
     open(filepath, "r") do fp
         _parse_pmd!(fp, data_struct, model_template)
+    end
+
+    return data_struct
+end
+
+function _parse_pmd!(io::IO, data_struct::DataStruct, model_template::ModelTemplate)
+    state = PMD_STATE_IDLE()
+
+    for line in strip.(readlines(io))
+        if isempty(line) || startswith(line, "//")
+            continue # comment or empty line
+        end
+
+        state = _parse_pmd_line!(data_struct, model_template, line, state)
+    end
+
+    # apply merges
+    for collection in keys(data_struct)
+        _merge_class(data_struct, collection, String[collection])
+    end
+
+    # delete temporary classes (starting with "_")
+    for collection in keys(data_struct)
+        if startswith(collection, "_")
+            delete!(data_struct, collection)
+        end
     end
 
     return data_struct
@@ -253,38 +285,6 @@ function _parse_pmd_line!(
     end
 
     return state
-end
-
-function _parse_pmd!(io::IO, data_struct::DataStruct, model_template::ModelTemplate)
-    state = PMD_STATE_IDLE()
-
-    for line in strip.(readlines(io))
-        if isempty(line) || startswith(line, "//")
-            continue # comment or empty line
-        end
-
-        state = _parse_pmd_line!(data_struct, model_template, line, state)
-    end
-
-    # apply merges
-    for collection in keys(data_struct)
-        _merge_class(data_struct, collection, String[collection])
-    end
-
-    # delete temporary classes (starting with "_")
-    for collection in keys(data_struct)
-        if startswith(collection, "_")
-            delete!(data_struct, collection)
-        end
-    end
-
-    return data_struct
-end
-
-function _parse_pmd(filepath::AbstractString, model_template::ModelTemplate)
-    data_struct = DataStruct()
-
-    return _parse_pmd!(data_struct, filepath, model_template)
 end
 
 function _parse_pmd!(data_struct, FILE, MODEL_CLASS_MAP)
@@ -489,9 +489,11 @@ end
 
 function load_model(path_pmds::AbstractString, files::Vector{String}, model_template::ModelTemplate)
     data_struct = DataStruct()
-    files_added = Set{String}()
-    _load_model!(data_struct, path_pmds, files, files_added, model_template)
-    return data_struct, files_added
+    loaded_files = Set{String}()
+
+    _load_model!(data_struct, path_pmds, files, loaded_files, model_template)
+
+    return data_struct, loaded_files
 end
 
 end

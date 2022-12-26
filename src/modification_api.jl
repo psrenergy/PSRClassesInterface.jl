@@ -367,7 +367,6 @@ function create_study(
     netplan::Bool = false,
     model_template_path::Union{String,Nothing} = nothing,
     study_collection::String = "PSRStudy",
-    kws...,
 )
     if !isdir(data_path)
         error("data_path = '$data_path' must be a directory")
@@ -426,25 +425,6 @@ function create_study(
 end
 
 function _create_study_collection(data::Data, collection::String, defaults::Union{Dict{String,Any},Nothing})
-
-    # if collection != "PSRStudy" && !haskey(defaults,collection)
-    #     attributes = Dict{String,Any}()
-
-    #     for (_, attr) in data.data_struct[collection]
-
-    #         if attr.is_vector
-    #             attributes[attr.name] = [_default_value(attr.type)]
-    #             continue
-    #         end
-
-    #         attributes[attr.name] = _default_value(attr.type)
-    #     end
-
-    #     create_element!(data, collection, attributes)
-
-    #     return nothing
-    # end
-
     create_element!(data, collection; defaults = defaults)
 
     return nothing
