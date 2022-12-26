@@ -11,7 +11,8 @@ function test_mt1()
         PSRI.OpenInterface(), 
         data_path = temp_path,
         pmd_files = [pmd_path],
-        model_template_path = mt_path
+        model_template_path = mt_path,
+        study_collection = "NewStudy"
         )
    
     @test PSRI.create_element!(
@@ -40,7 +41,8 @@ function test_mt1()
         PSRI.OpenInterface();
         data_path = temp_path,
         json_struct_path = data_struct_path,
-        model_template_path = mt_copy_path
+        model_template_path = mt_copy_path,
+        study_collection = "NewStudy"
     )
 
     element = PSRI.get_element(data_copy, "PSRLoad", Int32(5))

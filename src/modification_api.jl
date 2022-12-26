@@ -419,7 +419,7 @@ function create_study(
         verbose = true,
         model_template = model_template
     )
-
+    
     _create_study_collection(data, study_collection, defaults)
 
     return data
@@ -434,6 +434,25 @@ function _create_study_collection(data::Data, required::Vector{String}, defaults
 end
 
 function _create_study_collection(data::Data, collection::String, defaults::Union{Dict{String,Any},Nothing})
+
+    if collection != "PSRStudy" && !haskey(defaults,collection)
+        attributes = Dict{String,Any}()
+
+        for (_, attr) in data.data_struct[collection]
+
+            if attr.is_vector
+                attributes[attr.name] = [_default_value(attr.type)]
+                continue
+            end
+
+            attributes[attr.name] = _default_value(attr.type)
+        end
+
+        create_element!(data, collection, attributes)
+
+        return nothing
+    end
+
     create_element!(data, collection; defaults = defaults)
 
     return nothing
