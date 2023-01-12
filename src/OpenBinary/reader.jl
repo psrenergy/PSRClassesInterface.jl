@@ -239,11 +239,13 @@ function PSRI.open(
     @assert first_relative_stage == 1 # todo improve this
     @assert stage_total - first_relative_stage >= 0
 
+    if variable_by_series == 0
+        # previous versions of the file simply leave the number of scenarios
+        # as the number of scenarios in the study
+        scenario_total = 1
+    end
     if !(0 <= variable_by_series <= 1)
         println(BAD * "variable_by_series = $variable_by_series, expected 0 or 1")
-    end
-    if variable_by_series == 0 && scenario_total > 1
-        println(BAD * "variable_by_series == 0 but scenario_total = $scenario_total")
     end
     @assert scenario_total > 0
     scenario_exist = variable_by_series == 1
