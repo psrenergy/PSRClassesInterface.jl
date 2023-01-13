@@ -1,6 +1,74 @@
 # Graf Files
 
-## Writing a time series into a file
+## Motivation
+
+The data relative to a Study is usually stored in a JSON file, where, if previously specified, an attribute can have its data indexed by time intervals. An example is presented below, where `ShortTermMarketPrice` is indexed by `InitialDateMarketPrice`:
+
+```json
+"InitialDateMarketPrice": [  
+    "2021-08-31 00:00",
+    "2021-08-31 00:30",
+    "2021-08-31 01:00",
+    "2021-08-31 01:30"
+],
+"ShortTermMarketPrice": [
+    70.62,
+    58.17,
+    43.85,
+    26.28
+]
+```
+
+However, a time series can be too large to be stored in a JSON for some Studies. For these cases, we save the data in a Graf file. When an attribute has its information in a Graf file, there's an entry in the regular JSON file specifying it. 
+
+In the following example, each `PSRDemandSegment` object will have its attribute `HourDemand` data associated with a time series. To distinguish each `PSRDemandSegment` object in the Graf file, they will be represented by their attribute `AVId`.
+
+```json
+"PSRDemandSegment": [
+    {
+        "AVId": "Agent 1"
+        "name": "psr_name"
+    },
+    {
+        "AVId": "Agent 2"
+        "name": "psr_name2"
+    },
+    {
+        "AVId": "Agent 3"
+        "name": "psr_name3"
+    }
+],
+"GrafScenarios": [
+    {
+        "classname": "PSRDemandSegment",
+        "parmid": "AVId",
+        "vector": "HourDemand",
+        "binary": [ "hourdemand.hdr", "hourdemand.bin" ]
+    }
+]
+```
+
+## Graf file format
+
+A Graf file composed of a header and a table with the following elements:
+
+- Stage 
+- Sequence 
+- Block
+- Agents
+
+Using the previous example with `PSRDemandSegment` objects, the `HourDemand` for each object will be displayed in the Agents columns, that will take the name of the `AVId` attribute, resulting on the following:
+
+| **T** | **S** | **B** | **Agent 1** | **Agent 2** | **Agent 3** |
+|:-----:|:-----:|:-----:|:-----------:|:-----------:|-------------|
+|   1   |   1   |   1   |    1.0      |     5.0     |    10.0     |
+|   2   |   1   |   1   |    1.5      |     6.5     |    11.5     |
+| 3     | 1     | 1     |    2.0      |     7.0     |    12.0     |
+| ...   | ...   | ...   |    ...      |     ...     |     ...     |
+
+
+
+## Writing a time series into a Graf file
 
 In this example we will demonstrate how to save a time series into a csv or binary file. 
 The first step is to obtain the data that you wish to save
