@@ -1,19 +1,24 @@
 {
     "PSRDemandSegment": [
         {
-            "AVId": "Agent_1"
+            "AVId": "Agent_1",
+            "reference_id": 2
         },
         {
-            "AVId": "Agent_2"
+            "AVId": "Agent_2",
+            "reference_id": 3
         },
         {
-            "AVId": "Agent_3"
+            "AVId": "Agent_3",
+            "reference_id": 4
         },
         {
-            "AVId": "Agent_4"
+            "AVId": "Agent_4",
+            "reference_id": 5
         },
         {
-            "AVId": "Agent_5"
+            "AVId": "Agent_5",
+            "reference_id": 6
         }
     ],
     "GrafScenarios": [

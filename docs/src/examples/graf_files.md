@@ -131,7 +131,7 @@ iow = PSRI.open(
 for stage = 1:n_stages, scenario = 1:n_scenarios, block = 1:n_blocks
     PSRI.write_registry(
         iow,
-        data = time_series_data[:, block, scenario, stage],
+        time_series_data[:, block, scenario, stage],
         stage,
         scenario,
         block
