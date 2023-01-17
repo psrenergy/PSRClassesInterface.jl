@@ -38,4 +38,7 @@ include("OpenStudy/relations.jl")
 # modification API
 include("modification_api.jl")
 
+# time series 
+include("time_series.jl")
+
 end

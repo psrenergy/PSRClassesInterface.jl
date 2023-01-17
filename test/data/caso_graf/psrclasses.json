@@ -1,0 +1,126 @@
+{
+    "PSRDemandSegment": [
+        {
+            "AVId": "Agent_1",
+            "reference_id": 2
+        },
+        {
+            "AVId": "Agent_2",
+            "reference_id": 3
+        },
+        {
+            "AVId": "Agent_3",
+            "reference_id": 4
+        },
+        {
+            "AVId": "Agent_4",
+            "reference_id": 5
+        },
+        {
+            "AVId": "Agent_5",
+            "reference_id": 6
+        }
+    ],
+    "GrafScenarios": [
+        {
+            "classname": "PSRDemandSegment",
+            "parmid": "AVId",
+            "vector": "HourDemand",
+            "binary": ["caso_graf.bin","caso_graf.hdr"]
+        }
+    ],
+    "PSRStudy": [
+        {
+            "DateChroDeficitCost": [
+                "1900-01-01"
+            ],
+            "VersaoInfoCargaBarra": "string",
+            "Ano_inicial": 0,
+            "Configuracao": 0,
+            "DeficitSegment": [
+                0.0
+            ],
+            "Etapa_inicial": 0,
+            "NumeroAnosAdicionaisParm2": 0,
+            "Mes_Inicial_Hidro": 0,
+            "FlagCreateFutureCost": 0,
+            "SubHourlyScenario": [
+                0
+            ],
+            "Perdas": 0,
+            "FutureCostEntryFileName": "string",
+            "MinOutflowPenalty": 0.0,
+            "NumeroSistemas": 0,
+            "CurrencyFactor": [
+                0.0
+            ],
+            "Idioma": 0,
+            "Currency": [
+                "string"
+            ],
+            "NumberSimulations": 0,
+            "ChroDeficitCost": [
+                0.0
+            ],
+            "FlagReadFutureCost": 0,
+            "name": "string",
+            "FutureCostYear": 0,
+            "HourBlockMap": [
+                0
+            ],
+            "Series_Forward": 0,
+            "NumeroEtapas": 0,
+            "SubHourlyStage": [
+                "1900-01-01"
+            ],
+            "Tipo_Etapa": 0,
+            "FinalStageFutureCost": 0,
+            "NumberBlocks": 0,
+            "IndexSeriesSimulacao": [
+                0
+            ],
+            "Manutencao": 0,
+            "FlagUseHotStart": 0,
+            "NumeroBlocosDemandaParm2": 0,
+            "FutureCostStage": 0,
+            "NumberOpenings": 0,
+            "Series_Backward": 0,
+            "VersionRenewableBlockProfile": 0,
+            "DeficitCost": [
+                0.0
+            ],
+            "DataHourBlock": [
+                "1900-01-01"
+            ],
+            "Vazoes": 0,
+            "AVId": "string",
+            "Horizonte": 0,
+            "MinSpillageUnit": 0,
+            "SubHourlyDiscretization": 0,
+            "CodigoSistemas": [
+                0
+            ],
+            "Objetivo": 0,
+            "NumeroBlocosDemanda": 0,
+            "code": 0,
+            "FutureCostReadFileName": "string",
+            "SpillagePenalty": 0.0,
+            "TaxaDesconto": 0.0,
+            "Rede": 0,
+            "NumeroAnosAdicionais": 0,
+            "Ano_Inicial_Hidro": 0,
+            "reference_id": 1,
+            "Series_Simular": 0,
+            "NumeroAnosAdicionaisParm3": 0,
+            "InitialStageFutureCost": 0,
+            "CriterioConvergencia": 0.0,
+            "NivelInformes": 0,
+            "MaximoIteracoes": 0,
+            "CurrencyReference": "string",
+            "SubHourlyDays": [
+                0
+            ],
+            "Opcao": 0
+        }
+    ]
+}

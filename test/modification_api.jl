@@ -50,22 +50,22 @@ function test_api(data_path::String)
     # set_series!
     series_data = Dict(
         "PSRThermalPlant" => [
-            "Data" => Dict{String,Vector}(
-                "GerMin" => [0.0, 1.0],
-                "GerMax" => [888.0, 777.0],
-                "O&MCost" => [0.0, 1.0],
-                "IH" => [0.0, 0.0],
-                "ICP" => [0.0, 0.0],
-                "Data" => Dates.Date.(["1900-01-01", "1900-01-02"]),
-                "CoefE" => [1.0, 2.0],
-                "CTransp" => [0.0, 1.0],
-                "PotInst" => [888.0, 777.0],
-                "Existing" => Int32[0, 0],
-                "sfal" => Int32[0, 1],
-                "NGas" => Int32[0, 0],
-                "NAdF" => Int32[0, 0],
-                "Unidades" => Int32[1, 1],
-                "StartUp" => [0.0, 2.0],
+            "Data"     => Dict{String,Vector}(
+            "GerMin"   => Float64[0.0, 1.0],
+            "GerMax"   => Float64[888.0, 777.0],
+            "O&MCost"  => Float64[0.0, 1.0],
+            "IH"       => Float64[0.0, 0.0],
+            "ICP"      => Float64[0.0, 0.0],
+            "Data"     => Dates.Date.(["1900-01-01", "1900-01-02"]),
+            "CoefE"    => Float64[1.0, 2.0],
+            "CTransp"  => Float64[0.0, 1.0],
+            "PotInst"  => Float64[888.0, 777.0],
+            "Existing" => Int32[0, 0],
+            "sfal"     => Int32[0, 1],
+            "NGas"     => Int32[0, 0],
+            "NAdF"     => Int32[0, 0],
+            "Unidades" => Int32[1, 1],
+            "StartUp"  => Float64[0.0, 2.0],
             ),
         ],
         # TODO: Add more test cases later, as in:
