@@ -158,10 +158,10 @@ function get_series(data::Data, collection::String, indexing_attribute::String, 
     # empty if needed.
     attributes = _get_indexed_attributes(data, collection, index, indexing_attribute)
 
-    series = Dict{String,Vector}()
+    buffer = Dict{String,Vector}()
 
     for attribute in attributes
-        series[attribute] = get_vector(
+        buffer[attribute] = get_vector(
             data,
             collection,
             attribute,
@@ -170,7 +170,7 @@ function get_series(data::Data, collection::String, indexing_attribute::String, 
         )
     end
 
-    return series
+    return SeriesTable(buffer)
 end
 
 function set_series!(
@@ -180,11 +180,23 @@ function set_series!(
     index::Int,
     buffer::Dict{String,Vector},
 )
+    series = SeriesTable(buffer)
+
+    set_series!(data, collection, indexing_attribute, index, series)
+end
+
+function set_series!(
+    data::Data,
+    collection::String,
+    indexing_attribute::String,
+    index::Int,
+    series::SeriesTable,
+)
     attributes = _get_indexed_attributes(data, collection, index, indexing_attribute)
 
     valid = true
 
-    if length(buffer) != length(attributes)
+    if length(series) != length(attributes)
         valid = false
     end
 

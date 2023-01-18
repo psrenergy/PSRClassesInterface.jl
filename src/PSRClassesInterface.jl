@@ -2,6 +2,7 @@ module PSRClassesInterface
 
 import Dates
 import JSON
+import Tables
 
 @static if VERSION < v"1.6"
     error("Julia version $VERSION not supported by PSRClassesInterface, upgrade to 1.6 or later")
@@ -34,6 +35,9 @@ include("OpenStudy/validation.jl")
 include("OpenStudy/vector_map.jl")
 include("OpenStudy/duration.jl")
 include("OpenStudy/relations.jl")
+
+# Tables.jl API
+include("tables/interface.jl")
 
 # modification API
 include("modification_api.jl")
