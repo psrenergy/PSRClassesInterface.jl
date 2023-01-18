@@ -39,10 +39,10 @@ include("OpenStudy/relations.jl")
 # Tables.jl API
 include("tables/interface.jl")
 
-# modification API
-include("modification_api.jl")
-
 # Graf files 
 include("graf_utils.jl")
+
+# modification API
+include("modification_api.jl")
 
 end
