@@ -24,33 +24,6 @@ function has_graf_file(data::Data, collection::String, attribute::Union{String, 
     return false
 end
 
-# Get GrafTable stored in a graf file for a collection
-function get_series(
-    data::Data, 
-    collection::String, 
-    attribute::String
-    )
-    if !has_graf_file(data, collection)
-        error("No time series file for collection '$collection'")
-    end
-
-    graf_files = Vector{String}()
-
-    for graf in data.raw["GrafScenarios"]
-        if graf["classname"] == collection && graf["vector"] == attribute 
-            append!(graf_files, graf["binary"])
-        end
-    end
-
-    graf_file = first(graf_files)
-    graf_path = joinpath(data.data_path, first(splitext(graf_file)))
-
-    graf_table = GrafTable(graf_path)
-
-    return graf_table
-end
-
-
 # Add reference to graf file in JSON 
 function link_series_to_file(
     data::Data, 
