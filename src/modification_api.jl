@@ -201,20 +201,20 @@ function set_series!(
     end
 
     for attribute in attributes
-        if !haskey(buffer, attribute)
+        if !haskey(series, attribute)
             valid = false
             break
         end
     end
 
     if !valid
-        missing_attrs = setdiff(attributes, keys(buffer))
+        missing_attrs = setdiff(attributes, keys(series))
 
         for attribute in missing_attrs
             @error "Missing attribute '$(attribute)'"
         end
 
-        invalid_attrs = setdiff(keys(buffer), attributes)
+        invalid_attrs = setdiff(keys(series), attributes)
 
         for attribute in invalid_attrs
             @error "Invalid attribute '$(attribute)'"
@@ -225,7 +225,7 @@ function set_series!(
 
     new_length = nothing
 
-    for vector in values(buffer)
+    for vector in values(series)
         if isnothing(new_length)
             new_length = length(vector)
         end
@@ -238,14 +238,14 @@ function set_series!(
     element = _get_element(data, collection, index)
 
     # validate types
-    for (attribute, vector) in buffer
-        attribute_struct = get_attribute_struct(data, collection, attribute)
-        _check_type(attribute_struct, eltype(vector), collection, attribute)
+    for attribute in keys(series)
+        attribute_struct = get_attribute_struct(data, collection, String(attribute))
+        _check_type(attribute_struct, eltype(series[attribute]), collection, String(attribute))
     end
 
-    for (attribute, vector) in buffer
+    for attribute in keys(series)
         # protect user's data
-        element[attribute] = deepcopy(vector)
+        element[String(attribute)] = deepcopy(series[attribute])
     end
 
     return nothing
@@ -625,6 +625,11 @@ function create_element!(
     defaults::Union{Dict{String,Any},Nothing} = _load_defaults!(),
 )
     _validate_collection(data, collection)
+
+    # TODO: handle case when collection has a  graf file
+    if has_graf_file(data, collection) 
+        error("Cannot create element for a collection with a Graf file")
+    end
     
     element = if isnothing(defaults)
         Dict{String,Any}()

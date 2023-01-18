@@ -78,11 +78,12 @@ function test_api(data_path::String)
 
     for (collection, series_list) in series_data
         for (attribute, new_value) in series_list
-            old_value = PSRI.get_series(src_data, collection, attribute, 1)
-            @test old_value != new_value
-            PSRI.set_series!(src_data, collection, attribute, 1, new_value)
+            new_value_st = PSRI.SeriesTable(new_value)
+            old_value_st = PSRI.get_series(src_data, collection, attribute, 1) # return SeriesTable
+            @test old_value_st != new_value_st
+            PSRI.set_series!(src_data, collection, attribute, 1, new_value_st)
             value_set = PSRI.get_series(src_data, collection, attribute, 1)
-            @test new_value == value_set
+            @test new_value_st == value_set
         end
     end
 end

@@ -29,6 +29,23 @@ function Base.getproperty(ts::SeriesTable, name::Symbol)
     end
 end
 
+function Base.:(==)(tsx::SeriesTable, tsy::SeriesTable)
+    if keys(tsx.attrs) == keys(tsy.attrs)
+        for attr in keys(tsx.attrs)
+            if (all(tsx.types[tsx.attrs[attr]] != tsy.types[tsy.attrs[attr]]) ||
+                all(tsx.table[tsx.attrs[attr]] != tsy.table[tsy.attrs[attr]]))
+                return false
+            end
+        end
+        return true
+    end
+    return false
+end
+
+function Base.haskey(st::SeriesTable, key::String)
+    return haskey(st.attrs, Symbol(key))
+end
+
 # Retrieve a column by name (String)
 function Tables.getcolumn(ts::SeriesTable, col::Symbol)
     return Tables.getcolumn(ts, ts.attrs[col])
