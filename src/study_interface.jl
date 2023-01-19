@@ -876,9 +876,16 @@ function set_vector! end
         index::Int,
     )
 
-Retrieves the series i.e. `Dict{String, Vector}` indexed by `index_attr`.
+    function get_series(
+        data::Data,
+        collection::String,
+        attribute::String;
+        kws...
+    )
 
-Example
+Retrieves the SeriesTable object indexed by `index_attr` or GrafTable object from a Graf file. 
+
+Examples
 ```
 julia> PSRI.get_series(data, "PSRThermalPlant", "Data", 1)
 Dict{String, Vector} with 13 entries:
@@ -895,6 +902,8 @@ Dict{String, Vector} with 13 entries:
   "NAdF"     => [0]
   "Unidades" => [1]
   "StartUp"  => [0.0]
+
+julia> PSRI.get_series(data, "PSRDemandSegment", "HourDemand")
 ```
 """
 function get_series end
@@ -949,6 +958,46 @@ Dict{String, Vector} with 13 entries:
 ```
 """
 function set_series! end
+
+
+"""
+    function has_graf_file(data::Data, collection::String, attribute::Union{String, Nothing} = nothing)
+
+Checks if data has a Graf file linked to an attribute(specified or not) from a collection.
+
+Example
+
+```
+julia> PSRI.has_graf_file(data, "PSRDemandSegment", "HourDemand")
+
+julia> PSRI.has_graf_file(data, "PSRDemandSegment")
+```
+"""
+function has_graf_file end
+
+"""
+    function link_series_to_file(
+        data::Data, 
+        collection::String,
+        attribute::String,
+        agent_attribute::String,
+        file_name::String
+    )
+
+Links Graf file to an attribute from a collection.
+
+Example
+```
+julia> PSRI.link_series_to_file(
+    data, 
+    "PSRDemandSegment", 
+    "HourDemand", 
+    "DataHourDemand",
+    path
+)
+```
+"""
+function link_series_to_file end
 
 """
     write_data(data::Data, path::String)
