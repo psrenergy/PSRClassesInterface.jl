@@ -44,4 +44,7 @@ end
     @testset "Relations" begin
         @time include("relations.jl")
     end
+    @testset "Graf Files" begin
+        @time include("graf_files.jl")
+    end
 end

@@ -102,8 +102,8 @@ FILE_PATH = joinpath(".", "example")
 
 PSRI.array_to_file(
     PSRI.OpenBinary.Writer,
-    path = FILE_PATH,
-    data = time_series_data,
+    FILE_PATH,
+    time_series_data,
     agents = ["Agent 1", "Agent 2", "Agent 3", "Agent 4", "Agent 5"],
     unit = "MW";
     initial_stage = 3,

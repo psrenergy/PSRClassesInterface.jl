@@ -137,6 +137,17 @@ function Base.getproperty(ts::GrafTable, name::Symbol)
     end
 end
 
+function Base.:(==)(gtx::GrafTable, gty::GrafTable)
+    if gtx.agents == gty.agents
+        if gtx.domain == gty.domain
+            if  gtx.matrix == gty.matrix
+                return true
+            end
+        end
+    end
+    return false
+end
+
 # Required AbstractColumns Interface
 
 # Retrieve a column by name (String)

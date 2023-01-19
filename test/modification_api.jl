@@ -84,8 +84,13 @@ function test_api(data_path::String)
             PSRI.set_series!(src_data, collection, attribute, 1, new_value_st)
             value_set = PSRI.get_series(src_data, collection, attribute, 1)
             @test new_value_st == value_set
+            @test PSRI.Tables.getcolumn(new_value_st, 1) == PSRI.Tables.getcolumn(value_set, 1)
+            @test PSRI.Tables.getcolumn(new_value_st, keys(new_value_st)[1]) == PSRI.Tables.getcolumn(value_set, keys(value_set)[1])
+            @test PSRI.Tables.columnnames(new_value_st) == PSRI.Tables.columnnames(value_set)
         end
     end
+
+    
 end
 
 
