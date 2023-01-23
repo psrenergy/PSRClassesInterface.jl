@@ -1,23 +1,47 @@
-# Graf Files
+# Graf Files and Time Series
 
-## Motivation
+## Time Series
 
-The data relative to a Study is usually stored in a JSON file, where, if previously specified, an attribute can have its data indexed by time intervals. An example is presented below, where `ShortTermMarketPrice` is indexed by `InitialDateMarketPrice`:
+Some attributes in a Study represent a time series indexed by another attribute. Here we will be setting a time series for the attribute `HourDemand`, from `PSRDemandSegment`, which is indexed by `DataHourDemand`.
 
-```json
-"InitialDateMarketPrice": [  
-    "2021-08-31 00:00",
-    "2021-08-31 00:30",
-    "2021-08-31 01:00",
-    "2021-08-31 01:30"
-],
-"ShortTermMarketPrice": [
-    70.62,
-    58.17,
-    43.85,
-    26.28
-]
+First we create a Dict with `HourDemand` and `DataHourDemand` data.
+
+```@example rw_file
+series = Dict{String,Vector}(
+    "DataHourDemand" => ["1900-01-01", "1900-01-02","1900-01-03"],
+    "HourDemand" =>  [5.0, 7.0, 11.0]
+)
 ```
+
+Then, we save the time series to the study using the function [`PSRI.set_series!`](@ref) 
+
+```@example rw_file
+PSRI.set_series!(
+    data, 
+    "PSRDemandSegment", 
+    "DataHourDemand",
+    1, # element index in collection
+    series
+    )
+```
+
+We can later retrieve the series with [`PSRI.get_series`](@ref), which will return a `SeriesTable` object. It can be later displayed as a table in your terminal.
+
+```rw_file
+using DataFrames
+series_table = PSRI.get_series(
+    data, 
+    "PSRDemandSegment", 
+    "DataHourDemand", 
+    1 # element index in collection
+    )
+
+DataFrame(series_table)
+```
+
+
+## Graf files
+The data relative to a Study is usually stored in a JSON file, where an attribute can have its data indexed by time intervals, as presented earlier.
 
 However, a time series can be too large to be stored in a JSON for some Studies. For these cases, we save the data in a Graf file. When an attribute has its information in a Graf file, there's an entry in the regular JSON file specifying it. 
 
@@ -193,4 +217,39 @@ end
 PSRI.close(ior)
 
 rm(FILE_PATH; force = true)
+```
+
+## Using Graf files in a study
+
+As presented earlier, an attribute for a collection can have its data stored in a Graf file, all that being specified in the `GrafScenarios` entry of the study JSON. 
+
+That being said, we can retrieve the data stored in a Graf file using the [`PSRI.get_series`](@ref) function. This function returns a `GrafTable` object.
+
+```@example rw_file
+graf_table = PSRI.get_series(
+        data,
+        "PSRDemandSegment",
+        "HourDemand";
+        use_header = false
+    )
+```
+
+If you have a Graf file that should be linked to a study, you can use the function [`PSRI.link_series_to_file`](@ref) to do so.
+
+```@example rw_file
+PSRI.link_series_to_file(
+        data, 
+        "PSRDemandSegment", 
+        "HourDemand", 
+        "DataHourDemand",
+        PATH_TO_GRAF_FILE
+    )
+```
+
+Once you have a GrafTable object, you can display it as a table in your terminal
+
+```@example rw_file
+using DataFrames
+
+DataFrame(graf_table)
 ```

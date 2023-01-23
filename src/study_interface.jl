@@ -939,22 +939,6 @@ julia> series = Dict{String, Vector}(
        );
 
 julia> PSRI.set_series!(data, "PSRThermalPlant", 1, "Data", series)
-
-julia> PSRI.get_series(data, "PSRThermalPlant", 1, "Data")
-Dict{String, Vector} with 13 entries:
-  "GerMin"   => [0.0, 1.0]
-  "GerMax"   => [888.0, 777.0]
-  "NGas"     => [nothing, nothing]
-  "IH"       => [0.0, 0.0]
-  "ICP"      => [0.0, 0.0]
-  "Data"     => ["1900-01-01", "1900-01-02"]
-  "CoefE"    => [1.0, 2.0]
-  "PotInst"  => [888.0, 777.0]
-  "Existing" => [0, 0]
-  "sfal"     => [0, 1]
-  "NAdF"     => [0, 0]
-  "Unidades" => [1, 1]
-  "StartUp"  => [0.0, 2.0]
 ```
 """
 function set_series! end
