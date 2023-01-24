@@ -17,6 +17,7 @@ makedocs(;
             "examples/reading_relations.md",
             "examples/graf_files.md",
             "examples/reading_demands.md",
+            "examples/modification.md",
         ],
     ],
 )
