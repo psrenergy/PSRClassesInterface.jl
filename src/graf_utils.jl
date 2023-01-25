@@ -24,6 +24,27 @@ function has_graf_file(data::Data, collection::String, attribute::Union{String, 
     return false
 end
 
+
+# Checks if names for Agents in Study are equal to the ones in Graf file
+function _validate_json_graf( 
+    agent_attribute::String,
+    elements::Vector{Dict{String,Any}},
+    graf_file::String   
+)
+    ior = open(OpenBinary.Reader, graf_file; use_header = false)
+
+    agents_json = Vector{String}()
+    for element in elements
+        push!(agents_json, element[agent_attribute])
+    end
+
+    if sort(agents_json) != sort(ior.agent_names)
+        error("Agent names from your Study are different from the ones in Graf file")
+    end
+    
+    return
+end
+
 # Add reference to graf file in JSON 
 function link_series_to_file(
     data::Data, 
@@ -36,7 +57,13 @@ function link_series_to_file(
         data.raw["GrafScenarios"] = Vector{Dict{String,Any}}()
     end
 
+    if get_attribute_type(data, collection, agent_attribute) != String
+        error("'agent_attribute' can only be an Attribute of type String")
+    end
+
     collection_elements = data.raw[collection]
+    
+    _validate_json_graf(agent_attribute, collection_elements, file_name)
 
     for element in collection_elements
         if haskey(element, attribute)

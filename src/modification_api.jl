@@ -174,7 +174,7 @@ function get_series(data::Data, collection::String, indexing_attribute::String, 
 end
 
 # Get GrafTable stored in a graf file for a collection
-function get_series(data::Data, collection::String, attribute::String; kws...)
+function get_graf_series(data::Data, collection::String, attribute::String; kws...)
     if !has_graf_file(data, collection)
         error("No time series file for collection '$collection'")
     end
