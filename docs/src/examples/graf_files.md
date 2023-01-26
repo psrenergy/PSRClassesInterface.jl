@@ -223,7 +223,7 @@ rm(FILE_PATH; force = true)
 
 As presented earlier, an attribute for a collection can have its data stored in a Graf file, all that being specified in the `GrafScenarios` entry of the study JSON. 
 
-That being said, we can retrieve the data stored in a Graf file using the [`PSRI.get_series`](@ref) function. This function returns a `GrafTable` object.
+That being said, we can retrieve the data stored in a Graf file using the [`PSRI.get_graf_series`](@ref) function. This function returns a `GrafTable` object.
 
 ```@example rw_file
 graf_table = PSRI.get_series(

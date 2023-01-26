@@ -74,6 +74,7 @@ struct GrafTable{T} <: Tables.AbstractColumns
     domain::Matrix{Int}
     agents::Dict{Symbol,Int}
     matrix::Matrix{T}
+    unit::String
 
     function GrafTable{T}(path::String; kws...) where {T}
         hdr = "$path.hdr"
@@ -123,9 +124,11 @@ struct GrafTable{T} <: Tables.AbstractColumns
             end
         end
 
+        unit = reader.unit
+
         close(reader)
 
-        return new{T}(path, hdr, bin, domain, agents, matrix)
+        return new{T}(path, hdr, bin, domain, agents, matrix, unit)
     end
 end
 
