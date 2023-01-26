@@ -24,6 +24,21 @@ function has_graf_file(data::Data, collection::String, attribute::Union{String, 
     return false
 end
 
+function _get_graf_filename(data::Data, collection::String, attribute::String)
+    if !has_graf_file(data,collection,attribute)
+        error("Collection '$collection' does not have a Graf file for '$attribute'.")
+    end
+
+
+    for graf in data.raw["GrafScenarios"]
+        if graf["classname"] == collection
+            if graf["vector"] == attribute
+                return first(splitext(first(graf["binary"])))
+            end
+        end
+    end
+    return
+end
 
 # Checks if names for Agents in Study are equal to the ones in Graf file
 function _validate_json_graf( 
@@ -58,7 +73,7 @@ function link_series_to_file(
     end
 
     if get_attribute_type(data, collection, agent_attribute) != String
-        error("'agent_attribute' can only be an Attribute of type String")
+        error("Attribute '$agent_attribute' can only be an Attribute of type String")
     end
 
     collection_elements = data.raw[collection]
@@ -83,3 +98,4 @@ function link_series_to_file(
     write_data(data)
     return
 end
+    

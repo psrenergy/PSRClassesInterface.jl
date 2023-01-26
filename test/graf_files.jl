@@ -17,7 +17,7 @@ function test_graf()
         time_series_data,
         agents = ["Agent X", "Agent Y", "Agent Z", "Agent K", "Agent P"],
         unit = "MW";
-        initial_stage = 3,
+        initial_stage = 1,
         initial_year = 2006,
     )
 

@@ -41,6 +41,7 @@ include("tables/interface.jl")
 
 # Graf files 
 include("graf_utils.jl")
+include("graf_vector_map.jl")
 
 # modification API
 include("modification_api.jl")
