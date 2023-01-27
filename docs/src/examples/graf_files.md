@@ -79,15 +79,15 @@ In the following example, each `PSRDemandSegment` object will have its attribute
 A Graf file composed of a header and a table with the following elements:
 
 - Stage 
-- Sequence 
+- Scenario 
 - Block
 - Agents
 
-### Graf Table
+### Graf Tables
 
 Using the previous example with `PSRDemandSegment` objects, the `HourDemand` for each object will be displayed in the Agents columns, that will take the name of the `AVId` attribute, resulting on the following:
 
-| **Stg** | **Seq** | **Block** | **Agent 1** | **Agent 2** | **Agent 3** |
+| **Stg** | **Sce** | **Block** | **Agent 1** | **Agent 2** | **Agent 3** |
 |:-----:|:-----:|:-----:|:-----------:|:-----------:|-------------|
 |   1   |   1   |   1   |    1.0      |     5.0     |    10.0     |
 |   2   |   1   |   1   |    1.5      |     6.5     |    11.5     |
@@ -96,7 +96,7 @@ Using the previous example with `PSRDemandSegment` objects, the `HourDemand` for
 
 ### Graf Header
 
-A Graf file header contains data about the time series contents. Some important information are whether the time series varies per block and/or per sequence, the number of agents, the unit of measurement and on which stage it should start. 
+A Graf file header contains data about the time series contents. Some important information are whether the time series varies per block and/or per Scenario, the number of agents, the unit of measurement and on which stage it should start. 
 
 
 ## Writing a time series into a Graf file
@@ -223,17 +223,6 @@ rm(FILE_PATH; force = true)
 
 As presented earlier, an attribute for a collection can have its data stored in a Graf file, all that being specified in the `GrafScenarios` entry of the study JSON. 
 
-That being said, we can retrieve the data stored in a Graf file using the [`PSRI.get_graf_series`](@ref) function. This function returns a `GrafTable` object.
-
-```@example rw_file
-graf_table = PSRI.get_series(
-        data,
-        "PSRDemandSegment",
-        "HourDemand";
-        use_header = false
-    )
-```
-
 If you have a Graf file that should be linked to a study, you can use the function [`PSRI.link_series_to_file`](@ref) to do so.
 
 ```@example rw_file
@@ -246,10 +235,65 @@ PSRI.link_series_to_file(
     )
 ```
 
+### GrafTable
+
+We can retrieve the data stored in a Graf file using the [`PSRI.get_graf_series`](@ref) function. This function returns a `GrafTable` object.
+
+```@example rw_file
+graf_table = PSRI.get_series(
+        data,
+        "PSRDemandSegment",
+        "HourDemand";
+        use_header = false
+    )
+```
+
 Once you have a GrafTable object, you can display it as a table in your terminal
 
 ```@example rw_file
 using DataFrames
 
 DataFrame(graf_table)
+```
+
+### Vector from graf file
+
+You can get a vector that corresponds to a row in a Graf file with the values for the agents correspoding to the current `stage`, `scenario` and `block`.
+
+For that, we will have to use the function [`PSRI.mapped_vector`](@ref). 
+
+```@example rw_file
+vec = PSRI.mapped_vector(
+        data, 
+        "PSRDemandSegment", 
+        "HourDemand",
+        Float64
+    )
+```
+The parameters that were used to retrieve the row value in the Graf table can be changed with the following functions:
+- [`PSRI.go_to_stage`](@ref)
+- [`PSRI.go_to_scenario`](@ref)
+- [`PSRI.go_to_block`](@ref)
+
+These methods don't automatically update the vector. For that, we use the function[`PSRI.update_vectors!`](@ref), which update all vectors from our Study.
+
+```@example rw_file
+PSRI.update_vectors!(data)
+```
+
+However, it might be interesting to update only one or a group of vectors. To be able to do that, we will have to set a filter tag when we create them.
+
+```@example rw_file
+vec2 = PSRI.mapped_vector(
+        data, 
+        "PSRDemandSegment", 
+        "HourDemand",
+        Float64,
+        filters = ["test_filter"]
+    )
+```
+
+Then, when we run:
+```@example rw_file
+PSRI.update_vectors!(data, "test_filter")
 ```
