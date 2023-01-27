@@ -114,12 +114,12 @@ function test_graf2()
     )
 
     for estagio = 1:STAGES, serie = 1:SCENARIOS, bloco = 1:BLOCKS
-        X = estagio + serie + 0.
-        Y = serie - estagio + 0.
-        Z = estagio + serie + bloco * 100.
+        X = estagio*5.0
+        Y = estagio*3.0
+        Z = estagio*7.0
         PSRI.write_registry(
             io,
-            [X, Y, Z] .+ 1,
+            [X, Y, Z],
             estagio,
             serie,
             bloco

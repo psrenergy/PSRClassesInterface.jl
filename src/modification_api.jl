@@ -190,7 +190,7 @@ function get_graf_series(data::Data, collection::String, attribute::String; kws.
     graf_file = first(graf_files)
     graf_path = joinpath(data.data_path, first(splitext(graf_file)))
 
-    graf_table = GrafTable{Any}(graf_path; kws...)
+    graf_table = GrafTable{Float64}(graf_path; kws...)
 
     return graf_table
 end
