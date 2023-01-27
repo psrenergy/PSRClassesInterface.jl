@@ -1,33 +1,47 @@
 function test_graf()
-    temp_path = joinpath(tempdir(), "PSRI")
+    temp_path = joinpath(tempdir(), "PSRI_graf")
     graf_path = joinpath(temp_path,"caso_graf")
 
     mkpath(temp_path)
 
-    n_blocks = 2
-    n_series = 3
-    n_stages = 4
-    n_agents = 5
+    AGENTS = ["X", "Y", "Z"]
+    STAGES = 12
+    SCENARIOS = 10
+    BLOCKS = 3
 
-    time_series_data = rand(Float64, n_agents, n_blocks, n_series, n_stages)
-
-    PSRI.array_to_file(
+    io = PSRI.open(
         PSRI.OpenBinary.Writer,
         graf_path,
-        time_series_data,
-        agents = ["Agent X", "Agent Y", "Agent Z", "Agent K", "Agent P"],
-        unit = "MW";
+        blocks = BLOCKS,
+        scenarios = SCENARIOS,
+        stages = STAGES,
+        agents = AGENTS,
+        unit = "MW",
         initial_stage = 1,
         initial_year = 2006,
     )
 
+    for estagio = 1:STAGES, serie = 1:SCENARIOS, bloco = 1:BLOCKS
+        X = estagio + serie + 0.
+        Y = serie - estagio + 0.
+        Z = estagio + serie + bloco * 100.
+        PSRI.write_registry(
+            io,
+            [X, Y, Z] .+ 1,
+            estagio,
+            serie,
+            bloco
+        )
+    end
+
+    PSRI.close(io)
+
     data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
     
-    PSRI.create_element!(data, "PSRDemandSegment", "name" => "Agent X")
-    PSRI.create_element!(data, "PSRDemandSegment", "name" => "Agent Y")
-    PSRI.create_element!(data, "PSRDemandSegment", "name" => "Agent Z")
-    PSRI.create_element!(data, "PSRDemandSegment", "name" => "Agent K")
-    PSRI.create_element!(data, "PSRDemandSegment", "name" => "Agent P")
+    PSRI.create_element!(data, "PSRDemandSegment", "name" => "X")
+    PSRI.create_element!(data, "PSRDemandSegment", "name" => "Y")
+    PSRI.create_element!(data, "PSRDemandSegment", "name" => "Z")
+
 
     PSRI.link_series_to_file(
         data, 
@@ -47,13 +61,14 @@ function test_graf()
         data,
         "PSRDemandSegment",
         "HourDemand";
-        use_header = false
+        # use_header = false
+        header = ["X","Y","Z"]
     )
  
-    column_names = [:stage, :series, :block, Symbol("Agent X"), Symbol("Agent Y"), Symbol("Agent Z"), Symbol("Agent K"), Symbol("Agent P")]
+    column_names = [:stage, :series, :block, Symbol("X"), Symbol("Y"), Symbol("Z")]
 
     @test sort(PSRI.Tables.columnnames(graf_table)) == sort(column_names)
-    @test haskey(graf_table, Symbol("Agent X"))
+    @test haskey(graf_table, Symbol("X"))
 
     data_copy = PSRI.initialize_study(PSRI.OpenInterface(); data_path = temp_path)
 
@@ -69,11 +84,105 @@ function test_graf()
     )
 
     @test graf_table == graf_table_copy
-    @test PSRI.Tables.getcolumn(graf_table, "Agent X") == PSRI.Tables.getcolumn(graf_table_copy, "Agent X")
+    @test PSRI.Tables.getcolumn(graf_table, "X") == PSRI.Tables.getcolumn(graf_table_copy, "X")
     @test PSRI.Tables.getcolumn(graf_table, 2) == PSRI.Tables.getcolumn(graf_table_copy, 2)
     
 end
 
 
+function test_graf2()
+    temp_path = joinpath(tempdir(), "PSRI_graf2")
+    graf_path = joinpath(temp_path,"caso_graf")
+
+    mkpath(temp_path)
+
+    AGENTS = ["X", "Y", "Z"]
+    STAGES = 12
+    SCENARIOS = 10
+    BLOCKS = 3
+
+    io = PSRI.open(
+        PSRI.OpenBinary.Writer,
+        graf_path,
+        blocks = BLOCKS,
+        scenarios = SCENARIOS,
+        stages = STAGES,
+        agents = AGENTS,
+        unit = "MW",
+        initial_stage = 1,
+        initial_year = 2023,
+    )
+
+    for estagio = 1:STAGES, serie = 1:SCENARIOS, bloco = 1:BLOCKS
+        X = estagio + serie + 0.
+        Y = serie - estagio + 0.
+        Z = estagio + serie + bloco * 100.
+        PSRI.write_registry(
+            io,
+            [X, Y, Z] .+ 1,
+            estagio,
+            serie,
+            bloco
+        )
+    end
+
+    PSRI.close(io)
+
+    data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
+    
+    @show data.mapper
+
+    PSRI.create_element!(data, "PSRDemandSegment", "name" => "X")
+    PSRI.create_element!(data, "PSRDemandSegment", "name" => "Y")
+    PSRI.create_element!(data, "PSRDemandSegment", "name" => "Z")
+
+
+    PSRI.link_series_to_file(
+        data, 
+        "PSRDemandSegment", 
+        "HourDemand", 
+        "name",
+        joinpath(graf_path)
+    )
+
+    PSRI.write_data(data)
+
+    vec1 = PSRI.mapped_vector(
+        data, 
+        "PSRDemandSegment", 
+        "HourDemand",
+        Float64
+    )
+
+    vec2 = PSRI.mapped_vector(
+        data, 
+        "PSRDemandSegment", 
+        "HourDemand",
+        Float64,
+        filters = ["test_filter"]
+    )
+
+    vec1_cpy = vec1
+    @test vec1 == vec2
+
+    PSRI.go_to_block(data, 2)
+    PSRI.go_to_stage(data, 3)
+    PSRI.go_to_scenario(data, 10)
+
+    @show vec1
+    @show vec2
+    PSRI.update_vectors!(data, "test_filter")
+    
+    
+    @test vec1 == vec1_cpy
+    @test vec1 != vec2
+    
+    PSRI.update_vectors!(data)
+
+    @test vec1 == vec1_cpy
+end
+
+
 
 test_graf()
+test_graf2()

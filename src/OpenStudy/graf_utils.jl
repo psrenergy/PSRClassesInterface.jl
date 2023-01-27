@@ -40,6 +40,11 @@ function _get_graf_filename(data::Data, collection::String, attribute::String)
     return
 end
 
+function _get_graf_agents(graf_file::String)
+    ior = open(OpenBinary.Reader, graf_file; use_header = false)
+    return ior.agent_names
+end
+
 # Checks if names for Agents in Study are equal to the ones in Graf file
 function _validate_json_graf( 
     agent_attribute::String,

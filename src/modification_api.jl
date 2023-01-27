@@ -450,7 +450,7 @@ function create_study(
         number_blocks = 1,
         log_file = nothing,
         verbose = true,
-        model_template = model_template
+        model_template = model_template,
     )
 
     _create_study_collection(data, study_collection, defaults)
