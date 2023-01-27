@@ -162,7 +162,7 @@ function Tables.getcolumn(ts::GrafTable, col::Symbol)
     elseif col === :block
         return ts.domain[:, 3]
     else
-        return Tables.getcolumn(ts, ts.agents[col])
+        return Tables.getcolumn(ts, ts.agents[col] + 3)
     end
 end
 
