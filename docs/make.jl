@@ -18,6 +18,7 @@ makedocs(;
             "examples/graf_files.md",
             "examples/reading_demands.md",
             "examples/modification.md",
+            "examples/custom_study.md"
         ],
     ],
 )

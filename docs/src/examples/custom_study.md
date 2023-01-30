@@ -105,15 +105,13 @@ PSRI.create_attribute!(data, "PSRExtra",
 
 ```
 
-As soon as we do that, we are ready to create our first `PSRExtra` element. As we have set default values for both attributes, we could just create an element without defining any attribute.
+As soon as we do that, we are ready to create our first `PSRExtra` element. 
 
 ```
 PSRI.create_element!(data, "PSRExtra",
     "extra_name" => "extra",
     "extra_value" => 10.0
     )
-
-PSRI.create_element!(data, "PSRExtra")
 ```
 
 #### Custom relation
@@ -133,8 +131,13 @@ PSRI.add_relation!(
 After that, we can set a relation between two elements from `PSRBus` and `PSRExtra`.
 
 ```
-index_extra = PSRI.create_element!(data, "PSRExtra")
-index_bus   = PSRI.create_element!(data, "PSRBus")
+index_extra = PSRI.create_element!(data, "PSRExtra",
+    "extra_name" => "extra",
+    "extra_value" => 10.0
+    )
+index_bus   = PSRI.create_element!(data, "PSRBus",
+    "BusCustom" => 4.0
+    )
 
 PSRI.set_related!(
     data, 
@@ -159,6 +162,19 @@ PSRI.dump_json_struct(cpath, data)
 ```
 
 Now, if we re-open our study, we wouldn't have any problem with using the `PSRExtra` collection.
+
+```
+data = PSRI.initialize_study(
+    PSRI.OpenInterface(),     
+    data_path = temp_path,
+    json_struct_path = cpath      
+    )
+
+PSRI.create_element!(data, "PSRExtra", 
+    "extra_name"   =>"name2", 
+    "extra_value"  => 4.0
+    )
+```
 
 
 ## Defining custom structures with new PMD file
