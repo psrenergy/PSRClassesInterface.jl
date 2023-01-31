@@ -161,7 +161,11 @@ function test_bin_hdr_array_to_file()
     n_scenarios = 3
     n_stages = 4
     n_agents = 5
-    time_series_data = ones(Float64, n_agents, n_blocks, n_scenarios, n_stages)
+
+    time_series_data = Array{Float64, 4}(undef, n_agents, n_blocks, n_scenarios, n_stages)
+    for t in 1:n_stages, s in 1:n_scenarios, b in 1:n_blocks, a in 1:n_agents
+        time_series_data[a,b,s,t] = a + 10 * b + 100 * s + 1000 * t
+    end
 
     PSRI.array_to_file(
         PSRI.OpenBinary.Writer,
@@ -175,6 +179,17 @@ function test_bin_hdr_array_to_file()
 
     @test isfile("test_bin_hdr_array_to_file.bin")
     @test isfile("test_bin_hdr_array_to_file.hdr")
+
+    array_from_file = PSRI.file_to_array(
+        PSRI.OpenBinary.Reader,
+        FILE_PATH;
+        use_header = false
+    )
+
+    for t in 1:n_stages, s in 1:n_scenarios, b in 1:n_blocks, a in 1:n_agents
+        @test array_from_file[a,b,s,t] == a + 10 * b + 100 * s + 1000 * t
+    end
+
     rm_bin_hdr("test_bin_hdr_array_to_file")
 end
 
