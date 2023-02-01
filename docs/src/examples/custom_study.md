@@ -1,10 +1,6 @@
 # Customizing a Study
 
-In this tutorial you will learn how to customize several items of your study, such as:
-- Adding new attributes to an existing collection in runtime
-- Creating a new collection in runtime
-- Defining a new relation between two collections in runtime
-- Defining a template for your model from scratch
+In this tutorial you will learn how to customize several items of your study.
 
 ## How we define the template for our studies
 
@@ -36,145 +32,6 @@ A PMD is a `.pmd` file where we define collections and the metadata for each of 
 When we create a study, we parse the PMD file(s) and the Model Template, creating the `data.data_struct`, a Dict that contains the metadata for attributes and their names. 
 
 When we create an element, PSRI uses `data.data_struct` to check if the values for the attributes that we have filled are in agreement with their definition(if they should be Vectors, Floats, ...) and if any attribute is missing. 
-
-
-
-## Costumizing in runtime
-
-### Custom collections, attributes and relations
-
-First, let's create a new Study.
-
-```
-temp_path = joinpath(tempdir(), "PSRI")
-data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
-```
-#### Custom Attribute
-Now we want to create a `PSRBus` element with an extra attribute `BusCustom`. However, if we do that, we will receive an error.
-```
- PSRI.create_element!(data, "PSRBus",
-           "AVId" =>  "avid",
-           "name" =>  "busname",
-           "Kv"   =>  5.0,
-           "code" =>  7,
-           "icca" =>  3,
-           "BusCustom" => 7.0
-        )
-```
-> <span style="color:red">ERROR:</span> Invalid attributes for collection 'PSRBus':
->
->  BusCustom
-
-So what we want to do is add a new attribute to the collection `PSRBus` with the function [`PSRI.create_attribute!`](@ref).
-
-```
-PSRI.create_attribute!(data, "PSRBus", 
-    "BusCustom", # attribute name
-    false,       # is a vector?
-    Float64,      # Type
-    0           # dimension
-)
-```
-
-After that, we can create a `PSRBus` with a `BusCustom` attribute.
-
-#### Custom Collection
-
-Let's say that we want to use a new collection named `PSRExtra`. For that, we have to use the function [`PSRI.create_collection!`](@ref).
-
-```
-PSRI.create_collection!(data, "PSRExtra")
-```
-
-As you can see from the parameters that we have used to define our new collection, there are no attributes. So we have to add some custom attributes for our new collection.
-
-```
-PSRI.create_attribute!(data, "PSRExtra",
-    "extra_name",
-    false,
-    String,
-    0
-    )
-
-PSRI.create_attribute!(data, "PSRExtra",
-    "extra_value",
-    false,
-    Float64,
-    0
-    )
-
-```
-
-As soon as we do that, we are ready to create our first `PSRExtra` element. 
-
-```
-PSRI.create_element!(data, "PSRExtra",
-    "extra_name" => "extra",
-    "extra_value" => 10.0
-    )
-```
-
-#### Custom relation
-
-Now that we have a custom collection `PSRExtra`, we can define a relation between it and the collection `PSRBus`, with [`PSRI.add_relation!`](@ref).
-
-```
-PSRI.add_relation!(
-    data, 
-    "PSRBus",    # source  
-    "PSRExtra",  # target
-    PSRI.RELATION_1_TO_1,  # relation type
-    "extra_relation"       # attribute name for relation(saved in source element)
-    )
-```
-
-After that, we can set a relation between two elements from `PSRBus` and `PSRExtra`.
-
-```
-index_extra = PSRI.create_element!(data, "PSRExtra",
-    "extra_name" => "extra",
-    "extra_value" => 10.0
-    )
-index_bus   = PSRI.create_element!(data, "PSRBus",
-    "BusCustom" => 4.0
-    )
-
-PSRI.set_related!(
-    data, 
-    "PSRBus", 
-    "PSRExtra", 
-    index_bus, 
-    index_extra, 
-    relation_type = PSRI.RELATION_1_TO_1
-    )
-```
-
-
-### Saving/loading changes
-
-Even saving our Study with `PSRI.write_data(data)`, if we loaded it in another time, we wouldn't be able to use our new collections, attributes and relations, because they should've been defined in a PMD file. 
-
-Having said that, you can export a JSON file with the new defined structures for collections with [`PSRI.dump_json_struct`](@ref).
-
-```
-cpath = joinpath(temp_path, "custom.json")
-PSRI.dump_json_struct(cpath, data)
-```
-
-Now, if we re-open our study, we wouldn't have any problem with using the `PSRExtra` collection.
-
-```
-data = PSRI.initialize_study(
-    PSRI.OpenInterface(),     
-    data_path = temp_path,
-    json_struct_path = cpath      
-    )
-
-PSRI.create_element!(data, "PSRExtra", 
-    "extra_name"   =>"name2", 
-    "extra_value"  => 4.0
-    )
-```
 
 
 ## Defining custom structures with new PMD file
@@ -212,6 +69,10 @@ Now we need a Model Template file, to map our PMD Model to collections. Just as 
 After that, we can create a Study with [`PSRI.create_study`](@ref) using a few extra parameters.
 
 ```
+import PSRClassesInterface
+const PSRI = PSRClassesInterface
+
+
 temp_path = joinpath(tempdir(), "PSRI")
 json_path = joinpath(path_to_directory, "custom_json.json")
 

@@ -7,8 +7,10 @@ Some attributes in a Study represent a time series indexed by another attribute.
 First we create a Dict with `HourDemand` and `DataHourDemand` data.
 
 ```@example rw_file
+using Dates
+
 series = Dict{String,Vector}(
-    "DataHourDemand" => ["1900-01-01", "1900-01-02","1900-01-03"],
+    "DataHourDemand" => [Dates.Date("1900-01-01"), Dates.Date("1900-01-02"),Dates.Date("1900-01-03")],
     "HourDemand" =>  [5.0, 7.0, 11.0]
 )
 ```
@@ -16,18 +18,26 @@ series = Dict{String,Vector}(
 Then, we save the time series to the study using the function [`PSRI.set_series!`](@ref) 
 
 ```@example rw_file
+import PSRClassesInterface
+const PSRI = PSRClassesInterface
+temp_path = joinpath(tempdir(), "PSRI")
+
+data = PSRI.create_study(PSRI.OpenInterface(); data_path = temp_path)
+
+index = PSRI.create_element!(data, "PSRDemandSegment")
+
 PSRI.set_series!(
     data, 
     "PSRDemandSegment", 
     "DataHourDemand",
-    1, # element index in collection
+    index, # element index in collection
     series
     )
 ```
 
 We can later retrieve the series with [`PSRI.get_series`](@ref), which will return a `SeriesTable` object. It can be later displayed as a table in your terminal.
 
-```rw_file
+```@example rw_file
 using DataFrames
 series_table = PSRI.get_series(
     data, 
