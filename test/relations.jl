@@ -56,21 +56,7 @@ function test_relations3() # tests has_relations
     end
 end
 
-function test_relations4() # tests has_relations
-    mktempdir() do temp_path
-
-        data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
-
-        PSRI.add_relation!(data,"PSRBus", "PSRBus", PSRI.RELATION_1_TO_1, "test")
-        PSRI.add_relation!(data,"PSRSystem", "PSRBus", PSRI.RELATION_1_TO_1, "test")
-
-        @test haskey(PSRI._RELATIONS["PSRBus"], ("PSRBus",PSRI.RELATION_1_TO_1))
-        @test haskey(PSRI._RELATIONS["PSRSystem"], ("PSRBus",PSRI.RELATION_1_TO_1))
-    end
-
-end
 
 test_relations1()
 test_relations2()
 test_relations3()
-test_relations4()

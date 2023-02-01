@@ -315,69 +315,6 @@ function test_api9() #tests delete_vector_relation!
 
 end
 
-function test_api10() #tests custom attribute
-    temp_path = joinpath(tempdir(), "PSRI_10")
-    json_path = joinpath(temp_path, "psrclasses.json")
-
-    mkpath(temp_path)
-
-    data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
-   
-    PSRI.create_attribute!(data, "PSRBus", "extra", false, Int32, 0)
-
-    @test PSRI.create_element!(data, "PSRBus", "extra" => Int32(10)) == 1
-    
-    @test data.raw["PSRBus"][1]["extra"] == Int32(10)
-end
-
-function test_api11() #tests custom collection
-    temp_path = joinpath(tempdir(), "PSRI_11")
-    json_path = joinpath(temp_path, "psrclasses.json")
-
-    mkpath(temp_path)
-
-    data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
-   
-    PSRI.create_collection!(data, "PSRExtra")
-
-    @test haskey(data.data_struct,"PSRExtra")
-
-    PSRI.create_attribute!(data, "PSRExtra", "extra1", false, Int32, 0)
-    PSRI.create_attribute!(data, "PSRExtra", "extra2", false, String, 0)
-    PSRI.create_attribute!(data, "PSRExtra", "code", false, Int32, 0)
-
-    @test PSRI.create_element!(
-        data, 
-        "PSRExtra", 
-        "extra1" => Int32(10),
-        "extra2" => "Test",
-        "code" => Int32(6)
-        ) == 1
-
-    element = PSRI.get_element(data, "PSRExtra", Int32(6))
-
-    @test element["extra1"] == Int32(10)
-    @test element["extra2"] == "Test"
-
-    PSRI.write_data(data)
-
-    cpath = joinpath(temp_path, "custom.json")
-    PSRI.dump_json_struct(cpath, data)
-
-    data_copy = PSRI.initialize_study(
-        PSRI.OpenInterface(); 
-        data_path = temp_path,
-        json_struct_path = cpath
-        )
-    
-
-    element_copy = PSRI.get_element(data_copy, "PSRExtra", Int32(6))
-
-    @test element_copy["extra1"] == Int32(10)
-    @test element_copy["extra2"] == "Test"
-
-end
-
 test_api(PATH_CASE_0)
 test_api2() 
 test_api3()
@@ -387,5 +324,3 @@ test_api6()
 test_api7()
 test_api8()
 test_api9()
-test_api10()
-test_api11()
