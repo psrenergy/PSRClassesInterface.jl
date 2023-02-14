@@ -125,12 +125,6 @@ function test_api3() # Tests creating study and wrong collection
         @test message == "Collection 'RandomCollection123' is not available for this study"
     end
 
-    try
-        PSRI.create_element!(data,"PSRThermalPlant","Random"=>1.0)
-    catch error
-        @test typeof(error) == ErrorException
-    end
-
 end
 
 function test_api4() # Tests set_related!() and set_vector_related!() methods

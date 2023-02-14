@@ -173,14 +173,17 @@ function _year_stage(
 end
 
 function _trim_multidimensional_attribute(attribute::String)
-    regex = r"([a-zA-Z_&]+)\([0-9]+(\,[0-9]+)*\)"
+    regex_attr = r"([a-zA-Z_]+-*[<,>]*-*)"
+    regex_dim = r"\((([0-9],*)+)\)"
 
-    m = match(regex, attribute)
+    attr = match(regex_attr, attribute)
+    dim  = match(regex_dim,  attribute)
 
-    if isnothing(m)
-        return attribute
+    if isnothing(dim)
+        return attribute, nothing
     else
-        return m[1]
+        dim = collect(eachsplit(dim[1], ","))
+        return attr[1], dim
     end
 end
 

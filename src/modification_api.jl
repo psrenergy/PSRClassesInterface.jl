@@ -454,6 +454,15 @@ function _validate_attribute(
         error("Vectorial value '$value' assigned to scalar attribute '$attribute'")
     end
 
+    _, dim = _trim_multidimensional_attribute(attribute)
+
+    if !isnothing(dim)
+        # Check for dim size
+        if length(dim) != attribute_struct.dim
+            error("Dimension '$(length(dim))' is not valid for attribute '$(attribute_struct.name)' with dimension '$(attribute_struct.dim)'")
+        end
+    end
+
     if !(T <: attribute_struct.type)
         error(
             "Invalid element type '$T' for attribute '$attribute' of type '$(attribute_struct.type)'",
@@ -473,6 +482,18 @@ function _validate_attribute(
 
     if attribute_struct.is_vector
         error("Scalar value '$value' assigned to vector attribute '$attribute'")
+    end
+
+    _, dim = _trim_multidimensional_attribute(attribute)
+
+    if !isnothing(dim)
+        # Check for dim size
+        if length(dim) != attribute_struct.dim
+            error(
+                "Dimension '$(length(dim))' is not valid for attribute
+                '$(attr_struct.name)' with dimension '$(attribute_struct.dim)'"
+                )
+        end
     end
 
     if !(T <: attribute_struct.type)
@@ -511,6 +532,16 @@ function _validate_element(data::Data, collection::String, element::Dict{String,
     element_keys = Set{String}(keys(element))
     missing_keys = setdiff(collection_keys, element_keys)
     invalid_keys = setdiff(element_keys, collection_keys)
+
+    for key in invalid_keys
+        attr, dim = _trim_multidimensional_attribute(key)
+        if attr in collection_keys
+            pop!(invalid_keys, key)
+        end
+        if attr in missing_keys
+            pop!(missing_keys, attr)
+        end
+    end
 
     if !isempty(missing_keys)
         error("""
