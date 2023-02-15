@@ -459,8 +459,16 @@ function _validate_attribute(
     if !isnothing(dim)
         # Check for dim size
         if length(dim) != attribute_struct.dim
-            error("Dimension '$(length(dim))' is not valid for attribute '$(attribute_struct.name)' with dimension '$(attribute_struct.dim)'")
+            error("""
+            Dimension '$(length(dim))' is not valid for attribute '$(attribute_struct.name)' with dimension '$(attribute_struct.dim)'
+            """
+            )
         end
+    elseif attribute_struct.dim > 0
+        error("""
+            Dimension '$(0)' is not valid for attribute '$(attribute_struct.name)' with dimension '$(attribute_struct.dim)'
+            """
+            )
     end
 
     if !(T <: attribute_struct.type)
@@ -485,15 +493,18 @@ function _validate_attribute(
     end
 
     _, dim = _trim_multidimensional_attribute(attribute)
-
+    
     if !isnothing(dim)
         # Check for dim size
         if length(dim) != attribute_struct.dim
-            error(
-                "Dimension '$(length(dim))' is not valid for attribute
-                '$(attr_struct.name)' with dimension '$(attribute_struct.dim)'"
-                )
+            error("""
+                Dimension '$(length(dim))' is not valid for attribute '$(attribute_struct.name)' with dimension '$(attribute_struct.dim)'
+                """)
         end
+    elseif attribute_struct.dim > 0
+            error("""
+                Dimension '$(0)' is not valid for attribute '$(attr_struct.name)' with dimension '$(attribute_struct.dim)'
+                """)
     end
 
     if !(T <: attribute_struct.type)
