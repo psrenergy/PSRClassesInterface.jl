@@ -41,7 +41,12 @@ function mapped_vector(
         error("Attribute $attribute was already mapped.")
     end
 
-    out = T[default for _ in 1:n] #zeros(T, n)
+    out = nothing
+    if dim > 0
+        out = [T[default] for _ in 1:n]
+    else
+        out = T[default for _ in 1:n] #zeros(T, n)
+    end
 
     date_cache = get!(data.map_cache_data_idx, collection, Dict{String,Vector{Int32}}())
 
@@ -104,7 +109,12 @@ function _update_vector!(
     cache.stage = data.controller_stage
     query_name = _build_name(attr, cache)
     for (idx, el) in enumerate(collection)
-        val = el[query_name][date_ref[idx]]
+        val = nothing
+        if _get_dim_from_attribute_name(query_name) > 0
+            val = el[query_name]
+        else
+            val = el[query_name][date_ref[idx]]
+        end
         if val === nothing
             cache.vector[idx] = cache.default
         else

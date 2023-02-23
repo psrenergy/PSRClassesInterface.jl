@@ -10,7 +10,7 @@ mutable struct VectorCache{T}
     dim2::Int
     index_str::String
     stage::Int
-    vector::Vector{T}
+    vector::Union{Vector{T}, Vector{Vector{T}}}
     # date::Vector{Int32}
     # current_date::Int32
     default::T
@@ -22,7 +22,7 @@ mutable struct VectorCache{T}
         dim2::Union{Integer,Nothing},
         index_str::String,
         stage::Integer,
-        vector::Vector{T},
+        vector::Union{Vector{T}, Vector{Vector{T}}},
         default::T
     ) where {T}
         return new{T}(
