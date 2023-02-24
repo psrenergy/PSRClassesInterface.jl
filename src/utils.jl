@@ -182,9 +182,19 @@ function _trim_multidimensional_attribute(attribute::String)
     if isnothing(dim)
         return attribute, nothing
     else
-        dim = collect(eachsplit(dim[1], ","))
+        dim = [parse(Int32, i) for i in dim[1] if i != ',']
         return attr[1], dim
     end
+end
+
+function _get_dim_from_attribute_name(attribute::String)
+    attr, dim = _trim_multidimensional_attribute(attribute)
+
+    if isnothing(dim)
+        return 0
+    end
+
+    return length(dim)
 end
 
 function _load_json_data!(path::AbstractString, data::Union{Dict{String,Any},Vector{Any}}, data_ctime::Vector{Float64})
