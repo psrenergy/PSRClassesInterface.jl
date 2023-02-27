@@ -10,7 +10,7 @@ mutable struct VectorCache{T}
     dim2::Int
     index_str::String
     stage::Int
-    vector::Union{Vector{T}, Vector{Vector{T}}}
+    vector::Vector{T}
     # date::Vector{Int32}
     # current_date::Int32
     default::T
@@ -22,7 +22,7 @@ mutable struct VectorCache{T}
         dim2::Union{Integer,Nothing},
         index_str::String,
         stage::Integer,
-        vector::Union{Vector{T}, Vector{Vector{T}}},
+        vector::Vector{T},
         default::T
     ) where {T}
         return new{T}(
@@ -146,6 +146,10 @@ end
 
 _raw(data::Data) = data.raw
 
+function _simple_date(date::Dates.Date)
+    return date
+end
+
 function _simple_date(str::String)
 
     # possible formats
@@ -178,6 +182,7 @@ function _findfirst_date(date::Dates.Date, vec::Vector) # TODO type this vecto w
         error("empty vector of dates")
         # return 1
     end
+    
     if date < _simple_date(vec[1])
         # error("date before first element")
         return 1

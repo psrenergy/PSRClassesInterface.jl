@@ -45,7 +45,7 @@ thermFut = PSRI.mapped_vector(data, "PSRThermalPlant", "Existing", Int32) # remo
 thermCap = PSRI.mapped_vector(data, "PSRThermalPlant", "PotInst", Float64) # remove list?
 @test thermCap == [10.0, 5.0, 20.0]
 thermCVaria = PSRI.mapped_vector(data, "PSRThermalPlant", "CEsp", Float64, "segment", "block") # remove list?
-@test thermCVaria == [[10], [15], [12.5]]
+@test thermCVaria == [10, 15, 12.5]
 
 #       Posiciona controlador de tempo no primeiro estagio do estudo
 #       ------------------------------------------------------------

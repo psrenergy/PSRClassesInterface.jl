@@ -399,18 +399,61 @@ function create_study(
  
     data_struct, model_files_added = PMD.load_model(pmds_path, pmd_files, model_template)
 
+    stage_type  = 
+        if haskey(defaults[study_collection], "Tipo_Etapa")
+            StageType(defaults[study_collection]["Tipo_Etapa"])
+        else
+            @warn "Study collection does not have a stage type ('Tipo_Etapa'). Using default value 'STAGE_WEEK'"
+            STAGE_WEEK
+        end
+    
+
+    first_year  = 
+        if haskey(defaults[study_collection], "Ano_inicial")
+            defaults[study_collection]["Ano_inicial"]
+        else
+            @warn "Study collection does not have an inital year ('Ano_inicial'). Using default value '2023'"
+            2023
+        end
+    
+    first_stage = if haskey(defaults[study_collection],"Etapa_inicial")
+            defaults[study_collection]["Etapa_inicial"]
+        else
+            @warn "Study collection does not have a first stage ('Etapa_inicial'). Using default value '1'"
+            1
+        end
+
+    first_date  = 
+        if stage_type == STAGE_MONTH
+            Dates.Date(first_year, 1, 1) + Dates.Month(first_stage - 1)
+        else
+            Dates.Date(first_year, 1, 1) + Dates.Week(first_stage - 1)
+        end
+
+    duration_mode = 
+        if haskey(defaults[study_collection], "HourlyData") && defaults[study_collection]["HourlyData"]["BMAP"] in [1, 2]
+            HOUR_BLOCK_MAP
+        elseif (
+            haskey(defaults[study_collection], "DurationModel") &&
+            haskey(defaults[study_collection]["DurationModel"], "Duracao($number_blocks)")
+        )
+            VARIABLE_DURATION
+        else
+            FIXED_DURATION
+        end
+
     data = Data(
         raw = Dict{String,Any}(),
         data_path = data_path,
         data_struct = data_struct,
         validate_attributes = false,
         model_files_added = model_files_added,
-        stage_type = STAGE_WEEK,
-        first_year = 2023,
-        first_stage = 1,
-        first_date = Dates.Date(2023, 1, 1),
-        controller_date = Dates.Date(2023, 1, 1),
-        duration_mode = FIXED_DURATION,
+        stage_type  =  stage_type,
+        first_year  =  first_year,
+        first_stage =  first_stage,
+        first_date  =  first_date,
+        controller_date = first_date,
+        duration_mode = duration_mode,
         number_blocks = 1,
         log_file = nothing,
         verbose = true,
