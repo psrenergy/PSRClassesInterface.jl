@@ -1,0 +1,25 @@
+//------------------------------------
+// Modelo para configuração do estudo
+//------------------------------------
+DEFINE_MODEL MODL:Custom_StudyConfig
+    DIMENSION		segment 1
+
+	PARM INTEGER Tipo_Etapa
+	PARM INTEGER Ano_inicial
+	PARM INTEGER Etapa_inicial
+
+END_MODEL
+
+//------------------------------------
+// Modelo para UTEs
+//------------------------------------
+DEFINE_MODEL MODL:ThermalPlants
+
+	PARM REAL		Capacity
+	VETOR DATE      SpecificConsumptionDate
+	VETOR REAL		SpecificConsumption DIM(segment) INDEX SpecificConsumptionDate
+    PARM  REAL      DimensionedAttr DIM(block)
+	PARM REAL		StartUpColdCost
+
+END_MODEL
+

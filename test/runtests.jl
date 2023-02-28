@@ -37,6 +37,7 @@ end
     end
     @testset "Modification API" begin
         @time include("modification_api.jl")
+        @time include("custom_study.jl")
     end 
     @testset "Model Template" begin
         @time include("model_template.jl")

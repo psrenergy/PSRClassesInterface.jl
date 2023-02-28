@@ -1,0 +1,14 @@
+[
+    {
+        "classname": "CustomStudy",
+        "models": [
+            "Custom_StudyConfig"
+        ]
+    },
+    {
+        "classname": "ThermalPlants",
+        "models": [
+            "ThermalPlants"
+        ]
+    }
+]
