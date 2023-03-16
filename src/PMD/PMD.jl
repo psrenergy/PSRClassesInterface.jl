@@ -153,8 +153,8 @@ abstract type _PMD_STATE end
 """
     _PMD_STATE_IDLE
 
-Indicates that the parser is in _idle_ state, that is, it is at the beggining of
-the file or has just endend consuming a top-level block.
+Indicates that the parser is in _idle_ state, that is, it is at the beginning of
+the file or has just finished consuming a top-level block.
 """
 struct _PMD_STATE_IDLE <: _PMD_STATE end
 
