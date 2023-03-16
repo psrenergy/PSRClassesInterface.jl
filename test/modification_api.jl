@@ -89,7 +89,7 @@ end
 
 
 function test_api2() # Tests creating study and element
-    temp_path = joinpath(tempdir(), "PSRI")
+    temp_path = joinpath(tempdir(), "PSRI_2")
     json_path = joinpath(temp_path, "psrclasses.json")
 
     mkpath(temp_path)
@@ -109,7 +109,7 @@ function test_api2() # Tests creating study and element
 end
 
 function test_api3() # Tests creating study and wrong collection
-    temp_path = joinpath(tempdir(), "PSRI")
+    temp_path = joinpath(tempdir(), "PSRI_3")
     json_path = joinpath(temp_path, "psrclasses.json")
 
     mkpath(temp_path)
@@ -134,7 +134,7 @@ function test_api3() # Tests creating study and wrong collection
 end
 
 function test_api4() # Tests set_related!() and set_vector_related!() methods
-    temp_path = joinpath(tempdir(), "PSRI")
+    temp_path = joinpath(tempdir(), "PSRI_4")
     json_path = joinpath(temp_path, "psrclasses.json")
 
     mkpath(temp_path)
@@ -177,7 +177,7 @@ function test_api4() # Tests set_related!() and set_vector_related!() methods
 end
 
 function test_api5() #tests get_element and _get_index_by_code for code
-    temp_path = joinpath(tempdir(), "PSRI")
+    temp_path = joinpath(tempdir(), "PSRI_5")
     json_path = joinpath(temp_path, "psrclasses.json")
 
     mkpath(temp_path)
@@ -197,7 +197,7 @@ function test_api5() #tests get_element and _get_index_by_code for code
 end
 
 function test_api6() #tests set_related_by_code!
-    temp_path = joinpath(tempdir(), "PSRI")
+    temp_path = joinpath(tempdir(), "PSRI_6")
     json_path = joinpath(temp_path, "psrclasses.json")
 
     mkpath(temp_path)
@@ -219,9 +219,108 @@ function test_api6() #tests set_related_by_code!
 end
 
 
+function test_api7() #tests delete_element!
+    temp_path = joinpath(tempdir(), "PSRI_7")
+    json_path = joinpath(temp_path, "psrclasses.json")
+
+    mkpath(temp_path)
+
+    data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
+
+    index1 = PSRI.create_element!(data,"PSRBus","code"=> Int32(5))
+    index2 = PSRI.create_element!(data,"PSRBus","code"=> Int32(6))
+    index3 = PSRI.create_element!(data,"PSRBus","code"=> Int32(7))
+    index4 = PSRI.create_element!(data,"PSRBus","code"=> Int32(8))
+
+    PSRI.write_data(data)
+
+    PSRI.delete_element!(data, "PSRBus", 3)
+    PSRI.write_data(data)
+
+    data_copy = PSRI.initialize_study(PSRI.OpenInterface(); data_path = temp_path)
+
+    @test data_copy.raw["PSRBus"][3]["code"] == 8
+    @test length(data_copy.raw["PSRBus"]) == 3
+    @test !haskey(data_copy.data_index.index, 4)
+    
+end
+
+function test_api8() #tests delete_relation!
+    temp_path = joinpath(tempdir(), "PSRI_8")
+    json_path = joinpath(temp_path, "psrclasses.json")
+
+    mkpath(temp_path)
+
+    data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
+   
+    index1 = PSRI.create_element!(data,"PSRBus")
+    index2 = PSRI.create_element!(data,"PSRBus")
+
+    index3 = PSRI.create_element!(data,"PSRSerie")
+    
+    PSRI.set_related!(data, "PSRSerie", "PSRBus", index3, index1, relation_type = PSRI.RELATION_TO)
+    PSRI.set_related!(data, "PSRSerie", "PSRBus", index3, index2, relation_type = PSRI.RELATION_FROM)
+    
+    PSRI.write_data(data)
+    
+    @test PSRI.has_relations(data, "PSRBus", index1)
+    @test PSRI.has_relations(data, "PSRBus", index2)
+    @test PSRI.has_relations(data, "PSRSerie", index3)
+
+    @test PSRI.get_map(data, "PSRSerie", "PSRBus", relation_type = PSRI.RELATION_FROM) == [2]
+    @test PSRI.get_map(data, "PSRSerie", "PSRBus", relation_type = PSRI.RELATION_TO) == [1]
+
+    PSRI.delete_relation!(data, "PSRSerie", "PSRBus", index3, index1)
+    PSRI.delete_relation!(data, "PSRSerie", "PSRBus", index3, index2)
+    
+    PSRI.write_data(data)
+    
+    data_copy = PSRI.initialize_study(PSRI.OpenInterface(); data_path = temp_path)
+
+    @test !PSRI.has_relations(data_copy, "PSRBus", index1)
+    @test !PSRI.has_relations(data_copy, "PSRBus", index2)
+    @test !PSRI.has_relations(data_copy, "PSRSerie", index3)
+    
+    @test PSRI.get_map(data_copy, "PSRSerie", "PSRBus", relation_type = PSRI.RELATION_FROM) == [0]
+    @test PSRI.get_map(data_copy, "PSRSerie", "PSRBus", relation_type = PSRI.RELATION_TO) == [0]
+end
+
+function test_api9() #tests delete_vector_relation!
+    temp_path = joinpath(tempdir(), "PSRI_9")
+    json_path = joinpath(temp_path, "psrclasses.json")
+
+    mkpath(temp_path)
+
+    data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
+   
+    index1 = PSRI.create_element!(data,"PSRThermalPlant","ShutDownCost"=>1.0)
+    index2 = PSRI.create_element!(data,"PSRFuel")
+    index3 = PSRI.create_element!(data,"PSRFuel")
+    index4 = PSRI.create_element!(data,"PSRFuel")
+
+    PSRI.set_vector_related!(data, "PSRThermalPlant", "PSRFuel", index1, [index2,index3,index4])
+    map_vec = PSRI.get_vector_map(data,"PSRThermalPlant", "PSRFuel")
+    @test map_vec == Vector{Int32}[[1,2,3]]
+    PSRI.write_data(data)
+
+    PSRI.delete_vector_relation!(data, "PSRThermalPlant", "PSRFuel", index1, [index2,index3,index4])
+    
+    PSRI.write_data(data)
+
+    data_copy = PSRI.initialize_study(PSRI.OpenInterface(); data_path = temp_path)
+    
+    map_vec_copy = PSRI.get_vector_map(data_copy,"PSRThermalPlant", "PSRFuel")
+    @test map_vec_copy == Vector{Int32}[[]]
+    
+
+end
+
 test_api(PATH_CASE_0)
 test_api2() 
 test_api3()
 test_api4()
 test_api5()
 test_api6()
+test_api7()
+test_api8()
+test_api9()

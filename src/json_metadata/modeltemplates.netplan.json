@@ -1,0 +1,176 @@
+[
+    {
+        "classname": "PSRStudy",
+        "models": [
+            "NETPLAN_V2.6_Configuration"
+        ]
+    },
+    {
+        "classname": "PSRSystem",
+        "models": [
+            "NETPLAN_V2.6_Sistema"
+        ]
+    },
+    {
+        "classname": "PSRArea",
+        "models": [
+            "NETPLAN_V2.6_Area"
+        ]
+    },
+    {
+        "classname": "PSRBus",
+        "models": [
+            "NETPLAN_V2.6_Bus"
+        ]
+    },
+    {
+        "classname": "PSRGenerator",
+        "models": [
+            "NETPLAN_V2.6_Generation"
+        ]
+    },
+    {
+        "classname": "PSRSynchronousCompensator",
+        "models": [
+            "NETPLAN_V2.6_SyncronousCompensator"
+        ]
+    },
+    {
+        "classname": "PSRSerie",
+        "models": [
+            "NETPLAN_V2.6_Circuit"
+        ]
+    },
+    {
+        "classname": "PSRTransformer",
+        "models": [
+            "NETPLAN_V2.6_Trafo"
+        ]
+    },
+    {
+        "classname": "PSRTransformer3Winding",
+        "models": [
+            "NETPLAN_Transformer3Winding"
+        ]
+    },
+    {
+        "classname": "PSRLineReactor",
+        "models": [
+            "NETPLAN_V2.6_LineReactor"
+        ]
+    },
+    {
+        "classname": "PSRSerieCapacitor",
+        "models": [
+            "NETPLAN_V2.6_SerieCapacitor"
+        ]
+    },
+    {
+        "classname": "PSRFlowController",
+        "models": [
+            "NETPLAN_V2.6_FlowController"
+        ]
+    },
+    {
+        "classname": "PSRBusDC",
+        "models": [
+            "NETPLAN_V2.6_BusDC"
+        ]
+    },
+    {
+        "classname": "PSRCircuitDC",
+        "models": [
+            "NETPLAN_V2.6_CircuitDC"
+        ]
+    },
+    {
+        "classname": "PSRLoad",
+        "models": [
+            "NETPLAN_V2.6_CargaBarra"
+        ]
+    },
+    {
+        "classname": "PSRLinkDC",
+        "models": [
+            "NETPLAN_LinkDC"
+        ]
+    },
+    {
+        "classname": "PSRCircuitFlowConstraint",
+        "models": [
+            "NETPLAN_ConstraintFlow"
+        ]
+    },
+    {
+        "classname": "PSRBusAngleConstraint",
+        "models": [
+            "NETPLAN_ConstraintAngle"
+        ]
+    },
+    {
+        "classname": "PSRCircuitCorridorConstraint",
+        "models": [
+            "NETPLAN_ConstraintCorridor"
+        ]
+    },
+    {
+        "classname": "PSRCircuitEnviromentalConstraint",
+        "models": [
+            "NETPLAN_ConstraintEnviromental"
+        ]
+    },
+    {
+        "classname": "PSRBipoleConstraint",
+        "models": [
+            "NETPLAN_ConstraintBipole"
+        ]
+    },
+    {
+        "classname": "PSRStaticVarCompensator",
+        "models": [
+            "NETPLAN_StaticVarCompensator"
+        ]
+    },
+    {
+        "classname": "PSRBattery",
+        "models": [
+            "NETPLAN_Battery"
+        ]
+    },
+    {
+        "classname": "PSRPowerInjection",
+        "models": [
+            "NETPLAN_Injection"
+        ]
+    },
+    {
+        "classname": "PSRConverterDCAC",
+        "models": [
+            "NETPLAN_V2.6_ConversorDCAC"
+        ]
+    },
+    {
+        "classname": "PSRConverterDCAC_P2P",
+        "models": [
+            "NETPLAN_Conversor_P2P"
+        ]
+    },
+    {
+        "classname": "PSRConverterDCAC_VSC",
+        "models": [
+            "NETPLAN_Conversor_VSC"
+        ]
+    },
+    {
+        "classname": "PSRLoad",
+        "models": [
+            "NETPLAN_V3.0_CargaBarra"
+        ]
+    },
+    {
+        "classname": "PSRConverterDCAC_LCC",
+        "models": [
+            "NETPLAN_V3.0_ConversorDCAC"
+        ]
+    }
+]

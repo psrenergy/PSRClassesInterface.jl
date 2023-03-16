@@ -1,0 +1,14 @@
+[
+    {
+        "classname": "NewStudy",
+        "models": [
+            "Test_Study"
+        ]
+    },
+    {
+        "classname": "PSRLoad",
+        "models": [
+            "Test_CargaBarra"
+        ]
+    }
+]

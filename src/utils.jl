@@ -183,3 +183,14 @@ function _trim_multidimensional_attribute(attribute::String)
         return m[1]
     end
 end
+
+function _load_json_data!(path::AbstractString, data::Union{Dict{String,Any},Vector{Any}}, data_ctime::Vector{Float64})
+    if data_ctime[] != ctime(path)
+        data_ctime[] = ctime(path)
+        copy!(data, JSON.parsefile(path))
+    end
+
+    return data
+end
+
+_load_defaults!() = _load_json_data!(PSRCLASSES_DEFAULTS_PATH, PSRCLASSES_DEFAULTS, PSRCLASSES_DEFAULTS_CTIME)

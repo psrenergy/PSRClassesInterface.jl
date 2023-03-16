@@ -306,6 +306,51 @@ function set_vector_related!(
     return nothing
 end
 
+function delete_relation!(
+    data::Data,
+    source::String,
+    target::String,
+    source_index::Integer,
+    target_index::Integer
+)
+
+
+    source_relations = _get_element_related(data, source, source_index)
+    if haskey(source_relations, (source,target,source_index,target_index))
+        relation_attribute = source_relations[(source,target,source_index,target_index)]
+        source_element  = _get_element(data, source, source_index)
+
+        target_indices = _get_target_index_from_relation(data, source, source_index, relation_attribute)
+        if length(target_indices) > 1
+            deleteat!(source_element[relation_attribute], target_indices .== target_index)
+        else
+            delete!(source_element, relation_attribute)
+        end
+    else
+        error("Relation '$source'(Source) with '$target'(Target) does not exist")
+    end
+
+    return nothing
+end
+
+function delete_vector_relation!(
+    data::Data,
+    source::String,
+    target::String,
+    source_index::Integer,
+    target_indices::Vector{Int}
+)
+    source_relations = _get_element_related(data, source, source_index)
+
+    relation_attribute = source_relations[(source,target,source_index,target_indices[1])]
+
+    source_element  = _get_element(data, source, source_index)
+
+    delete!(source_element, relation_attribute)
+
+    return nothing
+end
+
 function Base.show(io::IO, data::Data)
     return summary(io, data)
 end
@@ -316,9 +361,10 @@ function create_study(
     pmd_files::Vector{String} = String[],
     pmds_path::AbstractString = PMD._PMDS_BASE_PATH,
     defaults_path::Union{AbstractString,Nothing} = PSRCLASSES_DEFAULTS_PATH,
-    defaults::Union{Dict{String,Any},Nothing} = nothing,
+    defaults::Union{Dict{String,Any},Nothing} = _load_defaults!(),
     netplan::Bool = false,
-    kws...,
+    model_template_path::Union{String,Nothing} = nothing,
+    study_collection::String = "PSRStudy",
 )
     if !isdir(data_path)
         error("data_path = '$data_path' must be a directory")
@@ -333,13 +379,25 @@ function create_study(
     end
 
     # Select mapping
-    model_class_map = if netplan
-        PMD._MODEL_TO_CLASS_NETPLAN
-    else
-        PMD._MODEL_TO_CLASS_SDDP
-    end
+    model_template = PMD.ModelTemplate()
 
-    data_struct, model_files_added = PMD.load_model(pmds_path, pmd_files, model_class_map)
+    if isnothing(model_template_path)
+        if netplan
+            PMD.load_model_template!(
+                joinpath(JSON_METADATA_PATH, "modeltemplates.netplan.json"),
+                model_template,
+            )
+        else
+            PMD.load_model_template!(
+                joinpath(JSON_METADATA_PATH, "modeltemplates.sddp.json"),
+                model_template,
+            )
+        end
+    else 
+        PMD.load_model_template!(model_template_path, model_template)
+    end
+ 
+    data_struct, model_files_added = PMD.load_model(pmds_path, pmd_files, model_template)
 
     data = Data(
         raw = Dict{String,Any}(),
@@ -356,11 +414,18 @@ function create_study(
         number_blocks = 1,
         log_file = nothing,
         verbose = true,
+        model_template = model_template
     )
 
-    create_element!(data, "PSRStudy"; defaults = defaults)
+    _create_study_collection(data, study_collection, defaults)
 
     return data
+end
+
+function _create_study_collection(data::Data, collection::String, defaults::Union{Dict{String,Any},Nothing})
+    create_element!(data, collection; defaults = defaults)
+
+    return nothing
 end
 
 function _validate_collection(data::Data, collection::String)
@@ -485,39 +550,38 @@ end
 function create_element!(
     data::Data,
     collection::String;
-    defaults::Union{Dict{String,Any},Nothing} = nothing,
+    defaults::Union{Dict{String,Any},Nothing} = _load_defaults!(),
 )
-    return create_element!(data, collection, Dict{String,Any}(), defaults)
+    return create_element!(data, collection, Dict{String,Any}(); defaults=defaults)
 end
 
 function create_element!(
     data::Data,
     collection::String,
     ps::Pair{String,<:Any}...;
-    defaults::Union{Dict{String,Any},Nothing} = nothing,
+    defaults::Union{Dict{String,Any},Nothing} = _load_defaults!(),
 )
     attributes = Dict{String,Any}(ps...)
 
-    return create_element!(data, collection, attributes, defaults)
+    return create_element!(data, collection, attributes; defaults=defaults)
 end
 
 function create_element!(
     data::Data,
     collection::String,
-    attributes::Dict{String,Any},
-    defaults::Union{Dict{String,Any},Nothing} = nothing,
+    attributes::Dict{String,Any};
+    defaults::Union{Dict{String,Any},Nothing} = _load_defaults!(),
 )
     _validate_collection(data, collection)
-
-    if isnothing(defaults)
-        defaults = JSON.parsefile(PSRCLASSES_DEFAULTS_PATH)
-    end
-
-    if haskey(defaults, collection)
-        element = deepcopy(defaults[collection])
-    else
+    
+    element = if isnothing(defaults)
+        Dict{String,Any}()
+    elseif haskey(defaults, collection)
+        deepcopy(defaults[collection])
+    else 
         @warn "No default initialization values for collection '$collection'"
-        element = Dict{String,Any}()
+        
+        Dict{String,Any}()
     end
 
     # Cast values from json default 
@@ -541,6 +605,23 @@ function create_element!(
     _set_index!(data, reference_id, collection, index)
 
     return index
+end
+
+function delete_element!(data::Data, collection::String, index::Int)
+    if !has_relations(data, collection, index)
+        elements = _get_elements(data, collection)
+
+        element_id = elements[index]["reference_id"]
+
+        # Remove element reference from data_index by its id
+        delete!(data.data_index.index, element_id)
+
+        # Remove element from collection vector by its index
+        deleteat!(elements, index)
+    else
+        error("Element $collection cannot be deleted because it has relations with other elements")
+    end
+    return nothing
 end
 
 summary(io::IO, args...) = print(io, summary(args...))
@@ -632,6 +713,7 @@ function get_element(data::Data, reference_id::Integer)
 end
 
 function get_element(data::Data, collection::String, code::Integer)
+    _validate_collection(data, collection)
     collection_struct = data.data_struct[collection]
     index = 0
     if haskey(collection_struct,"code")

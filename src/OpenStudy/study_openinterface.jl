@@ -139,6 +139,9 @@ Base.@kwdef mutable struct Data{T} <: AbstractData
 
     # Reference Indexing
     data_index::DataIndex = DataIndex()
+
+    # Model Templates 
+    model_template::PMD.ModelTemplate = PMD.ModelTemplate()
 end
 
 _raw(data::Data) = data.raw
@@ -208,69 +211,102 @@ function initialize_study(
     data_path = "",
     pmd_files = String[],
     path_pmds = PMD._PMDS_BASE_PATH,
-    log_file = "",
+    log_file::Union{AbstractString,Nothing} = nothing,
     verbose = true,
     extra_config_file::String = "",
     validate_attributes::Bool = true,
     _netplan_database::Bool = false,
-    model_class_map = PMD._MODEL_TO_CLASS_SDDP,
+    model_template_path::Union{String,Nothing} = nothing,
     #merge collections
     add_transformers_to_series::Bool = true,
+    #json api 
+    json_struct_path::Union{Nothing,Vector{String},String} = nothing,
+    # Alternative Study Collection
+    study_collection::String = "PSRStudy",
 )
     if !isdir(data_path)
         error("$data_path is not a valid directory")
     end
+
     PATH_JSON = joinpath(data_path, "psrclasses.json")
+    
     if !isfile(PATH_JSON)
         error("$PATH_JSON not found")
     end
 
-    file = if !isempty(log_file)
-        Base.open(file, "w")
-    else
-        nothing
+    if !isnothing(log_file)
+        log_file = Base.open(log_file, "w")
     end
 
-    raw = JSON.parsefile(PATH_JSON)
-
-    study_data = raw["PSRStudy"][1]
-
-    stage_type = StageType(study_data["Tipo_Etapa"])
-    first_year = study_data["Ano_inicial"]
-    first_stage = study_data["Etapa_inicial"]
-    first_date =
-        Dates.Date(first_year, 1, 1) + ifelse(
-            stage_type == STAGE_MONTH,
-            Dates.Month(first_stage - 1),
-            Dates.Week(first_stage - 1),
-        )
-    # TODO daily study
-
-    if _netplan_database
-        model_class_map = PMD._MODEL_TO_CLASS_NETPLAN
+    model_template = PMD.ModelTemplate()
+    
+    if isnothing(model_template_path)
+        if _netplan_database
+            PMD.load_model_template!(
+                joinpath(JSON_METADATA_PATH, "modeltemplates.netplan.json"),
+                model_template,
+            )
+        else
+            PMD.load_model_template!(
+                joinpath(JSON_METADATA_PATH, "modeltemplates.sddp.json"),
+                model_template,
+            )
+        end
+    else 
+        PMD.load_model_template!(model_template_path, model_template)
     end
-    data_struct, model_files_added = PMD.load_model(path_pmds, pmd_files, model_class_map)
+
+    data_struct, model_files_added = PMD.load_model(path_pmds, pmd_files, model_template)
+    
     if isempty(model_files_added)
         error("No Model definition (.pmd) file found")
     end
 
-    number_blocks = study_data["NumeroBlocosDemanda"]
-    @assert number_blocks == study_data["NumberBlocks"]
+    raw_data = JSON.parsefile(PATH_JSON)
 
-    duration_mode =
+    if !haskey(raw_data, study_collection)
+        error("Study collection '$study_collection' is missing")
+    end
+
+    study_data = raw_data[study_collection][begin]
+
+    if study_collection == "PSRStudy"
+        stage_type  = StageType(study_data["Tipo_Etapa"])
+        first_year  = study_data["Ano_inicial"]
+        first_stage = study_data["Etapa_inicial"]
+        first_date  = if stage_type == STAGE_MONTH
+            Dates.Date(first_year, 1, 1) + Dates.Month(first_stage - 1)
+        else
+            Dates.Date(first_year, 1, 1) + Dates.Week(first_stage - 1)
+        end
+
+        # TODO: daily study
+
+        number_blocks = study_data["NumeroBlocosDemanda"]
+
+        @assert number_blocks == study_data["NumberBlocks"]
+    
         if haskey(study_data, "HourlyData") && study_data["HourlyData"]["BMAP"] in [1, 2]
-            HOUR_BLOCK_MAP
+            duration_mode = HOUR_BLOCK_MAP
         elseif (
             haskey(study_data, "DurationModel") &&
             haskey(study_data["DurationModel"], "Duracao($number_blocks)")
         )
-            VARIABLE_DURATION
+            duration_mode = VARIABLE_DURATION
         else
-            FIXED_DURATION
+            duration_mode = FIXED_DURATION
         end
+    else
+        stage_type    = STAGE_WEEK
+        first_year    = 2023
+        first_stage   = 1
+        first_date    = Dates.Date(2023, 1, 1)
+        number_blocks = 1
+        duration_mode = FIXED_DURATION
+    end
 
     data = Data(
-        raw = raw,
+        raw = raw_data,
         data_path = data_path,
         data_struct = data_struct,
         validate_attributes = validate_attributes,
@@ -282,9 +318,11 @@ function initialize_study(
         controller_date = first_date,
         duration_mode = duration_mode,
         number_blocks = number_blocks,
-        log_file = file,
+        log_file = log_file,
         verbose = verbose,
+        model_template = model_template
     )
+
     if add_transformers_to_series
         _merge_psr_transformer_and_psr_serie!(data)
     end
@@ -303,11 +341,91 @@ function initialize_study(
         end
     end
 
+    load_json_struct!(data, json_struct_path)
+
     # Assigns to every `reference_id` the corresponding instance index
     # as a pair (collection, index)
     _build_index!(data)
 
     return data
+end
+
+function load_json_struct!(::Data, ::Nothing) end
+
+function load_json_struct!(data::Data, paths::Vector{String})
+    for path in paths
+        load_json_struct!(data, path)
+    end
+    return nothing
+end
+
+function load_json_struct!(data::Data, path::String)
+    if isdir(path)
+        for subpath in readdir(path)
+            if isfile(subpath) && last(splitext(subpath)) == ".json"
+                load_json_struct!(data, subpath)
+            end
+        end
+        return nothing
+    end
+
+    if !(isfile(path) && last(splitext(path)) == ".json")
+        error("Invalid JSON file path '$path'")
+    end
+
+    raw_struct = JSON.parsefile(path)
+
+    for (collection,attr_list) in raw_struct
+        if !haskey(data.data_struct, collection)
+            data.data_struct[collection] =  Dict{String,Attribute}()
+        end
+
+        for (attr_name,attr_data) in attr_list
+            data.data_struct[collection][attr_name] = Attribute(
+                attr_data["name"],
+                attr_data["is_vector"],
+                _get_json_type(attr_data["type"]),
+                attr_data["dim"],
+                attr_data["index"]
+            )
+        end
+    end
+
+    return nothing
+end
+
+function _get_json_type(type::String)
+    if type == "Int32"
+        return Int32
+    elseif type == "Float64"
+        return Float64
+    elseif type == "String"
+        return String
+    elseif type == "Dates.Date"
+        return Dates.Date
+    elseif type == "Ptr{Nothing}"
+        return Ptr{Nothing}
+    else
+        error("Unknown type '$type'")
+    end
+end
+
+function dump_json_struct(path::String, data::Data)
+    Base.open(path, "w") do io
+        return JSON.print(io, data.data_struct)
+    end
+end
+
+function PMD.dump_model_template(path::String, data::Data)
+    PMD.dump_model_template(path, data.model_template)
+
+    return nothing
+end
+
+function PMD.load_model_template!(path::String, data::Data)
+    PMD.load_model_template!(path, data.model_template)
+    
+    return nothing
 end
 
 function max_elements(data::Data, collection::String)

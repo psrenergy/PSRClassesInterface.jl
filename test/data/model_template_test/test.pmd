@@ -1,0 +1,16 @@
+//--------------------------------------
+//--- Modelo para a Carga de Barra   ---
+//--------------------------------------
+DEFINE_MODEL MODL:Test_CargaBarra
+	DIMENSION	block
+	VETOR	DATE	Data
+	VETOR	REAL	P	DIM(block)	INDEX Data
+	VETOR	REAL	HourP
+END_MODEL
+
+//--------------------------------------------------------------------------------------------------
+// Modelo de Configuracao do SDDP
+//--------------------------------------------------------------------------------------------------
+DEFINE_MODEL MODL:Test_Study
+	PARM INTEGER Idioma
+END_MODEL
