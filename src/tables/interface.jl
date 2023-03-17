@@ -4,7 +4,7 @@ struct SeriesTable <: Tables.AbstractColumns
     table::Vector{Vector}
 
     function SeriesTable(buffer::Dict{String,Vector})
-        if !allequal(length(data) for data in values(buffer))
+        if !all(isequal(length(first(values(buffer)))), length.(values(buffer)))
             error("Series columns must have the same length")
         end
 
