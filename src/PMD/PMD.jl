@@ -4,8 +4,7 @@ import Dates
 import JSON
 
 """
-    Attribute
-
+```
 struct Attribute
     name::String
     is_vector::Bool
@@ -13,6 +12,7 @@ struct Attribute
     dim::Int
     index::String
 end
+```
 """
 struct Attribute
     name::String
@@ -143,15 +143,31 @@ end
 
 const _MAX_MERGE = 10
 
-abstract type PMD_STATE end
+"""
+    _PMD_STATE
 
-struct PMD_STATE_IDLE <: PMD_STATE end
+Subtypes of `_PMD_STATE` represent the states of the PMD parser.
+"""
+abstract type _PMD_STATE end
 
-struct PMD_STATE_MODEL <: PMD_STATE
+"""
+    _PMD_STATE_IDLE
+
+Indicates that the parser is in _idle_ state, that is, it is at the beginning of
+the file or has just finished consuming a top-level block.
+"""
+struct _PMD_STATE_IDLE <: _PMD_STATE end
+
+"""
+    _PMD_STATE_MODEL
+
+Indicates that the parser is parsing a _model_ block.
+"""
+struct _PMD_STATE_MODEL <: _PMD_STATE
     collection::String
     num_merges::Int
 
-    PMD_STATE_MODEL(collection::String, num_merges::Integer = 0) = new(collection, num_merges)
+    _PMD_STATE_MODEL(collection::String, num_merges::Integer = 0) = new(collection, num_merges)
 end
 
 function _parse_pmd(filepath::AbstractString, model_template::ModelTemplate)
@@ -177,7 +193,8 @@ function _parse_pmd!(
 end
 
 function _parse_pmd!(io::IO, data_struct::DataStruct, model_template::ModelTemplate)
-    state = PMD_STATE_IDLE()
+
+    state = _PMD_STATE_IDLE()
 
     for line in strip.(readlines(io))
         if isempty(line) || startswith(line, "//")
@@ -206,7 +223,10 @@ function _parse_pmd_line!(
     data_struct::DataStruct,
     model_template::ModelTemplate,
     line::AbstractString,
-    state::PMD_STATE_IDLE,
+
+
+    state::_PMD_STATE_IDLE,
+
 )
     m = match(r"DEFINE_MODEL\s+MODL:([\S]+)", line)
 
@@ -227,7 +247,8 @@ function _parse_pmd_line!(
                 data_struct[collection]["id"] = Attribute("id", false, String, 0, "")
             end
 
-            return PMD_STATE_MODEL(collection)
+
+            return _PMD_STATE_MODEL(collection)
         end
     end
 
@@ -238,10 +259,11 @@ function _parse_pmd_line!(
     data_struct::DataStruct,
     model_template::ModelTemplate,
     line::AbstractString,
-    state::PMD_STATE_MODEL,
+
+    state::_PMD_STATE_MODEL,
 )
     if startswith(line, "END_MODEL")
-        return PMD_STATE_IDLE()
+        return _PMD_STATE_IDLE()
     end
 
     m = match(r"MERGE_MODEL\s+MODL:([\S]+)", line)
@@ -253,7 +275,8 @@ function _parse_pmd_line!(
             if !haskey(data_struct[state.collection], "_MERGE_$i")
                 data_struct[state.collection]["_MERGE_$i"] = Attribute(model_template.inv[model_name], false, DataType, 0, "")
                 
-                return PMD_STATE_MODEL(state.collection, state.num_merges + 1)
+
+                return _PMD_STATE_MODEL(state.collection, state.num_merges + 1)
             end
         end
 

@@ -399,6 +399,7 @@ function create_study(
  
     data_struct, model_files_added = PMD.load_model(pmds_path, pmd_files, model_template)
 
+
     stage_type  = 
         if haskey(defaults[study_collection], "Tipo_Etapa")
             StageType(defaults[study_collection]["Tipo_Etapa"])
@@ -441,6 +442,7 @@ function create_study(
         else
             FIXED_DURATION
         end
+
 
     data = Data(
         raw = Dict{String,Any}(),
