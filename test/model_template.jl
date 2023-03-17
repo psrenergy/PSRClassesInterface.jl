@@ -1,4 +1,4 @@
-function test_mt1()
+function test_model_template1()
     temp_path = joinpath(tempdir(), "PSRI_MT1")
     json_path = joinpath(temp_path, "psrclasses.json")
 
@@ -74,4 +74,5 @@ function test_mt1()
     end
 end
 
-test_mt1()
+
+test_model_template1()
