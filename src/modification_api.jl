@@ -450,7 +450,7 @@ function create_study(
         number_blocks = 1,
         log_file = nothing,
         verbose = true,
-        model_template = model_template,
+        model_template = model_template
     )
 
     _create_study_collection(data, study_collection, defaults)
@@ -652,19 +652,16 @@ function create_element!(
     if has_graf_file(data, collection) 
         error("Cannot create element for a collection with a Graf file")
     end
-    
+
     element = if isnothing(defaults)
         Dict{String,Any}()
     elseif haskey(defaults, collection)
         deepcopy(defaults[collection])
     else 
-        if haskey(_CUSTOM_COLLECTION, collection)
-            deepcopy(_CUSTOM_COLLECTION[collection])
-        else
-            @warn "No default initialization values for collection '$collection'"
 
-            Dict{String,Any}()
-        end
+        @warn "No default initialization values for collection '$collection'"
+        
+        Dict{String,Any}()
     end
 
     # Cast values from json default 

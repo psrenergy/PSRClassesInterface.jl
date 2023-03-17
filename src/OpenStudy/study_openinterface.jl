@@ -246,11 +246,18 @@ function initialize_study(
     model_template = PMD.ModelTemplate()
     
     if isnothing(model_template_path)
-        PMD.load_model_template!(
-            joinpath(JSON_METADATA_PATH, "modeltemplates.sddp.json"),
-            model_template,
-        )
-    else
+        if _netplan_database
+            PMD.load_model_template!(
+                joinpath(JSON_METADATA_PATH, "modeltemplates.netplan.json"),
+                model_template,
+            )
+        else
+            PMD.load_model_template!(
+                joinpath(JSON_METADATA_PATH, "modeltemplates.sddp.json"),
+                model_template,
+            )
+        end
+    else 
         PMD.load_model_template!(model_template_path, model_template)
     end
 

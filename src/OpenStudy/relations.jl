@@ -128,7 +128,8 @@ function _get_target_index_from_relation(
     source_element = data.raw[source][source_index]
     target_reference_id = source_element[relation_attribute]
     target_indices = Vector{Int}()
-    if typeof(target_reference_id) == Vector{Int}
+
+    if isa(target_reference_id, Vector{Int})
         for id in target_reference_id
             _, target_index =  _get_index(data.data_index, id)
             push!(target_indices, target_index)
@@ -556,17 +557,5 @@ function get_vector_related(
     end
 
     return target_index_list
-end
 
-function add_relation!(data::Data, source::String, target::String, relation_type::RelationType, attribute_name::String)
-    _validate_collection(data, source)
-    _validate_collection(data, target)
-    relation_tuple = (target, relation_type)
-    if haskey(_RELATIONS, source)
-        _RELATIONS[source][(relation_tuple)] = attribute_name
-    else
-        _RELATIONS[source] = _INNER_DICT(relation_tuple => attribute_name)
-    end
-
-    return nothing
 end
