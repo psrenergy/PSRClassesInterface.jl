@@ -42,9 +42,6 @@ end
     @testset "Model Template" begin
         @time include("model_template.jl")
     end 
-    @testset "Model Template" begin
-        @time include("model_template.jl")
-    end 
     @testset "Relations" begin
         @time include("relations.jl")
     end
