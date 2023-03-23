@@ -125,9 +125,7 @@ function PSRI.open(
         _first_stage = read(ioh, Int32) #month or week
         first_year = read(ioh, Int32) # year
         #
-        unit_buffer = Vector{Cchar}(undef, 7)
-        read!(ioh, unit_buffer)
-        unit_str = strip(join(unit_buffer))
+        unit_str = strip(join(Char.(read!(ioh, Vector{Cchar}(undef, 7)))))
         #
         name_length = read(ioh, Int32)
 
@@ -149,9 +147,7 @@ function PSRI.open(
         _first_stage = read(ioh, Int32) #month or week
         first_year = read(ioh, Int32) # year
         #
-        unit_buffer = Vector{Cchar}(undef, 7)
-        read!(ioh, unit_buffer)
-        unit_str = strip(join(Char.(unit_buffer)))
+        unit_str = strip(join(Char.(read!(ioh, Vector{Cchar}(undef, 7)))))
         #
         name_length = read(ioh, Int32)
 
@@ -163,6 +159,7 @@ function PSRI.open(
 
             offset1 = read(ioh, Int32)
             offset2 = read(ioh, Int32)
+            
             block_total = offset2 - offset1
 
             skip(ioh, 4 * (stage_total - first_relative_stage))
@@ -221,7 +218,11 @@ function PSRI.open(
         error("'stage_total' must be a positive integer, not '$(stage_total)'")
     end
 
-    @assert first_relative_stage == 1 # todo improve this
+    # TODO: improve this
+    # if first_relative_stage != 1
+    #     @info   first_relative_stage
+    #     @assert false
+    # end
 
     if !(first_relative_stage <= stage_total)
         error("'first_relative_stage' must be less than or equal to 'stage_total'")
@@ -248,7 +249,7 @@ function PSRI.open(
     end
 
     if variable_by_block == 0 && block_total > 1
-        println(BAD * "variable_by_block == 0 but block_total = $block_total")
+        @warn("'variable_by_block' is set to 0 but 'block_total' = $block_total is greater than 1")
     end
     
     if !(block_total > 0)
@@ -447,21 +448,31 @@ function PSRI.goto(graf::Reader, t::Integer, s::Integer = 1, b::Integer = 1)
     return nothing
 end
 
-function _get_position(graf, t::Integer, s::Integer, b::Integer)
-    if PSRI.is_hourly(graf)
+function _get_relative_offset(ptr::Reader)
+    return 4 * ptr.agents_total * ptr.scenario_total * (ptr.first_relative_stage - 1)
+end
+
+function _get_relative_offset(::Any)
+    return 0
+end
+
+function _get_position(ptr::Any, t::Integer, s::Integer, b::Integer)
+    relative_offset = _get_relative_offset(ptr)
+
+    if PSRI.is_hourly(ptr)
         # hours in weekly = 52 * 168 = 8736
         # hours in monthly = 8760
         pos = 4 * (
-            graf.blocks_until_stage[t] * graf.agents_total * graf.scenario_total +
-            (s - 1) * graf.agents_total * graf.blocks_per_stage[t] +
-            (b - 1) * graf.agents_total)
-        return pos + graf.offset
+            ptr.blocks_until_stage[t] * ptr.agents_total * ptr.scenario_total +
+            (s - 1) * ptr.agents_total * ptr.blocks_per_stage[t] +
+            (b - 1) * ptr.agents_total)
+        return pos + ptr.offset - relative_offset
     else
         pos = 4 * (
-            (t - 1) * graf.agents_total * graf.block_total * graf.scenario_total +
-            (s - 1) * graf.agents_total * graf.block_total +
-            (b - 1) * graf.agents_total)
-        return pos + graf.offset
+            (t - 1) * ptr.agents_total * ptr.block_total * ptr.scenario_total +
+            (s - 1) * ptr.agents_total * ptr.block_total +
+            (b - 1) * ptr.agents_total)
+        return pos + ptr.offset - relative_offset
     end
 end
 
@@ -517,7 +528,7 @@ function _get_expected_bin_size(ptr::Reader)
     a = ptr.agents_total
 
     if ptr.single_binary
-        return _get_position(ptr, t, s, b) + 4a 
+        return _get_position(ptr, t, s, b) + 4a
     else
         return _get_position(ptr, t, s, b) + 4a - ptr.offset
     end
@@ -540,9 +551,10 @@ function _check_bin_size(ptr::Reader)
     size_delta = _get_expected_bin_size(ptr) - _get_bin_size(ptr)
 
     if size_delta > 0
+        @info ptr
         error("File is truncated by $(size_delta) bytes")
     elseif size_delta < 0
-        @warn "File has $(size_delta) extra bytes"
+        @warn "File has $(abs(size_delta)) extra bytes"
     end
 
     return nothing
