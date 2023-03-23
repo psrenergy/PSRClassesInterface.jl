@@ -1,15 +1,3 @@
-function skip_store(io::IO, s::Int, skips::Vector{Tuple{Int, Int}}, store_skips::Bool)
-    if store_skips
-        p = position(io)
-        skip(io, s)
-        push!(skips, (p, s))
-        return nothing
-    else
-        skip(io, s)
-        return nothing
-    end
-end
-
 Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
     io::IOStream
 
@@ -48,25 +36,26 @@ Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
     is_open::Bool = true
 
     relative_stage_skip::Int
-    hs::Int = 0 # Header size
+    offset::Int = 0 # Header size
 
-    # Lists reading skips as pairs
-    #   (position, skip length)
-    # in bytes
-    skips::Vector{Tuple{Int, Int}} = Tuple{Int, Int}[]
+    single_binary::Bool = false
 end
 
 function Base.show(io::IO, ptr::Reader)
-    println(io, "Reader:")
-    println(io, "   Stages = $(ptr.stage_total)")
-    println(io, "   Scenarios = $(ptr.scenario_total)")
-    println(io, "   Max Blocks = $(ptr.block_total)")
-    println(io, "   Is Hourly = $(ptr.hours_exist)")
-    println(io, "   Hour Discretization = $(ptr.hour_discretization)")
-    println(io, "   Agents = $(length(ptr.agent_names))")
-    println(io, "   Unit = $(ptr.unit)")
-    print(io,   "   Data File = $(ptr.io.name)")
-    return
+    return println(
+        io,
+        """
+        Reader:
+           Stages = $(ptr.stage_total)
+           Scenarios = $(ptr.scenario_total)
+           Max Blocks = $(ptr.block_total)
+           Is Hourly = $(ptr.hours_exist)
+           Hour Discretization = $(ptr.hour_discretization)
+           Agents = $(length(ptr.agent_names))
+           Unit = $(ptr.unit)
+           Data File = $(ptr.io.name)
+        """
+    )
 end
 
 function PSRI.open(
@@ -80,37 +69,39 @@ function PSRI.open(
     first_stage::Dates.Date = Dates.Date(1900, 1, 1),
     verbose_header::Bool = false,
     single_binary::Bool = false,
-    store_skips::Bool = false,
 )
-
-    # TODO
+    # TODO: support 'is_hourly' and 'stage_type'
     if !isnothing(is_hourly) || !isnothing(stage_type)
-        error("is_hourly and stage_type are not supported by OpenBinary.")
+        error("'is_hourly' and 'stage_type' are not supported by 'OpenBinary' yet")
     end
 
-    skips = Tuple{Int,Int}[]
+    header_size = 0
 
-    hs = 0
     if single_binary
-        PATH_BIN = path * ".dat"
-        if !isfile(PATH_BIN)
-            error("file not found: $PATH_BIN")
+        bin_path = "$(path).dat"
+
+        if !isfile(bin_path)
+            error("File not found: $(bin_path)")
         end
-        ioh = open(PATH_BIN, "r")
-        # hs = Int(read(ioh, Int32)) # Header Size
+
+        ioh = open(bin_path, "r")
     else
-        PATH_HDR = path * ".hdr"
-        PATH_BIN = path * ".bin"
-        if !isfile(PATH_BIN)
-            error("file not found: $PATH_BIN")
+        hdr_path = "$(path).hdr"
+        bin_path = "$(path).bin"
+
+        if !isfile(bin_path)
+            error("File not found: $(bin_path)")
         end
-        if !isfile(PATH_HDR)
-            error("file not found: $PATH_HDR")
+        
+        if !isfile(hdr_path)
+            error("File not found: $(hdr_path)")
         end
-        ioh = open(PATH_HDR, "r")
+        
+        ioh = open(hdr_path, "r")
     end
 
-    skip_store(ioh, 4, skips, store_skips)
+    skip(ioh, 4)
+
     version = read(ioh, Int32)
 
     if verbose_header
@@ -120,8 +111,9 @@ function PSRI.open(
     @assert 1 <= version <= 9
 
     if version == 1
-        skip_store(ioh, 4, skips, store_skips)
-        skip_store(ioh, 4, skips, store_skips)
+        skip(ioh, 4)
+        skip(ioh, 4)
+
         first_relative_stage = read(ioh, Int32)
         stage_total = read(ioh, Int32)
         scenario_total = read(ioh, Int32)
@@ -143,8 +135,9 @@ function PSRI.open(
         variable_by_hour = 0
         number_blocks = Int32[]
     else
-        skip_store(ioh, 4, skips, store_skips)
-        skip_store(ioh, 4, skips, store_skips)
+        skip(ioh, 4)
+        skip(ioh, 4)
+
         first_relative_stage = read(ioh, Int32)
         stage_total = read(ioh, Int32)
         scenario_total = read(ioh, Int32)
@@ -165,60 +158,49 @@ function PSRI.open(
         hour_discretization = 1
 
         if variable_by_hour == 0
-            skip_store(ioh, 4, skips, store_skips)
-            skip_store(ioh, 4, skips, store_skips)
+            skip(ioh, 4)
+            skip(ioh, 4)
             offset1 = read(ioh, Int32)
             offset2 = read(ioh, Int32)
             block_total = offset2 - offset1
-            skip_store(ioh, 4 * (stage_total - first_relative_stage), skips, store_skips)
+            skip(ioh, 4 * (stage_total - first_relative_stage))
             number_blocks = Int32[]
         elseif variable_by_hour == 1
-            skip_store(ioh, 4, skips, store_skips)
-            skip_store(ioh, 4, skips, store_skips)
+            skip(ioh, 4)
+            skip(ioh, 4)
+
             number_blocks = zeros(Int32, stage_total + 1 - first_relative_stage)
             offsets = zeros(Int32, 1 + stage_total + 1 - first_relative_stage)
-            for i in first_relative_stage:stage_total+1
-                offset = read(ioh, Int32)
-                offsets[i-first_relative_stage+1] = offset
-                if i > first_relative_stage
-                    number_blocks[i-first_relative_stage] = offset - offsets[i-first_relative_stage]
+            
+            for i in first_relative_stage:(stage_total+1)
+                let offset = read(ioh, Int32)
+                    offsets[i-first_relative_stage+1] = offset
+                    
+                    if i > first_relative_stage
+                        number_blocks[i-first_relative_stage] = offset - offsets[i-first_relative_stage]
+                    end
                 end
             end
+            
             block_total = maximum(number_blocks)
 
-            hour_discretization = floor(
-                Int,
-                block_total / if stage_type == PSRI.STAGE_WEEK
-                    168
-                elseif stage_type == PSRI.STAGE_MONTH
-                    if block_total % 672 == 0
-                        672
-                    elseif block_total % 720 == 0
-                        720
-                    else
-                        744
-                    end
-                elseif stage_type == PSRI.STAGE_DAY
-                    24
-                elseif stage_type == PSRI.STAGE_YEAR
-                    8760
-                else
-                    error("stage Type $stage_type not currently supported")
-                end,
-            )
+            hour_discretization = _get_hour_discretization(stage_type, block_total)
 
             if verbose_header
                 @show(block_total, length(number_blocks), number_blocks)
             end
         else
-            error("variable_by_hour = $variable_by_hour is invalid")
+            error("'variable_by_hour' must be either '0' or '1', not '$(variable_by_hour)'")
         end
     end
+
     agent_names = String[]
     agent_name_buffer = Vector{Cchar}(undef, name_length)
+
     for _ in 1:total_agents
-        skip_store(ioh, 4, skips, store_skips)
-        skip_store(ioh, 4, skips, store_skips)
+        skip(ioh, 4)
+        skip(ioh, 4)
+
         read!(ioh, agent_name_buffer)
         agent_name = strip(join(Char.(agent_name_buffer)))
         push!(agent_names, agent_name)
@@ -323,14 +305,14 @@ function PSRI.open(
     end
 
     if single_binary
-        skip_store(ioh, 4, skips, store_skips)
+        skip(ioh, 4)
         io = ioh
-        hs = position(io)
+        header_size = position(io)
     else
-        io = open(PATH_BIN, "r")
+        io = open(bin_path, "r")
     end
 
-    ret = Reader(
+    ret = Reader(;
         stage_total = Int(stage_total),
         scenario_total = Int(scenario_total),
         scenario_exist = scenario_exist,
@@ -355,30 +337,26 @@ function PSRI.open(
         data = data, # float cache
         relative_stage_skip = relative_stage_skip,
         io = io,
-        hs = hs,
-        skips = skips,
+        offset = header_size,
+        single_binary = single_binary,
     )
 
-    finalizer(ret) do x
-        if x.is_open
-            Base.close(x.io)
+    finalizer(ret) do ptr
+        if ptr.is_open
+            Base.close(ptr.io)
         end
-        x
+
+        return ptr
     end
 
     # check total file size
-    last = _get_position(
-        ret,
-        stage_total,
-        scenario_total,
-        hours_exist ? number_blocks[end] : block_total
-    ) + 4 * total_agents
-    seekend(ret.io)
-    @assert last == position(ret.io)
+    _check_bin_size(ret)
 
-    # go back to begning and initialize
-    seek(ret.io, ret.hs)
+    # Go back to the beginning and initialize
+    # i.e. sync file and reader cursors
+    seek(ret.io, ret.offset)
     PSRI.goto(ret, 1, 1, 1)
+
     return ret
 end
 
@@ -461,21 +439,81 @@ function _get_position(graf, t::Integer, s::Integer, b::Integer)
             graf.blocks_until_stage[t] * graf.agents_total * graf.scenario_total +
             (s - 1) * graf.agents_total * graf.blocks_per_stage[t] +
             (b - 1) * graf.agents_total)
-        return pos + graf.hs
+        return pos + graf.offset
     else
         pos = 4 * (
             (t - 1) * graf.agents_total * graf.block_total * graf.scenario_total +
             (s - 1) * graf.agents_total * graf.block_total +
             (b - 1) * graf.agents_total)
-        return pos + graf.hs
+        return pos + graf.offset
     end
+end
+
+function _get_hour_discretization(stage_type::PSRI.StageType, block_total::Integer)
+    hour_total = if stage_type == PSRI.STAGE_WEEK
+        168
+    elseif stage_type == PSRI.STAGE_MONTH
+        if block_total % 672 == 0
+            672
+        elseif block_total % 720 == 0
+            720
+        else
+            744
+        end
+    elseif stage_type == PSRI.STAGE_DAY
+        24
+    elseif stage_type == PSRI.STAGE_YEAR
+        8760
+    else
+        error("Stage type $(stage_type) is not currently supported")
+    end
+
+    return floor(Int, block_total / hour_total)
+end
+
+function _get_expected_bin_size(ptr::Reader)
+    t = ptr.stage_total
+    s = ptr.scenario_total
+    b = ptr.hours_exist ? ptr.blocks_per_stage[end] : ptr.block_total
+    a = ptr.agents_total
+
+    if ptr.single_binary
+        return _get_position(ptr, t, s, b) + 4a 
+    else
+        return _get_position(ptr, t, s, b) + 4a - ptr.offset
+    end
+end
+
+function _get_bin_size(ptr::Reader)
+    p = position(ptr.io)
+    seekend(ptr.io)
+    q = position(ptr.io)
+    seek(ptr.io, p)
+
+    if ptr.single_binary
+        return q
+    else
+        return q - ptr.offset
+    end
+end
+
+function _check_bin_size(ptr::Reader)
+    size_delta = _get_expected_bin_size(ptr) - _get_bin_size(ptr)
+
+    if size_delta > 0
+        error("File is truncated by $(size_delta) bytes")
+    elseif size_delta < 0
+        @warn "File has $(size_delta) extra bytes"
+    end
+
+    return nothing
 end
 
 function PSRI.next_registry(graf::Reader)
     if graf.stage_current == graf.stage_total &&
         graf.scenario_current == graf.scenario_total &&
         graf.block_current == graf.block_total
-        seek(graf.io, graf.hs)
+        seek(graf.io, graf.offset)
     end
     read!(graf.io, graf.data_buffer)
     for (index, value) in enumerate(graf.index)
