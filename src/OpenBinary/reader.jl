@@ -160,10 +160,13 @@ function PSRI.open(
         if variable_by_hour == 0
             skip(ioh, 4)
             skip(ioh, 4)
+
             offset1 = read(ioh, Int32)
             offset2 = read(ioh, Int32)
             block_total = offset2 - offset1
+
             skip(ioh, 4 * (stage_total - first_relative_stage))
+            
             number_blocks = Int32[]
         elseif variable_by_hour == 1
             skip(ioh, 4)
@@ -205,70 +208,95 @@ function PSRI.open(
         agent_name = strip(join(Char.(agent_name_buffer)))
         push!(agent_names, agent_name)
     end
+
     if verbose_header
         @show(agent_names)
     end
 
-    if single_binary
-        # nothing
-    else
+    if !single_binary
         close(ioh)
     end
 
-    BAD = "Bad header: "
+    if !(stage_total > 0)
+        error("'stage_total' must be a positive integer, not '$(stage_total)'")
+    end
 
-    @assert stage_total > 0
     @assert first_relative_stage == 1 # todo improve this
-    @assert stage_total - first_relative_stage >= 0
+
+    if !(first_relative_stage <= stage_total)
+        error("'first_relative_stage' must be less than or equal to 'stage_total'")
+    end
 
     if variable_by_series == 0
         # previous versions of the file simply leave the number of scenarios
         # as the number of scenarios in the study
         scenario_total = 1
     end
+
     if !(0 <= variable_by_series <= 1)
-        println(BAD * "variable_by_series = $variable_by_series, expected 0 or 1")
+        @warn("'variable_by_series' must be either 0 or 1, not $(variable_by_series)")
     end
-    @assert scenario_total > 0
-    scenario_exist = variable_by_series == 1
+
+    if !(scenario_total > 0)
+        error("'scenario_total' must be a positive integer, not $(scenario_total)")
+    end
+
+    scenario_exist = (variable_by_series == 1)
 
     if !(0 <= variable_by_block <= 3)
-        println(BAD * "variable_by_block = $variable_by_block, expected 0, 1, 2 or 3")
+        @warn("'variable_by_block' must be 0, 1, 2 or 3, not $(variable_by_block)")
     end
+
     if variable_by_block == 0 && block_total > 1
         println(BAD * "variable_by_block == 0 but block_total = $block_total")
     end
-    @assert block_total > 0
-    block_exist = variable_by_block > 0
+    
+    if !(block_total > 0)
+        error("'block_total' must be a positive integer, not $(block_total)")
+    end
+
+    block_exist = (variable_by_block > 0)
 
     if !(0 <= variable_by_hour <= 1)
-        println(BAD * "variable_by_hour = $variable_by_hour, expected 0 or 1")
+        @warn("'variable_by_hour' must be 0, 1, 2 or 3, not $(variable_by_hour)")
     end
-    hours_exist = variable_by_hour == 1
+
+    hours_exist = (variable_by_hour == 1)
 
     if total_agents == 0
-        println("total_agents == 0, nothing to do")
-        # todo
+        @warn("No agents were provided") # todo
     end
+
     @assert name_length > 0
 
     if use_header
         if length(header) > total_agents
             error("Header does not match with expected. Header length = $(length(header)), number ofo agents is $(total_agents)")
         end
-        index = Int[]
-        sizehint!(index, length(header))
-        for agent in header
-            _agent = strip(agent)
-            ret = findfirst(x -> x == _agent, agent_names)
-            if ret === nothing
-                # println("agent $(_agent) not found in file")
-                error("agent $(_agent) not found in file")
+
+        index = sizehint!(Int[], length(header))
+
+        for agent in strip.(header)
+            ret = findfirst(x -> x == agent, agent_names)
+
+            if isnothing(ret)
+                error("Agent '$(agent)' not found in file")
             end
+            
             push!(index, ret)
         end
+
         if !allow_empty && isempty(index)
-            error("no agents found" * ifelse(length(header) == 0, ", empty header inserted. If you do not want to pass a header use: use_header = false option.", "."))
+            if length(header) == 0
+                error(
+                    """
+                    No agents found and empty header inserted.
+                    If you don't want to pass a header consider selecting the 'use_header = false' option
+                    """
+                )
+            else
+                error("No agents found")
+            end
         end
     else
         index = collect(1:total_agents)
@@ -279,26 +307,14 @@ function PSRI.open(
 
     if first_stage != Dates.Date(1900, 1, 1)
         _year = first_year
-        _date = if stage_type == PSRI.STAGE_MONTH
-            @assert 1 <= _first_stage <= 12
-            Dates.Date(_year, 1, 1) + Dates.Month(_first_stage-1)
-        elseif stage_type == PSRI.STAGE_WEEK
-            @assert 1 <= _first_stage <= 52
-            Dates.Date(_year, 1, 1) + Dates.Week(_first_stage-1)
-        elseif stage_type == PSRI.STAGE_DAY
-            @assert 1 <= _first_stage <= 365
-            ret = Dates.Date(_year, 1, 1) + Dates.Day(_first_stage-1)
-            if Dates.isleapyear(_year) && _first_stage > 24 * (31 + 28)
-                ret += Dates.Day(1)
-            end
-            ret
-        else
-            error("stage Type $stage_type not currently supported")
-        end
+        _date = _get_first_stage_date(stage_type, _year, _first_stage)
+
         relative_first_stage = PSRI._stage_from_date(first_stage, stage_type, _date)
+        
         if relative_first_stage < 1
             error("first_stage = $first_stage is earlier than file initial stage = $_date")
         end
+
         relative_stage_skip = relative_first_stage - 1
     else
         relative_stage_skip = 0
@@ -446,6 +462,29 @@ function _get_position(graf, t::Integer, s::Integer, b::Integer)
             (s - 1) * graf.agents_total * graf.block_total +
             (b - 1) * graf.agents_total)
         return pos + graf.offset
+    end
+end
+
+function _get_first_stage_date(stage_type::PSRI.StageType, _year::Integer, _first_stage::Integer)
+    if stage_type == PSRI.STAGE_MONTH
+        @assert 1 <= _first_stage <= 12
+        
+        return Dates.Date(_year, 1, 1) + Dates.Month(_first_stage-1)
+    elseif stage_type == PSRI.STAGE_WEEK
+        @assert 1 <= _first_stage <= 52
+
+        return Dates.Date(_year, 1, 1) + Dates.Week(_first_stage-1)
+    elseif stage_type == PSRI.STAGE_DAY
+        @assert 1 <= _first_stage <= 365
+        ret = Dates.Date(_year, 1, 1) + Dates.Day(_first_stage-1)
+
+        if Dates.isleapyear(_year) && _first_stage > 24 * (31 + 28)
+            ret += Dates.Day(1)
+        end
+        
+        return ret
+    else
+        error("Stage type '$(stage_type)' is not currently supported")
     end
 end
 
