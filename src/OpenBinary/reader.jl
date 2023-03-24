@@ -26,7 +26,7 @@ Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
 
     data_buffer::Vector{Float32}
 
-    index::Vector{Int} # header ordering
+    indices::Vector{Int} # header ordering
     data::Vector{Float64} # float cache
 
     stage_current::Int = 0
@@ -111,8 +111,7 @@ function PSRI.open(
     @assert 1 <= version <= 9
 
     if version == 1
-        skip(ioh, 4)
-        skip(ioh, 4)
+        skip(ioh, 4 * 2)
 
         first_relative_stage = read(ioh, Int32)
         stage_total = read(ioh, Int32)
@@ -122,19 +121,15 @@ function PSRI.open(
         variable_by_series = read(ioh, Int32)
         variable_by_block = read(ioh, Int32)
         stage_type = PSRI.StageType(read(ioh, Int32))
-        _first_stage = read(ioh, Int32) #month or week
-        first_year = read(ioh, Int32) # year
-        #
-        unit_str = strip(join(Char.(read!(ioh, Vector{Cchar}(undef, 7)))))
-        #
+        _first_stage = read(ioh, Int32) # month or week
+        first_year = read(ioh, Int32)   # year
+        unit = _read_unit!(ioh)
         name_length = read(ioh, Int32)
 
-        ##
         variable_by_hour = 0
         number_blocks = Int32[]
     else
-        skip(ioh, 4)
-        skip(ioh, 4)
+        skip(ioh, 4 * 2)
 
         first_relative_stage = read(ioh, Int32)
         stage_total = read(ioh, Int32)
@@ -144,18 +139,15 @@ function PSRI.open(
         variable_by_block = read(ioh, Int32)
         variable_by_hour = read(ioh, Int32)
         stage_type = PSRI.StageType(read(ioh, Int32))
-        _first_stage = read(ioh, Int32) #month or week
-        first_year = read(ioh, Int32) # year
-        #
-        unit_str = strip(join(Char.(read!(ioh, Vector{Cchar}(undef, 7)))))
-        #
+        _first_stage = read(ioh, Int32) # month or week
+        first_year = read(ioh, Int32)   # year
+        unit = _read_unit!(ioh)
         name_length = read(ioh, Int32)
 
         hour_discretization = 1
 
         if variable_by_hour == 0
-            skip(ioh, 4)
-            skip(ioh, 4)
+            skip(ioh, 4 * 2)
 
             offset1 = read(ioh, Int32)
             offset2 = read(ioh, Int32)
@@ -166,13 +158,15 @@ function PSRI.open(
             
             number_blocks = Int32[]
         elseif variable_by_hour == 1
-            skip(ioh, 4)
-            skip(ioh, 4)
+            skip(ioh, 4 * 2)
 
             number_blocks = zeros(Int32, stage_total + 1 - first_relative_stage)
             offsets = zeros(Int32, 1 + stage_total + 1 - first_relative_stage)
             
             for i in first_relative_stage:(stage_total+1)
+                # NOTE: This 'let' statement was introduced to dodge naming clashes.
+                # It is also a good practice for variables who live inside loops.
+                # TODO: Rename variables to better adhere to their meanings.
                 let offset = read(ioh, Int32)
                     offsets[i-first_relative_stage+1] = offset
                     
@@ -198,8 +192,7 @@ function PSRI.open(
     agent_name_buffer = Vector{Cchar}(undef, name_length)
 
     for _ in 1:total_agents
-        skip(ioh, 4)
-        skip(ioh, 4)
+        skip(ioh, 4 * 2)
 
         read!(ioh, agent_name_buffer)
         agent_name = strip(join(Char.(agent_name_buffer)))
@@ -218,12 +211,6 @@ function PSRI.open(
         error("'stage_total' must be a positive integer, not '$(stage_total)'")
     end
 
-    # TODO: improve this
-    # if first_relative_stage != 1
-    #     @info   first_relative_stage
-    #     @assert false
-    # end
-
     if !(first_relative_stage <= stage_total)
         error("'first_relative_stage' must be less than or equal to 'stage_total'")
     end
@@ -235,7 +222,7 @@ function PSRI.open(
     end
 
     if !(0 <= variable_by_series <= 1)
-        @warn("'variable_by_series' must be either 0 or 1, not $(variable_by_series)")
+        @info("'variable_by_series' must be either 0 or 1, not $(variable_by_series)")
     end
 
     if !(scenario_total > 0)
@@ -245,11 +232,11 @@ function PSRI.open(
     scenario_exist = (variable_by_series == 1)
 
     if !(0 <= variable_by_block <= 3)
-        @warn("'variable_by_block' must be 0, 1, 2 or 3, not $(variable_by_block)")
+        @info("'variable_by_block' must be 0, 1, 2 or 3, not $(variable_by_block)")
     end
 
     if variable_by_block == 0 && block_total > 1
-        @warn("'variable_by_block' is set to 0 but 'block_total' = $block_total is greater than 1")
+        @info("'variable_by_block' is set to 0 but 'block_total' = $block_total is greater than 1")
     end
     
     if !(block_total > 0)
@@ -259,36 +246,38 @@ function PSRI.open(
     block_exist = (variable_by_block > 0)
 
     if !(0 <= variable_by_hour <= 1)
-        @warn("'variable_by_hour' must be 0, 1, 2 or 3, not $(variable_by_hour)")
+        @info("'variable_by_hour' must be 0, 1, 2 or 3, not $(variable_by_hour)")
     end
 
     hours_exist = (variable_by_hour == 1)
 
     if total_agents == 0
-        @warn("No agents were provided") # todo
+        @info("No agents were provided")
     end
 
-    @assert name_length > 0
+    if !(name_length > 0)
+        error("'name_length' must be a positive integer, not $(name_length)")
+    end
 
     if use_header
         if length(header) > total_agents
             error("Header does not match with expected. Header length = $(length(header)), number ofo agents is $(total_agents)")
         end
 
-        index = sizehint!(Int[], length(header))
+        indices = sizehint!(Int[], length(header))
 
         for agent in strip.(header)
-            ret = findfirst(x -> x == agent, agent_names)
-
-            if isnothing(ret)
-                error("Agent '$(agent)' not found in file")
-            end
+            let index = findfirst(isequal(agent), agent_names)
+                if isnothing(index)
+                    error("Agent '$(agent)' not found in file")
+                end
             
-            push!(index, ret)
+                push!(indices, index)
+            end
         end
 
-        if !allow_empty && isempty(index)
-            if length(header) == 0
+        if !allow_empty && isempty(indices)
+            if isempty(header)
                 error(
                     """
                     No agents found and empty header inserted.
@@ -300,7 +289,7 @@ function PSRI.open(
             end
         end
     else
-        index = collect(1:total_agents)
+        indices = collect(1:total_agents)
     end
 
     data_buffer = zeros(Float32, total_agents)
@@ -329,7 +318,7 @@ function PSRI.open(
         io = open(bin_path, "r")
     end
 
-    ret = Reader(;
+    ior = Reader(;
         stage_total = Int(stage_total),
         scenario_total = Int(scenario_total),
         scenario_exist = scenario_exist,
@@ -348,9 +337,9 @@ function PSRI.open(
         agents_total = total_agents,
         name_length = Int(name_length),
         agent_names = agent_names,
-        unit = unit_str,
+        unit = unit,
         data_buffer = data_buffer,
-        index = index, # header ordering
+        indices = indices, # header ordering
         data = data, # float cache
         relative_stage_skip = relative_stage_skip,
         io = io,
@@ -358,23 +347,35 @@ function PSRI.open(
         single_binary = single_binary,
     )
 
-    finalizer(ret) do ptr
-        if ptr.is_open
-            Base.close(ptr.io)
+    finalizer(ior) do (ior_ptr::Reader)
+        @async if ior_ptr.is_open
+            Base.close(ior_ptr.io)
         end
 
-        return ptr
+        return ior_ptr
     end
 
     # check total file size
-    _check_bin_size(ret)
+    _check_bin_size(ior)
 
     # Go back to the beginning and initialize
     # i.e. sync file and reader cursors
-    seek(ret.io, ret.offset)
-    PSRI.goto(ret, 1, 1, 1)
+    _rewind!(ior)
 
-    return ret
+    return ior
+end
+
+function _rewind!(ior::Reader)
+    seek(ior.io, ior.offset)
+    PSRI.goto(ior, 1, 1, 1)
+
+    return nothing
+end
+
+function _read_unit!(ioh::IO, strlen::Integer = 7)
+    buffer = read!(ioh, Vector{Cchar}(undef, strlen))
+    
+    return strip(join(Char.(buffer)))
 end
 
 function Base.getindex(graf::Reader, args...)
@@ -389,7 +390,7 @@ PSRI.max_scenarios(graf::Reader) = graf.scenario_total
 PSRI.max_blocks(graf::Reader) = graf.block_total
 PSRI.max_blocks_current(graf::Reader) = graf.block_total_current
 PSRI.max_blocks_stage(graf::Reader, t::Integer) = Int(graf.blocks_per_stage[t])
-PSRI.max_agents(graf::Reader) = length(graf.index)
+PSRI.max_agents(graf::Reader) = length(graf.indices)
 
 PSRI.stage_type(graf::Reader) = graf.stage_type
 PSRI.initial_stage(graf::Reader) = graf.first_stage
@@ -441,38 +442,38 @@ function PSRI.goto(graf::Reader, t::Integer, s::Integer = 1, b::Integer = 1)
         graf.scenario_current = ss
         graf.block_current = bb
         read!(graf.io, graf.data_buffer)
-        for (index, value) in enumerate(graf.index)
+        for (index, value) in enumerate(graf.indices)
             @inbounds graf.data[index] = graf.data_buffer[value]
         end
     end
     return nothing
 end
 
-function _get_relative_offset(ptr::Reader)
-    return 4 * ptr.agents_total * ptr.scenario_total * (ptr.first_relative_stage - 1)
+function _get_relative_offset(ior::Reader)
+    return 4 * ior.agents_total * ior.scenario_total * (ior.first_relative_stage - 1)
 end
 
 function _get_relative_offset(::Any)
     return 0
 end
 
-function _get_position(ptr::Any, t::Integer, s::Integer, b::Integer)
-    relative_offset = _get_relative_offset(ptr)
+function _get_position(io, t::Integer, s::Integer, b::Integer)
+    relative_offset = _get_relative_offset(io)
 
-    if PSRI.is_hourly(ptr)
+    if PSRI.is_hourly(io)
         # hours in weekly = 52 * 168 = 8736
         # hours in monthly = 8760
         pos = 4 * (
-            ptr.blocks_until_stage[t] * ptr.agents_total * ptr.scenario_total +
-            (s - 1) * ptr.agents_total * ptr.blocks_per_stage[t] +
-            (b - 1) * ptr.agents_total)
-        return pos + ptr.offset - relative_offset
+            io.blocks_until_stage[t] * io.agents_total * io.scenario_total +
+            (s - 1) * io.agents_total * io.blocks_per_stage[t] +
+            (b - 1) * io.agents_total)
+        return pos + io.offset - relative_offset
     else
         pos = 4 * (
-            (t - 1) * ptr.agents_total * ptr.block_total * ptr.scenario_total +
-            (s - 1) * ptr.agents_total * ptr.block_total +
-            (b - 1) * ptr.agents_total)
-        return pos + ptr.offset - relative_offset
+            (t - 1) * io.agents_total * io.block_total * io.scenario_total +
+            (s - 1) * io.agents_total * io.block_total +
+            (b - 1) * io.agents_total)
+        return pos + io.offset - relative_offset
     end
 end
 
@@ -518,43 +519,42 @@ function _get_hour_discretization(stage_type::PSRI.StageType, block_total::Integ
         error("Stage type $(stage_type) is not currently supported")
     end
 
-    return floor(Int, block_total / hour_total)
+    return block_total ÷ hour_total
 end
 
-function _get_expected_bin_size(ptr::Reader)
-    t = ptr.stage_total
-    s = ptr.scenario_total
-    b = ptr.hours_exist ? ptr.blocks_per_stage[end] : ptr.block_total
-    a = ptr.agents_total
+function _get_expected_bin_size(ior::Reader)
+    t = ior.stage_total
+    s = ior.scenario_total
+    b = ior.hours_exist ? ior.blocks_per_stage[end] : ior.block_total
+    a = ior.agents_total
 
-    if ptr.single_binary
-        return _get_position(ptr, t, s, b) + 4a
+    if ior.single_binary
+        return _get_position(ior, t, s, b) + 4a
     else
-        return _get_position(ptr, t, s, b) + 4a - ptr.offset
+        return _get_position(ior, t, s, b) + 4a - ior.offset
     end
 end
 
-function _get_bin_size(ptr::Reader)
-    p = position(ptr.io)
-    seekend(ptr.io)
-    q = position(ptr.io)
-    seek(ptr.io, p)
+function _get_bin_size(ior::Reader)
+    p = position(ior.io)
+    seekend(ior.io)
+    q = position(ior.io)
+    seek(ior.io, p)
 
-    if ptr.single_binary
+    if ior.single_binary
         return q
     else
-        return q - ptr.offset
+        return q - ior.offset
     end
 end
 
-function _check_bin_size(ptr::Reader)
-    size_delta = _get_expected_bin_size(ptr) - _get_bin_size(ptr)
+function _check_bin_size(ior::Reader)
+    size_delta = _get_expected_bin_size(ior) - _get_bin_size(ior)
 
     if size_delta > 0
-        @info ptr
         error("File is truncated by $(size_delta) bytes")
     elseif size_delta < 0
-        @warn "File has $(abs(size_delta)) extra bytes"
+        @info("File has $(abs(size_delta)) extra bytes")
     end
 
     return nothing
@@ -567,7 +567,7 @@ function PSRI.next_registry(graf::Reader)
         seek(graf.io, graf.offset)
     end
     read!(graf.io, graf.data_buffer)
-    for (index, value) in enumerate(graf.index)
+    for (index, value) in enumerate(graf.indices)
         @inbounds graf.data[index] = graf.data_buffer[value]
     end
     @assert graf.block_current >= 1
@@ -595,14 +595,14 @@ function PSRI.next_registry(graf::Reader)
     return nothing
 end
 
-function PSRI.close(io::Reader)
-    Base.close(io.io)
-    io.is_open = false
-    empty!(io.data)
-    empty!(io.data_buffer)
-    empty!(io.agent_names)
-    io.stage_current = 0
-    io.scenario_current = 0 
-    io.block_current = 0
+function PSRI.close(ior::Reader)
+    Base.close(ior.io)
+    ior.is_open = false
+    empty!(ior.data)
+    empty!(ior.data_buffer)
+    empty!(ior.agent_names)
+    ior.stage_current = 0
+    ior.scenario_current = 0 
+    ior.block_current = 0
     return nothing
 end
