@@ -43,7 +43,7 @@ DataFrame(series_table)
 ## Graf files
 The data relative to a Study is usually stored in a JSON file, where an attribute can have its data indexed by time intervals, as presented earlier.
 
-However, a time series can be too large to be stored in a JSON for some Studies. For these cases, we save the data in a Graf file. When an attribute has its information in a Graf file, there's an entry in the regular JSON file specifying it. 
+However, a time series can be too large to be stored in a JSON for some Studies. For these cases, we save the data in a separate file. We will refer to such file as Graf file. When an attribute has its information in a Graf file, there's an entry in the regular JSON file specifying it. 
 
 In the following example, each `PSRDemandSegment` object will have its attribute `HourDemand` data associated with a time series, saved in the files `hourdemand.hdr` and `hourdemand.bin`. Objects are distinguished by the `parmid` attribute, which in this case has the `AVId` value of each `PSRDemandSegment` element. 
 
