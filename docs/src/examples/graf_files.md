@@ -81,7 +81,7 @@ A Graf file composed of a header and a table with the following elements:
 - Stage 
 - Scenario 
 - Block
-- Agents
+- Agents (one entry for each agent)
 
 ### Graf Tables
 
