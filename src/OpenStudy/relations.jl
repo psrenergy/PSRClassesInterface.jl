@@ -557,5 +557,4 @@ function get_vector_related(
     end
 
     return target_index_list
-
 end

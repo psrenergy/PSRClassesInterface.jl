@@ -21,7 +21,6 @@ end
 function test_relations2() # tests _get_sources_indices_from_relations
     mktempdir() do temp_path
 
-
         data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
 
         index1 = PSRI.create_element!(data,"PSRBus")

@@ -648,7 +648,6 @@ function create_element!(
 )
     _validate_collection(data, collection)
 
-    # TODO: handle case when collection has a  graf file
     if has_graf_file(data, collection) 
         error("Cannot create element for a collection with a Graf file")
     end
@@ -658,7 +657,6 @@ function create_element!(
     elseif haskey(defaults, collection)
         deepcopy(defaults[collection])
     else 
-
         @warn "No default initialization values for collection '$collection'"
         
         Dict{String,Any}()

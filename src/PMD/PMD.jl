@@ -143,7 +143,6 @@ end
 
 const _MAX_MERGE = 10
 
-
 """
     _PMD_STATE
 
@@ -246,7 +245,6 @@ function _parse_pmd_line!(
                 data_struct[collection]["id"] = Attribute("id", false, String, 0, "")
             end
 
-
             return _PMD_STATE_MODEL(collection)
         end
     end
@@ -258,7 +256,6 @@ function _parse_pmd_line!(
     data_struct::DataStruct,
     model_template::ModelTemplate,
     line::AbstractString,
-
     state::_PMD_STATE_MODEL,
 )
     if startswith(line, "END_MODEL")
@@ -274,7 +271,6 @@ function _parse_pmd_line!(
             if !haskey(data_struct[state.collection], "_MERGE_$i")
                 data_struct[state.collection]["_MERGE_$i"] = Attribute(model_template.inv[model_name], false, DataType, 0, "")
                 
-
                 return _PMD_STATE_MODEL(state.collection, state.num_merges + 1)
             end
         end
