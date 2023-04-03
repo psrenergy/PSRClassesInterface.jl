@@ -2,15 +2,19 @@
 
 ## Time Series
 
-Some attributes in a Study represent a time series indexed by another attribute. Here we will be setting a time series for the attribute `HourDemand`, from `PSRDemandSegment`, which is indexed by `DataHourDemand`.
+Some attributes in a Study represent a time series indexed by another attribute. Here we will be setting a time series for the attribute `EmissionCost`, from `PSRGasEmission`, which is indexed by `DateEmissionCost`.
 
-First we create a Dict with `HourDemand` and `DataHourDemand` data.
+First we create a Dict with `EmissionCost` and `DateEmissionCost` data.
 
 ```@example rw_file
 series = Dict{String,Vector}(
-    "DataHourDemand" => ["1900-01-01", "1900-01-02","1900-01-03"],
-    "HourDemand" =>  [5.0, 7.0, 11.0]
-)
+    "DateEmissionCost" => [
+        Dates.Date("1900-01-01"),
+        Dates.Date("2013-01-01"),
+        Dates.Date("2013-02-01")
+    ],
+    "EmissionCost" => [0.0,3.0,3.0]
+    )
 ```
 
 Then, we save the time series to the study using the function [`PSRI.set_series!`](@ref) 
@@ -18,8 +22,8 @@ Then, we save the time series to the study using the function [`PSRI.set_series!
 ```@example rw_file
 PSRI.set_series!(
     data, 
-    "PSRDemandSegment", 
-    "DataHourDemand",
+    "PSRGasEmission", 
+    "DateEmissionCost",
     1, # element index in collection
     series
     )
@@ -31,8 +35,8 @@ We can later retrieve the series with [`PSRI.get_series`](@ref), which will retu
 using DataFrames
 series_table = PSRI.get_series(
     data, 
-    "PSRDemandSegment", 
-    "DataHourDemand", 
+    "PSRGasEmission", 
+    "DateEmissionCost", 
     1 # element index in collection
     )
 
@@ -45,11 +49,11 @@ The data relative to a Study is usually stored in a JSON file, where an attribut
 
 However, a time series can be too large to be stored in a JSON for some Studies. For these cases, we save the data in a separate file. We will refer to such file as Graf file. When an attribute has its information in a Graf file, there's an entry in the regular JSON file specifying it. 
 
-In the following example, each `PSRDemandSegment` object will have its attribute `HourDemand` data associated with a time series, saved in the files `hourdemand.hdr` and `hourdemand.bin`. Objects are distinguished by the `parmid` attribute, which in this case has the `AVId` value of each `PSRDemandSegment` element. 
+In the following example, each `PSRGasEmission` object will have its attribute `EmissionCost` data associated with a time series, saved in the files `emission_cost.hdr` and `emission_cost.bin`. Objects are distinguished by the `parmid` attribute, which in this case has the `AVId` value of each `PSRGasEmission` element. 
 
 
 ```json
-"PSRDemandSegment": [
+"PSRGasEmission": [
     {
         "AVId": "Agent 1"
         "name": "psr_name"
@@ -65,10 +69,10 @@ In the following example, each `PSRDemandSegment` object will have its attribute
 ],
 "GrafScenarios": [
     {
-        "classname": "PSRDemandSegment",
+        "classname": "PSRGasEmission",
         "parmid": "AVId",
-        "vector": "HourDemand",
-        "binary": [ "hourdemand.hdr", "hourdemand.bin" ]
+        "vector": "EmissionCost",
+        "binary": [ "emission_cost.hdr", "emission_cost.bin" ]
     }
 ]
 ```
@@ -85,7 +89,7 @@ A Graf file composed of a header and a table with the following elements:
 
 ### Graf Tables
 
-Using the previous example with `PSRDemandSegment` objects, the `HourDemand` for each object will be displayed in the Agents columns, that will take the name of the `AVId` attribute, resulting on the following:
+Using the previous example with `PSRGasEmission` objects, the `EmissionCost` for each object will be displayed in the Agents columns, that will take the name of the `AVId` attribute, resulting on the following:
 
 | **Stg** | **Sce** | **Block** | **Agent 1** | **Agent 2** | **Agent 3** |
 |:-----:|:-----:|:-----:|:-----------:|:-----------:|-------------|
@@ -129,7 +133,7 @@ PSRI.array_to_file(
     FILE_PATH,
     time_series_data,
     agents = ["Agent 1", "Agent 2", "Agent 3", "Agent 4", "Agent 5"],
-    unit = "MW";
+    unit = "USD";
     initial_stage = 3,
     initial_year = 2006,
 )
@@ -147,7 +151,7 @@ iow = PSRI.open(
     scenarios = n_scenarios,
     stages = n_stages,
     agents = ["Agent 1", "Agent 2", "Agent 3", "Agent 4", "Agent 5"],
-    unit = "MW",
+    unit = "USD",
     initial_stage = 1,
     initial_year = 2006,
 )
@@ -228,9 +232,9 @@ If you have a Graf file that should be linked to a study, you can use the functi
 ```@example rw_file
 PSRI.link_series_to_file(
         data, 
-        "PSRDemandSegment", 
-        "HourDemand", 
-        "DataHourDemand",
+        "PSRGasEmission", 
+        "EmissionCost", 
+        "AVId",
         PATH_TO_GRAF_FILE
     )
 ```
@@ -242,8 +246,8 @@ We can retrieve the data stored in a Graf file using the [`PSRI.get_graf_series`
 ```@example rw_file
 graf_table = PSRI.get_series(
         data,
-        "PSRDemandSegment",
-        "HourDemand";
+        "PSRGasEmission",
+        "EmissionCost";
         use_header = false
     )
 ```
@@ -265,8 +269,8 @@ For that, we will have to use the function [`PSRI.mapped_vector`](@ref).
 ```@example rw_file
 vec = PSRI.mapped_vector(
         data, 
-        "PSRDemandSegment", 
-        "HourDemand",
+        "PSRGasEmission", 
+        "EmissionCost",
         Float64
     )
 ```
@@ -286,8 +290,8 @@ However, it might be interesting to update only one or a group of vectors. To be
 ```@example rw_file
 vec2 = PSRI.mapped_vector(
         data, 
-        "PSRDemandSegment", 
-        "HourDemand",
+        "PSRGasEmission", 
+        "EmissionCost",
         Float64,
         filters = ["test_filter"]
     )
