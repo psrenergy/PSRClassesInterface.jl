@@ -189,13 +189,13 @@ function PSRI.open(
     end
 
     agent_names = String[]
-    agent_name_buffer = Vector{Cchar}(undef, name_length)
+    agent_name_buffer = Vector{UInt8}(undef, name_length)
 
     for _ in 1:total_agents
         skip(ioh, 4 * 2)
 
         read!(ioh, agent_name_buffer)
-        agent_name = strip(join(Char.(agent_name_buffer)))
+        agent_name = strip(Encodings.decode(agent_name_buffer, Encodings.ISO_LATIN_1()))
         push!(agent_names, agent_name)
     end
 
