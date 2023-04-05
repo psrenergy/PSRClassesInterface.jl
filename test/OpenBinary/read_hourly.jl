@@ -6,7 +6,7 @@ function read_binary_subhourly()
 
     for stage_type in [PSRI.STAGE_MONTH, PSRI.STAGE_WEEK, PSRI.STAGE_DAY]
         for hour_discretization in [2, 4, 6]
-            path = joinpath(".", "data", "caso4", "subhourly_$(stage_type)_$(hour_discretization)")
+            path = joinpath(".", "data", "case4", "subhourly_$(stage_type)_$(hour_discretization)")
 
             io = PSRI.open(PSRI.OpenBinary.Reader, path, use_header = false)
 

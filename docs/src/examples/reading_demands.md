@@ -6,7 +6,7 @@ In this example we will read demand segments, obtain the value of demands, disco
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
 
-PATH_CASE_EXAMPLE_DEM = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "caso1")
+PATH_CASE_EXAMPLE_DEM = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "case1")
 
 data = PSRI.initialize_study(
     PSRI.OpenInterface(),
@@ -106,7 +106,7 @@ The energy prices in a thermal plant deppends on the  the price of the fuel used
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
 
-PATH_CASE_EXAMPLE_THER_PRICES = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "caso1")
+PATH_CASE_EXAMPLE_THER_PRICES = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "case1")
 
 data = PSRI.initialize_study(
     PSRI.OpenInterface(),
