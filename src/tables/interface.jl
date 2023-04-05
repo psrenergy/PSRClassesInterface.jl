@@ -81,7 +81,7 @@ struct GrafTable{T} <: Tables.AbstractColumns
         bin = "$path.bin"
 
         # Load
-        reader = open(OpenBinary.Reader, path; kws...)
+        reader = PSRI.open(OpenBinary.Reader, path; kws...)
         agents = Dict{Symbol,Int}(Symbol(reader.agent_names[i]) => i for i = 1:reader.agents_total)
 
         if !isempty(reader.blocks_per_stage)
@@ -101,7 +101,7 @@ struct GrafTable{T} <: Tables.AbstractColumns
                         matrix[i, a] = reader[a]
                     end
                     
-                    next_registry(reader)
+                    PSRI.next_registry(reader)
                 end
             end
         else
@@ -120,7 +120,7 @@ struct GrafTable{T} <: Tables.AbstractColumns
                     matrix[i, a] = reader[a]
                 end
                 
-                next_registry(reader)
+                PSRI.next_registry(reader)
             end
         end
 
