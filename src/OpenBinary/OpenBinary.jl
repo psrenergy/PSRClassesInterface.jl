@@ -2,6 +2,7 @@ module OpenBinary
 
 import PSRClassesInterface
 import Dates
+import Encodings
 
 const PSRI = PSRClassesInterface
 

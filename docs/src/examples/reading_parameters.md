@@ -9,7 +9,7 @@ function [`PSRI.configuration_parameter`](@ref) reads all the parameters from th
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
 
-PATH_CASE_EXAMPLE_CONFIGS = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "caso0")
+PATH_CASE_EXAMPLE_CONFIGS = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "case0")
 
 data = PSRI.initialize_study(
     PSRI.OpenInterface(),
@@ -43,7 +43,7 @@ The first thing we must do is to initialize the reading procedure with the follo
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
 
-PATH_CASE_EXAMPLE_THERMALS = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "caso0")
+PATH_CASE_EXAMPLE_THERMALS = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "case0")
 
 data = PSRI.initialize_study(
     PSRI.OpenInterface(),
@@ -90,7 +90,7 @@ Stardard proceadure of reading data from file:
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
 
-PATH_CASE_EXAMPLE_BATTERIES = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "caso1")
+PATH_CASE_EXAMPLE_BATTERIES = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "case1")
 
 data = PSRI.initialize_study(
     PSRI.OpenInterface(),
