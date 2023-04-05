@@ -8,7 +8,8 @@ struct SeriesTable <: Tables.AbstractColumns
             error("Series columns must have the same length")
         end
 
-        attrs = Dict{Symbol,Int}(attr => i for (i, attr) in enumerate(Symbol.(keys(buffer))))
+        attrs =
+            Dict{Symbol,Int}(attr => i for (i, attr) in enumerate(Symbol.(keys(buffer))))
         types = eltype.(values(buffer))
         table = Vector{Vector}(undef, length(attrs))
 
@@ -32,8 +33,8 @@ end
 function Base.:(==)(tsx::SeriesTable, tsy::SeriesTable)
     if keys(tsx.attrs) == keys(tsy.attrs)
         for attr in keys(tsx.attrs)
-            if (all(tsx.types[tsx.attrs[attr]] != tsy.types[tsy.attrs[attr]]) ||
-                all(tsx.table[tsx.attrs[attr]] != tsy.table[tsy.attrs[attr]]))
+            if tsx.types[tsx.attrs[attr]] != tsy.types[tsy.attrs[attr]] ||
+               tsx.table[tsx.attrs[attr]] != tsy.table[tsy.attrs[attr]]
                 return false
             end
         end
@@ -81,27 +82,32 @@ struct GrafTable{T} <: Tables.AbstractColumns
         bin = "$path.bin"
 
         # Load
-        reader = PSRI.open(OpenBinary.Reader, path; kws...)
-        agents = Dict{Symbol,Int}(Symbol(reader.agent_names[i]) => i for i = 1:reader.agents_total)
+        reader = open(OpenBinary.Reader, path; kws...)::OpenBinary.Reader
+        agents = Dict{Symbol,Int}(
+            Symbol(reader.agent_names[i]) => i for i in 1:reader.agents_total
+        )
 
         if !isempty(reader.blocks_per_stage)
-            n_rows = sum(reader.scenario_total * reader.blocks_per_stage[t] for t = 1:reader.stage_total)
+            n_rows = sum(
+                reader.scenario_total * reader.blocks_per_stage[t] for
+                t in 1:reader.stage_total
+            )
             domain = Matrix{Int}(undef, n_rows, 3)
             matrix = Matrix{T}(undef, n_rows, length(agents))
-            
+
             i = 0
 
-            for t = 1:reader.stage_total, s = 1:reader.scenario_total
+            for t in 1:reader.stage_total, s in 1:reader.scenario_total
                 for b in 1:reader.blocks_per_stage[t]
                     i += 1
 
-                    domain[i, :] .= [t, s, b] 
+                    domain[i, :] .= [t, s, b]
 
-                    for a = 1:reader.agents_total
+                    for a in 1:reader.agents_total
                         matrix[i, a] = reader[a]
                     end
-                    
-                    PSRI.next_registry(reader)
+
+                    next_registry(reader)
                 end
             end
         else
@@ -111,16 +117,19 @@ struct GrafTable{T} <: Tables.AbstractColumns
 
             i = 0
 
-            for t = 1:reader.stage_total, s = 1:reader.scenario_total, b in 1:reader.block_total
+            for t in 1:reader.stage_total,
+                s in 1:reader.scenario_total,
+                b in 1:reader.block_total
+
                 i += 1
 
                 domain[i, :] .= [t, s, b]
 
-                for a = 1:reader.agents_total
+                for a in 1:reader.agents_total
                     matrix[i, a] = reader[a]
                 end
-                
-                PSRI.next_registry(reader)
+
+                next_registry(reader)
             end
         end
 
@@ -143,7 +152,7 @@ end
 function Base.:(==)(gtx::GrafTable, gty::GrafTable)
     if gtx.agents == gty.agents
         if gtx.domain == gty.domain
-            if  gtx.matrix == gty.matrix
+            if gtx.matrix == gty.matrix
                 return true
             end
         end
@@ -176,7 +185,7 @@ function Tables.getcolumn(ts::GrafTable, i::Int)
     if 1 <= i <= 3
         return ts.domain[:, i]
     elseif i > 3
-        return ts.matrix[:, i - 3]
+        return ts.matrix[:, i-3]
     else
         Base.throw_boundserror(ts, i)
     end
