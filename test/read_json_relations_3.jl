@@ -1,6 +1,6 @@
 data = PSRI.initialize_study(
     PSRI.OpenInterface(),
-    data_path = joinpath(".", "data", "caso2")
+    data_path = joinpath(".", "data", "case2")
 )
 
 @test 1 == PSRI.configuration_parameter(data, "BMAP", 2)

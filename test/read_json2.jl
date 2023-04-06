@@ -1,6 +1,6 @@
 data = PSRI.initialize_study(
     PSRI.OpenInterface(),
-    data_path = joinpath(".", "data", "caso1")
+    data_path = joinpath(".", "data", "case1")
 )
 
 @test_throws ErrorException PSRI.mapped_vector(data, "PSRBattery", "Einic", Float64)
