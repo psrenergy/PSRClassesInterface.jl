@@ -72,8 +72,9 @@ struct GrafTable{T} <: Tables.AbstractColumns
     bin::String
 
     domain::Matrix{Int}
-    agents::Dict{Symbol,Int}
     matrix::Matrix{T}
+    agents::Dict{Symbol,Int}
+    columns::Vector{Symbol}
     unit::String
 
     function GrafTable{T}(path::String; kws...) where {T}
@@ -82,6 +83,7 @@ struct GrafTable{T} <: Tables.AbstractColumns
 
         # Load
         reader = open(OpenBinary.Reader, path; kws...)
+        columns = [[:stage, :series, :block]; Symbol.(reader.agent_names)]
         agents = Dict{Symbol,Int}(Symbol(reader.agent_names[i]) => i for i = 1:reader.agents_total)
 
         if !isempty(reader.blocks_per_stage)
@@ -128,7 +130,7 @@ struct GrafTable{T} <: Tables.AbstractColumns
 
         close(reader)
 
-        return new{T}(path, hdr, bin, domain, agents, matrix, unit)
+        return new{T}(path, hdr, bin, domain, matrix, agents, columns, unit)
     end
 end
 
@@ -162,7 +164,7 @@ function Tables.getcolumn(ts::GrafTable, col::Symbol)
     elseif col === :block
         return ts.domain[:, 3]
     else
-        return Tables.getcolumn(ts, ts.agents[col])
+        return Tables.getcolumn(ts, ts.agents[col] + 3)
     end
 end
 
@@ -175,7 +177,7 @@ end
 function Tables.getcolumn(ts::GrafTable, i::Int)
     if 1 <= i <= 3
         return ts.domain[:, i]
-    elseif i > 3
+    elseif 4 <= i <= 3 + size(ts.matrix, 2)
         return ts.matrix[:, i - 3]
     else
         Base.throw_boundserror(ts, i)
@@ -184,5 +186,5 @@ end
 
 function Tables.columnnames(ts::GrafTable)
     # Return column names for a table as an indexable collection
-    return collect(Symbol, [[:stage, :series, :block]; collect(keys(ts.agents))])
+    return collect(Symbol, ts.columns)
 end

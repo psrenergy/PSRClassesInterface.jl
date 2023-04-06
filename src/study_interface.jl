@@ -901,7 +901,7 @@ function get_series end
 
 
 """
-function get_series(
+function get_graf_series(
     data::Data,
     collection::String,
     attribute::String;
@@ -912,7 +912,7 @@ Retrieves a GrafTable object with the values for 'attribute' in all elements in 
 
 Example
 ```
-julia> PSRI.get_graf_series(data, "PSRDemandSegment", "HourDemand")
+julia> PSRI.get_graf_series(data, "PSRDemand", "Duracao")
 ```
 """
 function get_graf_series end

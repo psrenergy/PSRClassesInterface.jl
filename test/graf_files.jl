@@ -5,8 +5,8 @@ function test_graf()
     mkpath(temp_path)
 
     AGENTS = ["X", "Y", "Z"]
-    STAGES = 12
-    SCENARIOS = 10
+    STAGES = 2
+    SCENARIOS = 4
     BLOCKS = 3
 
     io = PSRI.open(
@@ -25,42 +25,44 @@ function test_graf()
         X = estagio + serie + 0.
         Y = serie - estagio + 0.
         Z = estagio + serie + bloco * 100.
-        PSRI.write_registry(
-            io,
-            [X, Y, Z] .+ 1,
-            estagio,
-            serie,
-            bloco
-        )
+        for i in 1:3
+            PSRI.write_registry(
+                io,
+                [X, Y, Z] .+ 1,
+                estagio,
+                serie,
+                bloco
+            )
+        end
     end
 
     PSRI.close(io)
 
     data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
     
-    PSRI.create_element!(data, "PSRDemandSegment", "name" => "X")
-    PSRI.create_element!(data, "PSRDemandSegment", "name" => "Y")
-    PSRI.create_element!(data, "PSRDemandSegment", "name" => "Z")
+    PSRI.create_element!(data, "PSRDemand", "name" => "X")
+    PSRI.create_element!(data, "PSRDemand", "name" => "Y")
+    PSRI.create_element!(data, "PSRDemand", "name" => "Z")
 
 
     PSRI.link_series_to_file(
         data, 
-        "PSRDemandSegment", 
-        "HourDemand", 
+        "PSRDemand", 
+        "Duracao", 
         "name",
         joinpath(graf_path)
     )
 
     PSRI.write_data(data)
 
-    @test PSRI.has_graf_file(data, "PSRDemandSegment")
-    @test PSRI.has_graf_file(data, "PSRDemandSegment", "HourDemand")
-    @test !(PSRI.has_graf_file(data, "PSRDemandSegment", "Random"))
+    @test PSRI.has_graf_file(data, "PSRDemand")
+    @test PSRI.has_graf_file(data, "PSRDemand", "Duracao")
+    @test !(PSRI.has_graf_file(data, "PSRDemand", "Random"))
 
     graf_table = PSRI.get_graf_series(
         data,
-        "PSRDemandSegment",
-        "HourDemand";
+        "PSRDemand",
+        "Duracao";
         # use_header = false
         header = ["X","Y","Z"]
     )
@@ -72,14 +74,14 @@ function test_graf()
 
     data_copy = PSRI.initialize_study(PSRI.OpenInterface(); data_path = temp_path)
 
-    @test PSRI.has_graf_file(data_copy, "PSRDemandSegment")
-    @test PSRI.has_graf_file(data_copy, "PSRDemandSegment", "HourDemand")
-    @test !(PSRI.has_graf_file(data_copy, "PSRDemandSegment", "Random"))
+    @test PSRI.has_graf_file(data_copy, "PSRDemand")
+    @test PSRI.has_graf_file(data_copy, "PSRDemand", "Duracao")
+    @test !(PSRI.has_graf_file(data_copy, "PSRDemand", "Random"))
 
     graf_table_copy = PSRI.get_graf_series(
         data_copy,
-        "PSRDemandSegment",
-        "HourDemand";
+        "PSRDemand",
+        "Duracao";
         use_header = false
     )
 
@@ -132,14 +134,14 @@ function test_graf2()
     
     @show data.mapper
 
-    PSRI.create_element!(data, "PSRDemandSegment", "name" => "X")
-    PSRI.create_element!(data, "PSRDemandSegment", "name" => "Y")
-    PSRI.create_element!(data, "PSRDemandSegment", "name" => "Z")
+    PSRI.create_element!(data, "PSRDemand", "name" => "X")
+    PSRI.create_element!(data, "PSRDemand", "name" => "Y")
+    PSRI.create_element!(data, "PSRDemand", "name" => "Z")
 
 
     PSRI.link_series_to_file(
         data, 
-        "PSRDemandSegment", 
+        "PSRDemand", 
         "HourDemand", 
         "name",
         joinpath(graf_path)
@@ -149,14 +151,14 @@ function test_graf2()
 
     vec1 = PSRI.mapped_vector(
         data, 
-        "PSRDemandSegment", 
+        "PSRDemand", 
         "HourDemand",
         Float64
     )
 
     vec2 = PSRI.mapped_vector(
         data, 
-        "PSRDemandSegment", 
+        "PSRDemand", 
         "HourDemand",
         Float64,
         filters = ["test_filter"]
@@ -169,8 +171,7 @@ function test_graf2()
     PSRI.go_to_stage(data, 3)
     PSRI.go_to_scenario(data, 10)
 
-    @show vec1
-    @show vec2
+
     PSRI.update_vectors!(data, "test_filter")
     
     
