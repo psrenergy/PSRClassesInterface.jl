@@ -193,6 +193,7 @@ function _parse_pmd!(
 end
 
 function _parse_pmd!(io::IO, data_struct::DataStruct, model_template::ModelTemplate)
+
     state = _PMD_STATE_IDLE()
 
     for line in strip.(readlines(io))
@@ -222,6 +223,7 @@ function _parse_pmd_line!(
     data_struct::DataStruct,
     model_template::ModelTemplate,
     line::AbstractString,
+
     state::_PMD_STATE_IDLE,
 )
     m = match(r"DEFINE_MODEL\s+MODL:([\S]+)", line)

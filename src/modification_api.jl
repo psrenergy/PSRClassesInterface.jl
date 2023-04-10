@@ -1,3 +1,5 @@
+const _CUSTOM_COLLECTION = Dict{String,Any}()
+
 function _get_indexed_attributes(
     data::Data,
     collection::String,
@@ -156,10 +158,10 @@ function get_series(data::Data, collection::String, indexing_attribute::String, 
     # empty if needed.
     attributes = _get_indexed_attributes(data, collection, index, indexing_attribute)
 
-    series = Dict{String,Vector}()
+    buffer = Dict{String,Vector}()
 
     for attribute in attributes
-        series[attribute] = get_vector(
+        buffer[attribute] = get_vector(
             data,
             collection,
             attribute,
@@ -168,7 +170,29 @@ function get_series(data::Data, collection::String, indexing_attribute::String, 
         )
     end
 
-    return series
+    return SeriesTable(buffer)
+end
+
+# Get GrafTable stored in a graf file for a collection
+function get_graf_series(data::Data, collection::String, attribute::String; kws...)
+    if !has_graf_file(data, collection)
+        error("No time series file for collection '$collection'")
+    end
+
+    graf_files = Vector{String}()
+
+    for graf in data.raw["GrafScenarios"]
+        if graf["classname"] == collection && graf["vector"] == attribute 
+            append!(graf_files, graf["binary"])
+        end
+    end
+
+    graf_file = first(graf_files)
+    graf_path = joinpath(data.data_path, first(splitext(graf_file)))
+
+    graf_table = GrafTable{Float64}(graf_path; kws...)
+
+    return graf_table
 end
 
 function set_series!(
@@ -178,29 +202,41 @@ function set_series!(
     index::Int,
     buffer::Dict{String,Vector},
 )
+    series = SeriesTable(buffer)
+
+    set_series!(data, collection, indexing_attribute, index, series)
+end
+
+function set_series!(
+    data::Data,
+    collection::String,
+    indexing_attribute::String,
+    index::Int,
+    series::SeriesTable,
+)
     attributes = _get_indexed_attributes(data, collection, index, indexing_attribute)
 
     valid = true
 
-    if length(buffer) != length(attributes)
+    if length(series) != length(attributes)
         valid = false
     end
 
     for attribute in attributes
-        if !haskey(buffer, attribute)
+        if !haskey(series, attribute)
             valid = false
             break
         end
     end
 
     if !valid
-        missing_attrs = setdiff(attributes, keys(buffer))
+        missing_attrs = setdiff(attributes, keys(series))
 
         for attribute in missing_attrs
             @error "Missing attribute '$(attribute)'"
         end
 
-        invalid_attrs = setdiff(keys(buffer), attributes)
+        invalid_attrs = setdiff(keys(series), attributes)
 
         for attribute in invalid_attrs
             @error "Invalid attribute '$(attribute)'"
@@ -211,7 +247,7 @@ function set_series!(
 
     new_length = nothing
 
-    for vector in values(buffer)
+    for vector in values(series)
         if isnothing(new_length)
             new_length = length(vector)
         end
@@ -224,14 +260,14 @@ function set_series!(
     element = _get_element(data, collection, index)
 
     # validate types
-    for (attribute, vector) in buffer
-        attribute_struct = get_attribute_struct(data, collection, attribute)
-        _check_type(attribute_struct, eltype(vector), collection, attribute)
+    for attribute in keys(series)
+        attribute_struct = get_attribute_struct(data, collection, String(attribute))
+        _check_type(attribute_struct, eltype(series[attribute]), collection, String(attribute))
     end
 
-    for (attribute, vector) in buffer
+    for attribute in keys(series)
         # protect user's data
-        element[attribute] = deepcopy(vector)
+        element[String(attribute)] = deepcopy(series[attribute])
     end
 
     return nothing
@@ -547,6 +583,44 @@ function _cast_element!(data::Data, collection::String, element::Dict{String,Any
     return nothing
 end
 
+
+function create_attribute!(
+    data::Data, 
+    collection::String, 
+    attribute::String, 
+    is_vector::Bool, 
+    ::Type{T}, 
+    dimension::Int,
+    has_default::Bool = true,
+    default::T = _default_value(T)
+    ) where {T<:MainTypes}
+    _validate_collection(data, collection)
+
+    data.data_struct[collection][attribute] = Attribute(attribute, is_vector, T, dimension, "")
+
+    if !haskey(_CUSTOM_COLLECTION, collection)
+        _CUSTOM_COLLECTION[collection] = Dict{String,Any}()
+    end
+    if has_default
+        push!(_CUSTOM_COLLECTION[collection], (attribute => default))
+    end
+
+    return nothing
+end
+
+function create_collection!(
+    data::Data,
+    collection::String
+    )
+    if haskey(data.data_struct, collection)
+        error("Collection '$collection' is already part of this study")
+    end
+    
+    data.data_struct[collection] = Dict{String,Attribute}()
+
+    return nothing
+end
+
 function create_element!(
     data::Data,
     collection::String;
@@ -573,7 +647,11 @@ function create_element!(
     defaults::Union{Dict{String,Any},Nothing} = _load_defaults!(),
 )
     _validate_collection(data, collection)
-    
+
+    if has_graf_file(data, collection) 
+        error("Cannot create element for a collection with a Graf file")
+    end
+
     element = if isnothing(defaults)
         Dict{String,Any}()
     elseif haskey(defaults, collection)

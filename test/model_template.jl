@@ -1,3 +1,4 @@
+
 function test_model_template1()
     temp_path = joinpath(tempdir(), "PSRI_MT1")
     json_path = joinpath(temp_path, "psrclasses.json")

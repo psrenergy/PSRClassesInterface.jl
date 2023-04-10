@@ -50,22 +50,22 @@ function test_api(data_path::String)
     # set_series!
     series_data = Dict(
         "PSRThermalPlant" => [
-            "Data" => Dict{String,Vector}(
-                "GerMin" => [0.0, 1.0],
-                "GerMax" => [888.0, 777.0],
-                "O&MCost" => [0.0, 1.0],
-                "IH" => [0.0, 0.0],
-                "ICP" => [0.0, 0.0],
-                "Data" => Dates.Date.(["1900-01-01", "1900-01-02"]),
-                "CoefE" => [1.0, 2.0],
-                "CTransp" => [0.0, 1.0],
-                "PotInst" => [888.0, 777.0],
-                "Existing" => Int32[0, 0],
-                "sfal" => Int32[0, 1],
-                "NGas" => Int32[0, 0],
-                "NAdF" => Int32[0, 0],
-                "Unidades" => Int32[1, 1],
-                "StartUp" => [0.0, 2.0],
+            "Data"     => Dict{String,Vector}(
+            "GerMin"   => Float64[0.0, 1.0],
+            "GerMax"   => Float64[888.0, 777.0],
+            "O&MCost"  => Float64[0.0, 1.0],
+            "IH"       => Float64[0.0, 0.0],
+            "ICP"      => Float64[0.0, 0.0],
+            "Data"     => Dates.Date.(["1900-01-01", "1900-01-02"]),
+            "CoefE"    => Float64[1.0, 2.0],
+            "CTransp"  => Float64[0.0, 1.0],
+            "PotInst"  => Float64[888.0, 777.0],
+            "Existing" => Int32[0, 0],
+            "sfal"     => Int32[0, 1],
+            "NGas"     => Int32[0, 0],
+            "NAdF"     => Int32[0, 0],
+            "Unidades" => Int32[1, 1],
+            "StartUp"  => Float64[0.0, 2.0],
             ),
         ],
         # TODO: Add more test cases later, as in:
@@ -78,11 +78,15 @@ function test_api(data_path::String)
 
     for (collection, series_list) in series_data
         for (attribute, new_value) in series_list
-            old_value = PSRI.get_series(src_data, collection, attribute, 1)
-            @test old_value != new_value
-            PSRI.set_series!(src_data, collection, attribute, 1, new_value)
+            new_value_st = PSRI.SeriesTable(new_value)
+            old_value_st = PSRI.get_series(src_data, collection, attribute, 1) # return SeriesTable
+            @test old_value_st != new_value_st
+            PSRI.set_series!(src_data, collection, attribute, 1, new_value_st)
             value_set = PSRI.get_series(src_data, collection, attribute, 1)
-            @test new_value == value_set
+            @test new_value_st == value_set
+            @test PSRI.Tables.getcolumn(new_value_st, 1) == PSRI.Tables.getcolumn(value_set, 1)
+            @test PSRI.Tables.getcolumn(new_value_st, keys(new_value_st)[1]) == PSRI.Tables.getcolumn(value_set, keys(value_set)[1])
+            @test PSRI.Tables.columnnames(new_value_st) == PSRI.Tables.columnnames(value_set)
         end
     end
 end
@@ -324,3 +328,4 @@ test_api6()
 test_api7()
 test_api8()
 test_api9()
+
