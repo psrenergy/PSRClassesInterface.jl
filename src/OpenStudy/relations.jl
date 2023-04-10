@@ -128,6 +128,8 @@ function _get_target_index_from_relation(
     source_element = data.raw[source][source_index]
     target_reference_id = source_element[relation_attribute]
     target_indices = Vector{Int}()
+
+
     if isa(target_reference_id, Vector{Int})
         for id in target_reference_id
             _, target_index =  _get_index(data.data_index, id)

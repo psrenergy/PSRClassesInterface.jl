@@ -892,16 +892,9 @@ function set_vector! end
         index::Int,
     )
 
-    function get_series(
-        data::Data,
-        collection::String,
-        attribute::String;
-        kws...
-    )
+Retrieves a SeriesTable object with all attributes from an element that are indexed by `index_attr`. 
 
-Retrieves the SeriesTable object indexed by `index_attr` or GrafTable object from a Graf file. 
-
-Examples
+Example
 ```
 julia> PSRI.get_series(data, "PSRThermalPlant", "Data", 1)
 Dict{String, Vector} with 13 entries:
@@ -918,11 +911,27 @@ Dict{String, Vector} with 13 entries:
   "NAdF"     => [0]
   "Unidades" => [1]
   "StartUp"  => [0.0]
-
-julia> PSRI.get_series(data, "PSRDemandSegment", "HourDemand")
 ```
 """
 function get_series end
+
+
+"""
+function get_graf_series(
+    data::Data,
+    collection::String,
+    attribute::String;
+    kws...
+)
+
+Retrieves a GrafTable object with the values for 'attribute' in all elements in 'collection' from a Graf file.
+
+Example
+```
+julia> PSRI.get_graf_series(data, "PSRDemand", "Duracao")
+```
+"""
+function get_graf_series end
 
 """
     function set_series!(

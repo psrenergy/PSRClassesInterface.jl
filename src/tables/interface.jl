@@ -8,7 +8,8 @@ struct SeriesTable <: Tables.AbstractColumns
             error("Series columns must have the same length")
         end
 
-        attrs = Dict{Symbol,Int}(attr => i for (i, attr) in enumerate(Symbol.(keys(buffer))))
+        attrs =
+            Dict{Symbol,Int}(attr => i for (i, attr) in enumerate(Symbol.(keys(buffer))))
         types = eltype.(values(buffer))
         table = Vector{Vector}(undef, length(attrs))
 
@@ -32,8 +33,8 @@ end
 function Base.:(==)(tsx::SeriesTable, tsy::SeriesTable)
     if keys(tsx.attrs) == keys(tsy.attrs)
         for attr in keys(tsx.attrs)
-            if (all(tsx.types[tsx.attrs[attr]] != tsy.types[tsy.attrs[attr]]) ||
-                all(tsx.table[tsx.attrs[attr]] != tsy.table[tsy.attrs[attr]]))
+            if tsx.types[tsx.attrs[attr]] != tsy.types[tsy.attrs[attr]] ||
+               tsx.table[tsx.attrs[attr]] != tsy.table[tsy.attrs[attr]]
                 return false
             end
         end
@@ -72,8 +73,10 @@ struct GrafTable{T} <: Tables.AbstractColumns
     bin::String
 
     domain::Matrix{Int}
-    agents::Dict{Symbol,Int}
     matrix::Matrix{T}
+    agents::Dict{Symbol,Int}
+    columns::Vector{Symbol}
+    unit::String
 
     function GrafTable{T}(path::String; kws...) where {T}
         hdr = "$path.hdr"
@@ -81,25 +84,29 @@ struct GrafTable{T} <: Tables.AbstractColumns
 
         # Load
         reader = open(OpenBinary.Reader, path; kws...)
+        columns = [[:stage, :series, :block]; Symbol.(reader.agent_names)]
         agents = Dict{Symbol,Int}(Symbol(reader.agent_names[i]) => i for i = 1:reader.agents_total)
 
         if !isempty(reader.blocks_per_stage)
-            n_rows = sum(reader.scenario_total * reader.blocks_per_stage[t] for t = 1:reader.stage_total)
+            n_rows = sum(
+                reader.scenario_total * reader.blocks_per_stage[t] for
+                t in 1:reader.stage_total
+            )
             domain = Matrix{Int}(undef, n_rows, 3)
             matrix = Matrix{T}(undef, n_rows, length(agents))
-            
+
             i = 0
 
-            for t = 1:reader.stage_total, s = 1:reader.scenario_total
+            for t in 1:reader.stage_total, s in 1:reader.scenario_total
                 for b in 1:reader.blocks_per_stage[t]
                     i += 1
 
-                    domain[i, :] .= [t, s, b] 
+                    domain[i, :] .= [t, s, b]
 
-                    for a = 1:reader.agents_total
+                    for a in 1:reader.agents_total
                         matrix[i, a] = reader[a]
                     end
-                    
+
                     next_registry(reader)
                 end
             end
@@ -110,22 +117,27 @@ struct GrafTable{T} <: Tables.AbstractColumns
 
             i = 0
 
-            for t = 1:reader.stage_total, s = 1:reader.scenario_total, b in 1:reader.block_total
+            for t in 1:reader.stage_total,
+                s in 1:reader.scenario_total,
+                b in 1:reader.block_total
+
                 i += 1
 
                 domain[i, :] .= [t, s, b]
 
-                for a = 1:reader.agents_total
+                for a in 1:reader.agents_total
                     matrix[i, a] = reader[a]
                 end
-                
+
                 next_registry(reader)
             end
         end
 
+        unit = reader.unit
+
         close(reader)
 
-        return new{T}(path, hdr, bin, domain, agents, matrix)
+        return new{T}(path, hdr, bin, domain, matrix, agents, columns, unit)
     end
 end
 
@@ -140,7 +152,7 @@ end
 function Base.:(==)(gtx::GrafTable, gty::GrafTable)
     if gtx.agents == gty.agents
         if gtx.domain == gty.domain
-            if  gtx.matrix == gty.matrix
+            if gtx.matrix == gty.matrix
                 return true
             end
         end
@@ -159,7 +171,7 @@ function Tables.getcolumn(ts::GrafTable, col::Symbol)
     elseif col === :block
         return ts.domain[:, 3]
     else
-        return Tables.getcolumn(ts, ts.agents[col])
+        return Tables.getcolumn(ts, ts.agents[col] + 3)
     end
 end
 
@@ -172,7 +184,7 @@ end
 function Tables.getcolumn(ts::GrafTable, i::Int)
     if 1 <= i <= 3
         return ts.domain[:, i]
-    elseif i > 3
+    elseif 4 <= i <= 3 + size(ts.matrix, 2)
         return ts.matrix[:, i - 3]
     else
         Base.throw_boundserror(ts, i)
@@ -181,5 +193,5 @@ end
 
 function Tables.columnnames(ts::GrafTable)
     # Return column names for a table as an indexable collection
-    return collect(Symbol, [[:stage, :series, :block]; collect(keys(ts.agents))])
+    return collect(Symbol, ts.columns)
 end

@@ -116,6 +116,8 @@ Base.@kwdef mutable struct Data{T} <: AbstractData
     controller_stage_changed::Bool = false
     controller_date::Dates.Date
     controller_dim::Dict{String,Int} = Dict{String,Int}()
+    controller_block::Int = 1
+    controller_scenario::Int = 1
 
     # cache to only in data reference once (per element)
     map_cache_data_idx::Dict{String,Dict{String,Vector{Int32}}} =
@@ -142,6 +144,9 @@ Base.@kwdef mutable struct Data{T} <: AbstractData
 
     # Model Templates 
     model_template::PMD.ModelTemplate = PMD.ModelTemplate()
+
+    # ReaderMapper
+    mapper::Union{ReaderMapper, Nothing} = nothing
 end
 
 _raw(data::Data) = data.raw

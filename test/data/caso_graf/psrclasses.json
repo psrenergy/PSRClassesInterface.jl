@@ -1,23 +1,23 @@
 {
     "PSRDemandSegment": [
         {
-            "AVId": "Agent_1",
+            "name": "Agent_A",
             "reference_id": 2
         },
         {
-            "AVId": "Agent_2",
+            "name": "Agent_B",
             "reference_id": 3
         },
         {
-            "AVId": "Agent_3",
+            "name": "Agent_C",
             "reference_id": 4
         },
         {
-            "AVId": "Agent_4",
+            "name": "Agent_D",
             "reference_id": 5
         },
         {
-            "AVId": "Agent_5",
+            "name": "Agent_E",
             "reference_id": 6
         }
     ],

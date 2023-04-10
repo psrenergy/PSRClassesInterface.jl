@@ -31,6 +31,7 @@ include("utils.jl")
 # main interface
 include("OpenBinary/OpenBinary.jl")
 include("OpenStudy/study_openinterface.jl")
+include("OpenStudy/graf_utils.jl")
 include("OpenStudy/validation.jl")
 include("OpenStudy/vector_map.jl")
 include("OpenStudy/duration.jl")
@@ -38,9 +39,6 @@ include("OpenStudy/relations.jl")
 
 # Tables.jl API
 include("tables/interface.jl")
-
-# Graf files 
-include("graf_utils.jl")
 
 # modification API
 include("modification_api.jl")

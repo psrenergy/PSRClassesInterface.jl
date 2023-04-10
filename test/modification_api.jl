@@ -89,8 +89,6 @@ function test_api(data_path::String)
             @test PSRI.Tables.columnnames(new_value_st) == PSRI.Tables.columnnames(value_set)
         end
     end
-
-    
 end
 
 
