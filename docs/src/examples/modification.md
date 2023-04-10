@@ -10,7 +10,6 @@ You can modify a pre-existing study or a new one with the following functions:
 
 In this example, we will be working with a new empty study.
 
-
 ```
 temp_path = joinpath(tempdir(), "PSRI")
 
@@ -115,8 +114,6 @@ Now we know that we have to delete two relations to be able to delete the `PSRSe
 PSRI.delete_relation!(data, "PSRSerie", "PSRBus", serie_1_index, bus_1_index)
 PSRI.delete_relation!(data, "PSRSerie", "PSRBus", serie_1_index, bus_2_index)
 ```
-
-
 
 After that, we can easily delete our `PSRSerie` element.
 ```
