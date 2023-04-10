@@ -28,6 +28,9 @@ end
         @testset "Read hourly data from psrclasses c++" begin
             @time include("OpenBinary/read_hourly.jl")
         end
+        @testset "Read data with Nonpositive Indices" begin
+            @time include("OpenBinary/nonpositive_indices.jl")
+        end
     end
     @testset "ReaderMapper" begin
         @time include("reader_mapper.jl")
@@ -44,5 +47,8 @@ end
     end 
     @testset "Relations" begin
         @time include("relations.jl")
+    end
+    @testset "Graf Files" begin
+        @time include("graf_files.jl")
     end
 end

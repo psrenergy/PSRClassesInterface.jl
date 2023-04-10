@@ -38,7 +38,7 @@ Base.@kwdef mutable struct Writer <: PSRI.AbstractWriter
     FILE_PATH::String
 
     # relative_stage_skip::Int
-    hs::Int # Header size
+    offset::Int # Header size
 end
 
 function PSRI.open(
@@ -171,15 +171,18 @@ function PSRI.open(
     write(ioh, Int32(stage_type))
     write(ioh, Int32(initial_stage))
     write(ioh, Int32(initial_year))
+
     if unit === nothing
-        for i in 1:7
+        for _ in 1:7
             write(ioh, Char(0))
         end
     else
         len = length(unit)
+
         if len > 7
             error("unit")
         end
+        
         for i in 1:7
             if i <= len
                 write(ioh, unit[i])
@@ -188,10 +191,12 @@ function PSRI.open(
             end
         end
     end
+
     write(ioh, Int32(name_length))
 
     blocks_per_stage = Int[]
     blocks_until_stage = Int[]
+
     if !is_hourly
         write(ioh, Int32(0))
         write(ioh, Int32(0))
@@ -217,9 +222,11 @@ function PSRI.open(
             push!(blocks_per_stage, b)
         end
     end
+
     for ag in agents
         write(ioh, Int32(0))
         write(ioh, Int32(0))
+
         len = length(ag)
         for i in 1:name_length
             if i <= len
@@ -231,17 +238,17 @@ function PSRI.open(
     end
 
     if single_binary
-        write(ioh, Int32(0)) #!!!
+        write(ioh, Int32(0))               # !!! ???
         io = open(PATH_BIN, "w")
-        seek(ioh, 0) # Return to the first byte
-        hs = write(io, read(ioh))
-        seek(io, 0) # Return to the first byte
-        write(io, Int32(hs)) # Write the header size on the correcy byte
-        seek(io, hs) # Go to the first byte of data
+        seek(ioh, 0)                       # Return to the first byte
+        header_size = write(io, read(ioh)) # Write the whole header
+        seek(io, 0)                        # Return to the first byte
+        write(io, Int32(header_size))      # Write the header size on the correcy byte
+        seek(io, header_size)              # Go to the first byte of binary data
     else
         close(ioh)
         io = open(PATH_BIN, "w")
-        hs = 0
+        header_size = 0
         if reopen_mode
             close(io)
         end
@@ -249,7 +256,7 @@ function PSRI.open(
 
     return Writer(
         io = io,
-        hs = hs,
+        offset = header_size,
         stage_total = stages,
         scenario_total = scenarios,
         block_total = blocks,

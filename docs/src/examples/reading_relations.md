@@ -7,7 +7,7 @@ In this example we will demonstrate how to make a simple use of a relationship m
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
 
-PATH_CASE_EXAMPLE_GAUGING = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "caso2")
+PATH_CASE_EXAMPLE_GAUGING = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "case2")
 
 data = PSRI.initialize_study(
     PSRI.OpenInterface(),
@@ -29,7 +29,7 @@ This case consists of a more advanced use of a relationship map. We'll determine
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
 
-PATH_CASE_EXAMPLE_BUS = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "caso1")
+PATH_CASE_EXAMPLE_BUS = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "case1")
 
 data = PSRI.initialize_study(
     PSRI.OpenInterface(),
@@ -65,7 +65,7 @@ Each circuit connects two buses, it starts from a bus and goes to another. In th
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
 
-PATH_CASE_EXAMPLE_CIR_BUS = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "caso1")
+PATH_CASE_EXAMPLE_CIR_BUS = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "case1")
 
 data = PSRI.initialize_study(
     PSRI.OpenInterface(),

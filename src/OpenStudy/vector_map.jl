@@ -11,6 +11,16 @@ function mapped_vector(
     filters = String[], # for calling just within a subset instead of the full call
     default = _default_value(T),
 ) where {T} #<: Union{Float64, Int32}
+
+    if has_graf_file(data, collection, attribute)
+        if isnothing(data.mapper)
+            data.mapper = ReaderMapper(OpenBinary.Reader, data.controller_date)
+        end
+        graf_file = _get_graf_filename(data, collection, attribute)
+        header = _get_graf_agents(graf_file)
+        return add_reader!(data.mapper, graf_file, header, filters)
+    end
+
     raw = _raw(data)
 
     n = max_elements(data, collection)
@@ -166,6 +176,16 @@ function go_to_dimension(data::Data, str::String, val::Integer)
     return nothing
 end
 
+function go_to_scenario(data::Data, scenario::Integer)
+    data.controller_scenario = scenario
+    return nothing
+end
+
+function go_to_block(data::Data, block::Integer)
+    data.controller_block = block
+    return nothing
+end
+
 # see main definition
 function update_vectors!(data::Data)
     _update_all_dates!(data)
@@ -173,6 +193,9 @@ function update_vectors!(data::Data)
     _update_all_vectors!(data, data.map_cache_real)
     _update_all_vectors!(data, data.map_cache_integer)
     _update_all_vectors!(data, data.map_cache_date)
+    if !isnothing(data.mapper)
+        _update_graf_vectors!(data)
+    end
 
     return nothing
 end
@@ -208,9 +231,14 @@ function update_vectors!(data::Data, filter::String)
                 _update_vector!(data, collection, date_ref, vec_cache, attr)
             end
         end
+    elseif !isnothing(data.mapper)
+        if haskey(data.mapper.dict, filter)
+            _update_graf_vectors!(data,filter)
+        end
     elseif no_attr
         error("Filter $filter not valid")
     end
+
 
     return nothing
 end
@@ -255,6 +283,14 @@ function _update_all_vectors!(data::Data, map_cache)
         end
     end
     return nothing
+end
+
+function _update_graf_vectors!(data::Data)
+    goto(data.mapper, data.controller_stage, data.controller_scenario, data.controller_block)
+end
+
+function _update_graf_vectors!(data::Data, filter::String)
+    goto(data.mapper, filter, data.controller_stage, data.controller_scenario, data.controller_block)
 end
 
 """

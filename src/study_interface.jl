@@ -842,6 +842,22 @@ PSRI.set_parm!(data, "PSRClass", index, "PSRAttr", value)
 function create_element! end
 
 """
+delete_element!(
+    data::Data, 
+    collection::String, 
+    index::Int32
+    )
+
+Deletes element from `collection` at index `index`.
+
+Example:
+```
+PSRI.delete_element!(data, "PSRBus", 3)
+```
+"""
+function delete_element! end
+
+"""
     set_parm!(
         data::Data,
         collection::String,
@@ -876,7 +892,7 @@ function set_vector! end
         index::Int,
     )
 
-Retrieves the series i.e. `Dict{String, Vector}` indexed by `index_attr`.
+Retrieves a SeriesTable object with all attributes from an element that are indexed by `index_attr`. 
 
 Example
 ```
@@ -898,6 +914,24 @@ Dict{String, Vector} with 13 entries:
 ```
 """
 function get_series end
+
+
+"""
+function get_graf_series(
+    data::Data,
+    collection::String,
+    attribute::String;
+    kws...
+)
+
+Retrieves a GrafTable object with the values for 'attribute' in all elements in 'collection' from a Graf file.
+
+Example
+```
+julia> PSRI.get_graf_series(data, "PSRDemand", "Duracao")
+```
+"""
+function get_graf_series end
 
 """
     function set_series!(
@@ -930,25 +964,49 @@ julia> series = Dict{String, Vector}(
        );
 
 julia> PSRI.set_series!(data, "PSRThermalPlant", 1, "Data", series)
-
-julia> PSRI.get_series(data, "PSRThermalPlant", 1, "Data")
-Dict{String, Vector} with 13 entries:
-  "GerMin"   => [0.0, 1.0]
-  "GerMax"   => [888.0, 777.0]
-  "NGas"     => [nothing, nothing]
-  "IH"       => [0.0, 0.0]
-  "ICP"      => [0.0, 0.0]
-  "Data"     => ["1900-01-01", "1900-01-02"]
-  "CoefE"    => [1.0, 2.0]
-  "PotInst"  => [888.0, 777.0]
-  "Existing" => [0, 0]
-  "sfal"     => [0, 1]
-  "NAdF"     => [0, 0]
-  "Unidades" => [1, 1]
-  "StartUp"  => [0.0, 2.0]
 ```
 """
 function set_series! end
+
+
+"""
+    function has_graf_file(data::Data, collection::String, attribute::Union{String, Nothing} = nothing)
+
+Checks if data has a Graf file linked to an attribute(specified or not) from a collection.
+
+Example
+
+```
+julia> PSRI.has_graf_file(data, "PSRDemandSegment", "HourDemand")
+
+julia> PSRI.has_graf_file(data, "PSRDemandSegment")
+```
+"""
+function has_graf_file end
+
+"""
+    function link_series_to_file(
+        data::Data, 
+        collection::String,
+        attribute::String,
+        agent_attribute::String,
+        file_name::String
+    )
+
+Links Graf file to an attribute from a collection.
+
+Example
+```
+julia> PSRI.link_series_to_file(
+    data, 
+    "PSRDemandSegment", 
+    "HourDemand", 
+    "DataHourDemand",
+    path
+)
+```
+"""
+function link_series_to_file end
 
 """
     write_data(data::Data, path::String)
