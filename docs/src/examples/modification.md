@@ -10,6 +10,7 @@ You can modify a pre-existing study or a new one with the following functions:
 
 In this example, we will be working with a new empty study.
 
+
 ```
 temp_path = joinpath(tempdir(), "PSRI")
 
