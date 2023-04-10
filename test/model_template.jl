@@ -74,5 +74,4 @@ function test_model_template1()
     end
 end
 
-
 test_model_template1()
