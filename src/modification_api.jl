@@ -1,5 +1,3 @@
-const _CUSTOM_COLLECTION = Dict{String,Any}()
-
 function _get_indexed_attributes(
     data::Data,
     collection::String,
@@ -579,44 +577,6 @@ function _cast_element!(data::Data, collection::String, element::Dict{String,Any
             element[attribute] = _cast(T, value)
         end
     end
-
-    return nothing
-end
-
-
-function create_attribute!(
-    data::Data, 
-    collection::String, 
-    attribute::String, 
-    is_vector::Bool, 
-    ::Type{T}, 
-    dimension::Int,
-    has_default::Bool = true,
-    default::T = _default_value(T)
-    ) where {T<:MainTypes}
-    _validate_collection(data, collection)
-
-    data.data_struct[collection][attribute] = Attribute(attribute, is_vector, T, dimension, "")
-
-    if !haskey(_CUSTOM_COLLECTION, collection)
-        _CUSTOM_COLLECTION[collection] = Dict{String,Any}()
-    end
-    if has_default
-        push!(_CUSTOM_COLLECTION[collection], (attribute => default))
-    end
-
-    return nothing
-end
-
-function create_collection!(
-    data::Data,
-    collection::String
-    )
-    if haskey(data.data_struct, collection)
-        error("Collection '$collection' is already part of this study")
-    end
-    
-    data.data_struct[collection] = Dict{String,Attribute}()
 
     return nothing
 end

@@ -7,6 +7,8 @@ Some attributes in a Study represent a time series indexed by another attribute.
 First we create a Dict with `EmissionCost` and `DateEmissionCost` data.
 
 ```@example rw_file
+using Dates
+
 series = Dict{String,Vector}(
     "DateEmissionCost" => [
         Dates.Date("1900-01-01"),
@@ -42,7 +44,7 @@ We can later retrieve the series for the element in the collection with [`PSRI.g
 When using this function, we need the collection, the element index and the attribute that indexes the elements.
 
 
-```rw_file
+```@example rw_file
 using DataFrames
 series_table = PSRI.get_series(
     data, 

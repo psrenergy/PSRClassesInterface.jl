@@ -842,6 +842,22 @@ PSRI.set_parm!(data, "PSRClass", index, "PSRAttr", value)
 function create_element! end
 
 """
+delete_element!(
+    data::Data, 
+    collection::String, 
+    index::Int32
+    )
+
+Deletes element from `collection` at index `index`.
+
+Example:
+```
+PSRI.delete_element!(data, "PSRBus", 3)
+```
+"""
+function delete_element! end
+
+"""
     set_parm!(
         data::Data,
         collection::String,

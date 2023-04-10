@@ -60,4 +60,3 @@ end
 test_relations1()
 test_relations2()
 test_relations3()
-
