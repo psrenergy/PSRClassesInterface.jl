@@ -209,12 +209,26 @@ end
 
 _load_defaults!() = _load_json_data!(PSRCLASSES_DEFAULTS_PATH, PSRCLASSES_DEFAULTS, PSRCLASSES_DEFAULTS_CTIME)
 
+function _has_inner_dicts(dict::Dict{String,Any})
+    for (key, value) in dict
+        if isa(value, Dict{String,Any})
+            return true
+        end
+    end
+    return false
+end
+
 function merge_defaults!(dst::Dict{String,Any}, src::Dict{String,Any})
     for (key,value) in src
         if haskey(dst, key)
+            if _has_inner_dicts(value)
+                merge_defaults!(dst[key], value)
+            else
                 merge!(dst[key],value)
+            end
         else
             dst[key] = value
         end
     end
 end
+

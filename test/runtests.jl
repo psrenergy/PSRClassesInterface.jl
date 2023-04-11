@@ -51,4 +51,7 @@ end
     @testset "Graf Files" begin
         @time include("graf_files.jl")
     end
+    @testset "Utils" begin
+        @time include("utils.jl")
+    end
 end
