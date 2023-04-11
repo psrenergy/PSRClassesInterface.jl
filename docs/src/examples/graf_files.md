@@ -106,13 +106,13 @@ Each agent represents an element from the collection the graf file is linked to.
 
 ### Visual example of a graf file
 
-Using the previous example with `PSRGasEmission` objects, the `EmissionCost` for each object will be displayed in the Agents columns, that will take the name of the `AVId` attribute, resulting on the following:
+Using the previous example with `PSRDemand` objects, the `Duracao` for each object will be displayed in the Agents columns, that will take the name of the `AVId` attribute, resulting on the following:
 
 | **Stg** | **Sce** | **Block** | **Agent 1** | **Agent 2** | **Agent 3** |
 |:-----:|:-----:|:-----:|:-----------:|:-----------:|-------------|
 |   1   |   1   |   1   |    1.0      |     5.0     |    10.0     |
-|   2   |   1   |   1   |    1.5      |     6.5     |    11.5     |
-|   3   |   1   |   1   |    2.0      |     7.0     |    12.0     |
+|   1   |   1   |   2   |    1.5      |     6.5     |    11.5     |
+|   1   |   1   |   3   |    2.0      |     7.0     |    12.0     |
 | ...   | ...   | ...   |    ...      |     ...     |     ...     |
 
 ### Graf Header
@@ -130,10 +130,10 @@ import PSRClassesInterface
 const PSRI = PSRClassesInterface
 
 #Creates dummy data
-n_blocks = 2
-n_scenarios = 3
-n_stages = 4
-n_agents = 5
+n_blocks = 3
+n_scenarios = 1
+n_stages = 1
+n_agents = 1
 
 time_series_data = rand(Float64, n_agents, n_blocks, n_scenarios, n_stages)
 
@@ -168,7 +168,7 @@ iow = PSRI.open(
     scenarios = n_scenarios,
     stages = n_stages,
     agents = ["Agent 1", "Agent 2", "Agent 3", "Agent 4", "Agent 5"],
-    unit = "USD",
+    unit = "H",
     initial_stage = 1,
     initial_year = 2006,
 )
@@ -314,8 +314,8 @@ However, it might be interesting to update only one or a group of vectors. To be
 ```@example rw_file
 vec2 = PSRI.mapped_vector(
         data, 
-        "", 
-        "EmissionCost",
+        "PSRDemand", 
+        "Duracao",
         Float64,
         filters = ["test_filter"]
     )

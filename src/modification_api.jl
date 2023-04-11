@@ -408,8 +408,13 @@ function create_study(
         defaults = Dict{String,Any}()
     end
 
+    study_defaults = Dict{String,Any}()
+
+    
+
     if !isnothing(defaults_path)
-        merge!(defaults, JSON.parsefile(defaults_path))
+        merge!(study_defaults, JSON.parsefile(defaults_path))
+        merge_defaults!(study_defaults,defaults)
     end
 
     # Select mapping
@@ -433,10 +438,9 @@ function create_study(
  
     data_struct, model_files_added = PMD.load_model(pmds_path, pmd_files, model_template)
 
-
     stage_type  = 
-        if haskey(defaults[study_collection], "Tipo_Etapa")
-            StageType(defaults[study_collection]["Tipo_Etapa"])
+        if haskey(study_defaults[study_collection], "Tipo_Etapa")
+            StageType(study_defaults[study_collection]["Tipo_Etapa"])
         else
             @warn "Study collection does not have a stage type ('Tipo_Etapa'). Using default value 'STAGE_WEEK'"
             STAGE_WEEK
@@ -444,15 +448,15 @@ function create_study(
     
 
     first_year  = 
-        if haskey(defaults[study_collection], "Ano_inicial")
-            defaults[study_collection]["Ano_inicial"]
+        if haskey(study_defaults[study_collection], "Ano_inicial")
+            study_defaults[study_collection]["Ano_inicial"]
         else
             @warn "Study collection does not have an inital year ('Ano_inicial'). Using default value '2023'"
             2023
         end
     
-    first_stage = if haskey(defaults[study_collection],"Etapa_inicial")
-            defaults[study_collection]["Etapa_inicial"]
+    first_stage = if haskey(study_defaults[study_collection],"Etapa_inicial")
+            study_defaults[study_collection]["Etapa_inicial"]
         else
             @warn "Study collection does not have a first stage ('Etapa_inicial'). Using default value '1'"
             1
@@ -466,11 +470,11 @@ function create_study(
         end
 
     duration_mode = 
-        if haskey(defaults[study_collection], "HourlyData") && defaults[study_collection]["HourlyData"]["BMAP"] in [1, 2]
+        if haskey(study_defaults[study_collection], "HourlyData") && study_defaults[study_collection]["HourlyData"]["BMAP"] in [1, 2]
             HOUR_BLOCK_MAP
         elseif (
-            haskey(defaults[study_collection], "DurationModel") &&
-            haskey(defaults[study_collection]["DurationModel"], "Duracao($number_blocks)")
+            haskey(study_defaults[study_collection], "DurationModel") &&
+            haskey(study_defaults[study_collection]["DurationModel"], "Duracao($number_blocks)")
         )
             VARIABLE_DURATION
         else
@@ -496,7 +500,7 @@ function create_study(
         model_template = model_template
     )
 
-    _create_study_collection(data, study_collection, defaults)
+    _create_study_collection(data, study_collection, study_defaults)
 
     return data
 end

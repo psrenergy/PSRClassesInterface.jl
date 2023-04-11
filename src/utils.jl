@@ -208,3 +208,13 @@ function _load_json_data!(path::AbstractString, data::Union{Dict{String,Any},Vec
 end
 
 _load_defaults!() = _load_json_data!(PSRCLASSES_DEFAULTS_PATH, PSRCLASSES_DEFAULTS, PSRCLASSES_DEFAULTS_CTIME)
+
+function merge_defaults!(dst::Dict{String,Any}, src::Dict{String,Any})
+    for (key,value) in src
+        if haskey(dst, key)
+                merge!(dst[key],value)
+        else
+            dst[key] = value
+        end
+    end
+end
