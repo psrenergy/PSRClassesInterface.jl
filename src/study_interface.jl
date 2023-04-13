@@ -408,8 +408,10 @@ function get_parm_1d end
 Returns a `T` containing the the value from `attribute` of `collection`.
 This function is used to get data from collections that don't vary over time.
 
-Example: no available in SDDP data base
+Example: (Warning: a SDDP study does not have a parm attribute with two dimensions)
+
 ```julia
+PSRI.get_parm_2d(data, "PSRCollection", "AttributeName", Float64, 1)
 ```
 """
 function get_parm_2d end
