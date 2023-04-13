@@ -187,7 +187,6 @@ function _findfirst_date(date::Dates.Date, vec::Vector) # TODO type this vecto w
         error("empty vector of dates")
         # return 1
     end
-    
     if date < _simple_date(vec[1])
         # error("date before first element")
         return 1
