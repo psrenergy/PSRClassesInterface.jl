@@ -410,8 +410,6 @@ function create_study(
 
     study_defaults = Dict{String,Any}()
 
-    
-
     if !isnothing(defaults_path)
         merge!(study_defaults, JSON.parsefile(defaults_path))
         merge_defaults!(study_defaults,defaults)
@@ -480,7 +478,6 @@ function create_study(
         else
             FIXED_DURATION
         end
-
 
     data = Data(
         raw = Dict{String,Any}(),
