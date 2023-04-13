@@ -13,14 +13,14 @@ const DAYS_IN_MONTH = Int[
     31, # dez
 ]
 
-const STAGES_IN_YEAR = Dict{StageType,Int}(
+const STAGES_IN_YEAR = Dict{StageType, Int}(
     STAGE_WEEK => 52,
     STAGE_MONTH => 12,
     STAGE_DAY => 365,
     STAGE_YEAR => 1,
 )
 
-const HOURS_IN_STAGE = Dict{StageType,Int}(
+const HOURS_IN_STAGE = Dict{StageType, Int}(
     STAGE_WEEK => 168,
     # STAGE_MONTH => 744,
     STAGE_DAY => 24,
@@ -52,7 +52,8 @@ end
 function blocks_in_stage(io, t)::Int
     if is_hourly(io)
         if stage_type(io) == STAGE_MONTH
-            return hour_discretization(io) * DAYS_IN_MONTH[mod1(t - 1 + initial_stage(io), 12)] * 24
+            return hour_discretization(io) *
+                   DAYS_IN_MONTH[mod1(t - 1 + initial_stage(io), 12)] * 24
         else
             return hour_discretization(io) * HOURS_IN_STAGE[stage_type(io)]
         end
@@ -62,35 +63,37 @@ end
 
 function _date_from_stage(t::Int, stage_type::StageType, first_date::Dates.Date)
     date = if stage_type == STAGE_MONTH
-        first_date + Dates.Month(t-1)
+        first_date + Dates.Month(t - 1)
     elseif stage_type == STAGE_WEEK
         y = 0
         if t >= 52
             y, t = divrem(t, 52)
             t += 1
         end
-        first_date + Dates.Week(t-1) + Dates.Year(y)
+        first_date + Dates.Week(t - 1) + Dates.Year(y)
     elseif stage_type == STAGE_DAY
         y = 0
         if t >= 365
             y, t = divrem(t, 365)
             t += 1
         end
-        current_date = first_date + Dates.Day(t-1) + Dates.Year(y)
-        if (Dates.isleapyear(first_date) &&
+        current_date = first_date + Dates.Day(t - 1) + Dates.Year(y)
+        if (
+            Dates.isleapyear(first_date) &&
             first_date <= Dates.Date(Dates.year(first_date), 2, 28) &&
             current_date >= Dates.Date(Dates.year(first_date), 2, 29)
-            )
+        )
             current_date += Dates.Day(1)
-        elseif (Dates.isleapyear(current_date) &&
+        elseif (
+            Dates.isleapyear(current_date) &&
             first_date <= Dates.Date(Dates.year(current_date), 2, 28) &&
             current_date >= Dates.Date(Dates.year(current_date), 2, 29)
-            )
+        )
             current_date += Dates.Day(1)
         end
         return current_date
     else
-        error("Stage type $stage_type not currently supported")   
+        error("Stage type $stage_type not currently supported")
     end
     return date
 end
@@ -150,7 +153,7 @@ end
 function _stage_from_date(
     date::Dates.Date,
     stage_type::StageType,
-    first_date::Dates.Date
+    first_date::Dates.Date,
 )
     fy, fm = _year_stage(first_date, stage_type)
     y, m = _year_stage(date, stage_type)
@@ -177,7 +180,7 @@ function _trim_multidimensional_attribute(attribute::String)
     regex_dim = r"\((([0-9],*)+)\)"
 
     attr = match(regex_attr, attribute)
-    dim  = match(regex_dim,  attribute)
+    dim = match(regex_dim, attribute)
 
     if isnothing(dim)
         return attribute, nothing
@@ -195,7 +198,11 @@ function _get_dim_from_attribute_name(attribute::String)
     return length(dim)
 end
 
-function _load_json_data!(path::AbstractString, data::Union{Dict{String,Any},Vector{Any}}, data_ctime::Vector{Float64})
+function _load_json_data!(
+    path::AbstractString,
+    data::Union{Dict{String, Any}, Vector{Any}},
+    data_ctime::Vector{Float64},
+)
     if data_ctime[] != ctime(path)
         data_ctime[] = ctime(path)
         copy!(data, JSON.parsefile(path))
@@ -204,28 +211,31 @@ function _load_json_data!(path::AbstractString, data::Union{Dict{String,Any},Vec
     return data
 end
 
-_load_defaults!() = _load_json_data!(PSRCLASSES_DEFAULTS_PATH, PSRCLASSES_DEFAULTS, PSRCLASSES_DEFAULTS_CTIME)
+_load_defaults!() = _load_json_data!(
+    PSRCLASSES_DEFAULTS_PATH,
+    PSRCLASSES_DEFAULTS,
+    PSRCLASSES_DEFAULTS_CTIME,
+)
 
-function _has_inner_dicts(dict::Dict{String,Any})
+function _has_inner_dicts(dict::Dict{String, Any})
     for (key, value) in dict
-        if isa(value, Dict{String,Any})
+        if isa(value, Dict{String, Any})
             return true
         end
     end
     return false
 end
 
-function merge_defaults!(dst::Dict{String,Any}, src::Dict{String,Any})
-    for (key,value) in src
+function merge_defaults!(dst::Dict{String, Any}, src::Dict{String, Any})
+    for (key, value) in src
         if haskey(dst, key)
             if _has_inner_dicts(value)
                 merge_defaults!(dst[key], value)
             else
-                merge!(dst[key],value)
+                merge!(dst[key], value)
             end
         else
             dst[key] = value
         end
     end
 end
-

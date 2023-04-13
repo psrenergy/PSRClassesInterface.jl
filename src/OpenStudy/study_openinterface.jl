@@ -16,14 +16,14 @@ mutable struct VectorCache{T}
     default::T
 
     function VectorCache(
-        dim1_str::Union{String,Nothing},
-        dim2_str::Union{String,Nothing},
-        dim1::Union{Integer,Nothing},
-        dim2::Union{Integer,Nothing},
+        dim1_str::Union{String, Nothing},
+        dim2_str::Union{String, Nothing},
+        dim1::Union{Integer, Nothing},
+        dim2::Union{Integer, Nothing},
         index_str::String,
         stage::Integer,
         vector::Vector{T},
-        default::T
+        default::T,
     ) where {T}
         return new{T}(
             isnothing(dim1_str) ? "" : dim1_str,
@@ -46,14 +46,14 @@ mutable struct DataIndex
     # containing the collection from which the referenced item
     # belongs but also its index in the vector of instances of
     # the collection.
-    index::Dict{Int,Tuple{String,Int}}
+    index::Dict{Int, Tuple{String, Int}}
 
     # This is defined as the greatest `reference_id` indexed so
     # far, that is, `maximum(keys(data_index.index))`.
     max_id::Int
 
     function DataIndex()
-        new(Dict{Int,Tuple{String,Int}}(), 0)
+        return new(Dict{Int, Tuple{String, Int}}(), 0)
     end
 end
 
@@ -65,7 +65,12 @@ function _get_index(data_index::DataIndex, reference_id::Integer)
     return data_index.index[reference_id]
 end
 
-function _set_index!(data_index::DataIndex, reference_id::Integer, collection::String, index::Integer)
+function _set_index!(
+    data_index::DataIndex,
+    reference_id::Integer,
+    collection::String,
+    index::Integer,
+)
     if haskey(data_index.index, reference_id)
         previous_collection, _ = _get_index(data_index, reference_id)
 
@@ -97,45 +102,45 @@ Base.@kwdef mutable struct Data{T} <: AbstractData
     number_blocks::Int = 1
 
     # for variable duration and for hour block map
-    variable_duration::Union{Nothing,OpenBinary.Reader} = nothing
-    hour_to_block::Union{Nothing,OpenBinary.Reader} = nothing
+    variable_duration::Union{Nothing, OpenBinary.Reader} = nothing
+    hour_to_block::Union{Nothing, OpenBinary.Reader} = nothing
 
     first_year::Int
     first_stage::Int #maybe week or month, day...
     first_date::Dates.Date
 
-    data_struct::Dict{String,Dict{String,Attribute}}
+    data_struct::Dict{String, Dict{String, Attribute}}
     validate_attributes::Bool
     model_files_added::Set{String}
 
-    log_file::Union{IOStream,Nothing}
+    log_file::Union{IOStream, Nothing}
     verbose::Bool
 
     # main time controller
     controller_stage::Int = 1
     controller_stage_changed::Bool = false
     controller_date::Dates.Date
-    controller_dim::Dict{String,Int} = Dict{String,Int}()
+    controller_dim::Dict{String, Int} = Dict{String, Int}()
     controller_block::Int = 1
     controller_scenario::Int = 1
 
     # cache to only in data reference once (per element)
-    map_cache_data_idx::Dict{String,Dict{String,Vector{Int32}}} =
-        Dict{String,Dict{String,Vector{Int32}}}()
+    map_cache_data_idx::Dict{String, Dict{String, Vector{Int32}}} =
+        Dict{String, Dict{String, Vector{Int32}}}()
     # vectors returned to user
-    map_cache_real::Dict{String,Dict{String,VectorCache{Float64}}} =
-        Dict{String,Dict{String,VectorCache{Float64}}}()
-    map_cache_integer::Dict{String,Dict{String,VectorCache{Int32}}} =
-        Dict{String,Dict{String,VectorCache{Int32}}}()
-    map_cache_date::Dict{String,Dict{String,VectorCache{Dates.Date}}} =
-        Dict{String,Dict{String,VectorCache{Dates.Date}}}()
+    map_cache_real::Dict{String, Dict{String, VectorCache{Float64}}} =
+        Dict{String, Dict{String, VectorCache{Float64}}}()
+    map_cache_integer::Dict{String, Dict{String, VectorCache{Int32}}} =
+        Dict{String, Dict{String, VectorCache{Int32}}}()
+    map_cache_date::Dict{String, Dict{String, VectorCache{Dates.Date}}} =
+        Dict{String, Dict{String, VectorCache{Dates.Date}}}()
 
-    map_filter_real::Dict{String,Vector{Tuple{String,String}}} =
-        Dict{String,Vector{Tuple{String,String}}}()
-    map_filter_integer::Dict{String,Vector{Tuple{String,String}}} =
-        Dict{String,Vector{Tuple{String,String}}}()
+    map_filter_real::Dict{String, Vector{Tuple{String, String}}} =
+        Dict{String, Vector{Tuple{String, String}}}()
+    map_filter_integer::Dict{String, Vector{Tuple{String, String}}} =
+        Dict{String, Vector{Tuple{String, String}}}()
 
-    extra_config::Dict{String,Any} = Dict{String,Any}()
+    extra_config::Dict{String, Any} = Dict{String, Any}()
 
     # TODO: cache importante data
 
@@ -211,7 +216,7 @@ function _merge_psr_transformer_and_psr_serie!(data::Data)
         raw["PSRSerie"] = raw["PSRTransformer"]
         delete!(raw, "PSRTransformer")
     end
-    
+
     return nothing
 end
 
@@ -220,16 +225,16 @@ function initialize_study(
     data_path = "",
     pmd_files = String[],
     path_pmds = PMD._PMDS_BASE_PATH,
-    log_file::Union{AbstractString,Nothing} = nothing,
+    log_file::Union{AbstractString, Nothing} = nothing,
     verbose = true,
     extra_config_file::String = "",
     validate_attributes::Bool = true,
     _netplan_database::Bool = false,
-    model_template_path::Union{String,Nothing} = nothing,
+    model_template_path::Union{String, Nothing} = nothing,
     #merge collections
     add_transformers_to_series::Bool = true,
     #json api 
-    json_struct_path::Union{Nothing,Vector{String},String} = nothing,
+    json_struct_path::Union{Nothing, Vector{String}, String} = nothing,
     # Alternative Study Collection
     study_collection::String = "PSRStudy",
 )
@@ -238,7 +243,7 @@ function initialize_study(
     end
 
     PATH_JSON = joinpath(data_path, "psrclasses.json")
-    
+
     if !isfile(PATH_JSON)
         error("$PATH_JSON not found")
     end
@@ -248,7 +253,7 @@ function initialize_study(
     end
 
     model_template = PMD.ModelTemplate()
-    
+
     if isnothing(model_template_path)
         if _netplan_database
             PMD.load_model_template!(
@@ -261,12 +266,12 @@ function initialize_study(
                 model_template,
             )
         end
-    else 
+    else
         PMD.load_model_template!(model_template_path, model_template)
     end
 
     data_struct, model_files_added = PMD.load_model(path_pmds, pmd_files, model_template)
-    
+
     if isempty(model_files_added)
         error("No Model definition (.pmd) file found")
     end
@@ -280,10 +285,10 @@ function initialize_study(
     study_data = raw_data[study_collection][begin]
 
     if study_collection == "PSRStudy"
-        stage_type  = StageType(study_data["Tipo_Etapa"])
-        first_year  = study_data["Ano_inicial"]
+        stage_type = StageType(study_data["Tipo_Etapa"])
+        first_year = study_data["Ano_inicial"]
         first_stage = study_data["Etapa_inicial"]
-        first_date  = if stage_type == STAGE_MONTH
+        first_date = if stage_type == STAGE_MONTH
             Dates.Date(first_year, 1, 1) + Dates.Month(first_stage - 1)
         else
             Dates.Date(first_year, 1, 1) + Dates.Week(first_stage - 1)
@@ -294,7 +299,7 @@ function initialize_study(
         number_blocks = study_data["NumeroBlocosDemanda"]
 
         @assert number_blocks == study_data["NumberBlocks"]
-    
+
         if haskey(study_data, "HourlyData") && study_data["HourlyData"]["BMAP"] in [1, 2]
             duration_mode = HOUR_BLOCK_MAP
         elseif (
@@ -306,15 +311,15 @@ function initialize_study(
             duration_mode = FIXED_DURATION
         end
     else
-        stage_type    = STAGE_WEEK
-        first_year    = 2023
-        first_stage   = 1
-        first_date    = Dates.Date(2023, 1, 1)
+        stage_type = STAGE_WEEK
+        first_year = 2023
+        first_stage = 1
+        first_date = Dates.Date(2023, 1, 1)
         number_blocks = 1
         duration_mode = FIXED_DURATION
     end
 
-    data = Data(
+    data = Data(;
         raw = raw_data,
         data_path = data_path,
         data_struct = data_struct,
@@ -329,7 +334,7 @@ function initialize_study(
         number_blocks = number_blocks,
         log_file = log_file,
         verbose = verbose,
-        model_template = model_template
+        model_template = model_template,
     )
 
     if add_transformers_to_series
@@ -384,18 +389,18 @@ function load_json_struct!(data::Data, path::String)
 
     raw_struct = JSON.parsefile(path)
 
-    for (collection,attr_list) in raw_struct
+    for (collection, attr_list) in raw_struct
         if !haskey(data.data_struct, collection)
-            data.data_struct[collection] =  Dict{String,Attribute}()
+            data.data_struct[collection] = Dict{String, Attribute}()
         end
 
-        for (attr_name,attr_data) in attr_list
+        for (attr_name, attr_data) in attr_list
             data.data_struct[collection][attr_name] = Attribute(
                 attr_data["name"],
                 attr_data["is_vector"],
                 _get_json_type(attr_data["type"]),
                 attr_data["dim"],
-                attr_data["index"]
+                attr_data["index"],
             )
         end
     end
@@ -433,13 +438,13 @@ end
 
 function PMD.load_model_template!(path::String, data::Data)
     PMD.load_model_template!(path, data.model_template)
-    
+
     return nothing
 end
 
 function max_elements(data::Data, collection::String)
     raw = _raw(data)
-    
+
     if haskey(raw, collection)
         return length(raw[collection])
     else
@@ -447,7 +452,7 @@ function max_elements(data::Data, collection::String)
     end
 end
 
-_default_value(::Type{T}) where {T<:Number} = zero(T)
+_default_value(::Type{T}) where {T <: Number} = zero(T)
 _default_value(::Type{String}) = ""
 _default_value(::Type{Dates.Date}) = Dates.Date(1900, 1, 1)
 
@@ -458,7 +463,7 @@ end
 function _get_attribute_key(
     attribute::String,
     dim::Integer,
-    fix::Pair{<:Integer,<:Union{Integer,Nothing}}...,
+    fix::Pair{<:Integer, <:Union{Integer, Nothing}}...,
 )
     if dim == 0 # Attribute has no dimensions
         return attribute
@@ -488,8 +493,8 @@ function get_parm(
     index::Integer,
     ::Type{T};
     default::T = _default_value(T),
-    dim1::Union{Integer,Nothing} = nothing,
-    dim2::Union{Integer,Nothing} = nothing,
+    dim1::Union{Integer, Nothing} = nothing,
+    dim2::Union{Integer, Nothing} = nothing,
 ) where {T}
     # Retrieve attribute metadata
     attribute_struct = get_attribute_struct(data, collection, attribute)
@@ -763,8 +768,8 @@ function get_vector(
     attribute::String,
     index::Integer,
     ::Type{T};
-    dim1::Union{Integer,Nothing} = nothing,
-    dim2::Union{Integer,Nothing} = nothing,
+    dim1::Union{Integer, Nothing} = nothing,
+    dim2::Union{Integer, Nothing} = nothing,
     default::T = _default_value(T),
 ) where {T}
     attribute_struct = get_attribute_struct(data, collection, attribute)
@@ -889,7 +894,7 @@ function get_vector_2d(
     return out
 end
 
-const _GET_DICT = Dict{String,Any}()
+const _GET_DICT = Dict{String, Any}()
 
 function configuration_parameter(data::Data, parameter::String, default::Integer)
     return configuration_parameter(data, parameter, Int32(default))
@@ -899,7 +904,7 @@ function configuration_parameter(
     data::Data,
     parameter::String,
     default::T,
-) where {T<:MainTypes}
+) where {T <: MainTypes}
     if haskey(data.extra_config, parameter)
         return _cast(T, data.extra_config[parameter])
     end
@@ -921,7 +926,7 @@ function configuration_parameter(
     data::Data,
     parameter::String,
     default::Vector{T},
-) where {T<:MainTypes}
+) where {T <: MainTypes}
     if haskey(data.extra_config, parameter)
         return _cast.(T, data.extra_config[parameter])
     end
@@ -989,6 +994,10 @@ function _cast_vector(
     return out
 end
 
-function _cast_vector(::Type{T}, vector::Vector{T}, default::T = _default_value(T)) where {T}
+function _cast_vector(
+    ::Type{T},
+    vector::Vector{T},
+    default::T = _default_value(T),
+) where {T}
     return deepcopy(vector)
 end

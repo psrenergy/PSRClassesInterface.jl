@@ -4,14 +4,13 @@ function mapped_vector(
     collection::String,
     attribute::String,
     ::Type{T},
-    dim1::Union{String,Nothing} = nothing,
-    dim2::Union{String,Nothing} = nothing;
+    dim1::Union{String, Nothing} = nothing,
+    dim2::Union{String, Nothing} = nothing;
     ignore::Bool = false,
     map_key = collection, # reference for PSRMap pointer, if empty use class name
     filters = String[], # for calling just within a subset instead of the full call
     default = _default_value(T),
 ) where {T} #<: Union{Float64, Int32}
-
     if has_graf_file(data, collection, attribute)
         if isnothing(data.mapper)
             data.mapper = ReaderMapper(OpenBinary.Reader, data.controller_date)
@@ -24,7 +23,7 @@ function mapped_vector(
     raw = _raw(data)
 
     n = max_elements(data, collection)
-    
+
     if n == 0
         return T[]
     end
@@ -34,7 +33,7 @@ function mapped_vector(
     _check_type(attribute_struct, T, collection, attribute)
     _check_vector(attribute_struct, collection, attribute)
     _check_dim(attribute_struct, collection, attribute, dim1, dim2)
-    
+
     dim = get_attribute_dim(attribute_struct)
 
     dim1_val = _add_get_dim_val(data, dim1)
@@ -45,7 +44,7 @@ function mapped_vector(
 
     cache = _get_cache(data, T)
 
-    collection_cache = get!(cache, collection, Dict{String,VectorCache{T}}())
+    collection_cache = get!(cache, collection, Dict{String, VectorCache{T}}())
 
     if haskey(collection_cache, attribute)
         error("Attribute $attribute was already mapped.")
@@ -53,7 +52,7 @@ function mapped_vector(
 
     out = T[default for _ in 1:n] #zeros(T, n)
 
-    date_cache = get!(data.map_cache_data_idx, collection, Dict{String,Vector{Int32}}())
+    date_cache = get!(data.map_cache_data_idx, collection, Dict{String, Vector{Int32}}())
 
     need_up_dates = false
     if isempty(index)
@@ -231,12 +230,11 @@ function update_vectors!(data::Data, filter::String)
         end
     elseif !isnothing(data.mapper)
         if haskey(data.mapper.dict, filter)
-            _update_graf_vectors!(data,filter)
+            _update_graf_vectors!(data, filter)
         end
     elseif no_attr
         error("Filter $filter not valid")
     end
-
 
     return nothing
 end
@@ -284,11 +282,22 @@ function _update_all_vectors!(data::Data, map_cache)
 end
 
 function _update_graf_vectors!(data::Data)
-    goto(data.mapper, data.controller_stage, data.controller_scenario, data.controller_block)
+    return goto(
+        data.mapper,
+        data.controller_stage,
+        data.controller_scenario,
+        data.controller_block,
+    )
 end
 
 function _update_graf_vectors!(data::Data, filter::String)
-    goto(data.mapper, filter, data.controller_stage, data.controller_scenario, data.controller_block)
+    return goto(
+        data.mapper,
+        filter,
+        data.controller_stage,
+        data.controller_scenario,
+        data.controller_block,
+    )
 end
 
 """

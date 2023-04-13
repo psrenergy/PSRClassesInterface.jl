@@ -1,13 +1,13 @@
 using JSON
 
 struct ModelTemplate
-    map::Dict{String,Set{String}}
-    inv::Dict{String,String}
+    map::Dict{String, Set{String}}
+    inv::Dict{String, String}
 
-    ModelTemplate() = new(Dict{String,Set{String}}(), Dict{String,String}())
+    ModelTemplate() = new(Dict{String, Set{String}}(), Dict{String, String}())
 end
 
-function Base.push!(mt::ModelTemplate, ps::Pair{String,String}...)
+function Base.push!(mt::ModelTemplate, ps::Pair{String, String}...)
     for (k, v) in ps
         if !haskey(mt.map, k)
             mt.map[k] = Set{String}()
@@ -17,11 +17,11 @@ function Base.push!(mt::ModelTemplate, ps::Pair{String,String}...)
 
         mt.inv[v] = k
     end
-    
+
     return mt
 end
 
-Base.iterate(mt::ModelTemplate)             = iterate(mt.map)
+Base.iterate(mt::ModelTemplate) = iterate(mt.map)
 Base.iterate(mt::ModelTemplate, i::Integer) = iterate(mt.map, i)
 
 _hasmap(mt::ModelTemplate, k::AbstractString) = haskey(mt.map, string(k))
@@ -33,10 +33,10 @@ function dump_model_template(path::String, model_template::ModelTemplate)
     for (collection, models) in model_template
         push!(
             list,
-            Dict{String,Any}(
+            Dict{String, Any}(
                 "classname" => collection,
-                "models" => collect(models)
-            )
+                "models" => collect(models),
+            ),
         )
     end
 
@@ -63,10 +63,10 @@ function load_model_template!(path::AbstractString, model_template::ModelTemplat
         models = item["models"]
 
         for model in models
-            push!(model_template,Pair(collection,model))
+            push!(model_template, Pair(collection, model))
             # model_template[collection] = model
         end
     end
-    
+
     return nothing
 end

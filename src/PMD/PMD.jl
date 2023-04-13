@@ -23,13 +23,14 @@ struct Attribute
     # interval::String
 end
 
-const DataStruct = Dict{String,Dict{String,Attribute}}
+const DataStruct = Dict{String, Dict{String, Attribute}}
 
 include("model_template.jl")
 
 const _PMDS_BASE_PATH = joinpath(@__DIR__(), "pmds")
 
-const PMD_MODEL_TEMPLATES_PATH = joinpath(@__DIR__(), "..", "json_metadata", "modeltemplates.sddp.json")
+const PMD_MODEL_TEMPLATES_PATH =
+    joinpath(@__DIR__(), "..", "json_metadata", "modeltemplates.sddp.json")
 
 const _MODEL_TO_CLASS_SDDP = Dict(
     "SDDP_V10.2_ConfiguracaoEstudo" => "PSRStudy",
@@ -167,7 +168,8 @@ struct _PMD_STATE_MODEL <: _PMD_STATE
     collection::String
     num_merges::Int
 
-    _PMD_STATE_MODEL(collection::String, num_merges::Integer = 0) = new(collection, num_merges)
+    _PMD_STATE_MODEL(collection::String, num_merges::Integer = 0) =
+        new(collection, num_merges)
 end
 
 function _parse_pmd(filepath::AbstractString, model_template::ModelTemplate)
@@ -186,14 +188,13 @@ function _parse_pmd!(
     end
 
     open(filepath, "r") do fp
-        _parse_pmd!(fp, data_struct, model_template)
+        return _parse_pmd!(fp, data_struct, model_template)
     end
 
     return data_struct
 end
 
 function _parse_pmd!(io::IO, data_struct::DataStruct, model_template::ModelTemplate)
-
     state = _PMD_STATE_IDLE()
 
     for line in strip.(readlines(io))
@@ -233,7 +234,7 @@ function _parse_pmd_line!(
         if _hasinv(model_template, model_name)
             collection = model_template.inv[model_name]
 
-            data_struct[collection] = Dict{String,Attribute}()
+            data_struct[collection] = Dict{String, Attribute}()
 
             # default attributes tha belong to "all collectiones"
             data_struct[collection]["name"] = Attribute("name", false, String, 0, "")
@@ -268,7 +269,8 @@ function _parse_pmd_line!(
 
         for i in 1:_MAX_MERGE
             if !haskey(data_struct[state.collection], "_MERGE_$i")
-                data_struct[state.collection]["_MERGE_$i"] = Attribute(model_template.inv[model_name], false, DataType, 0, "")
+                data_struct[state.collection]["_MERGE_$i"] =
+                    Attribute(model_template.inv[model_name], false, DataType, 0, "")
                 return _PMD_STATE_MODEL(state.collection, state.num_merges + 1)
             end
         end
@@ -278,14 +280,17 @@ function _parse_pmd_line!(
         return state
     end
 
-    m = match(r"(PARM|VECTOR|VETOR)\s+([\S]+)\s+([\S]+)(\s+DIM\(([\S]+(,[\S]+)*)\))?(\s+INDEX\s+([\S]+))?", line)
-    
+    m = match(
+        r"(PARM|VECTOR|VETOR)\s+([\S]+)\s+([\S]+)(\s+DIM\(([\S]+(,[\S]+)*)\))?(\s+INDEX\s+([\S]+))?",
+        line,
+    )
+
     # @show m
     if !isnothing(m)
-        kind  = m[1]
-        type  = m[2]
-        name  = m[3]
-        dims  = m[5]
+        kind = m[1]
+        type = m[2]
+        name = m[3]
+        dims = m[5]
         index = m[8]
 
         # @show dims
@@ -394,7 +399,7 @@ function _parse_pmd!(data_struct, FILE, MODEL_CLASS_MAP)
                 if haskey(MODEL_CLASS_MAP, model_name)
                     current_class = MODEL_CLASS_MAP[model_name]
                     inside_model = true
-                    data_struct[current_class] = Dict{String,Attribute}()
+                    data_struct[current_class] = Dict{String, Attribute}()
                     # default attributes tha belong to "all classes"
                     data_struct[current_class]["name"] =
                         Attribute("name", false, String, 0, "")
@@ -503,7 +508,11 @@ function _load_model!(
     return nothing
 end
 
-function load_model(path_pmds::AbstractString, files::Vector{String}, model_template::ModelTemplate)
+function load_model(
+    path_pmds::AbstractString,
+    files::Vector{String},
+    model_template::ModelTemplate,
+)
     data_struct = DataStruct()
     loaded_files = Set{String}()
 

@@ -4,12 +4,12 @@ function test_api(data_path::String)
 
     mkpath(temp_path)
 
-    src_data = PSRI.initialize_study(PSRI.OpenInterface(); data_path=data_path)
-    raw_data = PSRI._raw(src_data)::Dict{String,<:Any}
+    src_data = PSRI.initialize_study(PSRI.OpenInterface(); data_path = data_path)
+    raw_data = PSRI._raw(src_data)::Dict{String, <:Any}
 
     PSRI.write_data(src_data, json_path)
 
-    dest_data = PSRI.initialize_study(PSRI.OpenInterface(); data_path=temp_path)
+    dest_data = PSRI.initialize_study(PSRI.OpenInterface(); data_path = temp_path)
 
     @test PSRI._raw(dest_data) == raw_data
 
@@ -17,7 +17,7 @@ function test_api(data_path::String)
     parm_data = Dict(
         "PSRThermalPlant" => [
             "ComT" => Int32(33),
-        ]
+        ],
         # TODO: Add more test cases later, as in:
         #   "PSRClass" => ["attribute" => value...]
     )
@@ -36,7 +36,7 @@ function test_api(data_path::String)
     vector_data = Dict(
         "PSRThermalPlant" => [
             "Data" => Dates.Date.(["1900-01-02"]),
-        ]
+        ],
         # TODO: Add more test cases later, as in:
         #   "PSRClass" => ["attribute" => [value...]...]
     )
@@ -54,24 +54,24 @@ function test_api(data_path::String)
     # set_series!
     series_data = Dict(
         "PSRThermalPlant" => [
-            "Data" => Dict{String, Vector}(    
-                "GerMin"   => [0.0, 1.0],
-                "GerMax"   => [888.0, 777.0],
-                "O&MCost"  => [0.0, 1.0],
-                "IH"       => [0.0, 0.0],
-                "ICP"      => [0.0, 0.0],
-                "Data"     => Dates.Date.(["1900-01-01", "1900-01-02"]),
-                "CoefE"    => [1.0, 2.0],
-                "CTransp"  => [0.0, 1.0],
-                "PotInst"  => [888.0, 777.0],
+            "Data" => Dict{String, Vector}(
+                "GerMin" => [0.0, 1.0],
+                "GerMax" => [888.0, 777.0],
+                "O&MCost" => [0.0, 1.0],
+                "IH" => [0.0, 0.0],
+                "ICP" => [0.0, 0.0],
+                "Data" => Dates.Date.(["1900-01-01", "1900-01-02"]),
+                "CoefE" => [1.0, 2.0],
+                "CTransp" => [0.0, 1.0],
+                "PotInst" => [888.0, 777.0],
                 "Existing" => [0, 0],
-                "sfal"     => [0, 1],
-                "NGas"     => [0, 0],
-                "NAdF"     => [0, 0],
+                "sfal" => [0, 1],
+                "NGas" => [0, 0],
+                "NAdF" => [0, 0],
                 "Unidades" => [1, 1],
-                "StartUp"  => [0.0, 2.0],
-            )
-        ]
+                "StartUp" => [0.0, 2.0],
+            ),
+        ],
         # TODO: Add more test cases later, as in:
         #   "PSRClass" => [
         #       "index_attr" => Dict{String, Vector}(

@@ -49,7 +49,7 @@ function PSRI.open(
     scenarios::Integer = 0,
     stages::Integer = 0,
     agents::Vector{String} = String[],
-    unit::Union{Nothing,String} = nothing,
+    unit::Union{Nothing, String} = nothing,
     # optional
     is_hourly::Bool = false,
     hour_discretization::Integer = 1,
@@ -69,9 +69,11 @@ function PSRI.open(
 )
     if !allow_unsafe_name_length
         if name_length != 24 && name_length != 12
-            error("name_length should be either 24 or 11. " *
+            error(
+                "name_length should be either 24 or 11. " *
                 "To use a different value at your own risk enable: " *
-                "allow_unsafe_name_length = true.")
+                "allow_unsafe_name_length = true.",
+            )
         end
     end
     if !(0 <= block_type <= 3)
@@ -90,7 +92,9 @@ function PSRI.open(
         error("Please provide a unit string: unit = \"MW\"")
     end
     if !(0 < initial_stage <= PSRI.STAGES_IN_YEAR[stage_type])
-        error("initial_stage must be between 1 and $(PSRI.STAGES_IN_YEAR[stage_type]) for $stage_type files, got: $initial_stage")
+        error(
+            "initial_stage must be between 1 and $(PSRI.STAGES_IN_YEAR[stage_type]) for $stage_type files, got: $initial_stage",
+        )
     end
     if !(0 < initial_year <= 1_000_000_000)
         error("initial_year must be a positive integer, got: $initial_year")
@@ -103,7 +107,9 @@ function PSRI.open(
             println("hourly files will ignore block dimension")
         end
         if !(hour_discretization in [1, 2, 3, 4, 6, 12])
-            error("hour_discretization must belong to {1, 2, 3, 4, 6, 12}, got: $hour_discretization")
+            error(
+                "hour_discretization must belong to {1, 2, 3, 4, 6, 12}, got: $hour_discretization",
+            )
         end
     else
         if !(0 < blocks < 1_000_000)
@@ -182,7 +188,7 @@ function PSRI.open(
         if len > 7
             error("unit")
         end
-        
+
         for i in 1:7
             if i <= len
                 write(ioh, unit[i])
@@ -214,7 +220,13 @@ function PSRI.open(
         blocks = 0
         for t in first_relative_stage:stages
             # TODO write hourly files
-            b = PSRI.blocks_in_stage(is_hourly, hour_discretization, stage_type, initial_stage, t)
+            b = PSRI.blocks_in_stage(
+                is_hourly,
+                hour_discretization,
+                stage_type,
+                initial_stage,
+                t,
+            )
             blocks = max(blocks, b)
             push!(blocks_until_stage, acc) # TODO check
             acc += Int32(b)
@@ -254,7 +266,7 @@ function PSRI.open(
         end
     end
 
-    return Writer(
+    return Writer(;
         io = io,
         offset = header_size,
         stage_total = stages,
@@ -285,7 +297,7 @@ function PSRI.write_registry(
     stage::Integer,
     scenario::Integer = 1,
     block::Integer = 1,
-) where {T<:Real}
+) where {T <: Real}
     _reopen_pre_write(io)
 
     if !io.is_open
@@ -345,17 +357,20 @@ function PSRI.close(io::Writer)
     io.reopen_mode = false # so that it wont try to reopen
     seekend(io.io)
     current = position(io.io)
-    last = _get_position(
-        io,
-        io.stage_total,
-        io.scenario_total,
-        io.is_hourly ? io.blocks_per_stage[end] : io.block_total
-    ) + 4 * io.agents_total
+    last =
+        _get_position(
+            io,
+            io.stage_total,
+            io.scenario_total,
+            io.is_hourly ? io.blocks_per_stage[end] : io.block_total,
+        ) + 4 * io.agents_total
 
     if current != last
         seek(io.io, last - 4 * io.agents_total)
         write(io.io, Float32(0))
-        println("File not writen completely. Expected $(div(last, 4)) registries, got $(div(current, 4))")
+        println(
+            "File not writen completely. Expected $(div(last, 4)) registries, got $(div(current, 4))",
+        )
     end
 
     Base.close(io.io)

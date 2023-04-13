@@ -1,12 +1,16 @@
 # Check if study has a time series for a collection stored in a Graf file
-function has_graf_file(data::Data, collection::String, attribute::Union{String, Nothing} = nothing)
+function has_graf_file(
+    data::Data,
+    collection::String,
+    attribute::Union{String, Nothing} = nothing,
+)
     _check_collection_in_study(data, collection)
 
     if !haskey(data.raw, collection)
         return false
     end
 
-    if !haskey(data.raw, "GrafScenarios")   
+    if !haskey(data.raw, "GrafScenarios")
         return false
     end
 
@@ -25,10 +29,9 @@ function has_graf_file(data::Data, collection::String, attribute::Union{String, 
 end
 
 function _get_graf_filename(data::Data, collection::String, attribute::String)
-    if !has_graf_file(data,collection,attribute)
+    if !has_graf_file(data, collection, attribute)
         error("Collection '$collection' does not have a Graf file for '$attribute'.")
     end
-
 
     for graf in data.raw["GrafScenarios"]
         if graf["classname"] == collection
@@ -46,10 +49,10 @@ function _get_graf_agents(graf_file::String)
 end
 
 # Checks if names for Agents in Study are equal to the ones in Graf file
-function _validate_json_graf( 
+function _validate_json_graf(
     agent_attribute::String,
-    elements::Vector{Dict{String,Any}},
-    graf_file::String   
+    elements::Vector{Dict{String, Any}},
+    graf_file::String,
 )
     ior = open(OpenBinary.Reader, graf_file; use_header = false)
 
@@ -61,20 +64,20 @@ function _validate_json_graf(
     if sort(agents_json) != sort(ior.agent_names)
         error("Agent names from your Study are different from the ones in Graf file")
     end
-    
+
     return
 end
 
 # Add reference to graf file in JSON 
 function link_series_to_file(
-    data::Data, 
+    data::Data,
     collection::String,
     attribute::String,
     agent_attribute::String,
-    file_name::String
-    )
+    file_name::String,
+)
     if !haskey(data.raw, "GrafScenarios")
-        data.raw["GrafScenarios"] = Vector{Dict{String,Any}}()
+        data.raw["GrafScenarios"] = Vector{Dict{String, Any}}()
     end
 
     if get_attribute_type(data, collection, agent_attribute) != String
@@ -82,7 +85,7 @@ function link_series_to_file(
     end
 
     collection_elements = data.raw[collection]
-    
+
     _validate_json_graf(agent_attribute, collection_elements, file_name)
 
     for element in collection_elements
@@ -90,12 +93,12 @@ function link_series_to_file(
             pop!(element, attribute)
         end
     end
-    
-    graf_dict = Dict{String,Any}(
+
+    graf_dict = Dict{String, Any}(
         "classname" => collection,
-        "parmid"    => agent_attribute,
-        "vector"    => attribute,
-        "binary"    => [file_name * ".bin", file_name * ".hdr"]
+        "parmid" => agent_attribute,
+        "vector" => attribute,
+        "binary" => [file_name * ".bin", file_name * ".hdr"],
     )
 
     push!(data.raw["GrafScenarios"], graf_dict)
@@ -103,4 +106,3 @@ function link_series_to_file(
     write_data(data)
     return
 end
-    

@@ -1,13 +1,13 @@
 PATH_CASE_0 = joinpath(@__DIR__, "data", "case0")
 
 data = PSRI.initialize_study(
-    PSRI.OpenInterface(),
-    data_path = PATH_CASE_0
+    PSRI.OpenInterface();
+    data_path = PATH_CASE_0,
 )
 
 data_bin = PSRI.initialize_study(
-    PSRI.OpenInterface(),
-    data_path = PATH_CASE_0
+    PSRI.OpenInterface();
+    data_path = PATH_CASE_0,
 )
 
 collections = PSRI.get_collections(data)
@@ -113,12 +113,12 @@ for col in collections
             println("    Relation: $rel of type $tp")
         end
         if PSRI.is_vector_relation(tp)
-            parm_json = PSRI.get_vector_map(data, col, rel, relation_type = tp)[json_to_bin]
-            parm_bin = PSRI.get_vector_map(data_bin, col, rel, relation_type = tp)
+            parm_json = PSRI.get_vector_map(data, col, rel; relation_type = tp)[json_to_bin]
+            parm_bin = PSRI.get_vector_map(data_bin, col, rel; relation_type = tp)
             @assert parm_json == parm_bin
         else
-            parm_json = PSRI.get_map(data, col, rel, relation_type = tp)[json_to_bin]
-            parm_bin = PSRI.get_map(data_bin, col, rel, relation_type = tp)
+            parm_json = PSRI.get_map(data, col, rel; relation_type = tp)[json_to_bin]
+            parm_bin = PSRI.get_map(data_bin, col, rel; relation_type = tp)
             @assert parm_json == parm_bin
         end
     end

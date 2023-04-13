@@ -17,8 +17,8 @@ end
 function ReaderMapper(
     ::Type{T},
     first_date::Dates.Date;
-    stage_type = nothing
-) where T <: AbstractReader
+    stage_type = nothing,
+) where {T <: AbstractReader}
     out = ReaderMapper{T}()
     out.first_date = first_date
     out.stage_type = stage_type
@@ -32,17 +32,16 @@ function add_reader!(
     filter::Vector{String} = String[];
     default::Bool = true,
     name = "",
-) where T
-
+) where {T}
     if !isempty(name) && haskey(mapper.name, name)
         error("Name $name is already taken.")
     end
 
     graf = open(
         T,
-        path,
+        path;
         header = header,
-        first_stage = mapper.first_date
+        first_stage = mapper.first_date,
     )
 
     push!(mapper.list, graf)
@@ -52,7 +51,9 @@ function add_reader!(
     if default
         if mapper.skip_hourly_goto && is_hourly(graf)
             if isempty(filter)
-                error("Hour maps do not move with default goto. Added map to hourly file with no filter, path = $path")
+                error(
+                    "Hour maps do not move with default goto. Added map to hourly file with no filter, path = $path",
+                )
             end
         else
             push!(mapper.default, current)
@@ -78,7 +79,8 @@ function add_reader!(
         println("Total blocks $(mapper.blocks) != file $(max_blocks(graf))")
     end
 
-    if mapper.scenarios > 0 &&graf.scenario_exist && mapper.scenarios != max_scenarios(graf)
+    if mapper.scenarios > 0 && graf.scenario_exist &&
+       mapper.scenarios != max_scenarios(graf)
         println("Total scenario $(mapper.scenarios) != file $(max_scenarios(graf))")
     end
 
