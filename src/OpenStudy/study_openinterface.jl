@@ -151,6 +151,10 @@ end
 
 _raw(data::Data) = data.raw
 
+function _simple_date(date::Dates.Date)
+    return date
+end
+
 function _simple_date(str::String)
 
     # possible formats

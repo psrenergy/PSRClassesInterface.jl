@@ -408,8 +408,11 @@ function create_study(
         defaults = Dict{String,Any}()
     end
 
+    study_defaults = Dict{String,Any}()
+
     if !isnothing(defaults_path)
-        merge!(defaults, JSON.parsefile(defaults_path))
+        merge!(study_defaults, JSON.parsefile(defaults_path))
+        merge_defaults!(study_defaults,defaults)
     end
 
     # Select mapping
@@ -433,25 +436,68 @@ function create_study(
  
     data_struct, model_files_added = PMD.load_model(pmds_path, pmd_files, model_template)
 
+    stage_type  = 
+        if haskey(study_defaults[study_collection], "Tipo_Etapa")
+            StageType(study_defaults[study_collection]["Tipo_Etapa"])
+        else
+            @warn "Study collection does not have a stage type ('Tipo_Etapa'). Using default value 'STAGE_WEEK'"
+            STAGE_WEEK
+        end
+    
+
+    first_year  = 
+        if haskey(study_defaults[study_collection], "Ano_inicial")
+            study_defaults[study_collection]["Ano_inicial"]
+        else
+            @warn "Study collection does not have an inital year ('Ano_inicial'). Using default value '2023'"
+            2023
+        end
+    
+    first_stage = if haskey(study_defaults[study_collection],"Etapa_inicial")
+            study_defaults[study_collection]["Etapa_inicial"]
+        else
+            @warn "Study collection does not have a first stage ('Etapa_inicial'). Using default value '1'"
+            1
+        end
+
+    first_date  = 
+        if stage_type == STAGE_MONTH
+            Dates.Date(first_year, 1, 1) + Dates.Month(first_stage - 1)
+        else
+            Dates.Date(first_year, 1, 1) + Dates.Week(first_stage - 1)
+        end
+
+    duration_mode = 
+        if haskey(study_defaults[study_collection], "HourlyData") && study_defaults[study_collection]["HourlyData"]["BMAP"] in [1, 2]
+            HOUR_BLOCK_MAP
+        elseif (
+            haskey(study_defaults[study_collection], "DurationModel") &&
+            haskey(study_defaults[study_collection]["DurationModel"], "Duracao($number_blocks)")
+        )
+            VARIABLE_DURATION
+        else
+            FIXED_DURATION
+        end
+
     data = Data(
         raw = Dict{String,Any}(),
         data_path = data_path,
         data_struct = data_struct,
         validate_attributes = false,
         model_files_added = model_files_added,
-        stage_type = STAGE_WEEK,
-        first_year = 2023,
-        first_stage = 1,
-        first_date = Dates.Date(2023, 1, 1),
-        controller_date = Dates.Date(2023, 1, 1),
-        duration_mode = FIXED_DURATION,
+        stage_type  =  stage_type,
+        first_year  =  first_year,
+        first_stage =  first_stage,
+        first_date  =  first_date,
+        controller_date = first_date,
+        duration_mode = duration_mode,
         number_blocks = 1,
         log_file = nothing,
         verbose = true,
         model_template = model_template
     )
 
-    _create_study_collection(data, study_collection, defaults)
+    _create_study_collection(data, study_collection, study_defaults)
 
     return data
 end
@@ -488,6 +534,23 @@ function _validate_attribute(
         error("Vectorial value '$value' assigned to scalar attribute '$attribute'")
     end
 
+    _, dim = _trim_multidimensional_attribute(attribute)
+
+    if !isnothing(dim)
+        # Check for dim size
+        if length(dim) != attribute_struct.dim
+            error("""
+            Dimension '$(length(dim))' is not valid for attribute '$(attribute_struct.name)' with dimension '$(attribute_struct.dim)'
+            """
+            )
+        end
+    elseif attribute_struct.dim > 0
+        error("""
+            Dimension '$(0)' is not valid for attribute '$(attribute_struct.name)' with dimension '$(attribute_struct.dim)'
+            """
+            )
+    end
+
     if !(T <: attribute_struct.type)
         error(
             "Invalid element type '$T' for attribute '$attribute' of type '$(attribute_struct.type)'",
@@ -507,6 +570,21 @@ function _validate_attribute(
 
     if attribute_struct.is_vector
         error("Scalar value '$value' assigned to vector attribute '$attribute'")
+    end
+
+    _, dim = _trim_multidimensional_attribute(attribute)
+    
+    if !isnothing(dim)
+        # Check for dim size
+        if length(dim) != attribute_struct.dim
+            error("""
+                Dimension '$(length(dim))' is not valid for attribute '$(attribute_struct.name)' with dimension '$(attribute_struct.dim)'
+                """)
+        end
+    elseif attribute_struct.dim > 0
+            error("""
+                Dimension '$(0)' is not valid for attribute '$(attr_struct.name)' with dimension '$(attribute_struct.dim)'
+                """)
     end
 
     if !(T <: attribute_struct.type)
@@ -545,6 +623,16 @@ function _validate_element(data::Data, collection::String, element::Dict{String,
     element_keys = Set{String}(keys(element))
     missing_keys = setdiff(collection_keys, element_keys)
     invalid_keys = setdiff(element_keys, collection_keys)
+
+    for key in invalid_keys
+        attr, dim = _trim_multidimensional_attribute(key)
+        if attr in collection_keys
+            pop!(invalid_keys, key)
+        end
+        if attr in missing_keys
+            pop!(missing_keys, attr)
+        end
+    end
 
     if !isempty(missing_keys)
         error("""

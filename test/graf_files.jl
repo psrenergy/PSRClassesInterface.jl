@@ -130,9 +130,17 @@ function test_graf2()
 
     PSRI.close(io)
 
-    data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
-    
-    @show data.mapper
+    data = PSRI.create_study(
+        PSRI.OpenInterface(), 
+        data_path = temp_path,
+        defaults = Dict{String,Any}(
+            "PSRStudy" => Dict{String,Any}(
+                "Ano_inicial" => 2023,
+                "Etapa_inicial" => 1,
+                "Tipo_Etapa" => 1
+            )
+        )
+        )
 
     PSRI.create_element!(data, "PSRDemand", "name" => "X")
     PSRI.create_element!(data, "PSRDemand", "name" => "Y")

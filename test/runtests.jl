@@ -40,6 +40,7 @@ end
     end
     @testset "Modification API" begin
         @time include("modification_api.jl")
+        @time include("custom_study.jl")
     end 
     @testset "Model Template" begin
         @time include("model_template.jl")
@@ -49,5 +50,8 @@ end
     end
     @testset "Graf Files" begin
         @time include("graf_files.jl")
+    end
+    @testset "Utils" begin
+        @time include("utils.jl")
     end
 end

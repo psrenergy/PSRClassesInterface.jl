@@ -221,6 +221,11 @@ function PSRI.open(
         scenario_total = 1
     end
 
+    if variable_by_series == 0
+        # previous versions of the file simply leave the number of scenarios
+        # as the number of scenarios in the study
+        scenario_total = 1
+    end
     if !(0 <= variable_by_series <= 1)
         @info("'variable_by_series' must be either 0 or 1, not $(variable_by_series)")
     end

@@ -173,15 +173,26 @@ function _year_stage(
 end
 
 function _trim_multidimensional_attribute(attribute::String)
-    regex = r"([a-zA-Z_&]+)\([0-9]+(\,[0-9]+)*\)"
+    regex_attr = r"([a-zA-Z_]+-*[<,>]*-*)"
+    regex_dim = r"\((([0-9],*)+)\)"
 
-    m = match(regex, attribute)
+    attr = match(regex_attr, attribute)
+    dim  = match(regex_dim,  attribute)
 
-    if isnothing(m)
-        return attribute
+    if isnothing(dim)
+        return attribute, nothing
     else
-        return m[1]
+        dim = [parse(Int32, i) for i in dim[1] if i != ',']
+        return attr[1], dim
     end
+end
+
+function _get_dim_from_attribute_name(attribute::String)
+    attr, dim = _trim_multidimensional_attribute(attribute)
+    if isnothing(dim)
+        return 0
+    end
+    return length(dim)
 end
 
 function _load_json_data!(path::AbstractString, data::Union{Dict{String,Any},Vector{Any}}, data_ctime::Vector{Float64})
@@ -194,3 +205,27 @@ function _load_json_data!(path::AbstractString, data::Union{Dict{String,Any},Vec
 end
 
 _load_defaults!() = _load_json_data!(PSRCLASSES_DEFAULTS_PATH, PSRCLASSES_DEFAULTS, PSRCLASSES_DEFAULTS_CTIME)
+
+function _has_inner_dicts(dict::Dict{String,Any})
+    for (key, value) in dict
+        if isa(value, Dict{String,Any})
+            return true
+        end
+    end
+    return false
+end
+
+function merge_defaults!(dst::Dict{String,Any}, src::Dict{String,Any})
+    for (key,value) in src
+        if haskey(dst, key)
+            if _has_inner_dicts(value)
+                merge_defaults!(dst[key], value)
+            else
+                merge!(dst[key],value)
+            end
+        else
+            dst[key] = value
+        end
+    end
+end
+

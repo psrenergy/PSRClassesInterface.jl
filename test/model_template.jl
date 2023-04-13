@@ -29,7 +29,7 @@ function test_model_template1()
             "AVId" => "test",
             "Data" => [Dates.Date(2022, 1, 1)],
             "HourP" => [0.0],
-            "P" => [0.0],
+            "P(1)" => [0.0],
             "code" => Int32(5),
             "name" => "";
             defaults = nothing,
@@ -65,7 +65,7 @@ function test_model_template1()
             "AVId" => "test",
             "Data" => [Dates.Date(2022, 1, 1)],
             "HourP" => [0.0],
-            "P" => [0.0],
+            "P(1)" => [0.0],
             "code" => Int32(7),
             "name" => "";
             defaults = nothing,
