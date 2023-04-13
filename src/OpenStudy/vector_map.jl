@@ -51,9 +51,7 @@ function mapped_vector(
         error("Attribute $attribute was already mapped.")
     end
 
-    
     out = T[default for _ in 1:n] #zeros(T, n)
-    
 
     date_cache = get!(data.map_cache_data_idx, collection, Dict{String,Vector{Int32}}())
 
