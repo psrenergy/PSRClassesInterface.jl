@@ -40,9 +40,9 @@ function _check_dim(
     attribute_struct::Attribute,
     collection::String,
     attribute::String,
-    dim1::Union{T,Nothing} = nothing,
-    dim2::Union{T,Nothing} = nothing,
-) where {T<:Union{String,Integer}}
+    dim1::Union{T, Nothing} = nothing,
+    dim2::Union{T, Nothing} = nothing,
+) where {T <: Union{String, Integer}}
     # ~*~ Retrieve Information & validate input ~*~ #
     dim = get_attribute_dim(attribute_struct)
     dim1_valid = _isvalid_dim(dim1)

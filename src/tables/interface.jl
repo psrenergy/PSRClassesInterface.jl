@@ -1,15 +1,15 @@
 struct SeriesTable <: Tables.AbstractColumns
-    attrs::Dict{Symbol,Int}
+    attrs::Dict{Symbol, Int}
     types::Vector{Type}
     table::Vector{Vector}
 
-    function SeriesTable(buffer::Dict{String,Vector})
+    function SeriesTable(buffer::Dict{String, Vector})
         if !all(isequal(length(first(values(buffer)))), length.(values(buffer)))
             error("Series columns must have the same length")
         end
 
         attrs =
-            Dict{Symbol,Int}(attr => i for (i, attr) in enumerate(Symbol.(keys(buffer))))
+            Dict{Symbol, Int}(attr => i for (i, attr) in enumerate(Symbol.(keys(buffer))))
         types = eltype.(values(buffer))
         table = Vector{Vector}(undef, length(attrs))
 
@@ -74,7 +74,7 @@ struct GrafTable{T} <: Tables.AbstractColumns
 
     domain::Matrix{Int}
     matrix::Matrix{T}
-    agents::Dict{Symbol,Int}
+    agents::Dict{Symbol, Int}
     columns::Vector{Symbol}
     unit::String
 
@@ -85,7 +85,9 @@ struct GrafTable{T} <: Tables.AbstractColumns
         # Load
         reader = open(OpenBinary.Reader, path; kws...)
         columns = [[:stage, :series, :block]; Symbol.(reader.agent_names)]
-        agents = Dict{Symbol,Int}(Symbol(reader.agent_names[i]) => i for i = 1:reader.agents_total)
+        agents = Dict{Symbol, Int}(
+            Symbol(reader.agent_names[i]) => i for i in 1:reader.agents_total
+        )
 
         if !isempty(reader.blocks_per_stage)
             n_rows = sum(
@@ -185,7 +187,7 @@ function Tables.getcolumn(ts::GrafTable, i::Int)
     if 1 <= i <= 3
         return ts.domain[:, i]
     elseif 4 <= i <= 3 + size(ts.matrix, 2)
-        return ts.matrix[:, i - 3]
+        return ts.matrix[:, i-3]
     else
         Base.throw_boundserror(ts, i)
     end

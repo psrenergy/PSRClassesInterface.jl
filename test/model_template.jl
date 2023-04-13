@@ -8,13 +8,13 @@ function test_model_template1()
     pmd_path = joinpath(@__DIR__, "data", "model_template_test", "test.pmd")
 
     data = PSRI.create_study(
-        PSRI.OpenInterface(),
+        PSRI.OpenInterface();
         data_path = temp_path,
         pmd_files = [pmd_path],
         model_template_path = mt_path,
         study_collection = "NewStudy",
-        defaults = Dict{String,Any}(
-            "NewStudy" => Dict{String,Any}(
+        defaults = Dict{String, Any}(
+            "NewStudy" => Dict{String, Any}(
                 "Idioma" => Int32(0),
                 "AVId" => "id",
                 "name" => "very new study",

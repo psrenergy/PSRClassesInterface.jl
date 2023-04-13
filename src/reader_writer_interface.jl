@@ -4,6 +4,7 @@
 Possible stage types used in for reading and writing time series files.
 
 The current possible stage types are:
+
 ```julia
 STAGE_UNKNOWN
 STAGE_WEEK
@@ -63,48 +64,37 @@ function file_to_array_and_header end
 
 Method for opening file and registering time series data.
 If specified file doesn't exist, the method will create it, otherwise, the previous one will be overwritten.
-Returns updated `AbstractWriter` instance. 
+Returns updated `AbstractWriter` instance.
 
 ### Arguments:
 
-- `writer`: `AbstractWriter` instance to be used for opening file.
+  - `writer`: `AbstractWriter` instance to be used for opening file.
 
-- `path`: path to file.
+  - `path`: path to file.
 
 ### Keyword arguments:
 
-- `blocks`: case's number of blocks.
+  - `blocks`: case's number of blocks.
 
-- `scenarios`: case's number of scenarios.
+  - `scenarios`: case's number of scenarios.
+  - `stages`: case's number of stages.
+  - `agents`: list of element names.
+  - `unit`: dimension of the elements' data.
+  - `is_hourly`: if data is hourly. If yes, block dimension will be ignored.
+  - `hour_discretization`: sub-hour parameter to discretize an hour into minutes.
+  - `name_length`: length of element names.
+  - `block_type`: case's type of block.
+  - `scenarios_type`: case's type of scenario.
+  - `stage_type`: case's type of stage.
+  - `initial_stage`: stage at which to start registry.
+  - `initial_year`: year at which to start registry.
+  - `allow_unsafe_name_length`: allow element names outside safety bounds.
 
-- `stages`: case's number of stages.
+Examples:
 
-- `agents`: list of element names.
+  - [Writing and reading a time series into a file](@ref)
 
-- `unit`: dimension of the elements' data.
-
-- `is_hourly`: if data is hourly. If yes, block dimension will be ignored.
-
-- `hour_discretization`: sub-hour parameter to discretize an hour into minutes.
-
-- `name_length`: length of element names.
-
-- `block_type`: case's type of block.
-
-- `scenarios_type`: case's type of scenario.
-
-- `stage_type`: case's type of stage.
-
-- `initial_stage`: stage at which to start registry.
-
-- `initial_year`: year at which to start registry.
-
-- `allow_unsafe_name_length`: allow element names outside safety bounds.
-
-Examples: 
- * [Writing and reading a time series into a file](@ref)
-
- ---------
+* * *
 
     PSRI.open(reader::Type{<:AbstractReader}, path::String; kwargs...)
 
@@ -113,26 +103,23 @@ Returns updated `AbstractReader` instance.
 
 ### Arguments:
 
-- `reader::Type{<:AbstractReader}`: `AbstractReader` instance to be used for opening file.
+  - `reader::Type{<:AbstractReader}`: `AbstractReader` instance to be used for opening file.
 
-- `path::String`: path to file.
+  - `path::String`: path to file.
 
 ### Keyword arguments:
 
-- `is_hourly::Bool`: if data to be read is hourly, other than blockly.
+  - `is_hourly::Bool`: if data to be read is hourly, other than blockly.
 
-- `stage_type::PSRI.StageType`: the [`PSRI.StageType`](@ref) of the data, defaults to `PSRI.STAGE_MONTH`.
+  - `stage_type::PSRI.StageType`: the [`PSRI.StageType`](@ref) of the data, defaults to `PSRI.STAGE_MONTH`.
+  - `header::Vector{String}`: if file has a header with metadata.
+  - `use_header::Bool`: if data from header should be retrieved.
+  - `first_stage::Dates.Date`: stage at which start reading.
+  - `verbose_header::Bool`: if data from header should be displayed during execution.
 
-- `header::Vector{String}`: if file has a header with metadata.
+Examples:
 
-- `use_header::Bool`: if data from header should be retrieved.
-
-- `first_stage::Dates.Date`: stage at which start reading.
-
-- `verbose_header::Bool`: if data from header should be displayed during execution.
-
-Examples: 
- * [Writing and reading a time series into a file](@ref)
+  - [Writing and reading a time series into a file](@ref)
 """
 function open end
 
@@ -141,7 +128,7 @@ function open end
 
 Closes the [`PSRI.AbstractReader`](@ref) instance.
 
--------
+* * *
 
     PSRI.close(iow::AbstractWriter)
 
@@ -303,15 +290,12 @@ Writes a data row into opened file through [`PSRI.AbstractWriter`](@ref) instanc
 
 ### Arguments:
 
-* `iow`: `PSRI.AbstractWriter` instance to be used for accessing file.
+  - `iow`: `PSRI.AbstractWriter` instance to be used for accessing file.
 
-* `data`: elements data to be written.
-
-* `stage`: stage of the data to be written.
-
-* `scenario`: scenarios of the data to be written.
-
-* `block`: block of the data to be written.
+  - `data`: elements data to be written.
+  - `stage`: stage of the data to be written.
+  - `scenario`: scenarios of the data to be written.
+  - `block`: block of the data to be written.
 """
 function write_registry end
 

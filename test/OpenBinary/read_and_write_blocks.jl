@@ -7,10 +7,9 @@ function read_write_binary_block()
     FILE_PATH = joinpath(".", "example_21")
 
     for stage_type in [PSRI.STAGE_MONTH, PSRI.STAGE_WEEK, PSRI.STAGE_DAY]
-
         iow = PSRClassesInterface.open(
             PSRClassesInterface.OpenBinary.Writer,
-            FILE_PATH,
+            FILE_PATH;
             blocks = BLOCKS,
             scenarios = SCENARIOS,
             stages = STAGES,
@@ -19,13 +18,13 @@ function read_write_binary_block()
             # optional:
             initial_stage = INITIAL_STAGE,
             initial_year = 2006,
-            stage_type = stage_type
+            stage_type = stage_type,
         )
 
-        for t = 1:STAGES, s = 1:SCENARIOS, b = 1:BLOCKS
-            X = t + s + 0.
-            Y = s - t + 0.
-            Z = t + s + b * 100.
+        for t in 1:STAGES, s in 1:SCENARIOS, b in 1:BLOCKS
+            X = t + s + 0.0
+            Y = s - t + 0.0
+            Z = t + s + b * 100.0
             PSRClassesInterface.write_registry(iow, [X, Y, Z], t, s, b)
         end
 
@@ -34,8 +33,8 @@ function read_write_binary_block()
 
         ior = PSRI.open(
             PSRI.OpenBinary.Reader,
-            FILE_PATH,
-            use_header = false
+            FILE_PATH;
+            use_header = false,
         )
 
         @test PSRI.max_stages(ior) == STAGES
@@ -50,7 +49,7 @@ function read_write_binary_block()
         # obtem número de colunas
         @test PSRI.agent_names(ior) == ["X", "Y", "Z"]
 
-        for t = 1:STAGES, s = 1:SCENARIOS, b = 1:BLOCKS
+        for t in 1:STAGES, s in 1:SCENARIOS, b in 1:BLOCKS
             @test PSRI.current_stage(ior) == t
             @test PSRI.current_scenario(ior) == s
             @test PSRI.current_block(ior) == b
@@ -72,7 +71,6 @@ function read_write_binary_block()
             PSRI.OpenBinary.Writer,
             FILE_PATH,
         )
-
     end
 
     rm(FILE_PATH * ".bin")
@@ -90,10 +88,9 @@ function read_write_binary_block_single_binary()
     FILE_PATH = joinpath(".", "example_2")
 
     for stage_type in [PSRI.STAGE_MONTH, PSRI.STAGE_WEEK, PSRI.STAGE_DAY]
-
         iow = PSRClassesInterface.open(
             PSRClassesInterface.OpenBinary.Writer,
-            FILE_PATH,
+            FILE_PATH;
             blocks = BLOCKS,
             scenarios = SCENARIOS,
             stages = STAGES,
@@ -103,13 +100,13 @@ function read_write_binary_block_single_binary()
             initial_stage = INITIAL_STAGE,
             initial_year = 2006,
             stage_type = stage_type,
-            single_binary = true
+            single_binary = true,
         )
 
-        for t = 1:STAGES, s = 1:SCENARIOS, b = 1:BLOCKS
-            X = t + s + 0.
-            Y = s - t + 0.
-            Z = t + s + b * 100.
+        for t in 1:STAGES, s in 1:SCENARIOS, b in 1:BLOCKS
+            X = t + s + 0.0
+            Y = s - t + 0.0
+            Z = t + s + b * 100.0
             PSRClassesInterface.write_registry(iow, [X, Y, Z], t, s, b)
         end
 
@@ -118,9 +115,9 @@ function read_write_binary_block_single_binary()
 
         ior = PSRClassesInterface.open(
             PSRClassesInterface.OpenBinary.Reader,
-            FILE_PATH,
+            FILE_PATH;
             use_header = false,
-            single_binary = true
+            single_binary = true,
         )
 
         @test PSRI.max_stages(ior) == STAGES
@@ -135,7 +132,7 @@ function read_write_binary_block_single_binary()
         # obtem número de colunas
         @test PSRI.agent_names(ior) == ["X", "Y", "Z"]
 
-        for t = 1:STAGES, s = 1:SCENARIOS, b = 1:BLOCKS
+        for t in 1:STAGES, s in 1:SCENARIOS, b in 1:BLOCKS
             @test PSRI.current_stage(ior) == t
             @test PSRI.current_scenario(ior) == s
             @test PSRI.current_block(ior) == b
@@ -157,7 +154,6 @@ function read_write_binary_block_single_binary()
             PSRI.OpenBinary.Writer,
             FILE_PATH,
         )
-
     end
 
     rm(FILE_PATH * ".dat")

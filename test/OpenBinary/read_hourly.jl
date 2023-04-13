@@ -6,13 +6,20 @@ function read_binary_subhourly()
 
     for stage_type in [PSRI.STAGE_MONTH, PSRI.STAGE_WEEK, PSRI.STAGE_DAY]
         for hour_discretization in [2, 4, 6]
-            path = joinpath(".", "data", "case4", "subhourly_$(stage_type)_$(hour_discretization)")
+            path = joinpath(
+                ".",
+                "data",
+                "case4",
+                "subhourly_$(stage_type)_$(hour_discretization)",
+            )
 
-            io = PSRI.open(PSRI.OpenBinary.Reader, path, use_header = false)
+            io = PSRI.open(PSRI.OpenBinary.Reader, path; use_header = false)
 
             @test PSRI.max_stages(io) == STAGES
             @test PSRI.max_scenarios(io) == SCENARIOS
-            @test PSRI.max_blocks(io) == hour_discretization * (stage_type == PSRI.STAGE_MONTH ? 744 : PSRI.HOURS_IN_STAGE[stage_type])
+            @test PSRI.max_blocks(io) ==
+                  hour_discretization *
+                  (stage_type == PSRI.STAGE_MONTH ? 744 : PSRI.HOURS_IN_STAGE[stage_type])
             @test PSRI.stage_type(io) == stage_type
             @test PSRI.initial_stage(io) == 2
             @test PSRI.initial_year(io) == 2006

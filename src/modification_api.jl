@@ -61,6 +61,7 @@ end
 Gathers a list containing all instances of the referenced collection.
 
 !!! info
+
     If the instance vector is not present but the collection is still expected, an entry for it will be created.
 """
 function _get_elements!(data::Data, collection::String)
@@ -69,7 +70,7 @@ function _get_elements!(data::Data, collection::String)
     raw_data = _raw(data)
 
     if !haskey(raw_data, collection)
-        raw_data[collection] = Dict{String,Any}[]
+        raw_data[collection] = Dict{String, Any}[]
     end
 
     return raw_data[collection]::Vector
@@ -100,7 +101,7 @@ function set_parm!(
     attribute::String,
     index::Int,
     value::T,
-) where {T<:MainTypes}
+) where {T <: MainTypes}
     attribute_struct = get_attribute_struct(data, collection, attribute)
 
     _check_parm(attribute_struct, collection, attribute)
@@ -124,7 +125,7 @@ function set_vector!(
     attribute::String,
     index::Int,
     buffer::Vector{T},
-) where {T<:MainTypes}
+) where {T <: MainTypes}
     attribute_struct = get_attribute_struct(data, collection, attribute)
 
     _check_vector(attribute_struct, collection, attribute)
@@ -156,7 +157,7 @@ function get_series(data::Data, collection::String, indexing_attribute::String, 
     # empty if needed.
     attributes = _get_indexed_attributes(data, collection, index, indexing_attribute)
 
-    buffer = Dict{String,Vector}()
+    buffer = Dict{String, Vector}()
 
     for attribute in attributes
         buffer[attribute] = get_vector(
@@ -180,7 +181,7 @@ function get_graf_series(data::Data, collection::String, attribute::String; kws.
     graf_files = Vector{String}()
 
     for graf in data.raw["GrafScenarios"]
-        if graf["classname"] == collection && graf["vector"] == attribute 
+        if graf["classname"] == collection && graf["vector"] == attribute
             append!(graf_files, graf["binary"])
         end
     end
@@ -198,11 +199,11 @@ function set_series!(
     collection::String,
     indexing_attribute::String,
     index::Int,
-    buffer::Dict{String,Vector},
+    buffer::Dict{String, Vector},
 )
     series = SeriesTable(buffer)
 
-    set_series!(data, collection, indexing_attribute, index, series)
+    return set_series!(data, collection, indexing_attribute, index, series)
 end
 
 function set_series!(
@@ -260,7 +261,12 @@ function set_series!(
     # validate types
     for attribute in keys(series)
         attribute_struct = get_attribute_struct(data, collection, String(attribute))
-        _check_type(attribute_struct, eltype(series[attribute]), collection, String(attribute))
+        _check_type(
+            attribute_struct,
+            eltype(series[attribute]),
+            collection,
+            String(attribute),
+        )
     end
 
     for attribute in keys(series)
@@ -271,7 +277,7 @@ function set_series!(
     return nothing
 end
 
-function write_data(data::Data, path::Union{AbstractString,Nothing} = nothing)
+function write_data(data::Data, path::Union{AbstractString, Nothing} = nothing)
     # Retrieves JSON-like raw data
     raw_data = _raw(data)
 
@@ -315,7 +321,14 @@ function set_related_by_code!(
     relation_type::RelationType = RELATION_1_TO_1,
 )
     target_index = _get_index_by_code(data, target, target_code)
-    return set_related!(data, source, target, source_index, target_index, relation_type = relation_type)
+    return set_related!(
+        data,
+        source,
+        target,
+        source_index,
+        target_index;
+        relation_type = relation_type,
+    )
 end
 
 function set_vector_related!(
@@ -325,7 +338,7 @@ function set_vector_related!(
     source_index::Integer,
     target_indices::Vector{T},
     relation_type::RelationType = RELATION_1_TO_N,
-) where {T<:Integer}
+) where {T <: Integer}
     check_relation_vector(relation_type)
     validate_relation(source, target, relation_type)
     source_element = _get_element(data, source, source_index)
@@ -345,16 +358,15 @@ function delete_relation!(
     source::String,
     target::String,
     source_index::Integer,
-    target_index::Integer
+    target_index::Integer,
 )
-
-
     source_relations = _get_element_related(data, source, source_index)
-    if haskey(source_relations, (source,target,source_index,target_index))
-        relation_attribute = source_relations[(source,target,source_index,target_index)]
-        source_element  = _get_element(data, source, source_index)
+    if haskey(source_relations, (source, target, source_index, target_index))
+        relation_attribute = source_relations[(source, target, source_index, target_index)]
+        source_element = _get_element(data, source, source_index)
 
-        target_indices = _get_target_index_from_relation(data, source, source_index, relation_attribute)
+        target_indices =
+            _get_target_index_from_relation(data, source, source_index, relation_attribute)
         if length(target_indices) > 1
             deleteat!(source_element[relation_attribute], target_indices .== target_index)
         else
@@ -372,13 +384,13 @@ function delete_vector_relation!(
     source::String,
     target::String,
     source_index::Integer,
-    target_indices::Vector{Int}
+    target_indices::Vector{Int},
 )
     source_relations = _get_element_related(data, source, source_index)
 
-    relation_attribute = source_relations[(source,target,source_index,target_indices[1])]
+    relation_attribute = source_relations[(source, target, source_index, target_indices[1])]
 
-    source_element  = _get_element(data, source, source_index)
+    source_element = _get_element(data, source, source_index)
 
     delete!(source_element, relation_attribute)
 
@@ -394,10 +406,10 @@ function create_study(
     data_path::AbstractString = pwd(),
     pmd_files::Vector{String} = String[],
     pmds_path::AbstractString = PMD._PMDS_BASE_PATH,
-    defaults_path::Union{AbstractString,Nothing} = PSRCLASSES_DEFAULTS_PATH,
-    defaults::Union{Dict{String,Any},Nothing} = _load_defaults!(),
+    defaults_path::Union{AbstractString, Nothing} = PSRCLASSES_DEFAULTS_PATH,
+    defaults::Union{Dict{String, Any}, Nothing} = _load_defaults!(),
     netplan::Bool = false,
-    model_template_path::Union{String,Nothing} = nothing,
+    model_template_path::Union{String, Nothing} = nothing,
     study_collection::String = "PSRStudy",
 )
     if !isdir(data_path)
@@ -405,14 +417,14 @@ function create_study(
     end
 
     if isnothing(defaults)
-        defaults = Dict{String,Any}()
+        defaults = Dict{String, Any}()
     end
 
-    study_defaults = Dict{String,Any}()
+    study_defaults = Dict{String, Any}()
 
     if !isnothing(defaults_path)
         merge!(study_defaults, JSON.parsefile(defaults_path))
-        merge_defaults!(study_defaults,defaults)
+        merge_defaults!(study_defaults, defaults)
     end
 
     # Select mapping
@@ -430,71 +442,74 @@ function create_study(
                 model_template,
             )
         end
-    else 
+    else
         PMD.load_model_template!(model_template_path, model_template)
     end
- 
+
     data_struct, model_files_added = PMD.load_model(pmds_path, pmd_files, model_template)
 
-    stage_type  = 
+    stage_type =
         if haskey(study_defaults[study_collection], "Tipo_Etapa")
             StageType(study_defaults[study_collection]["Tipo_Etapa"])
         else
             @warn "Study collection does not have a stage type ('Tipo_Etapa'). Using default value 'STAGE_WEEK'"
             STAGE_WEEK
         end
-    
 
-    first_year  = 
+    first_year =
         if haskey(study_defaults[study_collection], "Ano_inicial")
             study_defaults[study_collection]["Ano_inicial"]
         else
             @warn "Study collection does not have an inital year ('Ano_inicial'). Using default value '2023'"
             2023
         end
-    
-    first_stage = if haskey(study_defaults[study_collection],"Etapa_inicial")
-            study_defaults[study_collection]["Etapa_inicial"]
-        else
-            @warn "Study collection does not have a first stage ('Etapa_inicial'). Using default value '1'"
-            1
-        end
 
-    first_date  = 
+    first_stage = if haskey(study_defaults[study_collection], "Etapa_inicial")
+        study_defaults[study_collection]["Etapa_inicial"]
+    else
+        @warn "Study collection does not have a first stage ('Etapa_inicial'). Using default value '1'"
+        1
+    end
+
+    first_date =
         if stage_type == STAGE_MONTH
             Dates.Date(first_year, 1, 1) + Dates.Month(first_stage - 1)
         else
             Dates.Date(first_year, 1, 1) + Dates.Week(first_stage - 1)
         end
 
-    duration_mode = 
-        if haskey(study_defaults[study_collection], "HourlyData") && study_defaults[study_collection]["HourlyData"]["BMAP"] in [1, 2]
+    duration_mode =
+        if haskey(study_defaults[study_collection], "HourlyData") &&
+           study_defaults[study_collection]["HourlyData"]["BMAP"] in [1, 2]
             HOUR_BLOCK_MAP
         elseif (
             haskey(study_defaults[study_collection], "DurationModel") &&
-            haskey(study_defaults[study_collection]["DurationModel"], "Duracao($number_blocks)")
+            haskey(
+                study_defaults[study_collection]["DurationModel"],
+                "Duracao($number_blocks)",
+            )
         )
             VARIABLE_DURATION
         else
             FIXED_DURATION
         end
 
-    data = Data(
-        raw = Dict{String,Any}(),
+    data = Data(;
+        raw = Dict{String, Any}(),
         data_path = data_path,
         data_struct = data_struct,
         validate_attributes = false,
         model_files_added = model_files_added,
-        stage_type  =  stage_type,
-        first_year  =  first_year,
-        first_stage =  first_stage,
-        first_date  =  first_date,
+        stage_type = stage_type,
+        first_year = first_year,
+        first_stage = first_stage,
+        first_date = first_date,
         controller_date = first_date,
         duration_mode = duration_mode,
         number_blocks = 1,
         log_file = nothing,
         verbose = true,
-        model_template = model_template
+        model_template = model_template,
     )
 
     _create_study_collection(data, study_collection, study_defaults)
@@ -502,7 +517,11 @@ function create_study(
     return data
 end
 
-function _create_study_collection(data::Data, collection::String, defaults::Union{Dict{String,Any},Nothing})
+function _create_study_collection(
+    data::Data,
+    collection::String,
+    defaults::Union{Dict{String, Any}, Nothing},
+)
     create_element!(data, collection; defaults = defaults)
 
     return nothing
@@ -527,7 +546,7 @@ function _validate_attribute(
     collection::String,
     attribute::String,
     value::Vector{T},
-) where {T<:MainTypes}
+) where {T <: MainTypes}
     attribute_struct = get_attribute_struct(data, collection, attribute)
 
     if !attribute_struct.is_vector
@@ -539,16 +558,18 @@ function _validate_attribute(
     if !isnothing(dim)
         # Check for dim size
         if length(dim) != attribute_struct.dim
-            error("""
-            Dimension '$(length(dim))' is not valid for attribute '$(attribute_struct.name)' with dimension '$(attribute_struct.dim)'
-            """
+            error(
+                """
+          Dimension '$(length(dim))' is not valid for attribute '$(attribute_struct.name)' with dimension '$(attribute_struct.dim)'
+          """,
             )
         end
     elseif attribute_struct.dim > 0
-        error("""
-            Dimension '$(0)' is not valid for attribute '$(attribute_struct.name)' with dimension '$(attribute_struct.dim)'
+        error(
             """
-            )
+          Dimension '$(0)' is not valid for attribute '$(attribute_struct.name)' with dimension '$(attribute_struct.dim)'
+          """,
+        )
     end
 
     if !(T <: attribute_struct.type)
@@ -565,7 +586,7 @@ function _validate_attribute(
     collection::String,
     attribute::String,
     value::T,
-) where {T<:MainTypes}
+) where {T <: MainTypes}
     attribute_struct = get_attribute_struct(data, collection, attribute)
 
     if attribute_struct.is_vector
@@ -573,18 +594,22 @@ function _validate_attribute(
     end
 
     _, dim = _trim_multidimensional_attribute(attribute)
-    
+
     if !isnothing(dim)
         # Check for dim size
         if length(dim) != attribute_struct.dim
-            error("""
-                Dimension '$(length(dim))' is not valid for attribute '$(attribute_struct.name)' with dimension '$(attribute_struct.dim)'
-                """)
+            error(
+                """
+              Dimension '$(length(dim))' is not valid for attribute '$(attribute_struct.name)' with dimension '$(attribute_struct.dim)'
+              """,
+            )
         end
     elseif attribute_struct.dim > 0
-            error("""
-                Dimension '$(0)' is not valid for attribute '$(attr_struct.name)' with dimension '$(attribute_struct.dim)'
-                """)
+        error(
+            """
+          Dimension '$(0)' is not valid for attribute '$(attr_struct.name)' with dimension '$(attribute_struct.dim)'
+          """,
+        )
     end
 
     if !(T <: attribute_struct.type)
@@ -614,7 +639,7 @@ function _list_attributes_and_types(data::Data, collection::String, attributes::
     return join(items, "\n    ")
 end
 
-function _validate_element(data::Data, collection::String, element::Dict{String,Any})
+function _validate_element(data::Data, collection::String, element::Dict{String, Any})
     data_struct = get_data_struct(data)
 
     collection_struct = data_struct[collection]
@@ -655,7 +680,7 @@ function _validate_element(data::Data, collection::String, element::Dict{String,
     return nothing
 end
 
-function _cast_element!(data::Data, collection::String, element::Dict{String,Any})
+function _cast_element!(data::Data, collection::String, element::Dict{String, Any})
     for (attribute, value) in element
         T = get_attribute_type(data, collection, attribute)
 
@@ -672,42 +697,42 @@ end
 function create_element!(
     data::Data,
     collection::String;
-    defaults::Union{Dict{String,Any},Nothing} = _load_defaults!(),
+    defaults::Union{Dict{String, Any}, Nothing} = _load_defaults!(),
 )
-    return create_element!(data, collection, Dict{String,Any}(); defaults=defaults)
+    return create_element!(data, collection, Dict{String, Any}(); defaults = defaults)
 end
 
 function create_element!(
     data::Data,
     collection::String,
-    ps::Pair{String,<:Any}...;
-    defaults::Union{Dict{String,Any},Nothing} = _load_defaults!(),
+    ps::Pair{String, <:Any}...;
+    defaults::Union{Dict{String, Any}, Nothing} = _load_defaults!(),
 )
-    attributes = Dict{String,Any}(ps...)
+    attributes = Dict{String, Any}(ps...)
 
-    return create_element!(data, collection, attributes; defaults=defaults)
+    return create_element!(data, collection, attributes; defaults = defaults)
 end
 
 function create_element!(
     data::Data,
     collection::String,
-    attributes::Dict{String,Any};
-    defaults::Union{Dict{String,Any},Nothing} = _load_defaults!(),
+    attributes::Dict{String, Any};
+    defaults::Union{Dict{String, Any}, Nothing} = _load_defaults!(),
 )
     _validate_collection(data, collection)
 
-    if has_graf_file(data, collection) 
+    if has_graf_file(data, collection)
         error("Cannot create element for a collection with a Graf file")
     end
 
     element = if isnothing(defaults)
-        Dict{String,Any}()
+        Dict{String, Any}()
     elseif haskey(defaults, collection)
         deepcopy(defaults[collection])
-    else 
+    else
         @warn "No default initialization values for collection '$collection'"
-        
-        Dict{String,Any}()
+
+        Dict{String, Any}()
     end
 
     # Cast values from json default 
@@ -745,7 +770,9 @@ function delete_element!(data::Data, collection::String, index::Int)
         # Remove element from collection vector by its index
         deleteat!(elements, index)
     else
-        error("Element $collection cannot be deleted because it has relations with other elements")
+        error(
+            "Element $collection cannot be deleted because it has relations with other elements",
+        )
     end
     return nothing
 end
@@ -821,16 +848,16 @@ function _get_index(data::Data, reference_id::Integer)
     return _get_index(data.data_index, reference_id)
 end
 
-function _get_index_by_code(data:: Data, collection::String, code::Integer)
+function _get_index_by_code(data::Data, collection::String, code::Integer)
     collection_vector = data.raw[collection]
 
-    for (index,element) in enumerate(collection_vector)
+    for (index, element) in enumerate(collection_vector)
         if element["code"] == code
             return index
         end
     end
-    
-    error("Code '$code' not found in collection '$collection'")
+
+    return error("Code '$code' not found in collection '$collection'")
 end
 
 function get_element(data::Data, reference_id::Integer)
@@ -842,7 +869,7 @@ function get_element(data::Data, collection::String, code::Integer)
     _validate_collection(data, collection)
     collection_struct = data.data_struct[collection]
     index = 0
-    if haskey(collection_struct,"code")
+    if haskey(collection_struct, "code")
         index = _get_index_by_code(data, collection, code)
     else
         error("Collection '$collection' does not have a code attribute")

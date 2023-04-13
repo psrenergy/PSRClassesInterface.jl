@@ -15,7 +15,7 @@ function PSRI.convert_file(
     path_from::String;
     path_to::String = "",
 )
-    error("Conversion with OpenBinary.Reader and OpenBinary.Writer is a no op.")
+    return error("Conversion with OpenBinary.Reader and OpenBinary.Writer is a no op.")
 end
 
 end

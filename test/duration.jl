@@ -1,7 +1,7 @@
 function test_fixed_duration()
     data = PSRI.initialize_study(
-        PSRI.OpenInterface(),
-        data_path = joinpath(".", "data", "case1")
+        PSRI.OpenInterface();
+        data_path = joinpath(".", "data", "case1"),
     )
 
     @test data.duration_mode == PSRI.FIXED_DURATION
@@ -31,8 +31,8 @@ test_fixed_duration()
 
 function test_hour_block_map_duration()
     data = PSRI.initialize_study(
-        PSRI.OpenInterface(),
-        data_path = joinpath(".", "data", "case2")
+        PSRI.OpenInterface();
+        data_path = joinpath(".", "data", "case2"),
     )
 
     @test data.duration_mode == PSRI.HOUR_BLOCK_MAP
@@ -55,7 +55,11 @@ function test_hour_block_map_duration()
     @test_throws AssertionError PSRI.block_from_stage_hour(data, 1, 745) == 1
     @test PSRI.block_from_stage_hour(data, 2, 672) == 1 # ?
     @test PSRI.block_from_stage_hour(data, Dates.Date(2013, 2, 1), 672) == 1 # ?
-    @test_throws AssertionError PSRI.block_from_stage_hour(data, Dates.Date(2003, 2, 1), 672) == 1 # ?
+    @test_throws AssertionError PSRI.block_from_stage_hour(
+        data,
+        Dates.Date(2003, 2, 1),
+        672,
+    ) == 1 # ?
     @test_throws AssertionError PSRI.block_from_stage_hour(data, 2, 673) == 1 # ?
     @test_throws AssertionError PSRI.block_from_stage_hour(data, 13, 1) == 1 #?
 end
@@ -64,8 +68,8 @@ test_hour_block_map_duration()
 
 function test_variable_duration()
     data = PSRI.initialize_study(
-        PSRI.OpenInterface(),
-        data_path = joinpath(".", "data", "case3")
+        PSRI.OpenInterface();
+        data_path = joinpath(".", "data", "case3"),
     )
 
     @test data.duration_mode == PSRI.VARIABLE_DURATION
@@ -85,7 +89,6 @@ function test_variable_duration()
     @test_throws ErrorException PSRI.block_duration(data, 12, 2)
     @test_throws AssertionError PSRI.block_duration(data, 13, 1)
     @test_throws ErrorException PSRI.block_from_stage_hour(data, 1, 1)
-
 end
 
 test_variable_duration()

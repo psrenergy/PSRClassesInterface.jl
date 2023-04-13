@@ -34,7 +34,9 @@ end
 
 function block_duration(data::Data, date::Dates.Date, b::Int)
     if !(1 <= b <= data.number_blocks)
-        error("Blocks is expected to be larger than 1 and smaller than the number of blocks in the study $(data.number_blocks)")
+        error(
+            "Blocks is expected to be larger than 1 and smaller than the number of blocks in the study $(data.number_blocks)",
+        )
     end
     if data.duration_mode == FIXED_DURATION
         raw = _raw(data)
@@ -51,7 +53,9 @@ end
 
 function block_duration(data::Data, t::Int, b::Int)
     if !(1 <= b <= data.number_blocks)
-        error("Blocks is expected to be larger than 1 and smaller than the number of blocks in the study $(data.number_blocks)")
+        error(
+            "Blocks is expected to be larger than 1 and smaller than the number of blocks in the study $(data.number_blocks)",
+        )
     end
     if data.duration_mode == FIXED_DURATION
         raw = _raw(data)
@@ -111,7 +115,7 @@ function _variable_duration_to_file!(data::Data)
 
     iow = open(
         OpenBinary.Writer,
-        FILE_NAME,
+        FILE_NAME;
         blocks = 1,
         scenarios = 1,
         stages = STAGES,
@@ -128,7 +132,7 @@ function _variable_duration_to_file!(data::Data)
 
     first_date = _findfirst_date(_date_from_stage(data, 1), dates)
 
-    for t = 1:STAGES
+    for t in 1:STAGES
         for b in 1:data.number_blocks
             cache[b] = duration[b][t]
         end
@@ -139,7 +143,7 @@ function _variable_duration_to_file!(data::Data)
 
     ior = open(
         OpenBinary.Reader,
-        FILE_NAME,
+        FILE_NAME;
         use_header = false,
         first_stage = data.first_date,
     )
@@ -171,7 +175,7 @@ function _hour_block_map_to_file!(data::Data)
 
     io_dur = open(
         OpenBinary.Writer,
-        FILE_NAME_DUR,
+        FILE_NAME_DUR;
         blocks = 1,
         scenarios = 1,
         stages = STAGES,
@@ -185,7 +189,7 @@ function _hour_block_map_to_file!(data::Data)
     # TODO check handle time in negative stages
     io_hbm = open(
         OpenBinary.Writer,
-        FILE_NAME_HBM,
+        FILE_NAME_HBM;
         # blocks = 1,
         is_hourly = true,
         scenarios = 1,
@@ -207,7 +211,7 @@ function _hour_block_map_to_file!(data::Data)
 
     first_date = _findfirst_date(_date_from_stage(data, 1), dates)
 
-    for t = 1:STAGES
+    for t in 1:STAGES
         fill!(cache, 0.0)
         for b in 1:blocks_in_stage(io_hbm, t)
             hour += 1
@@ -236,13 +240,13 @@ function _hour_block_map_to_file!(data::Data)
 
     ior_dur = open(
         OpenBinary.Reader,
-        FILE_NAME_DUR,
+        FILE_NAME_DUR;
         use_header = false,
         first_stage = data.first_date,
     )
     ior_hbm = open(
         OpenBinary.Reader,
-        FILE_NAME_HBM,
+        FILE_NAME_HBM;
         use_header = false,
         first_stage = data.first_date,
     )

@@ -41,10 +41,10 @@ end
     @testset "Modification API" begin
         @time include("modification_api.jl")
         @time include("custom_study.jl")
-    end 
+    end
     @testset "Model Template" begin
         @time include("model_template.jl")
-    end 
+    end
     @testset "Relations" begin
         @time include("relations.jl")
     end

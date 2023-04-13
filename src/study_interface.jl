@@ -10,6 +10,7 @@ end
 Possible relation types used in mapping function such as [`get_map`](@ref), [`get_reverse_map`](@ref), etc.
 
 The current possible relation types are:
+
 ```julia
 RELATION_1_TO_1
 RELATION_1_TO_N
@@ -50,14 +51,16 @@ abstract type AbstractStudyInterface end
 Initialize all data structures of the study.
 
 !!! note "Differences between the OpenInterface and ClassicInterface"
+
     Each study interface has its own set of `kwargs...` The easiest way to inspect the current
     available options is searching for this function on the Github repo of the desired interface.
 
 Example:
+
 ```julia
 data = PSRI.initialize_study(
-    PSRI.OpenInterface(),
-    data_path = PATH_CASE_EXAMPLE_BATTERIES
+    PSRI.OpenInterface();
+    data_path = PATH_CASE_EXAMPLE_BATTERIES,
 )
 ```
 """
@@ -77,6 +80,7 @@ Returns a `Vector{T}` of entries of the `attribute` of `collection` at the
 element with index `index`.
 
 Example:
+
 ```julia
 PSRI.get_vector(data, "PSRGaugingStation", "Vazao", 1, Float64)
 PSRI.get_vector(data, "PSRGaugingStation", "Data", 1, Dates.Date)
@@ -100,6 +104,7 @@ The outer vector contains one entry per index in dimension 1, while the inner
 vector is sized according to the main vector index which is tipicaaly time.
 
 Example:
+
 ```julia
 PSRI.get_vector_1d(data, "PSRArea", "Export", 1, Float64)
 PSRI.get_vector_1d(data, "PSRLoad", "P", 1, Float64)
@@ -124,6 +129,7 @@ while the inner
 vector is sized according to the main vector index which is tipicaaly time.
 
 Example:
+
 ```julia
 PSRI.get_vector_2d(data, "PSRThermalPlant", "CEsp", 1, Float64)
 PSRI.get_vector_2d(data, "PSRFuelConsumption", "CEsp", 1, Float64)
@@ -144,6 +150,7 @@ Returns a `Vector{Vector{T}}` of entries of the `attribute` of `collection`.
 Each entry of the outer vector corresponding to an element of the collection.
 
 Example:
+
 ```julia
 PSRI.get_vectors(data, "PSRGaugingStation", "Vazao", Float64)
 PSRI.get_vectors(data, "PSRGaugingStation", "Data", Dates.Date)
@@ -159,7 +166,7 @@ function get_vectors(
     n = max_elements(data, collection)
     out = Vector{Vector{T}}(undef, n)
     for i in 1:n
-        out[i] = get_vector(data, collection, attribute, i, T, default = default)
+        out[i] = get_vector(data, collection, attribute, i, T; default = default)
     end
     return out
 end
@@ -177,6 +184,7 @@ Each entry of the outer vector corresponding to an element of the collection.
 For the containt of the 2 inner vectors see `get_vector_1d`.
 
 Example:
+
 ```julia
 PSRI.get_vectors_1d(data, "PSRArea", "Export", Float64)
 PSRI.get_vectors_1d(data, "PSRLoad", "P", Float64)
@@ -192,7 +200,7 @@ function get_vectors_1d(
     n = max_elements(data, collection)
     out = Vector{Vector{Vector{T}}}(undef, n)
     for i in 1:n
-        out[i] = get_vector_1d(data, collection, attribute, i, T, default = default)
+        out[i] = get_vector_1d(data, collection, attribute, i, T; default = default)
     end
     return out
 end
@@ -210,6 +218,7 @@ Each entry of the outer vector corresponding to an element of the collection.
 For the containt of the `Matrix{Vector{T}}` see `get_vector_2d`.
 
 Example:
+
 ```julia
 PSRI.get_vectors_2d(data, "PSRThermalPlant", "CEsp", Float64)
 PSRI.get_vectors_2d(data, "PSRFuelConsumption", "CEsp", Float64)
@@ -225,7 +234,7 @@ function get_vectors_2d(
     n = max_elements(data, collection)
     out = Vector{Matrix{Vector{T}}}(undef, n)
     for i in 1:n
-        out[i] = get_vector_2d(data, collection, attribute, i, T, default = default)
+        out[i] = get_vector_2d(data, collection, attribute, i, T; default = default)
     end
     return out
 end
@@ -236,6 +245,7 @@ end
 Returns an `Int32` with the maximum number of elements for a given `collection`.
 
 Example:
+
 ```julia
 PSRI.max_elements(data, "PSRThermalPlant")
 ```
@@ -254,17 +264,43 @@ function max_elements end
 Returns a `Vector{Int32}` with the map between collections given a certain [`RelationType`](@ref).
 
 Examples:
+
 ```julia
 PSRI.get_map(data, "PSRBattery", "PSRSystem")
 PSRI.get_map(data, "PSRMaintenanceData", "PSRThermalPlant")
 
-PSRI.get_map(data, "PSRHydroPlant", "PSRHydroPlant", relation_type = PSRI.RELATION_TURBINE_TO)
-PSRI.get_map(data, "PSRHydroPlant", "PSRHydroPlant", relation_type = PSRI.RELATION_SPILL_TO)
-PSRI.get_map(data, "PSRHydroPlant", "PSRHydroPlant", relation_type = PSRI.RELATION_INFILTRATE_TO)
-PSRI.get_map(data, "PSRHydroPlant", "PSRHydroPlant", relation_type = PSRI.RELATION_STORED_ENERGY_DONWSTREAM)
+PSRI.get_map(
+    data,
+    "PSRHydroPlant",
+    "PSRHydroPlant";
+    relation_type = PSRI.RELATION_TURBINE_TO,
+)
+PSRI.get_map(data, "PSRHydroPlant", "PSRHydroPlant"; relation_type = PSRI.RELATION_SPILL_TO)
+PSRI.get_map(
+    data,
+    "PSRHydroPlant",
+    "PSRHydroPlant";
+    relation_type = PSRI.RELATION_INFILTRATE_TO,
+)
+PSRI.get_map(
+    data,
+    "PSRHydroPlant",
+    "PSRHydroPlant";
+    relation_type = PSRI.RELATION_STORED_ENERGY_DONWSTREAM,
+)
 
-@test PSRI.get_map(data, "PSRInterconnection", "PSRSystem", relation_type = PSRI.RELATION_FROM)
-@test PSRI.get_map(data, "PSRInterconnection", "PSRSystem", relation_type = PSRI.RELATION_TO)
+@test PSRI.get_map(
+    data,
+    "PSRInterconnection",
+    "PSRSystem",
+    relation_type = PSRI.RELATION_FROM,
+)
+@test PSRI.get_map(
+    data,
+    "PSRInterconnection",
+    "PSRSystem",
+    relation_type = PSRI.RELATION_TO,
+)
 ```
 """
 function get_map end
@@ -284,10 +320,16 @@ Since multiple relations might be available one might need to specify
 `relation_type`.
 
 Example:
+
 ```julia
 PSRI.get_vector_map(data, "PSRInterconnectionSumData", "PSRInterconnection")
 PSRI.get_vector_map(data, "PSRReserveGenerationConstraintData", "PSRHydroPlant")
-PSRI.get_vector_map(data, "PSRReserveGenerationConstraintData", "PSRThermalPlant", relation_type = PSRI.RELATION_BACKED)
+PSRI.get_vector_map(
+    data,
+    "PSRReserveGenerationConstraintData",
+    "PSRThermalPlant";
+    relation_type = PSRI.RELATION_BACKED,
+)
 ```
 """
 function get_vector_map end
@@ -341,11 +383,26 @@ Example:
 
 ```julia
 # upstream turbining hydros
-PSRI.get_reverse_vector_map(data, "PSRHydroPlant", "PSRHydroPlant", original_relation_type = PSRI.RELATION_TURBINE_TO)
+PSRI.get_reverse_vector_map(
+    data,
+    "PSRHydroPlant",
+    "PSRHydroPlant";
+    original_relation_type = PSRI.RELATION_TURBINE_TO,
+)
 # which is the reverse of
-PSRI.get_map(data, "PSRHydroPlant", "PSRHydroPlant", relation_type = PSRI.RELATION_TURBINE_TO)
+PSRI.get_map(
+    data,
+    "PSRHydroPlant",
+    "PSRHydroPlant";
+    relation_type = PSRI.RELATION_TURBINE_TO,
+)
 
-PSRI.get_reverse_vector_map(data, "PSRGenerator", "PSRBus", original_relation_type = PSRI.RELATION_1_TO_1)
+PSRI.get_reverse_vector_map(
+    data,
+    "PSRGenerator",
+    "PSRBus";
+    original_relation_type = PSRI.RELATION_1_TO_1,
+)
 # which is the reverse of
 PSRI.get_map(data, "PSRGenerator", "PSRBus")
 ```
@@ -366,6 +423,7 @@ Returns a `T` containing the the value from `attribute` of `collection`.
 This function is used to get data from collections that don't vary over time.
 
 Example:
+
 ```julia
 PSRI.get_parm(data, "PSRBattery", "Einic", Float64, 1)
 PSRI.get_parm(data, "PSRBattery", "ChargeRamp", Float64, 1)
@@ -388,6 +446,7 @@ Returns a `T` containing the the value from `attribute` of `collection`.
 This function is used to get data from collections that don't vary over time.
 
 Example:
+
 ```julia
 PSRI.get_parm_1d(data, "PSRHydroPlant", "FP", Float64, 1)
 PSRI.get_parm_1d(data, "PSRHydroPlant", "FP.VOL", Float64, 1)
@@ -408,8 +467,10 @@ function get_parm_1d end
 Returns a `T` containing the the value from `attribute` of `collection`.
 This function is used to get data from collections that don't vary over time.
 
-Example: no available in SDDP data base
+Example: (Warning: a SDDP study does not have a parm attribute with two dimensions)
+
 ```julia
+PSRI.get_parm_2d(data, "PSRCollection", "AttributeName", Float64, 1)
 ```
 """
 function get_parm_2d end
@@ -431,6 +492,7 @@ julia.
 This function is used to get data from collections that don't vary over time
 
 Example:
+
 ```julia
 PSRI.get_parms(data, "PSRBattery", "Einic", Float64)
 PSRI.get_parms(data, "PSRBattery", "ChargeRamp", Float64)
@@ -480,6 +542,7 @@ julia.
 This function is used to get data from collections that don't vary over time
 
 Example:
+
 ```julia
 PSRI.get_parm_1d(data, "PSRHydroPlant", "FP", Float64)
 PSRI.get_parm_1d(data, "PSRHydroPlant", "FP.VOL", Float64)
@@ -528,6 +591,7 @@ julia.
 This function is used to get data from collections that don't vary over time
 
 Example:
+
 ```julia
 PSRI.get_parms_2d(data, "PSRBattery", "Einic", Float64)
 PSRI.get_parms_2d(data, "PSRBattery", "ChargeRamp", Float64)
@@ -566,6 +630,7 @@ end
 Returns a `Vector{Int32}` containing the code of each element in `collection`.
 
 Example:
+
 ```julia
 PSRI.get_code(data, "PSRThermalPlant")
 ```
@@ -580,6 +645,7 @@ end
 Returns a `Vector{String}` containing the name of each element in `collection`.
 
 Example:
+
 ```julia
 PSRI.get_name(data, "PSRThermalPlant")
 PSRI.get_name(data, "PSRGaugingStation")
@@ -606,6 +672,7 @@ Maps a `Vector{T}` containing the elements in `collection` to a vector in julia.
 is called the elements of the vector will be updated to the according elements registered at the current `data.time_controller`.
 
 Example:
+
 ```julia
 existing = PSRI.mapped_vector(data, "PSRThermalPlant", "Existing", Int32)
 pot_inst = PSRI.mapped_vector(data, "PSRThermalPlant", "PotInst", Float64)
@@ -614,6 +681,7 @@ pot_inst = PSRI.mapped_vector(data, "PSRThermalPlant", "PotInst", Float64)
 For more information please read the example [Reading basic thermal generator parameters](@ref)
 
 !!! note "Differences between the OpenInterface and ClassicInterface"
+
     When using `mapped_vector` in the `OpenInterface` mode the vector will be mapped
     with the correct values at first hand. When using `mapped_vector` in the
     `ClassicInterface` mode you should call [`update_vectors!`](@ref) to get the
@@ -635,6 +703,7 @@ Moves time controller reference of vectors indexed by dimension `name` to the
 index `value`.
 
 Example:
+
 ```julia
 cesp = PSRI.mapped_vector(data, "PSRThermalPlant", "CEsp", Float64, "segment", "block")
 
@@ -670,6 +739,7 @@ function description end
 Returns the total number of stages of the case.
 
 Example:
+
 ```julia
 PSRI.total_stages(data)
 ```
@@ -682,6 +752,7 @@ function total_stages end
 Returns the total number of scenarios of the case.
 
 Example:
+
 ```julia
 PSRI.total_scenarios(data)
 ```
@@ -694,6 +765,7 @@ function total_scenarios end
 Returns the total number of blocks of the case.
 
 Example:
+
 ```julia
 PSRI.total_blocks(data)
 ```
@@ -706,6 +778,7 @@ function total_blocks end
 Returns the total number of openings of the case.
 
 Example:
+
 ```julia
 PSRI.total_openings(data)
 ```
@@ -718,6 +791,7 @@ function total_openings end
 Returns the total number of stages per year of the case.
 
 Example:
+
 ```julia
 PSRI.total_stages_per_year(data)
 ```
@@ -778,6 +852,7 @@ Returns a vector of booleans with the number of elements of the collection.
 `false` means it is empty.
 
 Example:
+
 ```julia
 PSRI.get_nonempty_vector(data, "PSRThermalPlant", "ChroGerMin")
 PSRI.get_nonempty_vector(data, "PSRThermalPlant", "SpinningReserve")
@@ -790,7 +865,7 @@ function get_nonempty_vector end
 
 All the data from the databases must have one of these types.
 """
-const MainTypes = Union{Float64,Int32,String,Dates.Date}
+const MainTypes = Union{Float64, Int32, String, Dates.Date}
 
 """
     configuration_parameter(
@@ -810,6 +885,7 @@ Returns the required configuration parameter from the case. If the parameter is 
 Returns the rquired configuration parameters from the case that are vectors that are vectors. If the parameter is not registered returns the default value.
 
 ## Examples:
+
 ```julia
 PSRI.configuration_parameter(data, "MaximoIteracoes", 0)
 PSRI.configuration_parameter(data, "MinOutflowPenalty", 0.0)
@@ -818,7 +894,6 @@ PSRI.configuration_parameter(data, "MinOutflowPenalty", 0.0)
 ```julia
 PSRI.configuration_parameter(data, "DeficitCost", [0.0])
 ```
-
 """
 function configuration_parameter end
 
@@ -833,6 +908,7 @@ function configuration_parameter end
 Creates a new instance of the given `collection` and returns its index.
 
 Example:
+
 ```
 index = PSRI.create_element!(data, "PSRClass")
 
@@ -843,14 +919,15 @@ function create_element! end
 
 """
 delete_element!(
-    data::Data, 
-    collection::String, 
-    index::Int32
-    )
+data::Data,
+collection::String,
+index::Int32
+)
 
 Deletes element from `collection` at index `index`.
 
 Example:
+
 ```
 PSRI.delete_element!(data, "PSRBus", 3)
 ```
@@ -892,9 +969,10 @@ function set_vector! end
         index::Int,
     )
 
-Retrieves a SeriesTable object with all attributes from an element that are indexed by `index_attr`. 
+Retrieves a SeriesTable object with all attributes from an element that are indexed by `index_attr`.
 
 Example
+
 ```
 julia> PSRI.get_series(data, "PSRThermalPlant", "Data", 1)
 Dict{String, Vector} with 13 entries:
@@ -915,18 +993,18 @@ Dict{String, Vector} with 13 entries:
 """
 function get_series end
 
-
 """
 function get_graf_series(
-    data::Data,
-    collection::String,
-    attribute::String;
-    kws...
+data::Data,
+collection::String,
+attribute::String;
+kws...
 )
 
 Retrieves a GrafTable object with the values for 'attribute' in all elements in 'collection' from a Graf file.
 
 Example
+
 ```
 julia> PSRI.get_graf_series(data, "PSRDemand", "Duracao")
 ```
@@ -968,7 +1046,6 @@ julia> PSRI.set_series!(data, "PSRThermalPlant", 1, "Data", series)
 """
 function set_series! end
 
-
 """
     function has_graf_file(data::Data, collection::String, attribute::Union{String, Nothing} = nothing)
 
@@ -996,6 +1073,7 @@ function has_graf_file end
 Links Graf file to an attribute from a collection.
 
 Example
+
 ```
 julia> PSRI.link_series_to_file(
     data, 
@@ -1063,11 +1141,11 @@ end
 
 Returns a struct of type `Attribute` with fields:
 
-* name::String = attribute name
-* is_vector::Bool = true if attribute is a vector (tipically, varies in time)
-* type::DataType = attribute type (tipically: Int32, Float64, String, Dates.Date)
-* dim::Int = number of additional dimensions
-* index::String = if a vector represents the indexing vector (might be empty)
+  - name::String = attribute name
+  - is_vector::Bool = true if attribute is a vector (tipically, varies in time)
+  - type::DataType = attribute type (tipically: Int32, Float64, String, Dates.Date)
+  - dim::Int = number of additional dimensions
+  - index::String = if a vector represents the indexing vector (might be empty)
 """
 function get_attribute_struct(data::AbstractData, collection::String, attribute::String)
     return get_attribute_struct(get_data_struct(data), collection, attribute)
@@ -1075,7 +1153,7 @@ end
 
 function get_attribute_struct(data::DataStruct, collection::String, attribute::String)
     collection_struct = data[collection]
-    
+
     attribute, _ = _trim_multidimensional_attribute(attribute)
 
     if !haskey(collection_struct, attribute)
@@ -1111,9 +1189,8 @@ indexed by `indexing_attribute`.
 function get_attributes_indexed_by(
     data::AbstractData,
     collection::String,
-    indexing_attribute::String
+    indexing_attribute::String,
 )
-
     data_struct = get_data_struct(data)
     if !haskey(data_struct, collection)
         error("PSR Class '$collection' is not available for this database.")
@@ -1165,7 +1242,7 @@ function get_relations(collection::String)
     if haskey(_RELATIONS, collection)
         return collect(keys(_RELATIONS[collection]))
     end
-    return Tuple{String,RelationType}[]
+    return Tuple{String, RelationType}[]
 end
 
 """
@@ -1271,7 +1348,7 @@ Shows information about all collections in a study.
     summary(io::IO, data::Data, collection::String)
 
 Shows information about all attributes of a collection.
-    
+
     summary(data::Data, collection::String, attribute::String)
     summary(io::IO, data::Data, collection::String, attribute::String)
 

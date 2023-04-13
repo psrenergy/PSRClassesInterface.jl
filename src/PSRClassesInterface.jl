@@ -5,14 +5,16 @@ import JSON
 import Tables
 
 @static if VERSION < v"1.6"
-    error("Julia version $VERSION not supported by PSRClassesInterface, upgrade to 1.6 or later")
+    error(
+        "Julia version $VERSION not supported by PSRClassesInterface, upgrade to 1.6 or later",
+    )
 end
 
 const JSON_METADATA_PATH = joinpath(@__DIR__, "json_metadata")
 
-const PSRCLASSES_DEFAULTS_PATH  = joinpath(JSON_METADATA_PATH, "psrclasses.default.json")
+const PSRCLASSES_DEFAULTS_PATH = joinpath(JSON_METADATA_PATH, "psrclasses.default.json")
 const PSRCLASSES_DEFAULTS_CTIME = [ctime(PSRCLASSES_DEFAULTS_PATH)]
-const PSRCLASSES_DEFAULTS       = JSON.parsefile(PSRCLASSES_DEFAULTS_PATH)
+const PSRCLASSES_DEFAULTS = JSON.parsefile(PSRCLASSES_DEFAULTS_PATH)
 
 # submodules
 include("PMD/PMD.jl")

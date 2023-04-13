@@ -8,9 +8,9 @@ function is_vector_relation(relation)
     return relation == RELATION_1_TO_N || relation == RELATION_BACKED
 end
 
-const _INNER_KEY = Tuple{String,RelationType}
-const _INNER_DICT = Dict{_INNER_KEY,String}
-const _RELATIONS = Dict{String,_INNER_DICT}(
+const _INNER_KEY = Tuple{String, RelationType}
+const _INNER_DICT = Dict{_INNER_KEY, String}
+const _RELATIONS = Dict{String, _INNER_DICT}(
     "PSRThermalPlant" => _INNER_DICT(
         ("PSRFuel", RELATION_1_TO_N) => "fuels",
         ("PSRSystem", RELATION_1_TO_1) => "system",
@@ -131,7 +131,7 @@ function _get_target_index_from_relation(
 
     if isa(target_reference_id, Vector{Int})
         for id in target_reference_id
-            _, target_index =  _get_index(data.data_index, id)
+            _, target_index = _get_index(data.data_index, id)
             push!(target_indices, target_index)
         end
     else
@@ -153,7 +153,7 @@ function _get_sources_indices_from_relations(
     indices = Vector{Int32}()
     for (index, element) in enumerate(possible_elements)
         if haskey(element, relation_attribute)
-            if target_id in element[relation_attribute] 
+            if target_id in element[relation_attribute]
                 push!(indices, index)
             end
         end
@@ -165,13 +165,12 @@ function _get_element_related(data::Data, collection::String, index::Integer)
     element = _get_element(data, collection, index)
 
     # source_collection, target_collection, source_index, target_index
-    relations = Dict{Tuple{String,String,Int,Int},String}()
+    relations = Dict{Tuple{String, String, Int, Int}, String}()
 
     # Relations where the element is source
     if haskey(_RELATIONS, collection)
         for ((target, _), attribute) in _RELATIONS[collection]
             if haskey(element, attribute) # has a relation as source
-
                 target_indices =
                     _get_target_index_from_relation(data, collection, index, attribute)
                 for target_index in target_indices
@@ -228,9 +227,13 @@ function relations_summary(data::Data, collection::String, index::Integer)
         ((source_collection, target_collection, source_index, target_index), _),
     ) in enumerate(relations)
         if source_collection == collection && source_index == index
-            println("$relation_index: $source_collection[$source_index] → $target_collection[$target_index]")
+            println(
+                "$relation_index: $source_collection[$source_index] → $target_collection[$target_index]",
+            )
         else
-            println("$relation_index: $target_collection[$target_index] ← $source_collection[$source_index]")
+            println(
+                "$relation_index: $target_collection[$target_index] ← $source_collection[$source_index]",
+            )
         end
     end
     return
@@ -306,7 +309,7 @@ function get_reverse_map(
         vector_map = get_vector_map(
             data,
             lst_from,
-            lst_to,
+            lst_to;
             allow_empty = allow_empty,
             relation_type = original_relation_type,
         )
@@ -325,7 +328,7 @@ function get_reverse_map(
     map = get_map(
         data,
         lst_from,
-        lst_to,
+        lst_to;
         allow_empty = allow_empty,
         relation_type = original_relation_type,
     )
@@ -361,7 +364,7 @@ function get_reverse_vector_map(
         vector_map = get_vector_map(
             data,
             lst_from,
-            lst_to,
+            lst_to;
             allow_empty = allow_empty,
             relation_type = original_relation_type,
         )
@@ -374,7 +377,7 @@ function get_reverse_vector_map(
     map = get_map(
         data,
         lst_from,
-        lst_to,
+        lst_to;
         allow_empty = allow_empty,
         relation_type = original_relation_type,
     )
