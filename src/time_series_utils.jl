@@ -221,6 +221,7 @@ function is_equal(
 
     for est in 1:max_stages(ior1), scen in 1:max_scenarios(ior1),
         blk in 1:max_blocks_current(ior1)
+
         if ior1[:] != ior2[:]
             error("Different values on stage $est, scenario: $scen, block: $blk")
         end
