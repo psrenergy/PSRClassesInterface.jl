@@ -360,7 +360,7 @@ function delete_relation!(
     source_index::Integer,
     target_index::Integer,
 )
-    relations_as_source, _  = _get_element_related(data, source, source_index)
+    relations_as_source, _ = _get_element_related(data, source, source_index)
 
     source_element = _get_element(data, source, source_index)
     target_element = _get_element(data, target, target_index)
@@ -372,7 +372,9 @@ function delete_relation!(
             end
         end
     else
-        error("Relation between element from '$source'(Source) with element from '$target'(Target) does not exist")
+        error(
+            "Relation between element from '$source'(Source) with element from '$target'(Target) does not exist",
+        )
     end
 
     return nothing
@@ -388,7 +390,10 @@ function delete_vector_relation!(
     relations_as_source, _ = _get_element_related(data, source, source_index)
 
     source_element = _get_element(data, source, source_index)
-    targets_ref_id = [_get_element(data, target, target_index)["reference_id"] for target_index in target_indices]
+    targets_ref_id = [
+        _get_element(data, target, target_index)["reference_id"] for
+        target_index in target_indices
+    ]
 
     if haskey(relations_as_source, target)
         for (relation_attribute, _) in relations_as_source[target]
@@ -397,7 +402,9 @@ function delete_vector_relation!(
             end
         end
     else
-        error("Relation between element from '$source'(Source) with element from '$target'(Target) does not exist")
+        error(
+            "Relation between element from '$source'(Source) with element from '$target'(Target) does not exist",
+        )
     end
 
     return nothing
@@ -455,7 +462,7 @@ function create_study(
 
     relation_mapper = PMD.RelationMapper()
 
-    PMD.load_relations_struct!(relations_defaults_path ,relation_mapper)
+    PMD.load_relations_struct!(relations_defaults_path, relation_mapper)
 
     data_struct, model_files_added = PMD.load_model(pmds_path, pmd_files, model_template)
 
@@ -521,7 +528,7 @@ function create_study(
         log_file = nothing,
         verbose = true,
         model_template = model_template,
-        relation_mapper = relation_mapper
+        relation_mapper = relation_mapper,
     )
 
     _create_study_collection(data, study_collection, study_defaults)

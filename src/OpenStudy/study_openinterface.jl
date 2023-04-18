@@ -276,7 +276,7 @@ function initialize_study(
 
     relation_mapper = PMD.RelationMapper()
 
-    PMD.load_relations_struct!(relations_defaults_path ,relation_mapper)
+    PMD.load_relations_struct!(relations_defaults_path, relation_mapper)
 
     data_struct, model_files_added = PMD.load_model(path_pmds, pmd_files, model_template)
 
@@ -343,7 +343,7 @@ function initialize_study(
         log_file = log_file,
         verbose = verbose,
         model_template = model_template,
-        relation_mapper = relation_mapper
+        relation_mapper = relation_mapper,
     )
 
     if add_transformers_to_series

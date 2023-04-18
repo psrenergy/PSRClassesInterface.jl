@@ -12,7 +12,10 @@ end
 
     Returns true if there is a relation with attribute 'relation_attribute' in a 'Vector{PMD.Relation}'
 """
-function _has_relation_attribute(relations::Vector{PMD.Relation}, relation_attribute::String)
+function _has_relation_attribute(
+    relations::Vector{PMD.Relation},
+    relation_attribute::String,
+)
     has_relation_attribute = false
     for relation in relations
         if relation.attribute == relation_attribute
@@ -27,7 +30,10 @@ end
 
     Returns true if there is a relation with type 'relation_type' in a 'Vector{PMD.Relation}'
 """
-function _has_relation_type(relations::Vector{PMD.Relation}, relation_type::PMD.RelationType)
+function _has_relation_type(
+    relations::Vector{PMD.Relation},
+    relation_type::PMD.RelationType,
+)
     has_relation_type = false
     for relation in relations
         if relation.type == relation_type
@@ -57,13 +63,15 @@ function validate_relation(data::Data, source::String, target::String)
     validate_relation(data::Data, source::String)
 
     if !haskey(data.relation_mapper[source], target)
-        if !haskey(data.relation_mapper, target) || !haskey(data.relation_mapper[target], source)
+        if !haskey(data.relation_mapper, target) ||
+           !haskey(data.relation_mapper[target], source)
             error("No relation from $source to $target.")
         end
-        if haskey(data.relation_mapper, target) && haskey(data.relation_mapper[target], source)
+        if haskey(data.relation_mapper, target) &&
+           haskey(data.relation_mapper[target], source)
             error(
                 "No relation from $source to $target." *
-                "There is a reverse relation from $target to $source."
+                "There is a reverse relation from $target to $source.",
             )
         end
     end
@@ -74,20 +82,28 @@ end
 
     Returns an error message if there is no relation between collections 'source' and 'target' with type 'relation_type'
 """
-function validate_relation(data::Data, source::String, target::String, relation_type::PMD.RelationType)
+function validate_relation(
+    data::Data,
+    source::String,
+    target::String,
+    relation_type::PMD.RelationType,
+)
     validate_relation(data, source, target)
 
     if !_has_relation_type(data.relation_mapper[source][target], relation_type)
-        if haskey(data.relation_mapper,target) && haskey(data.relation_mapper[target], source)
+        if haskey(data.relation_mapper, target) &&
+           haskey(data.relation_mapper[target], source)
             if _has_relation_type(data.relation_mapper[target][source], relation_type)
                 error(
                     "No relation from $(source) to $(target) with type $(relation_type)." *
                     " The there is a reverse relation from $(target) to " *
-                    "$(source)  with type $(relation_type)."
+                    "$(source)  with type $(relation_type).",
                 )
             end
         end
-        error("There is no relation with type $(relation_type) between collections $(source) and $(target)")
+        error(
+            "There is no relation with type $(relation_type) between collections $(source) and $(target)",
+        )
     end
 end
 
@@ -96,30 +112,45 @@ end
 
     Returns an error message if there is no relation between collections 'source' and 'target' with attribute 'relation_attribute'
 """
-function validate_relation(data::Data, source::String, target::String, relation_attribute::String)
+function validate_relation(
+    data::Data,
+    source::String,
+    target::String,
+    relation_attribute::String,
+)
     validate_relation(data, source, target)
 
     if !_has_relation_attribute(data.relation_mapper[source][target], relation_attribute)
-        if haskey(data.relation_mapper,target) && haskey(data.relation_mapper[target], source)
-            if _has_relation_attribute(data.relation_mapper[target][source], relation_attribute)
+        if haskey(data.relation_mapper, target) &&
+           haskey(data.relation_mapper[target], source)
+            if _has_relation_attribute(
+                data.relation_mapper[target][source],
+                relation_attribute,
+            )
                 error(
                     "No relation from $(source) to $(target) with attribute $(relation_attribute)." *
                     " The there is a reverse relation from $(target) to " *
-                    "$(source)  with attribute $(relation_attribute)."
+                    "$(source)  with attribute $(relation_attribute).",
                 )
             end
         end
-        error("There is no relation with attribute $(relation_attribute) between collections $(source) and $(target)")
+        error(
+            "There is no relation with attribute $(relation_attribute) between collections $(source) and $(target)",
+        )
     end
 end
 
 """
     _get_relation_attribute(data::Data, source::String, target::String, relation_type::PMD.RelationType)
-    
+
     Returns the attribute that represents a relation between elements from collections 'source' and 'target'
 """
-function _get_relation_attribute(data::Data, source::String, target::String, relation_type::PMD.RelationType)
-    
+function _get_relation_attribute(
+    data::Data,
+    source::String,
+    target::String,
+    relation_type::PMD.RelationType,
+)
     validate_relation(data, source, target, relation_type)
 
     relations = data.relation_mapper[source][target]
@@ -142,7 +173,7 @@ end
         source_index::Integer,
         relation_attribute::String,
     )
-    
+
     Returns the 'target' element's index stored in 'source' element in the attribute 'relation_attribute'
 """
 function _get_target_index_from_relation(
@@ -174,7 +205,7 @@ end
         target_id::Integer,
         relation_attribute::String,
     )
-    
+
     Returns indices of all elements from collection 'source' that have an attribute 'relation_attribute' that stores the given 'target_id'
 """
 function _get_sources_indices_from_relations(
@@ -211,7 +242,7 @@ end
 
 """
     _get_element_related(data::Data, collection::String, index::Integer)
-    
+
     Returns two dictionaries:
     - Dict{target_collection, Dict{attribute, Vector{target_index}}}
     - Dict{source_collection, Dict{attribute, Vector{source_index}}}
@@ -222,9 +253,8 @@ end
 function _get_element_related(data::Data, collection::String, index::Integer)
     element = _get_element(data, collection, index)
 
-    
-    relations_as_source = Dict{String, Dict{String,Vector{Int}}}() # Dict{target_collection, Dict{attribute, Vector{target_index}}}
-    relations_as_target = Dict{String, Dict{String,Vector{Int}}}() # Dict{source_collection, Dict{attribute, Vector{source_index}}}
+    relations_as_source = Dict{String, Dict{String, Vector{Int}}}() # Dict{target_collection, Dict{attribute, Vector{target_index}}}
+    relations_as_target = Dict{String, Dict{String, Vector{Int}}}() # Dict{source_collection, Dict{attribute, Vector{source_index}}}
 
     # Relations where the element is source
     if haskey(data.relation_mapper, collection)
@@ -233,10 +263,18 @@ function _get_element_related(data::Data, collection::String, index::Integer)
             for relation in relations_vector
                 if haskey(element, relation.attribute) # has a relation as source
                     target_indices =
-                        _get_target_index_from_relation(data, collection, index, relation.attribute)
+                        _get_target_index_from_relation(
+                            data,
+                            collection,
+                            index,
+                            relation.attribute,
+                        )
                     if !isempty(target_indices)
                         relations_as_source[target][relation.attribute] = Vector{Int}()
-                        append!(relations_as_source[target][relation.attribute],target_indices)
+                        append!(
+                            relations_as_source[target][relation.attribute],
+                            target_indices,
+                        )
                     end
                 end
             end
@@ -245,7 +283,7 @@ function _get_element_related(data::Data, collection::String, index::Integer)
             end
         end
     end
-    
+
     # Relations where the element is target
     for (source, related) in data.relation_mapper
         for (target, relations) in related
@@ -257,11 +295,14 @@ function _get_element_related(data::Data, collection::String, index::Integer)
                         source,
                         collection,
                         element["reference_id"],
-                        relation.attribute
+                        relation.attribute,
                     )
                     if !isempty(source_indices)
                         relations_as_target[source][relation.attribute] = Vector{Int}()
-                        append!(relations_as_target[source][relation.attribute], source_indices)
+                        append!(
+                            relations_as_target[source][relation.attribute],
+                            source_indices,
+                        )
                     end
                 end
                 if isempty(relations_as_target[source])
@@ -270,7 +311,7 @@ function _get_element_related(data::Data, collection::String, index::Integer)
             end
         end
     end
-    
+
     return relations_as_source, relations_as_target
 end
 
@@ -337,10 +378,9 @@ function relations_summary(data::Data, collection::String, index::Integer)
             )
         end
     end
-    
+
     return
 end
-
 
 """
     check_relation_scalar(relation_type::PMD.RelationType)
@@ -497,7 +537,6 @@ function get_map(
 
     # TODO improve this quadratic loop
     for (idx_from, el_from) in enumerate(vec_from)
-
         id_to = get(el_from, raw_field, -1)
 
         found = false
@@ -512,7 +551,6 @@ function get_map(
         if !found && !allow_empty
             error("No $lst_to element matching $lst_from of index $idx_from")
         end
-
     end
     return out
 end

@@ -1,6 +1,7 @@
 using JSON
 
-const _DEFAULT_RELATIONS_PATH = joinpath(@__DIR__(), "..", "json_metadata", "relations.default.json")
+const _DEFAULT_RELATIONS_PATH =
+    joinpath(@__DIR__(), "..", "json_metadata", "relations.default.json")
 
 """
     RelationType
@@ -24,10 +25,10 @@ RELATION_BACKED
 @enum RelationType begin
     RELATION_1_TO_1 = 0
     RELATION_1_TO_N = 1
-    RELATION_FROM   = 2
-    RELATION_TO     = 3
+    RELATION_FROM = 2
+    RELATION_TO = 3
     RELATION_TURBINE_TO = 4
-    RELATION_SPILL_TO   = 5
+    RELATION_SPILL_TO = 5
     RELATION_INFILTRATE_TO = 6
     RELATION_STORED_ENERGY_DONWSTREAM = 7
     RELATION_BACKED = 8
@@ -55,7 +56,10 @@ function load_relations_struct!(path::AbstractString, relation_mapper::RelationM
     for (key, value) in raw_struct
         relation_mapper[key] = Dict{String, Vector{Relation}}()
         for (collection, relations) in value
-            relations_vector = [Relation(RelationType(relation["type"]),relation["attribute"]) for relation in relations]
+            relations_vector = [
+                Relation(RelationType(relation["type"]), relation["attribute"]) for
+                relation in relations
+            ]
             relation_mapper[key][collection] = relations_vector
         end
     end

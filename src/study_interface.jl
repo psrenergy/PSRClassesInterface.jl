@@ -244,7 +244,12 @@ PSRI.get_map(
     "PSRHydroPlant";
     relation_type = PSRI.PMD.RELATION_TURBINE_TO,
 )
-PSRI.get_map(data, "PSRHydroPlant", "PSRHydroPlant"; relation_type = PSRI.PMD.RELATION_SPILL_TO)
+PSRI.get_map(
+    data,
+    "PSRHydroPlant",
+    "PSRHydroPlant";
+    relation_type = PSRI.PMD.RELATION_SPILL_TO,
+)
 PSRI.get_map(
     data,
     "PSRHydroPlant",

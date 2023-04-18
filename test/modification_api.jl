@@ -299,9 +299,15 @@ function test_api8() #tests delete_relation!
     @test PSRI.has_relations(data, "PSRBus", index2)
     @test PSRI.has_relations(data, "PSRSerie", index3)
 
-    @test PSRI.get_map(data, "PSRSerie", "PSRBus"; relation_type = PSRI.PMD.RELATION_FROM) ==
+    @test PSRI.get_map(
+        data,
+        "PSRSerie",
+        "PSRBus";
+        relation_type = PSRI.PMD.RELATION_FROM,
+    ) ==
           [2]
-    @test PSRI.get_map(data, "PSRSerie", "PSRBus"; relation_type = PSRI.PMD.RELATION_TO) == [1]
+    @test PSRI.get_map(data, "PSRSerie", "PSRBus"; relation_type = PSRI.PMD.RELATION_TO) ==
+          [1]
 
     PSRI.delete_relation!(data, "PSRSerie", "PSRBus", index3, index1)
     PSRI.delete_relation!(data, "PSRSerie", "PSRBus", index3, index2)
@@ -320,7 +326,12 @@ function test_api8() #tests delete_relation!
         "PSRBus";
         relation_type = PSRI.PMD.RELATION_FROM,
     ) == [0]
-    @test PSRI.get_map(data_copy, "PSRSerie", "PSRBus"; relation_type = PSRI.PMD.RELATION_TO) ==
+    @test PSRI.get_map(
+        data_copy,
+        "PSRSerie",
+        "PSRBus";
+        relation_type = PSRI.PMD.RELATION_TO,
+    ) ==
           [0]
 end
 
