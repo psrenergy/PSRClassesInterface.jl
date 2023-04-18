@@ -209,6 +209,16 @@ function _get_sources_indices_from_relations(
     return indices
 end
 
+"""
+    _get_element_related(data::Data, collection::String, index::Integer)
+    
+    Returns two dictionaries:
+    - Dict{target_collection, Dict{attribute, Vector{target_index}}}
+    - Dict{source_collection, Dict{attribute, Vector{source_index}}}
+
+    The first contains information about the relations that the element has with the role of source in a study.
+    The second, information about the relations that the element has with the role of target in a study.
+"""
 function _get_element_related(data::Data, collection::String, index::Integer)
     element = _get_element(data, collection, index)
 
@@ -295,6 +305,15 @@ function has_relations(data::Data, collection::String, index::Int)
     return false
 end
 
+"""
+    relations_summary(data::Data, collection::String, index::Integer)
+
+    Displays all current relations of the element in the following way:
+
+    attribute_name: collection_name[element_index] → collection_name[element_index]
+
+    (The arrow always points from the source to target)
+"""
 function relations_summary(data::Data, collection::String, index::Integer)
     if !has_relations(data, collection, index)
         println("This element does not have any relations")
@@ -304,15 +323,15 @@ function relations_summary(data::Data, collection::String, index::Integer)
     relations_as_source, relations_as_target = _get_element_related(data, collection, index)
 
     for (target, value) in relations_as_source
-        for (target_index, attribute) in value
+        for (attribute, target_index) in value
             println(
-                "$attribute: $collection[$index] → $target[$target_index]",
+                "$attribute: $collection[$index] → $target$target_index",
             )
         end
     end
 
     for (source, value) in relations_as_target
-        for (source_index, attribute) in value
+        for (attribute, source_index) in value
             println(
                 "$attribute: $source[$source_index] ← $collection[$index]",
             )
@@ -322,6 +341,12 @@ function relations_summary(data::Data, collection::String, index::Integer)
     return
 end
 
+
+"""
+    check_relation_scalar(relation_type::PMD.RelationType)
+
+    Returns an error message if relation_type is not a scalar
+"""
 function check_relation_scalar(relation_type::PMD.RelationType)
     if is_vector_relation(relation_type)
         error("Relation of type $relation_type is of type vector, not the expected scalar.")
@@ -329,6 +354,11 @@ function check_relation_scalar(relation_type::PMD.RelationType)
     return nothing
 end
 
+"""
+    check_relation_vector(relation_type::PMD.RelationType)
+
+    Returns an error message if relation_type is not a vector
+"""
 function check_relation_vector(relation_type::PMD.RelationType)
     if !is_vector_relation(relation_type)
         error("Relation of type $relation_type is of type scalar, not the expected vector.")
@@ -545,7 +575,7 @@ function get_related(
     source::String,
     target::String,
     source_index::Integer;
-    relation_type::PMD.RelationType = PMD.RelationType.RELATION_1_TO_1,
+    relation_type::PMD.RelationType = PMD.RELATION_1_TO_1,
 )
     check_relation_scalar(relation_type)
     validate_relation(data, source, target, relation_type)
@@ -578,7 +608,7 @@ function get_vector_related(
     source::String,
     target::String,
     source_index::Integer,
-    relation_type::PMD.RelationType = RELATION_1_TO_N,
+    relation_type::PMD.RelationType = PMD.RELATION_1_TO_N,
 )
     check_relation_vector(relation_type)
     validate_relation(data, source, target, relation_type)
