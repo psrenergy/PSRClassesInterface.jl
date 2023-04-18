@@ -14,7 +14,7 @@ function test_relations1() # tests _get_target_index_from_relation
             "PSRBus",
             1,
             1;
-            relation_type = PSRI.RELATION_FROM,
+            relation_type = PSRI.PMD.RELATION_FROM,
         )
         PSRI.set_related!(
             data,
@@ -22,7 +22,7 @@ function test_relations1() # tests _get_target_index_from_relation
             "PSRBus",
             1,
             2;
-            relation_type = PSRI.RELATION_TO,
+            relation_type = PSRI.PMD.RELATION_TO,
         )
 
         target_index = PSRI._get_target_index_from_relation(data, "PSRSerie", 1, "no1")
@@ -46,7 +46,7 @@ function test_relations2() # tests _get_sources_indices_from_relations
             "PSRBus",
             1,
             1;
-            relation_type = PSRI.RELATION_FROM,
+            relation_type = PSRI.PMD.RELATION_FROM,
         )
         PSRI.set_related!(
             data,
@@ -54,7 +54,7 @@ function test_relations2() # tests _get_sources_indices_from_relations
             "PSRBus",
             1,
             2;
-            relation_type = PSRI.RELATION_TO,
+            relation_type = PSRI.PMD.RELATION_TO,
         )
 
         source_indices = PSRI._get_sources_indices_from_relations(
@@ -84,7 +84,7 @@ function test_relations3() # tests has_relations
             "PSRBus",
             index3,
             index1;
-            relation_type = PSRI.RELATION_FROM,
+            relation_type = PSRI.PMD.RELATION_FROM,
         )
         PSRI.set_related!(
             data,
@@ -92,7 +92,7 @@ function test_relations3() # tests has_relations
             "PSRBus",
             index3,
             index2;
-            relation_type = PSRI.RELATION_TO,
+            relation_type = PSRI.PMD.RELATION_TO,
         )
 
         @test PSRI.has_relations(data, "PSRSerie", 1)

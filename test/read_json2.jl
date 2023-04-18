@@ -40,7 +40,7 @@ capacity = PSRI.mapped_vector(data, "PSRThermalPlant", "PotInst", Float64)
     Int32[20, 33, 39, 51, 71, 86, 93, 109, 117]
 
 @test busFcur =
-    PSRI.get_map(data, "PSRSerie", "PSRBus"; relation_type = PSRI.RELATION_FROM) == Int32[
+    PSRI.get_map(data, "PSRSerie", "PSRBus"; relation_type = PSRI.PMD.RELATION_FROM) == Int32[
         1,
         1,
         1,
@@ -177,7 +177,7 @@ capacity = PSRI.mapped_vector(data, "PSRThermalPlant", "PotInst", Float64)
         117,
     ]
 @test busTcir =
-    PSRI.get_map(data, "PSRSerie", "PSRBus"; relation_type = PSRI.RELATION_TO) == Int32[
+    PSRI.get_map(data, "PSRSerie", "PSRBus"; relation_type = PSRI.PMD.RELATION_TO) == Int32[
         2,
         3,
         7,
@@ -335,7 +335,7 @@ capacity = PSRI.mapped_vector(data, "PSRThermalPlant", "PotInst", Float64)
     data,
     "PSRGenerator",
     "PSRBus";
-    original_relation_type = PSRI.RELATION_1_TO_1,
+    original_relation_type = PSRI.PMD.RELATION_1_TO_1,
 ) == Vector{Int32}[
     [],
     [],

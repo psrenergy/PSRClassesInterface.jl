@@ -158,7 +158,7 @@ function test_api4() # Tests set_related!() and set_vector_related!() methods
         "PSRSystem",
         index1,
         index3;
-        relation_type = PSRI.RELATION_1_TO_1,
+        relation_type = PSRI.PMD.RELATION_1_TO_1,
     )
     map = PSRI.get_map(data, "PSRThermalPlant", "PSRSystem")
     @test map == [1, 0]
@@ -221,7 +221,7 @@ function test_api6() #tests set_related_by_code!
         "PSRBus",
         index3,
         5;
-        relation_type = PSRI.RELATION_TO,
+        relation_type = PSRI.PMD.RELATION_TO,
     )
     PSRI.set_related_by_code!(
         data,
@@ -229,7 +229,7 @@ function test_api6() #tests set_related_by_code!
         "PSRBus",
         index3,
         6;
-        relation_type = PSRI.RELATION_FROM,
+        relation_type = PSRI.PMD.RELATION_FROM,
     )
 
     element = data.raw["PSRLinkDC"][index3]
@@ -282,7 +282,7 @@ function test_api8() #tests delete_relation!
         "PSRBus",
         index3,
         index1;
-        relation_type = PSRI.RELATION_TO,
+        relation_type = PSRI.PMD.RELATION_TO,
     )
     PSRI.set_related!(
         data,
@@ -290,7 +290,7 @@ function test_api8() #tests delete_relation!
         "PSRBus",
         index3,
         index2;
-        relation_type = PSRI.RELATION_FROM,
+        relation_type = PSRI.PMD.RELATION_FROM,
     )
 
     PSRI.write_data(data)
@@ -299,9 +299,9 @@ function test_api8() #tests delete_relation!
     @test PSRI.has_relations(data, "PSRBus", index2)
     @test PSRI.has_relations(data, "PSRSerie", index3)
 
-    @test PSRI.get_map(data, "PSRSerie", "PSRBus"; relation_type = PSRI.RELATION_FROM) ==
+    @test PSRI.get_map(data, "PSRSerie", "PSRBus"; relation_type = PSRI.PMD.RELATION_FROM) ==
           [2]
-    @test PSRI.get_map(data, "PSRSerie", "PSRBus"; relation_type = PSRI.RELATION_TO) == [1]
+    @test PSRI.get_map(data, "PSRSerie", "PSRBus"; relation_type = PSRI.PMD.RELATION_TO) == [1]
 
     PSRI.delete_relation!(data, "PSRSerie", "PSRBus", index3, index1)
     PSRI.delete_relation!(data, "PSRSerie", "PSRBus", index3, index2)
@@ -318,9 +318,9 @@ function test_api8() #tests delete_relation!
         data_copy,
         "PSRSerie",
         "PSRBus";
-        relation_type = PSRI.RELATION_FROM,
+        relation_type = PSRI.PMD.RELATION_FROM,
     ) == [0]
-    @test PSRI.get_map(data_copy, "PSRSerie", "PSRBus"; relation_type = PSRI.RELATION_TO) ==
+    @test PSRI.get_map(data_copy, "PSRSerie", "PSRBus"; relation_type = PSRI.PMD.RELATION_TO) ==
           [0]
 end
 
