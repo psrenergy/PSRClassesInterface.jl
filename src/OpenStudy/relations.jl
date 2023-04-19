@@ -16,13 +16,12 @@ function _has_relation_attribute(
     relations::Vector{PMD.Relation},
     relation_attribute::String,
 )
-    has_relation_attribute = false
     for relation in relations
         if relation.attribute == relation_attribute
-            has_relation_attribute = true
+            return true
         end
     end
-    return has_relation_attribute
+    return false
 end
 
 """
@@ -154,16 +153,14 @@ function _get_relation_attribute(
     validate_relation(data, source, target, relation_type)
 
     relations = data.relation_mapper[source][target]
-    attribute = ""
 
     for relation in relations
         if relation.type == relation_type
-            attribute = relation.attribute
-            break
+            return relation.attribute
         end
     end
 
-    return attribute
+    return ""
 end
 
 """
@@ -321,10 +318,7 @@ end
     Returns true if collection 'collection' has any defined relation
 """
 function has_relations(data::Data, collection::String)
-    if !haskey(data.relation_mapper, collection)
-        return false
-    end
-    return true
+    return haskey(data.relation_mapper, collection)
 end
 
 """
