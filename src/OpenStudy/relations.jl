@@ -460,7 +460,7 @@ function get_reverse_vector_map(
     lst_from::String,
     lst_to::String;
     allow_empty::Bool = true,
-    original_relation_type::PMD.RelationType = RELATION_1_TO_N,
+    original_relation_type::PMD.RelationType = PMD.RELATION_1_TO_N,
 )
     n_to = max_elements(data, lst_to)
     if n_to == 0
