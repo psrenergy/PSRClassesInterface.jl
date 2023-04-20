@@ -231,8 +231,8 @@ ior = PSRI.open(
 data_from_file = zeros(n_agents, n_blocks, n_scenarios, n_stages)
 
 for stage = 1:n_stages, scenario = 1:n_scenarios, block = 1:n_blocks
-    PSRI.next_registry(ior)
     data_from_file[:, block, scenario, stage] = ior.data
+    PSRI.next_registry(ior)
 end
 
 PSRI.close(ior)
