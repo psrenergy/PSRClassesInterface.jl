@@ -97,31 +97,75 @@ function test_relations3() # tests has_relations
 
         @test PSRI.has_relations(data, "PSRSerie", 1)
         @test PSRI.has_relations(data, "PSRBus", 1)
+
+        @test PSRI.get_related(
+            data,
+            "PSRSerie",
+            "PSRBus",
+            1;
+            relation_type = PSRI.PMD.RELATION_FROM,
+        ) == 1
+        @test PSRI.get_related(
+            data,
+            "PSRSerie",
+            "PSRBus",
+            1;
+            relation_type = PSRI.PMD.RELATION_TO,
+        ) == 2
     end
 end
 
 function test_relations4()
-    @test_throws ErrorException("Relation of type $(PSRI.PMD.RELATION_1_TO_N) is of type vector, not the expected scalar.") PSRI.check_relation_scalar(PSRI.PMD.RELATION_1_TO_N)
-    @test_throws ErrorException("Relation of type $(PSRI.PMD.RELATION_BACKED) is of type vector, not the expected scalar.") PSRI.check_relation_scalar(PSRI.PMD.RELATION_BACKED)
-    @test_throws ErrorException("Relation of type $(PSRI.PMD.RELATION_1_TO_1) is of type scalar, not the expected vector.") PSRI.check_relation_vector(PSRI.PMD.RELATION_1_TO_1)
+    @test_throws ErrorException(
+        "Relation of type $(PSRI.PMD.RELATION_1_TO_N) is of type vector, not the expected scalar.",
+    ) PSRI.check_relation_scalar(PSRI.PMD.RELATION_1_TO_N)
+    @test_throws ErrorException(
+        "Relation of type $(PSRI.PMD.RELATION_BACKED) is of type vector, not the expected scalar.",
+    ) PSRI.check_relation_scalar(PSRI.PMD.RELATION_BACKED)
+    @test_throws ErrorException(
+        "Relation of type $(PSRI.PMD.RELATION_1_TO_1) is of type scalar, not the expected vector.",
+    ) PSRI.check_relation_vector(PSRI.PMD.RELATION_1_TO_1)
 end
 
 function test_relations5()
     mktempdir() do temp_path
         data = PSRI.create_study(PSRI.OpenInterface(); data_path = temp_path)
-        
+
         PSRI.create_element!(data, "PSRReserveGenerationConstraintData")
         PSRI.create_element!(data, "PSRThermalPlant")
         PSRI.create_element!(data, "PSRThermalPlant")
         PSRI.create_element!(data, "PSRThermalPlant")
         PSRI.create_element!(data, "PSRThermalPlant")
 
-        PSRI.set_vector_related!(data, "PSRReserveGenerationConstraintData", "PSRThermalPlant", 1, [1,2])
-        PSRI.set_vector_related!(data, "PSRReserveGenerationConstraintData", "PSRThermalPlant", 1, [3,4], PSRI.PMD.RELATION_BACKED)
+        PSRI.set_vector_related!(
+            data,
+            "PSRReserveGenerationConstraintData",
+            "PSRThermalPlant",
+            1,
+            [1, 2],
+        )
+        PSRI.set_vector_related!(
+            data,
+            "PSRReserveGenerationConstraintData",
+            "PSRThermalPlant",
+            1,
+            [3, 4],
+            PSRI.PMD.RELATION_BACKED,
+        )
 
-        @test PSRI.get_vector_related(data, "PSRReserveGenerationConstraintData", "PSRThermalPlant", 1) == [1,2]
-        @test PSRI.get_vector_related(data, "PSRReserveGenerationConstraintData", "PSRThermalPlant", 1, PSRI.PMD.RELATION_BACKED) == [3,4]    
-    
+        @test PSRI.get_vector_related(
+            data,
+            "PSRReserveGenerationConstraintData",
+            "PSRThermalPlant",
+            1,
+        ) == [1, 2]
+        @test PSRI.get_vector_related(
+            data,
+            "PSRReserveGenerationConstraintData",
+            "PSRThermalPlant",
+            1,
+            PSRI.PMD.RELATION_BACKED,
+        ) == [3, 4]
     end
 end
 
