@@ -59,7 +59,7 @@ end
     Returns an error message if there is no relation between collections 'source' and 'target'
 """
 function validate_relation(data::Data, source::String, target::String)
-    validate_relation(data::Data, source::String)
+    validate_relation(data, source)
 
     if !haskey(data.relation_mapper[source], target)
         if !haskey(data.relation_mapper, target) ||
