@@ -150,6 +150,9 @@ Base.@kwdef mutable struct Data{T} <: AbstractData
     # Model Templates 
     model_template::PMD.ModelTemplate = PMD.ModelTemplate()
 
+    # Relations
+    relation_mapper::PMD.RelationMapper
+
     # ReaderMapper
     mapper::Union{ReaderMapper, Nothing} = nothing
 end
@@ -231,6 +234,7 @@ function initialize_study(
     validate_attributes::Bool = true,
     _netplan_database::Bool = false,
     model_template_path::Union{String, Nothing} = nothing,
+    relations_defaults_path = PMD._DEFAULT_RELATIONS_PATH,
     #merge collections
     add_transformers_to_series::Bool = true,
     #json api 
@@ -269,6 +273,10 @@ function initialize_study(
     else
         PMD.load_model_template!(model_template_path, model_template)
     end
+
+    relation_mapper = PMD.RelationMapper()
+
+    PMD.load_relations_struct!(relations_defaults_path, relation_mapper)
 
     data_struct, model_files_added = PMD.load_model(path_pmds, pmd_files, model_template)
 
@@ -335,6 +343,7 @@ function initialize_study(
         log_file = log_file,
         verbose = verbose,
         model_template = model_template,
+        relation_mapper = relation_mapper,
     )
 
     if add_transformers_to_series

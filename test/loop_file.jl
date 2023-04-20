@@ -108,18 +108,28 @@ for col in collections
         end
     end
     relations = PSRI.get_relations(data, col)
-    for (rel, tp) in relations
-        if verbose
-            println("    Relation: $rel of type $tp")
-        end
-        if PSRI.is_vector_relation(tp)
-            parm_json = PSRI.get_vector_map(data, col, rel; relation_type = tp)[json_to_bin]
-            parm_bin = PSRI.get_vector_map(data_bin, col, rel; relation_type = tp)
-            @assert parm_json == parm_bin
-        else
-            parm_json = PSRI.get_map(data, col, rel; relation_type = tp)[json_to_bin]
-            parm_bin = PSRI.get_map(data_bin, col, rel; relation_type = tp)
-            @assert parm_json == parm_bin
+    for (target, relations_vector) in relations
+        for relation in relations_vector
+            if verbose
+                println("Relation: ($col)-($target) of type $(relation.type)")
+            end
+            if PSRI.is_vector_relation(relation.type)
+                parm_json =
+                    PSRI.get_vector_map(data, col, target; relation_type = relation.type)[json_to_bin]
+                parm_bin = PSRI.get_vector_map(
+                    data_bin,
+                    col,
+                    target;
+                    relation_type = relation.type,
+                )
+                @assert parm_json == parm_bin
+            else
+                parm_json =
+                    PSRI.get_map(data, col, target; relation_type = relation.type)[json_to_bin]
+                parm_bin =
+                    PSRI.get_map(data_bin, col, target; relation_type = relation.type)
+                @assert parm_json == parm_bin
+            end
         end
     end
 end

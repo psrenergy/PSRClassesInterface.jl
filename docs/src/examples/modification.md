@@ -60,7 +60,7 @@ PSRI.set_related!(
     "PSRBus", 
     serie_1_index, 
     bus_1_index , 
-    relation_type = PSRI.RELATION_FROM
+    relation_type = PSRI.PMD.RELATION_FROM
     )
 
 PSRI.set_related!(
@@ -69,7 +69,7 @@ PSRI.set_related!(
     "PSRBus", 
     serie_1_index, 
     bus_2_index , 
-    relation_type = PSRI.RELATION_TO
+    relation_type = PSRI.PMD.RELATION_TO
     )
 ```
 

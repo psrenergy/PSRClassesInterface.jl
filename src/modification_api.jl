@@ -299,11 +299,11 @@ function set_related!(
     target::String,
     source_index::Integer,
     target_index::Integer;
-    relation_type::RelationType = RELATION_1_TO_1,
+    relation_type::PMD.RelationType = PMD.RELATION_1_TO_1,
 )
     check_relation_scalar(relation_type)
-    validate_relation(source, target, relation_type)
-    relation_field = _get_relation(source, target, relation_type)
+    validate_relation(data, source, target, relation_type)
+    relation_field = _get_relation_attribute(data, source, target, relation_type)
     source_element = _get_element(data, source, source_index)
     target_element = _get_element(data, target, target_index)
 
@@ -318,7 +318,7 @@ function set_related_by_code!(
     target::String,
     source_index::Integer,
     target_code::Integer;
-    relation_type::RelationType = RELATION_1_TO_1,
+    relation_type::PMD.RelationType = PMD.RELATION_1_TO_1,
 )
     target_index = _get_index_by_code(data, target, target_code)
     return set_related!(
@@ -337,12 +337,12 @@ function set_vector_related!(
     target::String,
     source_index::Integer,
     target_indices::Vector{T},
-    relation_type::RelationType = RELATION_1_TO_N,
+    relation_type::PMD.RelationType = PMD.RELATION_1_TO_N,
 ) where {T <: Integer}
     check_relation_vector(relation_type)
-    validate_relation(source, target, relation_type)
+    validate_relation(data, source, target, relation_type)
     source_element = _get_element(data, source, source_index)
-    relation_field = _get_relation(source, target, relation_type)
+    relation_field = _get_relation_attribute(data, source, target, relation_type)
 
     source_element[relation_field] = Int[]
     for target_index in target_indices
@@ -360,20 +360,21 @@ function delete_relation!(
     source_index::Integer,
     target_index::Integer,
 )
-    source_relations = _get_element_related(data, source, source_index)
-    if haskey(source_relations, (source, target, source_index, target_index))
-        relation_attribute = source_relations[(source, target, source_index, target_index)]
-        source_element = _get_element(data, source, source_index)
+    relations_as_source, _ = _get_element_related(data, source, source_index)
 
-        target_indices =
-            _get_target_index_from_relation(data, source, source_index, relation_attribute)
-        if length(target_indices) > 1
-            deleteat!(source_element[relation_attribute], target_indices .== target_index)
-        else
-            delete!(source_element, relation_attribute)
+    source_element = _get_element(data, source, source_index)
+    target_element = _get_element(data, target, target_index)
+
+    if haskey(relations_as_source, target)
+        for (relation_attribute, _) in relations_as_source[target]
+            if source_element[relation_attribute] == target_element["reference_id"]
+                delete!(source_element, relation_attribute)
+            end
         end
     else
-        error("Relation '$source'(Source) with '$target'(Target) does not exist")
+        error(
+            "Relation between element from '$source'(Source) with element from '$target'(Target) does not exist",
+        )
     end
 
     return nothing
@@ -386,13 +387,25 @@ function delete_vector_relation!(
     source_index::Integer,
     target_indices::Vector{Int},
 )
-    source_relations = _get_element_related(data, source, source_index)
-
-    relation_attribute = source_relations[(source, target, source_index, target_indices[1])]
+    relations_as_source, _ = _get_element_related(data, source, source_index)
 
     source_element = _get_element(data, source, source_index)
+    targets_ref_id = [
+        _get_element(data, target, target_index)["reference_id"] for
+        target_index in target_indices
+    ]
 
-    delete!(source_element, relation_attribute)
+    if haskey(relations_as_source, target)
+        for (relation_attribute, _) in relations_as_source[target]
+            if sort(source_element[relation_attribute]) == sort(targets_ref_id)
+                delete!(source_element, relation_attribute)
+            end
+        end
+    else
+        error(
+            "Relation between element from '$source'(Source) with element from '$target'(Target) does not exist",
+        )
+    end
 
     return nothing
 end
@@ -410,6 +423,7 @@ function create_study(
     defaults::Union{Dict{String, Any}, Nothing} = _load_defaults!(),
     netplan::Bool = false,
     model_template_path::Union{String, Nothing} = nothing,
+    relations_defaults_path = PMD._DEFAULT_RELATIONS_PATH,
     study_collection::String = "PSRStudy",
 )
     if !isdir(data_path)
@@ -445,6 +459,10 @@ function create_study(
     else
         PMD.load_model_template!(model_template_path, model_template)
     end
+
+    relation_mapper = PMD.RelationMapper()
+
+    PMD.load_relations_struct!(relations_defaults_path, relation_mapper)
 
     data_struct, model_files_added = PMD.load_model(pmds_path, pmd_files, model_template)
 
@@ -510,6 +528,7 @@ function create_study(
         log_file = nothing,
         verbose = true,
         model_template = model_template,
+        relation_mapper = relation_mapper,
     )
 
     _create_study_collection(data, study_collection, study_defaults)

@@ -5,37 +5,6 @@
 end
 
 """
-    RelationType
-
-Possible relation types used in mapping function such as [`get_map`](@ref), [`get_reverse_map`](@ref), etc.
-
-The current possible relation types are:
-
-```julia
-RELATION_1_TO_1
-RELATION_1_TO_N
-RELATION_FROM
-RELATION_TO
-RELATION_TURBINE_TO
-RELATION_SPILL_TO
-RELATION_INFILTRATE_TO
-RELATION_STORED_ENERGY_DONWSTREAM
-RELATION_BACKED
-```
-"""
-@enum RelationType begin
-    RELATION_1_TO_1
-    RELATION_1_TO_N
-    RELATION_FROM
-    RELATION_TO
-    RELATION_TURBINE_TO
-    RELATION_SPILL_TO
-    RELATION_INFILTRATE_TO
-    RELATION_STORED_ENERGY_DONWSTREAM
-    RELATION_BACKED
-end
-
-"""
     AbstractData
 """
 abstract type AbstractData end
@@ -273,33 +242,38 @@ PSRI.get_map(
     data,
     "PSRHydroPlant",
     "PSRHydroPlant";
-    relation_type = PSRI.RELATION_TURBINE_TO,
-)
-PSRI.get_map(data, "PSRHydroPlant", "PSRHydroPlant"; relation_type = PSRI.RELATION_SPILL_TO)
-PSRI.get_map(
-    data,
-    "PSRHydroPlant",
-    "PSRHydroPlant";
-    relation_type = PSRI.RELATION_INFILTRATE_TO,
+    relation_type = PSRI.PMD.RELATION_TURBINE_TO,
 )
 PSRI.get_map(
     data,
     "PSRHydroPlant",
     "PSRHydroPlant";
-    relation_type = PSRI.RELATION_STORED_ENERGY_DONWSTREAM,
+    relation_type = PSRI.PMD.RELATION_SPILL_TO,
+)
+PSRI.get_map(
+    data,
+    "PSRHydroPlant",
+    "PSRHydroPlant";
+    relation_type = PSRI.PMD.RELATION_INFILTRATE_TO,
+)
+PSRI.get_map(
+    data,
+    "PSRHydroPlant",
+    "PSRHydroPlant";
+    relation_type = PSRI.PMD.RELATION_STORED_ENERGY_DONWSTREAM,
 )
 
 @test PSRI.get_map(
     data,
     "PSRInterconnection",
     "PSRSystem",
-    relation_type = PSRI.RELATION_FROM,
+    relation_type = PSRI.PMD.RELATION_FROM,
 )
 @test PSRI.get_map(
     data,
     "PSRInterconnection",
     "PSRSystem",
-    relation_type = PSRI.RELATION_TO,
+    relation_type = PSRI.PMD.RELATION_TO,
 )
 ```
 """
@@ -328,7 +302,7 @@ PSRI.get_vector_map(
     data,
     "PSRReserveGenerationConstraintData",
     "PSRThermalPlant";
-    relation_type = PSRI.RELATION_BACKED,
+    relation_type = PSRI.PMD.RELATION_BACKED,
 )
 ```
 """
@@ -387,21 +361,21 @@ PSRI.get_reverse_vector_map(
     data,
     "PSRHydroPlant",
     "PSRHydroPlant";
-    original_relation_type = PSRI.RELATION_TURBINE_TO,
+    original_relation_type = PSRI.PMD.RELATION_TURBINE_TO,
 )
 # which is the reverse of
 PSRI.get_map(
     data,
     "PSRHydroPlant",
     "PSRHydroPlant";
-    relation_type = PSRI.RELATION_TURBINE_TO,
+    relation_type = PSRI.PMD.RELATION_TURBINE_TO,
 )
 
 PSRI.get_reverse_vector_map(
     data,
     "PSRGenerator",
     "PSRBus";
-    original_relation_type = PSRI.RELATION_1_TO_1,
+    original_relation_type = PSRI.PMD.RELATION_1_TO_1,
 )
 # which is the reverse of
 PSRI.get_map(data, "PSRGenerator", "PSRBus")
@@ -1227,22 +1201,14 @@ end
 """
     get_relations(data::AbstractData, collection::String)
 
-Returns a `Vector{Tuple{String, RelationType}}` with relating `collection`
+Returns a `Tuple{String, Vector{PMD.Relation}}` with relating `collection`
 and their relation type associated to `collection`.
 """
-function get_relations(::AbstractData, collection::String)
-    return get_relations(collection)
-end
-
-function get_relations(::DataStruct, collection::String)
-    return get_relations(collection)
-end
-
-function get_relations(collection::String)
-    if haskey(_RELATIONS, collection)
-        return collect(keys(_RELATIONS[collection]))
+function get_relations(data::AbstractData, collection::String)
+    if has_relations(data, collection)
+        return data.relation_mapper[collection]
     end
-    return Tuple{String, RelationType}[]
+    return Dict{String, Vector{PMD.Relation}}[]
 end
 
 """

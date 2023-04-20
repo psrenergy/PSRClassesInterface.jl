@@ -23,7 +23,7 @@ Now, we can read the demand segments and the map between demands and demand segm
 ```@example demand
 dem_seg = PSRI.mapped_vector(data, "PSRDemandSegment", "Demanda", Float64, "block")
 
-seg2dem = PSRI.get_map(data, "PSRDemandSegment", "PSRDemand", relation_type = PSRI.RELATION_1_TO_1)
+seg2dem = PSRI.get_map(data, "PSRDemandSegment", "PSRDemand", relation_type = PSRI.PMD.RELATION_1_TO_1)
 
 dem_size = PSRI.max_elements(data, "PSRDemand")
 
@@ -60,8 +60,8 @@ Now we have the values of the demands, we can obtain the values of demand for ea
 Each demand has a set of loads, which define how much of this demand corresponds to each bus.  We can begin by reading the loads and its relations with demands and buses:
 ```@example demand
 loads = PSRI.mapped_vector(data, "PSRLoad", "P", Float64, "block")
-lod2dem = PSRI.get_map(data, "PSRLoad", "PSRDemand", relation_type = PSRI.RELATION_1_TO_1)
-lod2bus = PSRI.get_map(data, "PSRLoad", "PSRBus", relation_type = PSRI.RELATION_1_TO_1)
+lod2dem = PSRI.get_map(data, "PSRLoad", "PSRDemand", relation_type = PSRI.PMD.RELATION_1_TO_1)
+lod2bus = PSRI.get_map(data, "PSRLoad", "PSRBus", relation_type = PSRI.PMD.RELATION_1_TO_1)
 ; nothing # hide
 ```
 
@@ -116,7 +116,7 @@ data = PSRI.initialize_study(
 ```
 We discover the necessary infos of the thermal plants indirectly through `PSRFuelConsumption`:
 ```@example ther_prices
-fuelcons2ther = PSRI.get_map(data,"PSRFuelConsumption", "PSRThermalPlant"; relation_type = PSRI.RELATION_1_TO_1)
+fuelcons2ther = PSRI.get_map(data,"PSRFuelConsumption", "PSRThermalPlant"; relation_type = PSRI.PMD.RELATION_1_TO_1)
 
 ther_size = PSRI.max_elements(data, "PSRThermalPlant")
 fuelcons_size = PSRI.max_elements(data, "PSRFuelConsumption")
@@ -127,7 +127,7 @@ Next, we get the O&M cost, the specific consumption and the relation with fuels 
 ```@example ther_prices
 om_cost = PSRI.mapped_vector(data, "PSRFuelConsumption", "O&MCost", Float64)
 spec_consum = PSRI.mapped_vector(data, "PSRFuelConsumption", "CEsp", Float64, "segment", "block")
-fuelcons2fuel = PSRI.get_map(data, "PSRFuelConsumption", "PSRFuel"; relation_type = PSRI.RELATION_1_TO_1)
+fuelcons2fuel = PSRI.get_map(data, "PSRFuelConsumption", "PSRFuel"; relation_type = PSRI.PMD.RELATION_1_TO_1)
 fuel_cost = PSRI.mapped_vector(data, "PSRFuel", "Custo", Float64)
 
 PSRI.update_vectors!(data)

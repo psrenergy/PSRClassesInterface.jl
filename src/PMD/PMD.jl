@@ -26,6 +26,7 @@ end
 const DataStruct = Dict{String, Dict{String, Attribute}}
 
 include("model_template.jl")
+include("relation_mapper.jl")
 
 const _PMDS_BASE_PATH = joinpath(@__DIR__(), "pmds")
 
