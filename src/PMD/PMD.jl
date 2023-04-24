@@ -3,6 +3,8 @@ module PMD
 import Dates
 import JSON
 
+include("parser/parser.jl")
+
 """
 ```
 struct Attribute

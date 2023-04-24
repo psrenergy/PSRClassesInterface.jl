@@ -1,0 +1,57 @@
+?start: (block)*
+
+?block: model_def
+      | _endl
+
+_endl: (_ENDL)+
+
+// Model definition
+model_def: "DEFINE_MODEL" model_name _endl model_args "END_MODEL"
+
+?model_name: MODEL_NAME
+           | NAME
+
+model_args: (model_stmt)*
+
+?model_stmt: model_attribute _endl
+           | model_dimension _endl
+           | model_sub_model _endl
+           | model_merge _endl
+
+model_attribute: model_attr_kind model_attr_type model_attr_name [model_attr_dim] [model_attr_index] [model_attr_interval]
+model_dimension: "DIMENSION" NAME [INT] [_autoset]
+model_sub_model: "SUB_MODEL" model_name NAME
+
+_autoset: "AUTOSET" "(" _func ")"
+_func: NAME "(" _func ")"
+     | NAME "(" NAME ")"
+
+model_merge: "MERGE_MODEL" model_name
+
+?model_attr_kind: KIND
+?model_attr_type: TYPE
+?model_attr_name: NAME
+
+model_attr_dim: "DIM" "(" (NAME ("," NAME)*) ")"
+model_attr_index: "INDEX" NAME
+model_attr_interval: "INTERVAL" NAME
+
+// Model Merge
+
+// Precedence is important for not tokenizing keywords as names
+TYPE.3: /(INTEGER|REAL|STRING|DATE|REFERENCE)/
+KIND.3: /(PARM|VETOR|VECTOR)/
+INT.3: /[0-9]+/
+MODEL_NAME.2: /MODL:([a-zA-Z0-9_\.]+)/
+NAME.1: /[a-zA-Z0-9_\.\&]+(->|<-)?/
+
+// Ignore validation blocks with the highest precedence
+VALIDATION.4: /DEFINE_VALIDATION[\s\S]*END_VALIDATION/m
+%ignore VALIDATION
+
+COMMENT: /\/\/.+/
+%ignore COMMENT
+
+_ENDL: /(\n|\r\n)+/
+SPACE: /[ \t]+/
+%ignore SPACE
