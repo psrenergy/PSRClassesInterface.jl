@@ -5,7 +5,7 @@ function test_pmd_parser()
 
     @testset "source0.pmd" begin
         path = joinpath(@__DIR__, "data", "pmd", "source0.pmd")
-        data = PSRI.PMD.parse(path, model_template)
+        data = PSRI.PMD.parse(path, model_template; verbose = true)
 
         @test data == PSRI.DataStruct(
             "PSRThermalPlant" => Dict(

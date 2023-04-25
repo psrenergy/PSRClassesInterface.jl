@@ -35,13 +35,8 @@ RELATION_BACKED
 end
 
 """
-```
-struct Relation
-    target_collection::String
-    type::RelationType
-    attribute::String
-end
-```
+    Relation(type::RelationType, attribute::String)
+
 """
 struct Relation
     type::RelationType

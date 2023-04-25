@@ -1,23 +1,45 @@
 include("states.jl")
 
 mutable struct Parser
+    # io pointer to read from
     io::IO
+    
+    # original pmd path and current line number, used to
+    # compose better error/warning messages
     path::String
     line::Int
-    data_struct::DataStruct
-    model_template::ModelTemplate
+    
+    # current parser state
     state::Vector{Any}
     merge_index::Int
+
+    # whether to display warnings
     verbose::Bool
+
+    # Study info
+    data_struct::DataStruct
+    relation_mapper::RelationMapper
+    model_template::ModelTemplate
 
     function Parser(
         io::IO,
         path::AbstractString,
         data_struct::DataStruct,
+        relation_mapper::RelationMapper,
         model_template::ModelTemplate;
         verbose::Bool = false,
     )
-        return new(io, path, 0, data_struct, model_template, [], 1, verbose)
+        return new(
+            io,
+            path,
+            0,  # line
+            [], # state
+            1,  # merge_index
+            verbose,
+            data_struct,
+            relation_mapper,
+            model_template,
+        )
     end
 end
 
@@ -60,11 +82,6 @@ function _syntax_warning(
 end
 
 function _cache_merge!(parser::Parser, collection::String, model_name::String)
-    if !haskey(parser.model_template.inv, model_name)
-        @show parser.model_template.inv
-        error()
-    end
-
     name = parser.model_template.inv[model_name]
 
     attribute = Attribute(name, false, DataType, 0, "")
@@ -98,25 +115,28 @@ end
 
 function parse end
 
-function parse(filepath::AbstractString, model_template::ModelTemplate)
+function parse(filepath::AbstractString, model_template::ModelTemplate; verbose::Bool = false)
     data_struct = DataStruct()
+    relation_mapper = RelationMapper()
 
-    return parse!(filepath, data_struct, model_template)
+    return parse!(filepath, data_struct, relation_mapper, model_template; verbose)
 end
 
 function parse!(
     filepath::AbstractString,
     data_struct::DataStruct,
-    model_template::ModelTemplate,
+    relation_mapper::RelationMapper,
+    model_template::ModelTemplate;
+    verbose::Bool = false
 )
     if !isfile(filepath) || !endswith(filepath, ".pmd")
         error("'$filepath' is not a valid .pmd file")
     end
 
     open(filepath, "r") do io
-        parser = Parser(io, filepath, data_struct, model_template)
+        parser = Parser(io, filepath, data_struct, relation_mapper, model_template; verbose)
 
-        return parse!(parser)
+        parse!(parser)
     end
 
     return data_struct
@@ -142,12 +162,12 @@ function parse!(parser::Parser)
 
     # apply merges
     for collection in keys(parser.data_struct)
-        _merge_class(parser.data_struct, collection, String[collection])
+        _apply_merge!(parser, collection, String[collection])
     end
 
     # delete temporary classes (starting with "_")
     for collection in keys(parser.data_struct)
-        if startswith(collection, "_")
+        if startswith(collection, "_MERGE")
             delete!(parser.data_struct, collection)
         end
     end
@@ -157,20 +177,19 @@ end
 
 function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
     # Look for model definition block
-    m = match(r"DEFINE_MODEL\s+MODL:(\S+)", line)
+    m = match(r"DEFINE_MODEL\s+(MODL:)?(\S+)", line)
 
     if !isnothing(m)
-        model_name = String(m[1])
+        model_name = String(m[2])
 
         if _hasinv(parser.model_template, model_name)
             collection = parser.model_template.inv[model_name]
         else
             _syntax_warning(parser, "Unknown model '$(model_name)'")
 
-            collection = model_name
-            # _push_state!(parser, PMD_DEF_MODEL(nothing))
+            _push_state!(parser, PMD_DEF_MODEL(nothing))
             
-            # return nothing
+            return nothing
         end
 
         parser.data_struct[collection] = Dict{String, Attribute}()
@@ -236,6 +255,11 @@ function _parse_line!(
     # End model definition block
     if startswith(line, "END_MODEL")
         _pop_state!(parser)
+        return nothing
+    end
+
+    # If collection is nothing, ignore it
+    if state.collection === nothing
         return nothing
     end
 
@@ -394,14 +418,26 @@ function _parse_reference!(
 
     if !isnothing(m)
         kind = String(m[1])
-        type = String(m[2])
-        ref_src = String(m[3])
-        ref_dst = String(m[4])
+        attribute = String(m[3])
+        target = String(m[4])
 
-        _syntax_warning(
-            parser,
-            "Unhandled '$kind $type' reference ('$ref_src' ⇒ '$ref_dst') within '$(state.collection)'",
-        )
+        if !haskey(parser.relation_mapper, state.collection)
+            parser.relation_mapper[state.collection] = Dict{String,Vector{Relation}}()
+        end
+
+        if !haskey(parser.relation_mapper[state.collection], target)
+            parser.relation_mapper[state.collection][target] = Vector{Relation}()
+        end
+
+        if _is_vector(kind)
+            rel_type = RELATION_1_TO_N
+        else
+            rel_type = RELATION_1_TO_1
+        end
+
+        rel = Relation(rel_type, attribute)
+
+        push!(parser.relation_mapper[state.collection][target], rel)
 
         return true
     else
@@ -443,4 +479,41 @@ function _parse_attribute!(
     else
         return false
     end
+end
+
+function _apply_merge!(parser::Parser, collection::String, merge_path::Vector{String})
+    class = parser.data_struct[collection]
+    
+    for i in 1:parser.merge_index
+        if haskey(class, "_MERGE_$i")
+            to_merge = class["_MERGE_$i"].name
+
+            if to_merge in merge_path
+                error("merge cycle found")
+            end
+            
+            _merge_path = deepcopy(merge_path)
+            
+            push!(_merge_path, to_merge)
+            
+            _apply_merge!(parser, to_merge, _merge_path)
+            
+            delete!(class, "_MERGE_$i")
+            
+            for (k, v) in parser.data_struct[to_merge]
+                if k in ["name", "code", "AVId"] # because we are forcing all these
+                    continue
+                end
+
+                if haskey(class, k)
+                    error(
+                        "Class $class already has attribute $k being merged from $to_merge",
+                    )
+                end
+
+                class[k] = v
+            end
+        end
+    end
+    return nothing
 end
