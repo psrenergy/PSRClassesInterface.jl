@@ -1,0 +1,22 @@
+//--------------------------------------
+//--- Modelo para a Carga de Barra   ---
+//--------------------------------------
+DEFINE_MODEL MODL:SDDP_V10.3_CargaBarra
+	DIMENSION	block
+	VETOR	    DATE  Data
+	VETOR	    REAL  P	DIM(block) INDEX Data
+	VETOR	    REAL  HourP
+END_MODEL
+
+//--------------------------------------
+//--- Modelo para a Carga de Barra   ---
+//--------------------------------------
+DEFINE_MODEL MODL:SDDP_V10.2_CargaBarra
+    DIMENSION  block
+	VETOR DATE Data
+	VETOR REAL P	DIM(block) INDEX Data
+	VETOR REAL Pind DIM(block) INDEX Data
+	VETOR REAL PerF DIM(block) INDEX Data
+
+	VETOR INTEGER icca
+END_MODEL
