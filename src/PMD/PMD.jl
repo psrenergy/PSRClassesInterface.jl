@@ -149,6 +149,7 @@ include("parser/parser.jl")
 
 function _merge_class(data_struct, class_name, merge_path)
     class = data_struct[class_name]
+    
     for i in 1:_MAX_MERGE
         if haskey(class, "_MERGE_$i")
             to_merge = class["_MERGE_$i"].name
@@ -192,7 +193,7 @@ function _load_model!(
     filename = basename(filepath)
 
     if !in(filename, loaded_files)
-        _parse_pmd!(data_struct, filepath, model_template)
+        parse!(filepath, data_struct, model_template)
 
         push!(loaded_files, filename)
     end

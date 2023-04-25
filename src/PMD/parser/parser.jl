@@ -6,16 +6,40 @@ mutable struct Parser
     line::Int
     data_struct::DataStruct
     model_template::ModelTemplate
-    state::ParserState
+    state::Vector{Any}
     merge_index::Int
+    verbose::Bool
 
     function Parser(
         io::IO,
         path::AbstractString,
         data_struct::DataStruct,
-        model_template::ModelTemplate,
+        model_template::ModelTemplate;
+        verbose::Bool = false,
     )
-        return new(io, path, 0, data_struct, model_template, PMD_IDLE(), 1)
+        return new(io, path, 0, data_struct, model_template, [], 1, verbose)
+    end
+end
+
+function _get_state(parser::Parser)
+    if isempty(parser.state)
+        return PMD_IDLE()
+    else
+        return parser.state[end]
+    end
+end
+
+function _push_state!(parser::Parser, state::ParserState)
+    push!(parser.state, state)
+
+    return nothing
+end
+
+function _pop_state!(parser::Parser)
+    if isempty(parser.state)
+        error("Empty parser state stack")
+    else
+        return pop!(parser.state)
     end
 end
 
@@ -26,7 +50,21 @@ function _syntax_error(
     return error("Syntax Error in '$(parser.path):$(parser.line)': $msg")
 end
 
+function _syntax_warning(
+    parser::Parser,
+    msg::AbstractString,
+)
+    if parser.verbose
+        @warn("In '$(parser.path):$(parser.line)': $msg")
+    end
+end
+
 function _cache_merge!(parser::Parser, collection::String, model_name::String)
+    if !haskey(parser.model_template.inv, model_name)
+        @show parser.model_template.inv
+        error()
+    end
+
     name = parser.model_template.inv[model_name]
 
     attribute = Attribute(name, false, DataType, 0, "")
@@ -38,11 +76,23 @@ function _cache_merge!(parser::Parser, collection::String, model_name::String)
     return nothing
 end
 
-function _apply_tag!(parser::Parser, tag::String, state::S) where {S <: Union{PMD_DEF_MODEL, PMD_DEF_CLASS}}
+function _apply_tag!(
+    parser::Parser,
+    tag::String,
+    state::S,
+) where {S <: Union{PMD_DEF_MODEL, PMD_DEF_CLASS}}
     if tag == "@id"
-        @warn "Unhandled '@id' tag found within '$(state.collection)' definition"
+        _syntax_warning(
+            parser,
+            "Unhandled '$tag' tag found within '$(state.collection)' definition",
+        )
+    elseif tag == "@hourly_dense"
+        _syntax_warning(
+            parser,
+            "Unhandled '$tag' tag found within '$(state.collection)' definition",
+        )
     else
-        _pmd_syntax_error("Unknown tag '$tag' within '$(state.collection)'")
+        _syntax_error(parser, "Unknown tag '$tag' within '$(state.collection)'")
     end
 end
 
@@ -66,7 +116,7 @@ function parse!(
     open(filepath, "r") do io
         parser = Parser(io, filepath, data_struct, model_template)
 
-        parse!(parser)
+        return parse!(parser)
     end
 
     return data_struct
@@ -74,15 +124,20 @@ end
 
 function parse!(parser::Parser)
     for line in readlines(parser.io)
-        line = strip(line)
-
         parser.line += 1
+
+        # TODO: Remove comments properly
+        line = strip(line)
 
         if isempty(line) || startswith(line, "//")
             continue # comment or empty line
         end
 
-        _parse_line!(parser, line, parser.state)
+        _parse_line!(parser, line, _get_state(parser))
+    end
+
+    if !(_get_state(parser) isa PMD_IDLE)
+        _syntax_error(parser, "Unexpected EOF")
     end
 
     # apply merges
@@ -109,24 +164,29 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
 
         if _hasinv(parser.model_template, model_name)
             collection = parser.model_template.inv[model_name]
-
-            parser.data_struct[collection] = Dict{String, Attribute}()
-
-            # default attributes that belong to "all collections"
-            parser.data_struct[collection]["name"] = Attribute("name", false, String, 0, "")
-            parser.data_struct[collection]["code"] = Attribute("code", false, Int32, 0, "")
-            parser.data_struct[collection]["AVId"] = Attribute("AVId", false, String, 0, "")
-
-            if collection == "PSRSystem"
-                parser.data_struct[collection]["id"] = Attribute("id", false, String, 0, "")
-            end
-
-            parser.state = PMD_DEF_MODEL(collection)
-
-            return nothing
         else
-            error("Unknown model '$model_name'")
+            _syntax_warning(parser, "Unknown model '$(model_name)'")
+
+            collection = model_name
+            # _push_state!(parser, PMD_DEF_MODEL(nothing))
+            
+            # return nothing
         end
+
+        parser.data_struct[collection] = Dict{String, Attribute}()
+
+        # default attributes that belong to "all collections"
+        parser.data_struct[collection]["name"] = Attribute("name", false, String, 0, "")
+        parser.data_struct[collection]["code"] = Attribute("code", false, Int32, 0, "")
+        parser.data_struct[collection]["AVId"] = Attribute("AVId", false, String, 0, "")
+
+        if collection == "PSRSystem"
+            parser.data_struct[collection]["id"] = Attribute("id", false, String, 0, "")
+        end
+
+        _push_state!(parser, PMD_DEF_MODEL(collection))
+
+        return nothing
     end
 
     # Look for class definition block
@@ -146,7 +206,7 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
             parser.data_struct[collection]["id"] = Attribute("id", false, String, 0, "")
         end
 
-        parser.state = PMD_DEF_CLASS(collection)
+        _push_state!(parser, PMD_DEF_CLASS(collection))
 
         return nothing
     end
@@ -160,12 +220,12 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
 
         _cache_merge!(parser, collection, model_name)
 
-        parser.state = PMD_MERGE_CLASS(collection)
+        _push_state!(parser, PMD_MERGE_CLASS(collection))
 
         return nothing
     end
 
-    _syntax_error(parser, "Invalid input: '$line'")
+    return _syntax_error(parser, "Invalid input: '$line'")
 end
 
 function _parse_line!(
@@ -175,7 +235,7 @@ function _parse_line!(
 )
     # End model definition block
     if startswith(line, "END_MODEL")
-        parser.state = PMD_IDLE()
+        _pop_state!(parser)
         return nothing
     end
 
@@ -188,6 +248,10 @@ function _parse_line!(
         return nothing
     end
 
+    if _parse_submodel!(parser, line, state)
+        return nothing
+    end
+
     if _parse_dimension!(parser, line, state)
         return nothing
     end
@@ -196,7 +260,17 @@ function _parse_line!(
         return nothing
     end
 
-    _syntax_error(parser, "Invalid input: '$line'")
+    if startswith(line, "DEFINE_VALIDATION")
+        _push_state!(parser, PMD_DEF_VALIDATION())
+        return nothing
+    end
+
+    if startswith(line, "DEFINE_MATH")
+        _push_state!(parser, PMD_DEF_MATH())
+        return nothing
+    end
+
+    return _syntax_error(parser, "Invalid input: '$line'")
 end
 
 function _parse_line!(
@@ -205,7 +279,7 @@ function _parse_line!(
     state::PMD_DEF_CLASS,
 )
     if startswith(line, "END_CLASS")
-        parser.state = PMD_IDLE()
+        _pop_state!(parser)
         return nothing
     end
 
@@ -221,8 +295,35 @@ function _parse_line!(
         return nothing
     end
 
+    return _pmd_syntax_error("Invalid input: '$line'")
+end
 
-    _pmd_syntax_error("Invalid input: '$line'")
+function _parse_line!(
+    parser::Parser,
+    line::AbstractString,
+    ::PMD_DEF_VALIDATION,
+)
+    if line == "END_VALIDATION"
+        _pop_state!(parser)
+        return nothing
+    end
+
+    # ignore input within block
+    return nothing
+end
+
+function _parse_line!(
+    parser::Parser,
+    line::AbstractString,
+    ::PMD_DEF_MATH,
+)
+    if line == "END"
+        _pop_state!(parser)
+        return nothing
+    end
+
+    # ignore input within block
+    return nothing
 end
 
 function _parse_merge!(
@@ -243,15 +344,40 @@ function _parse_merge!(
     end
 end
 
+function _parse_submodel!(
+    parser::Parser,
+    line::AbstractString,
+    state::PMD_DEF_MODEL,
+)
+    m = match(r"SUB_MODEL\s+(MODL:)?(\S+)\s+(MODL:)?(\S+)", line)
+
+    if !isnothing(m)
+        src_model = String(m[2])
+        dst_model = String(m[4])
+
+        _syntax_warning(
+            parser,
+            "Unhandled 'SUB_MODEL' statemente from $(src_model) to $(dst_model) within $(state.collection)",
+        )
+
+        return true
+    else
+        return false
+    end
+end
+
 function _parse_dimension!(
     parser::Parser,
     line::AbstractString,
-    state::S
-) where {S<:Union{PMD_DEF_MODEL, PMD_DEF_CLASS, PMD_MERGE_CLASS}}
+    state::S,
+) where {S <: Union{PMD_DEF_MODEL, PMD_DEF_CLASS, PMD_MERGE_CLASS}}
     m = match(r"DIMENSION\s+(\S+)", line)
 
     if !isnothing(m)
-        @warn "Unhandled dimension '$(m[1])' within '$(state.collection)'"
+        _syntax_warning(
+            parser,
+            "Unhandled dimension '$(m[1])' within '$(state.collection)'",
+        )
 
         return true
     else
@@ -272,7 +398,10 @@ function _parse_reference!(
         ref_src = String(m[3])
         ref_dst = String(m[4])
 
-        @warn "Unhandled '$kind $type' reference ('$ref_src' ⇒ '$ref_dst') within '$(state.collection)'"
+        _syntax_warning(
+            parser,
+            "Unhandled '$kind $type' reference ('$ref_src' ⇒ '$ref_dst') within '$(state.collection)'",
+        )
 
         return true
     else
