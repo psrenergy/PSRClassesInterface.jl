@@ -97,7 +97,13 @@ function _load_model!(
 )
     if !isempty(files)
         for filepath in files
-            _load_model!(data_struct, filepath, loaded_files, model_template, relation_mapper)
+            _load_model!(
+                data_struct,
+                filepath,
+                loaded_files,
+                model_template,
+                relation_mapper,
+            )
         end
     else
         if !isdir(path_pmds)
@@ -106,7 +112,13 @@ function _load_model!(
 
         for filepath in readdir(path_pmds; join = true)
             if isfile(filepath) && last(splitext(filepath)) == ".pmd"
-                _load_model!(data_struct, filepath, loaded_files, model_template, relation_mapper)
+                _load_model!(
+                    data_struct,
+                    filepath,
+                    loaded_files,
+                    model_template,
+                    relation_mapper,
+                )
             end
         end
     end
@@ -123,7 +135,14 @@ function load_model(
     data_struct = DataStruct()
     loaded_files = Set{String}()
 
-    _load_model!(data_struct, path_pmds, files, loaded_files, model_template, relation_mapper)
+    _load_model!(
+        data_struct,
+        path_pmds,
+        files,
+        loaded_files,
+        model_template,
+        relation_mapper,
+    )
 
     return data_struct, loaded_files
 end

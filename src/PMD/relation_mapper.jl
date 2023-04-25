@@ -36,7 +36,6 @@ end
 
 """
     Relation(type::RelationType, attribute::String)
-
 """
 struct Relation
     type::RelationType

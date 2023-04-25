@@ -19,7 +19,7 @@ struct PMD_IDLE <: ParserState end
 Indicates that the parser is parsing a _model definition_ block.
 """
 struct PMD_DEF_MODEL <: ParserState
-    collection::Union{String,Nothing}
+    collection::Union{String, Nothing}
 end
 
 """
@@ -28,7 +28,7 @@ end
 Indicates that the parser is parsing a _class definition_ block.
 """
 struct PMD_DEF_CLASS <: ParserState
-    collection::Union{String,Nothing}
+    collection::Union{String, Nothing}
 end
 
 """
@@ -37,7 +37,7 @@ end
 Indicates that the parser is parsing a _class_ block.
 """
 struct PMD_MERGE_CLASS <: ParserState
-    collection::Union{String,Nothing}
+    collection::Union{String, Nothing}
 end
 
 """

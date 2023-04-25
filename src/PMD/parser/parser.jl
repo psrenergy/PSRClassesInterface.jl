@@ -3,12 +3,12 @@ include("states.jl")
 mutable struct Parser
     # io pointer to read from
     io::IO
-    
+
     # original pmd path and current line number, used to
     # compose better error/warning messages
     path::String
     line::Int
-    
+
     # current parser state
     state::Vector{Any}
     merge_index::Int
@@ -115,7 +115,11 @@ end
 
 function parse end
 
-function parse(filepath::AbstractString, model_template::ModelTemplate; verbose::Bool = false)
+function parse(
+    filepath::AbstractString,
+    model_template::ModelTemplate;
+    verbose::Bool = false,
+)
     data_struct = DataStruct()
     relation_mapper = RelationMapper()
 
@@ -127,7 +131,7 @@ function parse!(
     data_struct::DataStruct,
     relation_mapper::RelationMapper,
     model_template::ModelTemplate;
-    verbose::Bool = false
+    verbose::Bool = false,
 )
     if !isfile(filepath) || !endswith(filepath, ".pmd")
         error("'$filepath' is not a valid .pmd file")
@@ -136,7 +140,7 @@ function parse!(
     open(filepath, "r") do io
         parser = Parser(io, filepath, data_struct, relation_mapper, model_template; verbose)
 
-        parse!(parser)
+        return parse!(parser)
     end
 
     return data_struct
@@ -188,7 +192,7 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
             _syntax_warning(parser, "Unknown model '$(model_name)'")
 
             _push_state!(parser, PMD_DEF_MODEL(nothing))
-            
+
             return nothing
         end
 
@@ -422,7 +426,7 @@ function _parse_reference!(
         target = String(m[4])
 
         if !haskey(parser.relation_mapper, state.collection)
-            parser.relation_mapper[state.collection] = Dict{String,Vector{Relation}}()
+            parser.relation_mapper[state.collection] = Dict{String, Vector{Relation}}()
         end
 
         if !haskey(parser.relation_mapper[state.collection], target)
@@ -483,7 +487,7 @@ end
 
 function _apply_merge!(parser::Parser, collection::String, merge_path::Vector{String})
     class = parser.data_struct[collection]
-    
+
     for i in 1:parser.merge_index
         if haskey(class, "_MERGE_$i")
             to_merge = class["_MERGE_$i"].name
@@ -491,15 +495,15 @@ function _apply_merge!(parser::Parser, collection::String, merge_path::Vector{St
             if to_merge in merge_path
                 error("merge cycle found")
             end
-            
+
             _merge_path = deepcopy(merge_path)
-            
+
             push!(_merge_path, to_merge)
-            
+
             _apply_merge!(parser, to_merge, _merge_path)
-            
+
             delete!(class, "_MERGE_$i")
-            
+
             for (k, v) in parser.data_struct[to_merge]
                 if k in ["name", "code", "AVId"] # because we are forcing all these
                     continue

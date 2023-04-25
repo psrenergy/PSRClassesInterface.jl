@@ -278,7 +278,8 @@ function initialize_study(
 
     PMD.load_relations_struct!(relations_defaults_path, relation_mapper)
 
-    data_struct, model_files_added = PMD.load_model(path_pmds, pmd_files, model_template, relation_mapper)
+    data_struct, model_files_added =
+        PMD.load_model(path_pmds, pmd_files, model_template, relation_mapper)
 
     if isempty(model_files_added)
         error("No Model definition (.pmd) file found")
