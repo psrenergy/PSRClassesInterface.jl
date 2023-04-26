@@ -184,13 +184,6 @@ function parse!(parser::Parser)
         _apply_merge!(parser, collection)
     end
 
-    # delete temporary classes (starting with "_")
-    for collection in keys(parser.data_struct)
-        if startswith(collection, "_MERGE")
-            delete!(parser.data_struct, collection)
-        end
-    end
-
     return nothing
 end
 
