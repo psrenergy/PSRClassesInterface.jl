@@ -13,7 +13,7 @@ mutable struct Parser
     state::Vector{Any}
 
     # items to be merged
-    merge::Dict{String,Vector{Any}}
+    merge::Dict{String, Vector{Any}}
 
     # whether to display warnings
     verbose::Bool
@@ -36,7 +36,7 @@ mutable struct Parser
             path,
             0,                          # lineno
             [],                         # state
-            Dict{String,Vector{Any}}(), # merge
+            Dict{String, Vector{Any}}(), # merge
             verbose,
             data_struct,
             relation_mapper,
