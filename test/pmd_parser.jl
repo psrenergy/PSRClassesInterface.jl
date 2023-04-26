@@ -186,4 +186,63 @@ function test_pmd_parser()
     end
 end
 
+function test_pmd_parser_2()
+    model_template = PSRI.PMD.load_model_template(
+        joinpath(@__DIR__, "data", "model_template_test", "modeltemplates.source3.json"),
+    )
+    pmds_path = [joinpath(@__DIR__, "data", "pmd", "source3.pmd")]
+
+    @testset "source3.pmd" begin
+        relation_mapper = PSRI.PMD.RelationMapper()
+        PSRI.PMD.load_model(
+            "",
+            pmds_path,
+            model_template,
+            relation_mapper,
+        )
+        @test relation_mapper == PSRI.PMD.RelationMapper(
+            Dict(
+                "PSRGeneratorUnit" =>
+                    Dict(
+                        "PSRBus" =>
+                            Vector{PSRI.PMD.Relation}(
+                                [
+                                PSRI.PMD.Relation(
+                                    PSRI.PMD.RELATION_1_TO_1,
+                                    "Bus",
+                                ),
+                                PSRI.PMD.Relation(
+                                    PSRI.PMD.RELATION_1_TO_N,
+                                    "Buses",
+                                ),
+                            ]
+                            ),
+                        "PSRElement" =>
+                            Vector{PSRI.PMD.Relation}(
+                                [
+                                PSRI.PMD.Relation(
+                                    PSRI.PMD.RELATION_1_TO_N,
+                                    "Element",
+                                ),
+                            ]
+                            ),
+                    ),
+                "PSRTest" =>
+                    Dict(
+                        "PSRBus" =>
+                            Vector{PSRI.PMD.Relation}(
+                                [
+                                PSRI.PMD.Relation(
+                                    PSRI.PMD.RELATION_1_TO_1,
+                                    "Bus3",
+                                ),
+                            ]
+                            ),
+                    ),
+            ),
+        )
+    end
+end
+
 test_pmd_parser()
+test_pmd_parser_2()

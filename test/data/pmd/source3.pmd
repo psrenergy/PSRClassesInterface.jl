@@ -1,0 +1,37 @@
+
+//------------------------------------
+// Modelo para configuração do estudo
+//------------------------------------
+DEFINE_MODEL MODL:Custom_StudyConfig
+    DIMENSION		segment 1
+
+	PARM INTEGER Tipo_Etapa
+	PARM INTEGER Ano_inicial
+	PARM INTEGER Etapa_inicial
+
+END_MODEL
+
+DEFINE_CLASS PSRBus
+	PARM   INTEGER   NumberUnits
+	PARM   INTEGER   Code        @id
+END_CLASS
+
+DEFINE_CLASS PSRElement
+	PARM   INTEGER   NumberUnits
+	PARM   INTEGER   Code        @id
+END_CLASS
+
+DEFINE_CLASS PSRGeneratorUnit
+	PARM   INTEGER   NumberUnits
+	PARM   INTEGER   Code        
+    PARM   REFERENCE Bus         PSRBus
+	VECTOR   REFERENCE Buses         PSRBus
+	VECTOR   REFERENCE Element       PSRElement
+END_CLASS
+
+DEFINE_CLASS PSRTest
+	PARM   INTEGER   NumberUnits
+	PARM   INTEGER   Code        @id
+	PARM   REFERENCE Bus3         PSRBus
+END_CLASS
+

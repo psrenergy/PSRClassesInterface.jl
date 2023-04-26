@@ -96,7 +96,7 @@ end
 function _apply_tag!(
     parser::Parser,
     collection::String,
-    attribute::String,
+    attribute::AbstractString,
     tag::AbstractString,
 )
     if tag == "@id"
