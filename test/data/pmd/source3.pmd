@@ -29,9 +29,9 @@ DEFINE_CLASS PSRGeneratorUnit
 	VECTOR   REFERENCE Element       PSRElement
 END_CLASS
 
-DEFINE_CLASS PSRTest
+DEFINE_MODEL PSRTest
 	PARM   INTEGER   NumberUnits
 	PARM   INTEGER   Code        @id
 	PARM   REFERENCE Bus3         PSRBus
-END_CLASS
+END_MODEL
 
