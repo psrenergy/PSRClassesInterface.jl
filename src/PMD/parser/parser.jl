@@ -465,7 +465,7 @@ function _parse_attribute!(
     state::S,
 ) where {S <: Union{PMD_DEF_MODEL, PMD_DEF_CLASS, PMD_MERGE_CLASS}}
     m = match(
-        r"(PARM|VECTOR|VETOR)\s+(\S+)\s+(\S+)(\s+DIM\((\S+(,\S+)*)\))?(\s+INDEX\s+(\S+))?(\s+(\@\S+))?",
+        r"(PARM|VECTOR|VETOR)\s+(INTEGER|REAL|DATE|STRING)\s+(\S+)(\s+DIM\((\S+(,\S+)*)\))?(\s+INDEX\s+(\S+))?(\s+(\@\S+))?",
         line,
     )
 
