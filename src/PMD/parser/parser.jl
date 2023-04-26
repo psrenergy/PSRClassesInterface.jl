@@ -7,11 +7,13 @@ mutable struct Parser
     # original pmd path and current line number, used to
     # compose better error/warning messages
     path::String
-    line::Int
+    lineno::Int
 
     # current parser state
     state::Vector{Any}
-    merge_index::Int
+
+    # items to be merged
+    merge::Dict{String,Vector{Any}}
 
     # whether to display warnings
     verbose::Bool
@@ -32,9 +34,9 @@ mutable struct Parser
         return new(
             io,
             path,
-            0,  # line
-            [], # state
-            1,  # merge_index
+            0,                          # lineno
+            [],                         # state
+            Dict{String,Vector{Any}}(), # merge
             verbose,
             data_struct,
             relation_mapper,
@@ -69,7 +71,7 @@ function _syntax_error(
     parser::Parser,
     msg::AbstractString,
 )
-    return error("Syntax Error in '$(parser.path):$(parser.line)': $msg")
+    return error("Syntax Error in '$(parser.path):$(parser.lineno)': $msg")
 end
 
 function _syntax_warning(
@@ -77,25 +79,23 @@ function _syntax_warning(
     msg::AbstractString,
 )
     if parser.verbose
-        @warn("In '$(parser.path):$(parser.line)': $msg")
+        @warn("In '$(parser.path):$(parser.lineno)': $msg")
     end
 end
 
 function _cache_merge!(parser::Parser, collection::String, model_name::String)
-    name = parser.model_template.inv[model_name]
+    if !haskey(parser.merge, collection)
+        parser.merge[collection] = []
+    end
 
-    attribute = Attribute(name, false, DataType, 0, "")
-
-    parser.data_struct[collection]["_MERGE_$(parser.merge_index)"] = attribute
-
-    parser.merge_index += 1
+    push!(parser.merge[collection], parser.model_template.inv[model_name])
 
     return nothing
 end
 
 function _apply_tag!(
     parser::Parser,
-    tag::String,
+    tag::AbstractString,
     state::S,
 ) where {S <: Union{PMD_DEF_MODEL, PMD_DEF_CLASS}}
     if tag == "@id"
@@ -148,16 +148,16 @@ end
 
 function parse!(parser::Parser)
     for line in readlines(parser.io)
-        parser.line += 1
+        parser.lineno += 1
 
-        # TODO: Remove comments properly
-        line = strip(line)
+        # remove comments & trailing spaces
+        m = match(r"^\s*(.*?)\s*(\/\/.*)?$", line)
 
-        if isempty(line) || startswith(line, "//")
+        if (m === nothing) || isempty(m[1])
             continue # comment or empty line
         end
 
-        _parse_line!(parser, line, _get_state(parser))
+        _parse_line!(parser, m[1], _get_state(parser))
     end
 
     if !(_get_state(parser) isa PMD_IDLE)
@@ -165,8 +165,8 @@ function parse!(parser::Parser)
     end
 
     # apply merges
-    for collection in keys(parser.data_struct)
-        _apply_merge!(parser, collection, String[collection])
+    for collection in keys(parser.merge)
+        _apply_merge!(parser, collection)
     end
 
     # delete temporary classes (starting with "_")
@@ -183,7 +183,7 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
     # Look for model definition block
     m = match(r"DEFINE_MODEL\s+(MODL:)?(\S+)", line)
 
-    if !isnothing(m)
+    if m !== nothing
         model_name = String(m[2])
 
         if _hasinv(parser.model_template, model_name)
@@ -215,7 +215,7 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
     # Look for class definition block
     m = match(r"DEFINE_CLASS\s+(\S+)", line)
 
-    if !isnothing(m)
+    if m !== nothing
         collection = String(m[1])
 
         parser.data_struct[collection] = Dict{String, Attribute}()
@@ -237,7 +237,7 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
     # Look for class merge block
     m = match(r"MERGE_CLASS\s+(\S+)\s+(\S+)", line)
 
-    if !isnothing(m)
+    if m !== nothing
         collection = String(m[1])
         model_name = String(m[2])
 
@@ -361,7 +361,7 @@ function _parse_merge!(
 )
     m = match(r"MERGE_MODEL\s+MODL:(\S+)", line)
 
-    if !isnothing(m)
+    if m !== nothing
         model_name = String(m[1])
 
         _cache_merge!(parser, state.collection, model_name)
@@ -379,13 +379,13 @@ function _parse_submodel!(
 )
     m = match(r"SUB_MODEL\s+(MODL:)?(\S+)\s+(MODL:)?(\S+)", line)
 
-    if !isnothing(m)
+    if m !== nothing
         src_model = String(m[2])
         dst_model = String(m[4])
 
         _syntax_warning(
             parser,
-            "Unhandled 'SUB_MODEL' statemente from $(src_model) to $(dst_model) within $(state.collection)",
+            "Unhandled 'SUB_MODEL' statement from $(src_model) to $(dst_model) within $(state.collection)",
         )
 
         return true
@@ -401,7 +401,7 @@ function _parse_dimension!(
 ) where {S <: Union{PMD_DEF_MODEL, PMD_DEF_CLASS, PMD_MERGE_CLASS}}
     m = match(r"DIMENSION\s+(\S+)", line)
 
-    if !isnothing(m)
+    if m !== nothing
         _syntax_warning(
             parser,
             "Unhandled dimension '$(m[1])' within '$(state.collection)'",
@@ -420,9 +420,9 @@ function _parse_reference!(
 ) where {S <: Union{PMD_DEF_MODEL, PMD_DEF_CLASS, PMD_MERGE_CLASS}}
     m = match(r"(PARM|VECTOR|VETOR)\s+(REFERENCE)\s+(\S+)\s+(\S+)", line)
 
-    if !isnothing(m)
+    if m !== nothing
         kind = String(m[1])
-        attribute = String(m[3])
+        name = String(m[3])
         target = String(m[4])
 
         if !haskey(parser.relation_mapper, state.collection)
@@ -439,7 +439,7 @@ function _parse_reference!(
             rel_type = RELATION_1_TO_1
         end
 
-        rel = Relation(rel_type, attribute)
+        rel = Relation(rel_type, name)
 
         push!(parser.relation_mapper[state.collection][target], rel)
 
@@ -459,7 +459,7 @@ function _parse_attribute!(
         line,
     )
 
-    if !isnothing(m)
+    if m !== nothing
         kind = m[1]
         type = m[2]
         name = m[3]
@@ -471,11 +471,11 @@ function _parse_attribute!(
             name,
             PMD._is_vector(kind),
             PMD._get_type(type),
-            isnothing(dims) ? 0 : count(",", dims) + 1,
-            something(index, ""),
+            (dims === nothing) ? 0 : count(",", dims) + 1,
+            (index === nothing) ? "" : index,
         )
 
-        if !isnothing(tag)
+        if tag !== nothing
             _apply_tag!(parser, tag, state)
         end
 
@@ -485,39 +485,44 @@ function _parse_attribute!(
     end
 end
 
-function _apply_merge!(parser::Parser, collection::String, merge_path::Vector{String})
-    class = parser.data_struct[collection]
+function _apply_merge!(parser::Parser, target::String)
+    _apply_merge!(parser, target, Set{String}([target]))
 
-    for i in 1:parser.merge_index
-        if haskey(class, "_MERGE_$i")
-            to_merge = class["_MERGE_$i"].name
+    return nothing
+end
 
-            if to_merge in merge_path
-                error("merge cycle found")
+function _apply_merge!(parser::Parser, target::String, merge_path::Set{String})
+    data = parser.data_struct[target]
+
+    for source in parser.merge[target]
+        if source in merge_path
+            error("Circular merge between '$target' and '$source'")
+        end
+
+        _merge_path = deepcopy(merge_path)
+
+        push!(_merge_path, source)
+
+        if haskey(parser.merge, source)
+            _apply_merge!(parser, source, _merge_path)
+        end
+
+        for (k, v) in parser.data_struct[source]
+            if k in ("name", "code", "AVId") # we are already enforcing these
+                continue
             end
 
-            _merge_path = deepcopy(merge_path)
-
-            push!(_merge_path, to_merge)
-
-            _apply_merge!(parser, to_merge, _merge_path)
-
-            delete!(class, "_MERGE_$i")
-
-            for (k, v) in parser.data_struct[to_merge]
-                if k in ["name", "code", "AVId"] # because we are forcing all these
-                    continue
-                end
-
-                if haskey(class, k)
-                    error(
-                        "Class $class already has attribute $k being merged from $to_merge",
-                    )
-                end
-
-                class[k] = v
+            if haskey(data, k)
+                error(
+                    "Collection '$target' already has attribute '$k' being merged from '$source'",
+                )
             end
+
+            data[k] = v
         end
     end
+
+    delete!(parser.merge, target)
+
     return nothing
 end
