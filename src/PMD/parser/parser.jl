@@ -95,21 +95,25 @@ end
 
 function _apply_tag!(
     parser::Parser,
+    collection::String,
+    attribute::String,
     tag::AbstractString,
-    state::S,
-) where {S <: Union{PMD_DEF_MODEL, PMD_DEF_CLASS}}
+)
     if tag == "@id"
         _syntax_warning(
             parser,
-            "Unhandled '$tag' tag found within '$(state.collection)' definition",
+            "Unhandled '$tag' tag for '$(attribute)' within '$(collection)' definition",
         )
     elseif tag == "@hourly_dense"
         _syntax_warning(
             parser,
-            "Unhandled '$tag' tag found within '$(state.collection)' definition",
+            "Unhandled '$tag' tag for '$(attribute)' within '$(collection)' definition",
         )
     else
-        _syntax_error(parser, "Unknown tag '$tag' within '$(state.collection)'")
+        _syntax_error(
+            parser,
+            "Unknown tag '$tag' for '$(attribute)' within '$(collection)'",
+        )
     end
 end
 
@@ -202,6 +206,8 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
         else
             _syntax_warning(parser, "Unknown model '$(model_name)'")
 
+            # By setting the collection to 'nothing', we are telling
+            # the parser to ignore the block and its contents
             _push_state!(parser, PMD_DEF_MODEL(nothing))
 
             return nothing
@@ -322,7 +328,7 @@ function _parse_line!(
         return nothing
     end
 
-    if _parse_attribute(parser, line, state)
+    if _parse_attribute!(parser, line, state)
         return nothing
     end
 
@@ -487,7 +493,7 @@ function _parse_attribute!(
         )
 
         if tag !== nothing
-            _apply_tag!(parser, tag, state)
+            _apply_tag!(parser, state.collection, name, tag)
         end
 
         return true
