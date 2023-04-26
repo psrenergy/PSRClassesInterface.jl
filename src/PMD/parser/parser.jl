@@ -113,6 +113,17 @@ function _apply_tag!(
     end
 end
 
+"""
+    parse(
+        filepath::AbstractString,
+        model_template::ModelTemplate;
+        verbose::Bool = false,
+    )
+
+Parses a PMD file with as little context as possible.
+Besides the file path, only the model template is necessary.
+It is intended to be useful when writing tests for the parser.
+"""
 function parse end
 
 function parse(
