@@ -1,356 +1,356 @@
 {
-    "PSRThermalPlant": {
-        "PSRFuel": [
-            {
-                "type": 1,
-                "attribute": "fuels"
-            }
-        ],
-        "PSRSystem": [
-            {
-                "type": 0,
-                "attribute": "system"
-            }
-        ]
-    },
     "PSRFuelConsumption": {
-        "PSRFuel": [
-            {
-                "type": 0,
-                "attribute": "fuel"
+        "PSRThermalPlant": {
+            "plant": {
+                "is_vector": false,
+                "type": 0
             }
-        ],
-        "PSRThermalPlant": [
-            {
-                "type": 0,
-                "attribute": "plant"
+        },
+        "PSRFuel": {
+            "fuel": {
+                "is_vector": false,
+                "type": 0
             }
-        ]
+        }
     },
     "PSRHydroPlant": {
-        "PSRGaugingStation": [
-            {
-                "type": 0,
-                "attribute": "station"
-            }
-        ],
-        "PSRSystem": [
-            {
-                "type": 0,
-                "attribute": "system"
-            }
-        ],
-        "PSRHydroPlant": [
-            {
-                "type": 4,
-                "attribute": "turbinning"
+        "PSRHydroPlant": {
+            "filtration": {
+                "is_vector": false,
+                "type": 6
             },
-            {
-                "type": 5,
-                "attribute": "spilling"
+            "turbinning": {
+                "is_vector": false,
+                "type": 4
             },
-            {
-                "type": 6,
-                "attribute": "filtration"
+            "spilling": {
+                "is_vector": false,
+                "type": 5
             },
-            {
-                "type": 7,
-                "attribute": "storedenergy"
+            "storedenergy": {
+                "is_vector": false,
+                "type": 7
             }
-        ]
+        },
+        "PSRSystem": {
+            "system": {
+                "is_vector": false,
+                "type": 0
+            }
+        },
+        "PSRGaugingStation": {
+            "station": {
+                "is_vector": false,
+                "type": 0
+            }
+        }
     },
     "PSRGndPlant": {
-        "PSRGaugingStation": [
-            {
-                "type": 0,
-                "attribute": "station"
+        "PSRSystem": {
+            "system": {
+                "is_vector": false,
+                "type": 0
             }
-        ],
-        "PSRSystem": [
-            {
-                "type": 0,
-                "attribute": "system"
+        },
+        "PSRGaugingStation": {
+            "station": {
+                "is_vector": false,
+                "type": 0
             }
-        ]
-    },
-    "PSRGaugingStation": {
-        "PSRGaugingStation": [
-            {
-                "type": 0,
-                "attribute": "downstream"
-            }
-        ]
-    },
-    "PSRBattery": {
-        "PSRBus": [
-            {
-                "type": 0,
-                "attribute": "bus"
-            }
-        ],
-        "PSRSystem": [
-            {
-                "type": 0,
-                "attribute": "system"
-            }
-        ]
-    },
-    "PSRGenerator": {
-        "PSRBus": [
-            {
-                "type": 0,
-                "attribute": "bus"
-            }
-        ],
-        "PSRThermalPlant": [
-            {
-                "type": 0,
-                "attribute": "plant"
-            }
-        ],
-        "PSRHydroPlant": [
-            {
-                "type": 0,
-                "attribute": "plant"
-            }
-        ],
-        "PSRGndPlant": [
-            {
-                "type": 0,
-                "attribute": "plant"
-            }
-        ]
-    },
-    "PSRFuel": {
-        "PSRSystem": [
-            {
-                "type": 0,
-                "attribute": "system"
-            }
-        ]
-    },
-    "PSRDemandSegment": {
-        "PSRDemand": [
-            {
-                "type": 0,
-                "attribute": "demand"
-            }
-        ],
-        "PSRSystem": [
-            {
-                "type": 0,
-                "attribute": "system"
-            }
-        ]
-    },
-    "PSRDemand": {
-        "PSRSystem": [
-            {
-                "type": 0,
-                "attribute": "system"
-            }
-        ]
-    },
-    "PSRLoad": {
-        "PSRBus": [
-            {
-                "type": 0,
-                "attribute": "bus"
-            }
-        ],
-        "PSRDemand": [
-            {
-                "type": 0,
-                "attribute": "demand"
-            }
-        ]
+        }
     },
     "PSRInterconnection": {
-        "PSRSystem": [
-            {
-                "type": 2,
-                "attribute": "no1"
+        "PSRSystem": {
+            "no1": {
+                "is_vector": false,
+                "type": 2
             },
-            {
-                "type": 3,
-                "attribute": "no2"
+            "no2": {
+                "is_vector": false,
+                "type": 3
             }
-        ]
-    },
-    "PSRLinkDC": {
-        "PSRBus": [
-            {
-                "type": 2,
-                "attribute": "no1"
-            },
-            {
-                "type": 3,
-                "attribute": "no2"
-            }
-        ]
-    },
-    "PSRSerie": {
-        "PSRBus": [
-            {
-                "type": 2,
-                "attribute": "no1"
-            },
-            {
-                "type": 3,
-                "attribute": "no2"
-            }
-        ]
-    },
-    "PSRTransformer": {
-        "PSRBus": [
-            {
-                "type": 2,
-                "attribute": "no1"
-            },
-            {
-                "type": 3,
-                "attribute": "no2"
-            }
-        ]
-    },
-    "PSRBus": {
-        "PSRArea": [
-            {
-                "type": 0,
-                "attribute": "area"
-            }
-        ],
-        "PSRSystem": [
-            {
-                "type": 0,
-                "attribute": "system"
-            }
-        ]
-    },
-    "PSRGenerationConstraintData": {
-        "PSRSystem": [
-            {
-                "type": 0,
-                "attribute": "system"
-            }
-        ],
-        "PSRThermalPlant": [
-            {
-                "type": 1,
-                "attribute": "usinas"
-            }
-        ],
-        "PSRHydroPlant": [
-            {
-                "type": 1,
-                "attribute": "usinas"
-            }
-        ],
-        "PSRGndPlant": [
-            {
-                "type": 1,
-                "attribute": "usinas"
-            }
-        ],
-        "PSRBattery": [
-            {
-                "type": 1,
-                "attribute": "batteries"
-            }
-        ]
-    },
-    "PSRInterconnectionSumData": {
-        "PSRInterconnection": [
-            {
-                "type": 1,
-                "attribute": "elements"
-            }
-        ]
+        }
     },
     "PSRMaintenanceData": {
-        "PSRSystem": [
-            {
-                "type": 0,
-                "attribute": "system"
+        "PSRThermalPlant": {
+            "plant": {
+                "is_vector": false,
+                "type": 0
             }
-        ],
-        "PSRThermalPlant": [
-            {
-                "type": 0,
-                "attribute": "plant"
+        },
+        "PSRHydroPlant": {
+            "plant": {
+                "is_vector": false,
+                "type": 0
             }
-        ],
-        "PSRHydroPlant": [
-            {
-                "type": 0,
-                "attribute": "plant"
+        },
+        "PSRSystem": {
+            "system": {
+                "is_vector": false,
+                "type": 0
             }
-        ],
-        "PSRGndPlant": [
-            {
-                "type": 0,
-                "attribute": "plant"
+        },
+        "PSRGndPlant": {
+            "plant": {
+                "is_vector": false,
+                "type": 0
             }
-        ]
+        }
     },
-    "PSRReserveGenerationConstraintData": {
-        "PSRSystem": [
-            {
-                "type": 0,
-                "attribute": "system"
+    "PSRGaugingStation": {
+        "PSRGaugingStation": {
+            "downstream": {
+                "is_vector": false,
+                "type": 0
             }
-        ],
-        "PSRThermalPlant": [
-            {
-                "type": 1,
-                "attribute": "usinas"
-            },
-            {
-                "type": 8,
-                "attribute": "backed"
-            }
-        ],
-        "PSRHydroPlant": [
-            {
-                "type": 1,
-                "attribute": "usinas"
-            },
-            {
-                "type": 8,
-                "attribute": "backed"
-            }
-        ],
-        "PSRGndPlant": [
-            {
-                "type": 1,
-                "attribute": "usinas"
-            },
-            {
-                "type": 8,
-                "attribute": "backed"
-            }
-        ],
-        "PSRBattery": [
-            {
-                "type": 1,
-                "attribute": "batteries"
-            }
-        ]
+        }
     },
-    "PSRReservoirSet": {
-        "PSRHydroPlant": [
-            {
-                "type": 1,
-                "attribute": "reservoirs"
+    "PSRLoad": {
+        "PSRBus": {
+            "bus": {
+                "is_vector": false,
+                "type": 0
             }
-        ]
+        },
+        "PSRDemand": {
+            "demand": {
+                "is_vector": false,
+                "type": 0
+            }
+        }
+    },
+    "PSRDemand": {
+        "PSRSystem": {
+            "system": {
+                "is_vector": false,
+                "type": 0
+            }
+        }
     },
     "PSRPowerInjection": {
-        "PSRBus": [
-            {
-                "type": 0,
-                "attribute": "bus"
+        "PSRBus": {
+            "bus": {
+                "is_vector": false,
+                "type": 0
             }
-        ]
+        }
+    },
+    "PSRGenerator": {
+        "PSRThermalPlant": {
+            "plant": {
+                "is_vector": false,
+                "type": 0
+            }
+        },
+        "PSRBus": {
+            "bus": {
+                "is_vector": false,
+                "type": 0
+            }
+        },
+        "PSRHydroPlant": {
+            "plant": {
+                "is_vector": false,
+                "type": 0
+            }
+        },
+        "PSRGndPlant": {
+            "plant": {
+                "is_vector": false,
+                "type": 0
+            }
+        }
+    },
+    "PSRFuel": {
+        "PSRSystem": {
+            "system": {
+                "is_vector": false,
+                "type": 0
+            }
+        }
+    },
+    "PSRBus": {
+        "PSRSystem": {
+            "system": {
+                "is_vector": false,
+                "type": 0
+            }
+        },
+        "PSRArea": {
+            "area": {
+                "is_vector": false,
+                "type": 0
+            }
+        }
+    },
+    "PSRSerie": {
+        "PSRBus": {
+            "no1": {
+                "is_vector": false,
+                "type": 2
+            },
+            "no2": {
+                "is_vector": false,
+                "type": 3
+            }
+        }
+    },
+    "PSRReservoirSet": {
+        "PSRHydroPlant": {
+            "reservoirs": {
+                "is_vector": true,
+                "type": 1
+            }
+        }
+    },
+    "PSRBattery": {
+        "PSRBus": {
+            "bus": {
+                "is_vector": false,
+                "type": 0
+            }
+        },
+        "PSRSystem": {
+            "system": {
+                "is_vector": false,
+                "type": 0
+            }
+        }
+    },
+    "PSRTransformer": {
+        "PSRBus": {
+            "no1": {
+                "is_vector": false,
+                "type": 2
+            },
+            "no2": {
+                "is_vector": false,
+                "type": 3
+            }
+        }
+    },
+    "PSRGenerationConstraintData": {
+        "PSRThermalPlant": {
+            "usinas": {
+                "is_vector": true,
+                "type": 1
+            }
+        },
+        "PSRBattery": {
+            "batteries": {
+                "is_vector": true,
+                "type": 1
+            }
+        },
+        "PSRHydroPlant": {
+            "usinas": {
+                "is_vector": true,
+                "type": 1
+            }
+        },
+        "PSRSystem": {
+            "system": {
+                "is_vector": false,
+                "type": 0
+            }
+        },
+        "PSRGndPlant": {
+            "usinas": {
+                "is_vector": true,
+                "type": 1
+            }
+        }
+    },
+    "PSRInterconnectionSumData": {
+        "PSRInterconnection": {
+            "elements": {
+                "is_vector": true,
+                "type": 1
+            }
+        }
+    },
+    "PSRThermalPlant": {
+        "PSRFuel": {
+            "fuels": {
+                "is_vector": true,
+                "type": 1
+            }
+        },
+        "PSRSystem": {
+            "system": {
+                "is_vector": false,
+                "type": 0
+            }
+        }
+    },
+    "PSRDemandSegment": {
+        "PSRSystem": {
+            "system": {
+                "is_vector": false,
+                "type": 0
+            }
+        },
+        "PSRDemand": {
+            "demand": {
+                "is_vector": false,
+                "type": 0
+            }
+        }
+    },
+    "PSRLinkDC": {
+        "PSRBus": {
+            "no1": {
+                "is_vector": false,
+                "type": 2
+            },
+            "no2": {
+                "is_vector": false,
+                "type": 3
+            }
+        }
+    },
+    "PSRReserveGenerationConstraintData": {
+        "PSRThermalPlant": {
+            "usinas": {
+                "is_vector": true,
+                "type": 1
+            },
+            "backed": {
+                "is_vector": true,
+                "type": 8
+            }
+        },
+        "PSRBattery": {
+            "batteries": {
+                "is_vector": true,
+                "type": 1
+            }
+        },
+        "PSRHydroPlant": {
+            "usinas": {
+                "is_vector": true,
+                "type": 1
+            },
+            "backed": {
+                "is_vector": true,
+                "type": 8
+            }
+        },
+        "PSRSystem": {
+            "system": {
+                "is_vector": false,
+                "type": 0
+            }
+        },
+        "PSRGndPlant": {
+            "usinas": {
+                "is_vector": true,
+                "type": 1
+            },
+            "backed": {
+                "is_vector": true,
+                "type": 8
+            }
+        }
     }
 }

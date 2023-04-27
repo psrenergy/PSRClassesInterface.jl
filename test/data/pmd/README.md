@@ -9,16 +9,16 @@ This test suite has to cover the following parser capabilities:
   - [x] `MERGE_MODEL`
   - [x] `DEFINE_VALIDATION`
   - [x] Empty block
-- [ ] Attributes
-  - [ ] Kinds
+- [x] Attributes
+  - [x] Kinds
     - [x] `PARM`
     - [x] `VECTOR|VETOR`
-  - [ ] Types
+  - [x] Types
     - [x] `INTEGER`
     - [x] `REAL`
     - [x] `DATE`
     - [x] `STRING`
-    - [ ] `REFERENCE`
+    - [x] `REFERENCE`
   - [x] Extras
     - [x] `DIMENSION`
     - [x] `INDEX`
@@ -27,5 +27,6 @@ This test suite has to cover the following parser capabilities:
   - [ ] Tags
     - [ ] `@id`
     - [ ] `@hourly_dense`
-- [ ] Names
+- [x] Names
+  - [x] `(MODL:)?`
   - [x] `->|<-`

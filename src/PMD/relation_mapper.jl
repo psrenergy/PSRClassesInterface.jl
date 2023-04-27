@@ -38,23 +38,39 @@ end
     Relation(type::RelationType, attribute::String)
 """
 struct Relation
-    type::RelationType
+    type::RelationType # deprecated ?
     attribute::String
+    is_vector::Bool
+
+    function Relation(type::RelationType, attribute::String)
+        new(type, attribute, type == RELATION_1_TO_N || type == RELATION_BACKED)
+    end
+
+    function Relation(type::RelationType, attribute::String, is_vector::Bool)
+        new(type, attribute, is_vector)
+    end
 end
 
-const RelationMapper = Dict{String, Dict{String, Vector{Relation}}}
+const RelationMapper = Dict{String, Dict{String, Dict{String, Relation}}}
 
 function load_relations_struct!(path::AbstractString, relation_mapper::RelationMapper)
     raw_struct = JSON.parsefile(path)
 
-    for (key, value) in raw_struct
-        relation_mapper[key] = Dict{String, Vector{Relation}}()
-        for (collection, relations) in value
-            relations_vector = [
-                Relation(RelationType(relation["type"]), relation["attribute"]) for
-                relation in relations
-            ]
-            relation_mapper[key][collection] = relations_vector
+    for (source, targets) in raw_struct
+        relation_mapper[source] = Dict{String, Dict{String, Relation}}()
+        for (target, attributes) in targets
+            relation_mapper[source][target] = Dict{String,Relation}()
+            for (attribute, info) in attributes
+                relation = Relation(
+                    RelationType(info["type"]),
+                    attribute,
+                    info["is_vector"],
+                )
+
+                relation_mapper[source][target][attribute] = relation
+            end
         end
     end
+
+    return nothing
 end

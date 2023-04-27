@@ -205,38 +205,32 @@ function test_pmd_parser_2()
                 "PSRGeneratorUnit" =>
                     Dict(
                         "PSRBus" =>
-                            Vector{PSRI.PMD.Relation}(
-                                [
-                                PSRI.PMD.Relation(
+                            Dict{String, PSRI.PMD.Relation}(
+                                "Bus" => PSRI.PMD.Relation(
                                     PSRI.PMD.RELATION_1_TO_1,
                                     "Bus",
                                 ),
-                                PSRI.PMD.Relation(
+                                "Buses" => PSRI.PMD.Relation(
                                     PSRI.PMD.RELATION_1_TO_N,
                                     "Buses",
                                 ),
-                            ]
                             ),
                         "PSRElement" =>
-                            Vector{PSRI.PMD.Relation}(
-                                [
-                                PSRI.PMD.Relation(
+                            Dict{String, PSRI.PMD.Relation}(
+                                "Element" => PSRI.PMD.Relation(
                                     PSRI.PMD.RELATION_1_TO_N,
                                     "Element",
                                 ),
-                            ]
                             ),
                     ),
                 "PSRTest" =>
                     Dict(
                         "PSRBus" =>
-                            Vector{PSRI.PMD.Relation}(
-                                [
-                                PSRI.PMD.Relation(
+                            Dict{String, PSRI.PMD.Relation}(
+                                "Bus3" => PSRI.PMD.Relation(
                                     PSRI.PMD.RELATION_1_TO_1,
                                     "Bus3",
                                 ),
-                            ]
                             ),
                     ),
             ),

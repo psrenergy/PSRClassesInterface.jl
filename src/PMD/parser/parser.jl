@@ -74,6 +74,13 @@ function _syntax_error(
     return error("Syntax Error in '$(parser.path):$(parser.lineno)': $msg")
 end
 
+function _error(
+    parser::Parser,
+    msg::AbstractString,
+)
+    return error("Error in '$(parser.path):$(parser.lineno)': $msg")
+end
+
 function _syntax_warning(
     parser::Parser,
     msg::AbstractString,
@@ -89,6 +96,49 @@ function _cache_merge!(parser::Parser, collection::String, model_name::String)
     end
 
     push!(parser.merge[collection], parser.model_template.inv[model_name])
+
+    return nothing
+end
+
+function _apply_merge!(parser::Parser, target::String)
+    _apply_merge!(parser, target, Set{String}([target]))
+
+    return nothing
+end
+
+function _apply_merge!(parser::Parser, target::String, merge_path::Set{String})
+    data = parser.data_struct[target]
+
+    for source in parser.merge[target]
+        if source in merge_path
+            error("Circular merge between '$target' and '$source'")
+        end
+
+        _merge_path = deepcopy(merge_path)
+
+        push!(_merge_path, source)
+
+        if haskey(parser.merge, source)
+            _apply_merge!(parser, source, _merge_path)
+        end
+
+        for (k, v) in parser.data_struct[source]
+            if k in ("name", "code", "AVId") # we are already enforcing these
+                continue
+            end
+
+            if haskey(data, k)
+                _error(
+                    parser,
+                    "Collection '$target' already has attribute '$k' being merged from '$source'",
+                )
+            end
+
+            data[k] = v
+        end
+    end
+
+    delete!(parser.merge, target)
 
     return nothing
 end
@@ -333,7 +383,7 @@ function _parse_line!(
         return nothing
     end
 
-    return _pmd_syntax_error("Invalid input: '$line'")
+    return _syntax_error(parser, "Invalid input: '$line'")
 end
 
 function _parse_line!(
@@ -432,26 +482,27 @@ function _parse_reference!(
 
     if m !== nothing
         kind = String(m[1])
-        name = String(m[3])
+        attribute = String(m[3])
         target = String(m[4])
 
         if !haskey(parser.relation_mapper, state.collection)
-            parser.relation_mapper[state.collection] = Dict{String, Vector{Relation}}()
+            parser.relation_mapper[state.collection] =
+                Dict{String, Dict{String, Relation}}()
         end
 
         if !haskey(parser.relation_mapper[state.collection], target)
-            parser.relation_mapper[state.collection][target] = Vector{Relation}()
+            parser.relation_mapper[state.collection][target] = Dict{String, Relation}()
         end
 
         if _is_vector(kind)
-            rel_type = RELATION_1_TO_N
+            relation_type = RELATION_1_TO_N
         else
-            rel_type = RELATION_1_TO_1
+            relation_type = RELATION_1_TO_1
         end
 
-        rel = Relation(rel_type, name)
+        relation = Relation(relation_type, attribute)
 
-        push!(parser.relation_mapper[state.collection][target], rel)
+        parser.relation_mapper[state.collection][target][attribute] = relation
 
         return true
     else
@@ -493,46 +544,4 @@ function _parse_attribute!(
     else
         return false
     end
-end
-
-function _apply_merge!(parser::Parser, target::String)
-    _apply_merge!(parser, target, Set{String}([target]))
-
-    return nothing
-end
-
-function _apply_merge!(parser::Parser, target::String, merge_path::Set{String})
-    data = parser.data_struct[target]
-
-    for source in parser.merge[target]
-        if source in merge_path
-            error("Circular merge between '$target' and '$source'")
-        end
-
-        _merge_path = deepcopy(merge_path)
-
-        push!(_merge_path, source)
-
-        if haskey(parser.merge, source)
-            _apply_merge!(parser, source, _merge_path)
-        end
-
-        for (k, v) in parser.data_struct[source]
-            if k in ("name", "code", "AVId") # we are already enforcing these
-                continue
-            end
-
-            if haskey(data, k)
-                error(
-                    "Collection '$target' already has attribute '$k' being merged from '$source'",
-                )
-            end
-
-            data[k] = v
-        end
-    end
-
-    delete!(parser.merge, target)
-
-    return nothing
 end
