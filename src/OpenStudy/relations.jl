@@ -13,7 +13,7 @@ end
     Returns true if there is a relation with attribute 'relation_attribute' in a 'Vector{PMD.Relation}'
 """
 function _has_relation_attribute(
-    relations::Dict{String,PMD.Relation},
+    relations::Dict{String, PMD.Relation},
     relation_attribute::String,
 )
     for relation in values(relations)
@@ -30,7 +30,7 @@ end
     Returns true if there is a relation with type 'relation_type' in a 'Vector{PMD.Relation}'
 """
 function _has_relation_type(
-    relations::Dict{String,PMD.Relation},
+    relations::Dict{String, PMD.Relation},
     relation_type::PMD.RelationType,
 )
     has_relation_type = false
@@ -505,7 +505,8 @@ function get_map(
     attribute::String;
     allow_empty::Bool = true,
 )
-    if !haskey(data.relation_mapper, source) || !haskey(data.relation_mapper[source], target)
+    if !haskey(data.relation_mapper, source) ||
+       !haskey(data.relation_mapper[source], target)
         error("There is no relation between '$source' and '$target'")
     end
 
@@ -524,19 +525,19 @@ function get_map(
     end
 
     src_size = max_elements(data, source)
-    
+
     if src_size == 0
         return zeros(Int32, 0)
     end
 
     dst_size = max_elements(data, target)
-    
+
     if dst_size == 0 # TODO warn no field
         return zeros(Int32, src_size)
     end
 
     raw = _raw(data)
-    
+
     out_vec = zeros(Int32, src_size)
     src_vec = raw[source]
     dst_vec = raw[target]
@@ -570,7 +571,7 @@ function get_map(
     target::String;
     allow_empty::Bool = true,
     relation_type::PMD.RelationType = PMD.RELATION_1_TO_1, # type of the direct relation
-)    
+)
     attribute = _get_relation_attribute(data, source, target, relation_type)
 
     return get_map(data, source, target, attribute; allow_empty)

@@ -43,11 +43,11 @@ struct Relation
     is_vector::Bool
 
     function Relation(type::RelationType, attribute::String)
-        new(type, attribute, type == RELATION_1_TO_N || type == RELATION_BACKED)
+        return new(type, attribute, type == RELATION_1_TO_N || type == RELATION_BACKED)
     end
 
     function Relation(type::RelationType, attribute::String, is_vector::Bool)
-        new(type, attribute, is_vector)
+        return new(type, attribute, is_vector)
     end
 end
 
@@ -59,7 +59,7 @@ function load_relations_struct!(path::AbstractString, relation_mapper::RelationM
     for (source, targets) in raw_struct
         relation_mapper[source] = Dict{String, Dict{String, Relation}}()
         for (target, attributes) in targets
-            relation_mapper[source][target] = Dict{String,Relation}()
+            relation_mapper[source][target] = Dict{String, Relation}()
             for (attribute, info) in attributes
                 relation = Relation(
                     RelationType(info["type"]),

@@ -109,7 +109,7 @@ for col in collections
     end
 
     relations = PSRI.get_relations(data, col)
-    
+
     for (target, relations_dict) in relations
         for relation in values(relations_dict)
             if verbose
