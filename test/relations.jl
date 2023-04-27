@@ -139,14 +139,14 @@ function test_relations3() # tests has_relations, get_map
             data,
             "PSRSerie",
             "PSRBus",
-            "no1", # automatically generated name
+            "no1",
         ) == Int32[2, 3, 0]
 
         @test PSRI.get_map(
             data,
             "PSRSerie",
             "PSRBus",
-            "no2", # automatically generated name
+            "no2",
         ) == Int32[1, 2, 0]
     end
 end
