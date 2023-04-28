@@ -585,6 +585,7 @@ function get_map(
     dst_vec = raw[target]
 
     # TODO improve this quadratic loop
+
     for (src_index, src_element) in enumerate(src_vec)
         dst_index = get(src_element, attribute, -1)
 
@@ -619,6 +620,25 @@ function get_map(
     return get_map(data, source, target, attribute; allow_empty)
 end
 
+"""
+    get_vector_map(
+        data::Data, 
+        source::String, 
+        target::String, 
+        attribute::String; 
+        allow_empty::Bool = true
+    )
+
+    Returns a `Vector{Vector{Int32}}` with the map between collections given a certain attribute that represents the relation.
+
+    If there is no relation between element `i` from the source collection and any element from the target collection with relation attribute `attribute` then `map[i]` is set to `[]`.
+
+Example:
+
+```julia
+PSRI.get_vector_map(data, "PSRGenerationConstraintData", "PSRThermalPlant", "usinas")
+```
+"""
 function get_vector_map(
     data::Data,
     source::String,
