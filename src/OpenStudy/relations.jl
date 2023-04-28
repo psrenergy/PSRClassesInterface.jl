@@ -163,30 +163,53 @@ function _get_relation_attribute(
     return ""
 end
 
+
 """
-    _get_target_index_from_relation(
+    _get_relation_type(data::Data, source::String, target::String, attribute::string)
+
+    Returns the RelationType for a relation between elements from collections 'source' and 'target', for a given relation attribute
+"""
+function _get_relation_type(
+    data::Data,
+    source::String,
+    target::String,
+    attribute::String,
+)
+    validate_relation(data, source, target, attribute)
+
+    relation = data.relation_mapper[source][target][attribute]
+
+    return relation.type
+end
+
+"""
+    _get_target_indices_from_relation(
         data::Data,
         source::String,
         source_index::Integer,
+        target::String,
         relation_attribute::String,
     )
 
     Returns the 'target' element's index stored in 'source' element in the attribute 'relation_attribute'
 """
-function _get_target_index_from_relation(
+function _get_target_indices_from_relation(
     data::Data,
     source::String,
     source_index::Integer,
+    target::String,
     relation_attribute::String,
 )
     source_element = data.raw[source][source_index]
     target_reference_id = source_element[relation_attribute]
     target_indices = Vector{Int}()
 
-    if isa(target_reference_id, Vector{Int})
+    if !isa(target_reference_id, Int)
         for id in target_reference_id
-            _, target_index = _get_index(data.data_index, id)
-            push!(target_indices, target_index)
+            collection, target_index = _get_index(data.data_index, id)
+            if collection == target
+                push!(target_indices, target_index)
+            end
         end
     else
         _, target_index = _get_index(data.data_index, target_reference_id)
@@ -260,10 +283,11 @@ function _get_element_related(data::Data, collection::String, index::Integer)
             for relation in values(relations_dict)
                 if haskey(element, relation.attribute) # has a relation as source
                     target_indices =
-                        _get_target_index_from_relation(
+                        _get_target_indices_from_relation(
                             data,
                             collection,
                             index,
+                            target,
                             relation.attribute,
                         )
                     if !isempty(target_indices)
@@ -575,6 +599,48 @@ function get_map(
     attribute = _get_relation_attribute(data, source, target, relation_type)
 
     return get_map(data, source, target, attribute; allow_empty)
+end
+
+function get_vector_map(
+    data::Data,
+    source::String,
+    target::String,
+    attribute::String;
+    allow_empty::Bool = true,
+)
+    validate_relation(data, source, target, attribute)
+
+    relation_type = _get_relation_type(data, source, target, attribute)
+
+    if !is_vector_relation(relation_type)
+        error("For relation relation_type = '$relation_type' use get_map")
+    end
+
+    src_size = max_elements(data, source)
+
+    target_size = max_elements(data, target)
+
+    if src_size == 0
+        @warn "No '$source' elements in this study" 
+        return Vector{Int32}[]
+    end
+
+    if target_size == 0
+        @warn "No '$target' elements in this study"
+        return Vector{Int32}[zeros(Int32, 0) for _ in 1:src_size]
+    end
+
+    raw = _raw(data)
+
+    out_vec = Vector{Vector{Int}}()
+
+    for src_i in keys(raw[source])
+        target_indices = _get_target_indices_from_relation(data, source, src_i, target, attribute)
+        append!(out_vec, [target_indices])
+    end
+
+    return out_vec
+    
 end
 
 function get_vector_map(
