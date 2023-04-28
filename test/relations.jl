@@ -25,7 +25,8 @@ function test_relations1() # tests _get_target_index_from_relation
             relation_type = PSRI.PMD.RELATION_TO,
         )
 
-        target_index = PSRI._get_target_indices_from_relation(data, "PSRSerie", 1, "PSRBus", "no1")
+        target_index =
+            PSRI._get_target_indices_from_relation(data, "PSRSerie", 1, "PSRBus", "no1")
 
         @test target_index == [index1]
     end

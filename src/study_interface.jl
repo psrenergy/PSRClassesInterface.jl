@@ -262,23 +262,7 @@ PSRI.get_map(
     "PSRHydroPlant";
     relation_type = PSRI.PMD.RELATION_STORED_ENERGY_DONWSTREAM,
 )
-
 ```
-
---- 
-
-    get_map(data::Data, source::String, target::String, attribute::String; allow_empty::Bool = true)
-
-Returns a `Vector{Int32}` with the map between collections given a certain attribute that represents the relation.
-
-If there is no relation between element `i` from the source collection and any element from the target collection with
-relation attribute `attribute` then `map[i]` is set to `0`. 
-
-Example:
-
-```julia
-PSRI.get_map(data,"PSRSerie","PSRBus", "no1")
-```	
 """
 function get_map end
 

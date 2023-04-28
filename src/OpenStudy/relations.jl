@@ -163,7 +163,6 @@ function _get_relation_attribute(
     return ""
 end
 
-
 """
     _get_relation_type(data::Data, source::String, target::String, attribute::string)
 
@@ -522,6 +521,25 @@ function get_reverse_vector_map(
     return out
 end
 
+"""
+    get_map(
+        data::Data, 
+        source::String, 
+        target::String, 
+        attribute::String; 
+        allow_empty::Bool = true
+    )
+
+    Returns a `Vector{Int32}` with the map between collections given a certain attribute that represents the relation.
+
+    If there is no relation between element `i` from the source collection and any element from the target collection with relation attribute `attribute` then `map[i]` is set to `0`.
+
+Example:
+
+```julia
+PSRI.get_map(data, "PSRSerie", "PSRBus", "no1")
+```
+"""
 function get_map(
     data::Data,
     source::String,
@@ -621,7 +639,7 @@ function get_vector_map(
     target_size = max_elements(data, target)
 
     if src_size == 0
-        @warn "No '$source' elements in this study" 
+        @warn "No '$source' elements in this study"
         return Vector{Int32}[]
     end
 
@@ -635,12 +653,12 @@ function get_vector_map(
     out_vec = Vector{Vector{Int}}()
 
     for src_i in keys(raw[source])
-        target_indices = _get_target_indices_from_relation(data, source, src_i, target, attribute)
+        target_indices =
+            _get_target_indices_from_relation(data, source, src_i, target, attribute)
         append!(out_vec, [target_indices])
     end
 
     return out_vec
-    
 end
 
 function get_vector_map(
