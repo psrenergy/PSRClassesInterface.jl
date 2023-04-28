@@ -1,5 +1,32 @@
 # Reading Relations
 
+## Introduction to the [`PSRI.get_map`](@ref) method
+
+There are two dispatches for  the [`PSRI.get_map`](@ref) function. 
+The first requires the attribute name that represents the relation, while the second needs the [`PSRI.PMD.RelationType`](@ref) between the elements.
+
+Here is how this function works:
+
+Let's say that in our study we have 3 `PSRSerie` and 2 `PSRBus` elements. 
+There is a relation between elements of these two collections represented by an attribute `'no2'`, where `PSRSerie` is the source and `PSRBus` is the target.
+
+If we execute the following code:
+```@example get_map
+PSRI.get_map(data, "PSRSerie", "PSRBus", "no2")
+```
+
+We could, as an example, get the following vector:
+> [ 2 , 0 , 1 ]
+
+This means that:
+-  the source element of index `1` in the collection `PSRSerie` is related to the target element of index `2` in the collection `PSRBus`. 
+- the source element of index `2` in the collection `PSRSerie` is not related to any element from collection `PSRBus`
+-  the source element of index `3` in the collection `PSRSerie` is related to the target element of index `1` in the collection `PSRBus`. 
+
+**Note:** There is also a [`PSRI.get_vector_map`](@ref) method that works just as [`PSRI.get_map`](@ref). 
+
+Now we can move to a more practical example.
+
 ## Determining subsystem from a certain hydro plant
 
 In this example we will demonstrate how to make a simple use of a relationship map. That will be achieved by determining a subsystem from a certain hydro plant through its parameters. The program will initiate by the standard reading procedure:
@@ -18,7 +45,7 @@ data = PSRI.initialize_study(
 
 Next, the maps between hydroplants and systems is retrieved by the `get_map` method:
 ```@example sys_by_gaug
-hyd2sys = PSRI.get_map(data, "PSRHydroPlant","PSRSystem")
+hyd2sys = PSRI.get_map(data, "PSRHydroPlant","PSRSystem", "system")
 ; nothing # hide
 ```
 
@@ -40,8 +67,8 @@ data = PSRI.initialize_study(
 
 Whereas there is no direct link between buses and thermal plants, both are indirectly related through generators. Therefore, we must identify those relationships by calling `get_map` for each:
 ```@example the_by_bus
-gen2thermal = PSRI.get_map(data, "PSRGenerator","PSRThermalPlant")
-gen2bus = PSRI.get_map(data, "PSRGenerator", "PSRBus")
+gen2thermal = PSRI.get_map(data, "PSRGenerator","PSRThermalPlant", "plant")
+gen2bus = PSRI.get_map(data, "PSRGenerator", "PSRBus", "bus")
 ; nothing # hide
 ```
 
@@ -75,8 +102,8 @@ data = PSRI.initialize_study(
 ```
 Next, we get from which bus each circuit starts and which bus it goes to with `get_map`:
 ```@example cir_bus
-cir2bus_to = PSRI.get_map(data, "PSRSerie", "PSRBus"; relation_type = PSRI.PMD.RELATION_TO)
-cir2bus_from = PSRI.get_map(data, "PSRSerie", "PSRBus"; relation_type = PSRI.PMD.RELATION_FROM)
+cir2bus_to = PSRI.get_map(data, "PSRSerie", "PSRBus", "no2")
+cir2bus_from = PSRI.get_map(data, "PSRSerie", "PSRBus", "no1")
 ; nothing # hide
 ```
 Now we can build the incidence matrix. Each row corresponds to a circuit and each column corresponds to a bus. The element at the index (i,j) is -1 if the circuit i starts from the bus j, 1 if it goes to this bus, and 0 if they both have no relation:
