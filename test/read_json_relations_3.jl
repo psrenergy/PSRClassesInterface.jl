@@ -55,14 +55,57 @@ data = PSRI.initialize_study(
 
 @test PSRI.get_vector_map(data, "PSRInterconnectionSumData", "PSRInterconnection") ==
       Vector{Int32}[[1]]
+attr1 = PSRI._get_relation_attribute(
+    data,
+    "PSRInterconnectionSumData",
+    "PSRInterconnection",
+    PSRI.PMD.RELATION_1_TO_N,
+)
+@test PSRI.get_vector_map(data, "PSRInterconnectionSumData", "PSRInterconnection", attr1) ==
+      Vector{Int32}[[1]]
 
 @test PSRI.get_vector_map(data, "PSRGenerationConstraintData", "PSRThermalPlant") ==
       Vector{Int32}[[1, 3]]
+attr2 = PSRI._get_relation_attribute(
+    data,
+    "PSRGenerationConstraintData",
+    "PSRThermalPlant",
+    PSRI.PMD.RELATION_1_TO_N,
+)
+@test PSRI.get_vector_map(data, "PSRGenerationConstraintData", "PSRThermalPlant", attr2) ==
+      Vector{Int32}[[1, 3]]
+
 @test PSRI.get_vector_map(data, "PSRGenerationConstraintData", "PSRHydroPlant") ==
       Vector{Int32}[[2]]
+attr3 = PSRI._get_relation_attribute(
+    data,
+    "PSRGenerationConstraintData",
+    "PSRHydroPlant",
+    PSRI.PMD.RELATION_1_TO_N,
+)
+@test PSRI.get_vector_map(data, "PSRGenerationConstraintData", "PSRHydroPlant", attr3) ==
+      Vector{Int32}[[2]]
+
 @test PSRI.get_vector_map(data, "PSRGenerationConstraintData", "PSRGndPlant") ==
       Vector{Int32}[[]]
+attr4 = PSRI._get_relation_attribute(
+    data,
+    "PSRGenerationConstraintData",
+    "PSRGndPlant",
+    PSRI.PMD.RELATION_1_TO_N,
+)
+@test PSRI.get_vector_map(data, "PSRGenerationConstraintData", "PSRGndPlant", attr4) ==
+      Vector{Int32}[[]]
+
 @test PSRI.get_vector_map(data, "PSRGenerationConstraintData", "PSRBattery") ==
+      Vector{Int32}[[]]
+attr5 = PSRI._get_relation_attribute(
+    data,
+    "PSRGenerationConstraintData",
+    "PSRBattery",
+    PSRI.PMD.RELATION_1_TO_N,
+)
+@test PSRI.get_vector_map(data, "PSRGenerationConstraintData", "PSRBattery", attr5) ==
       Vector{Int32}[[]]
 
 @test PSRI.get_map(data, "PSRMaintenanceData", "PSRSystem") == Int32[1]
@@ -109,6 +152,12 @@ data = PSRI.initialize_study(
     "PSRHydroPlant";
     original_relation_type = PSRI.PMD.RELATION_TURBINE_TO,
 ) == Vector{Int32}[[], [1]]
+@test PSRI.get_reverse_vector_map(
+    data,
+    "PSRHydroPlant",
+    "PSRHydroPlant",
+    "turbinning",
+) == Vector{Int32}[[], [1]]
 
 # for each hydro - return its maintenance data
 # both work for this one
@@ -118,6 +167,19 @@ data = PSRI.initialize_study(
     "PSRMaintenanceData",
     "PSRHydroPlant";
     original_relation_type = PSRI.PMD.RELATION_1_TO_1,
+) == Vector{Int32}[[1], []]
+attr = PSRI._get_relation_attribute(
+    data,
+    "PSRMaintenanceData",
+    "PSRHydroPlant",
+    PSRI.PMD.RELATION_1_TO_1,
+)
+@test PSRI.get_reverse_map(data, "PSRMaintenanceData", "PSRHydroPlant", attr) == Int32[1, 0]
+@test PSRI.get_reverse_vector_map(
+    data,
+    "PSRMaintenanceData",
+    "PSRHydroPlant",
+    attr,
 ) == Vector{Int32}[[1], []]
 
 # for each thermal - return all Gen Ctr it belongs

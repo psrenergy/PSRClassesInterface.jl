@@ -262,19 +262,6 @@ PSRI.get_map(
     "PSRHydroPlant";
     relation_type = PSRI.PMD.RELATION_STORED_ENERGY_DONWSTREAM,
 )
-
-@test PSRI.get_map(
-    data,
-    "PSRInterconnection",
-    "PSRSystem",
-    relation_type = PSRI.PMD.RELATION_FROM,
-)
-@test PSRI.get_map(
-    data,
-    "PSRInterconnection",
-    "PSRSystem",
-    relation_type = PSRI.PMD.RELATION_TO,
-)
 ```
 """
 function get_map end

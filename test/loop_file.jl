@@ -107,9 +107,11 @@ for col in collections
             end
         end
     end
+
     relations = PSRI.get_relations(data, col)
-    for (target, relations_vector) in relations
-        for relation in relations_vector
+
+    for (target, relations_dict) in relations
+        for relation in values(relations_dict)
             if verbose
                 println("Relation: ($col)-($target) of type $(relation.type)")
             end

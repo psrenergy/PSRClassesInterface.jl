@@ -1,0 +1,54 @@
+// ---------------------
+// --- Some comments ---
+// ---------------------
+DEFINE_CLASS PSRGeneratorUnit
+	PARM   INTEGER   NumberUnits
+	PARM   INTEGER   Code        @id
+    PARM   REFERENCE Bus         PSRBus
+	VECTOR REAL 	 FixedOEM    INDEX  DataOptfolio
+END_CLASS
+
+MERGE_CLASS PSRHydroPlant Hydro_Multibus
+	VECTOR REFERENCE GeneratorUnits PSRGeneratorUnit
+END_CLASS
+
+//--------------------------------------
+//--- Modelo para Hidro		         ---
+//--------------------------------------
+MERGE_CLASS PSRHydroPlant Optfolio_HydroPlant
+	DIMENSION	block
+	
+	VETOR 	DATE   	DataSensib
+	PARM	DATE	MinCOD
+	VECTOR	REAL 	SensibPotInst	 INDEX DataSensib
+	VECTOR  REFERENCE  Costs         Optfolio_GenericCosts
+	PARM    INTEGER Included
+	PARM	REAL	Percentage
+	PARM	INTEGER flagMRE
+END_CLASS
+
+// Comment
+DEFINE_MODEL MODELX
+  // -- Dynamic data -- //
+  DIMENSION    block
+  VETOR DATE   DataDP
+  VETOR DATE   DataHP   @hourly_dense
+  VETOR REAL   DataPTS  DIM(block) INDEX DataP
+  VETOR REAL   DataPHTS            INDEX DataHP
+  
+  // -- Static data -- //
+  PARM STRING  DataN @id
+  PARM REAL    DataP
+  PARM INTEGER DataU
+  PARM DATE    DataD
+  PARM REFERENCE System PSRSystem @id
+  PARM REFERENCE Plant  PSRPlant  
+END_MODEL
+
+//--------------------------------------
+DEFINE_CLASS Contract_Forward
+  MERGE_MODEL Optfolio_Contracts
+  // -- Static data -- //
+  PARM REAL    Spread 
+  PARM INTEGER SpreadUnit
+END_CLASS

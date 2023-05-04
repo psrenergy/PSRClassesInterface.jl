@@ -8,6 +8,9 @@ const PSRI = PSRClassesInterface
     @time include("loop_file.jl")
 end
 @testset "PSRClassesInterface" begin
+    @testset "PMD Parser" begin
+        @time include("pmd_parser.jl")
+    end
     @testset "Read json parameters" begin
         @time include("read_json_parameters.jl")
     end

@@ -1,0 +1,32 @@
+[
+    {
+        "classname": "PSRGeneratPSRBusorUnit",
+        "models": [
+            "PSRBus"
+        ]
+    },
+    {
+        "classname": "PSRGeneratorUnit",
+        "models": [
+            "PSRGeneratorUnit"
+        ]
+    },
+    {
+        "classname": "CustomStudy",
+        "models": [
+            "Custom_StudyConfig"
+        ]
+    },
+    {
+        "classname": "PSRElement",
+        "models": [
+            "PSRElement"
+        ]
+    },
+    {
+        "classname": "PSRTest",
+        "models": [
+            "PSRTest"
+        ]
+    }
+]

@@ -464,7 +464,8 @@ function create_study(
 
     PMD.load_relations_struct!(relations_defaults_path, relation_mapper)
 
-    data_struct, model_files_added = PMD.load_model(pmds_path, pmd_files, model_template)
+    data_struct, model_files_added =
+        PMD.load_model(pmds_path, pmd_files, model_template, relation_mapper)
 
     stage_type =
         if haskey(study_defaults[study_collection], "Tipo_Etapa")

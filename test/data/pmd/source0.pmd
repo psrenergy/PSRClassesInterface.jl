@@ -1,0 +1,87 @@
+//-----------------------------------------------
+// DEFINE_MODEL
+// PARM
+// STRING
+DEFINE_MODEL MODL:SDDP_V10.2_Currency
+	PARM     STRING    Currency
+END_MODEL
+
+//-----------------------------------------------
+// DIMENSION
+// VECTOR|VETOR
+// DATE
+// ->|<-
+// DIM(...)
+// INDEX
+// MERGE_MODEL
+// DEFINE_VALIDATION
+// INTEGER
+// REAL
+DEFINE_MODEL MODL:SDDP_V10.2_Interconnection
+    DIMENSION	  block
+
+	VETOR   DATE      Data
+	VETOR   INTEGER   Existing INDEX Data
+	VETOR   DATE      DataCost->
+	VETOR   DATE      DataCost<-
+	VETOR   REAL      Capacity->     DIM(block) INDEX Data
+	VETOR   REAL      Capacity<-     DIM(block) INDEX Data
+	VETOR   REAL      LossFactor->              INDEX Data
+	VETOR   REAL      LossFactor<-              INDEX Data
+	VETOR   REAL      Cost->         DIM(block) INDEX DataCost->
+	VETOR   REAL      Cost<-         DIM(block) INDEX DataCost<-
+
+	MERGE_MODEL MODL:SDDP_V10.2_Currency
+
+	DEFINE_VALIDATION
+
+       	  //--- Validacao dos vetores indexados pela Data ---
+	  FOR_EACH $(Data)
+
+       	    //--- Atributos variantes por patamar ---
+	    FOR @I=1,5
+	      IF ($(Capacity->(@I)) < 0) THEN ERROR(1)
+	      IF ($(Capacity<-(@I)) < 0) THEN ERROR(1)
+	    END_FOR
+
+   	    //---- Atributos independentes do patamar ---
+	    IF ($(LossFactor->) < 0 OR $(LossFactor->) > 1 ) THEN ERROR(2)
+	    IF ($(LossFactor<-) < 0 OR $(LossFactor<-) > 1 ) THEN ERROR(2)
+
+	  END_FOR_EACH
+
+       	  //--- Validacao dos patamares invariaves ---
+	  IF ( $(Existing) != 0 AND $(Existing) != 1 ) THEN ERROR(3)
+	  IF ( $(name).LENGTH() > 10 ) THEN ERROR(4)
+
+	END_VALIDATION
+END_MODEL
+
+//--------------------------------------------------------------------------------------------------
+// INTERVAL
+DEFINE_MODEL MODL:SDDP_V10.2_Circuito
+	VETOR DATE InitialDateMaintenance
+	VETOR DATE EndDateMaintenance INTERVAL InitialDateMaintenance
+END_MODEL
+
+//--------------------------------------------------------------------------------------------------
+// MERGE_MODEL
+DEFINE_MODEL MODL:SDDP_Transformador
+    MERGE_MODEL MODL:SDDP_V10.2_Circuito
+END_MODEL
+
+//--------------------------------------------------------------------------------------------------
+// DIM(...)
+// DIMENSION
+DEFINE_MODEL MODL:SDDP_V10.2_Termica
+    DIMENSION 		block
+    DIMENSION		segment 3
+	VETOR DATE		DataCesp
+	VETOR REAL		CEsp DIM(segment,block) INDEX DataCesp
+END_MODEL
+
+//---------------------------------------------
+// Empty block
+DEFINE_MODEL MODL:SDDP_V10.2_Bateria
+	// nothing
+END_MODEL

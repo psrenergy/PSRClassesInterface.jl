@@ -13,10 +13,10 @@ end
     Returns true if there is a relation with attribute 'relation_attribute' in a 'Vector{PMD.Relation}'
 """
 function _has_relation_attribute(
-    relations::Vector{PMD.Relation},
+    relations::Dict{String, PMD.Relation},
     relation_attribute::String,
 )
-    for relation in relations
+    for relation in values(relations)
         if relation.attribute == relation_attribute
             return true
         end
@@ -30,11 +30,11 @@ end
     Returns true if there is a relation with type 'relation_type' in a 'Vector{PMD.Relation}'
 """
 function _has_relation_type(
-    relations::Vector{PMD.Relation},
+    relations::Dict{String, PMD.Relation},
     relation_type::PMD.RelationType,
 )
     has_relation_type = false
-    for relation in relations
+    for relation in values(relations)
         if relation.type == relation_type
             has_relation_type = true
         end
@@ -154,7 +154,7 @@ function _get_relation_attribute(
 
     relations = data.relation_mapper[source][target]
 
-    for relation in relations
+    for relation in values(relations)
         if relation.type == relation_type
             return relation.attribute
         end
@@ -164,29 +164,51 @@ function _get_relation_attribute(
 end
 
 """
-    _get_target_index_from_relation(
+    _get_relation_type(data::Data, source::String, target::String, attribute::string)
+
+    Returns the RelationType for a relation between elements from collections 'source' and 'target', for a given relation attribute
+"""
+function _get_relation_type(
+    data::Data,
+    source::String,
+    target::String,
+    attribute::String,
+)
+    validate_relation(data, source, target, attribute)
+
+    relation = data.relation_mapper[source][target][attribute]
+
+    return relation.type
+end
+
+"""
+    _get_target_indices_from_relation(
         data::Data,
         source::String,
         source_index::Integer,
+        target::String,
         relation_attribute::String,
     )
 
     Returns the 'target' element's index stored in 'source' element in the attribute 'relation_attribute'
 """
-function _get_target_index_from_relation(
+function _get_target_indices_from_relation(
     data::Data,
     source::String,
     source_index::Integer,
+    target::String,
     relation_attribute::String,
 )
     source_element = data.raw[source][source_index]
     target_reference_id = source_element[relation_attribute]
     target_indices = Vector{Int}()
 
-    if isa(target_reference_id, Vector{Int})
+    if !isa(target_reference_id, Int)
         for id in target_reference_id
-            _, target_index = _get_index(data.data_index, id)
-            push!(target_indices, target_index)
+            collection, target_index = _get_index(data.data_index, id)
+            if collection == target
+                push!(target_indices, target_index)
+            end
         end
     else
         _, target_index = _get_index(data.data_index, target_reference_id)
@@ -255,15 +277,16 @@ function _get_element_related(data::Data, collection::String, index::Integer)
 
     # Relations where the element is source
     if haskey(data.relation_mapper, collection)
-        for (target, relations_vector) in data.relation_mapper[collection]
+        for (target, relations_dict) in data.relation_mapper[collection]
             relations_as_source[target] = Dict{String, Vector{Int}}()
-            for relation in relations_vector
+            for relation in values(relations_dict)
                 if haskey(element, relation.attribute) # has a relation as source
                     target_indices =
-                        _get_target_index_from_relation(
+                        _get_target_indices_from_relation(
                             data,
                             collection,
                             index,
+                            target,
                             relation.attribute,
                         )
                     if !isempty(target_indices)
@@ -283,10 +306,10 @@ function _get_element_related(data::Data, collection::String, index::Integer)
 
     # Relations where the element is target
     for (source, related) in data.relation_mapper
-        for (target, relations) in related
+        for (target, relations_dict) in related
             if haskey(data.raw, source) && target == collection
                 relations_as_target[source] = Dict{String, Vector{Int}}()
-                for relation in relations
+                for relation in values(relations_dict)
                     source_indices = _get_sources_indices_from_relations(
                         data,
                         source,
@@ -401,6 +424,43 @@ function check_relation_vector(relation_type::PMD.RelationType)
 end
 
 function get_reverse_map(
+    data::Data,
+    source::String,
+    target::String,
+    attribute::String;
+    allow_empty::Bool = true,
+)
+    validate_relation(data, source, target, attribute)
+
+    relation_type = _get_relation_type(data, source, target, attribute)
+
+    if is_vector_relation(relation_type)
+        error("For relation relation_type = '$relation_type' use get_reverse_vector_map")
+    end
+
+    if !haskey(data.raw, target)
+        return zeros(Int32, 0)
+    end
+
+    raw = _raw(data)
+
+    out_vec = Vector{Int}()
+
+    for target_element in raw[target]
+        target_id = target_element["reference_id"]
+        source_indices =
+            _get_sources_indices_from_relations(data, source, target, target_id, attribute)
+        if !isempty(source_indices)
+            append!(out_vec, [source_indices][1])
+        else
+            append!(out_vec, 0)
+        end
+    end
+
+    return out_vec
+end
+
+function get_reverse_map(
     data::AbstractData,
     lst_from::String,
     lst_to::String;
@@ -457,6 +517,33 @@ end
 
 function get_reverse_vector_map(
     data::AbstractData,
+    source::String,
+    target::String,
+    attribute::String;
+    allow_empty::Bool = true,
+)
+    validate_relation(data, source, target, attribute)
+
+    if !haskey(data.raw, target)
+        return Vector{Int32}[]
+    end
+
+    raw = _raw(data)
+
+    out_vec = Vector{Vector{Int32}}()
+
+    for target_element in raw[target]
+        target_id = target_element["reference_id"]
+        source_indices =
+            _get_sources_indices_from_relations(data, source, target, target_id, attribute)
+        append!(out_vec, [source_indices])
+    end
+
+    return out_vec
+end
+
+function get_reverse_vector_map(
+    data::AbstractData,
     lst_from::String,
     lst_to::String;
     allow_empty::Bool = true,
@@ -498,55 +585,164 @@ function get_reverse_vector_map(
     return out
 end
 
+"""
+    get_map(
+        data::Data, 
+        source::String, 
+        target::String, 
+        attribute::String; 
+        allow_empty::Bool = true
+    )
+
+    Returns a `Vector{Int32}` with the map between collections given a certain attribute that represents the relation.
+
+    If there is no relation between element `i` from the source collection and any element from the target collection with relation attribute `attribute` then `map[i]` is set to `0`.
+
+Example:
+
+```julia
+PSRI.get_map(data, "PSRSerie", "PSRBus", "no1")
+```
+"""
 function get_map(
     data::Data,
-    lst_from::String,
-    lst_to::String;
+    source::String,
+    target::String,
+    attribute::String;
     allow_empty::Bool = true,
-    relation_type::PMD.RelationType = PMD.RELATION_1_TO_1, # type of the direct relation
 )
-    if is_vector_relation(relation_type)
-        error("For relation relation_type = $relation_type use get_vector_map")
+    if !haskey(data.relation_mapper, source) ||
+       !haskey(data.relation_mapper[source], target)
+        error("There is no relation between '$source' and '$target'")
     end
-    validate_relation(data, lst_from, lst_to, relation_type)
 
-    # @assert TYPE == PSR_RELATIONSHIP_1TO1 # TODO I think we don't need that in this interface
-    raw = _raw(data)
-    n_from = max_elements(data, lst_from)
-    if n_from == 0
+    relations = data.relation_mapper[source][target]
+
+    if !haskey(relations, attribute)
+        error("No relation '$attribute' between '$source' and '$target'")
+    end
+
+    relation = relations[attribute]
+
+    validate_relation(data, source, target, relation.type)
+
+    if is_vector_relation(relation.type)
+        error("For relation relation_type = '$(relation.type)' use get_vector_map")
+    end
+
+    src_size = max_elements(data, source)
+
+    if src_size == 0
         return zeros(Int32, 0)
     end
-    n_to = max_elements(data, lst_to)
-    if n_to == 0
-        # TODO warn no field
-        return zeros(Int32, n_from)
+
+    dst_size = max_elements(data, target)
+
+    if dst_size == 0 # TODO warn no field
+        return zeros(Int32, src_size)
     end
 
-    raw_field = _get_relation_attribute(data, lst_from, lst_to, relation_type)
+    raw = _raw(data)
 
-    out = zeros(Int32, n_from)
-
-    vec_from = raw[lst_from]
-    vec_to = raw[lst_to]
+    out_vec = zeros(Int32, src_size)
+    src_vec = raw[source]
+    dst_vec = raw[target]
 
     # TODO improve this quadratic loop
-    for (idx_from, el_from) in enumerate(vec_from)
-        id_to = get(el_from, raw_field, -1)
+
+    for (src_index, src_element) in enumerate(src_vec)
+        dst_index = get(src_element, attribute, -1)
 
         found = false
-        for (idx, el) in enumerate(vec_to)
-            id = el["reference_id"]
-            if id_to == id
-                out[idx_from] = idx
+
+        for (index, element) in enumerate(dst_vec)
+            if dst_index == element["reference_id"]
+                out_vec[src_index] = index
+
                 found = true
                 break
             end
         end
+
         if !found && !allow_empty
-            error("No $lst_to element matching $lst_from of index $idx_from")
+            error("No '$target' element matching '$source' of index '$src_index'")
         end
     end
-    return out
+
+    return out_vec
+end
+
+function get_map(
+    data::Data,
+    source::String,
+    target::String;
+    allow_empty::Bool = true,
+    relation_type::PMD.RelationType = PMD.RELATION_1_TO_1, # type of the direct relation
+)
+    attribute = _get_relation_attribute(data, source, target, relation_type)
+
+    return get_map(data, source, target, attribute; allow_empty)
+end
+
+"""
+    get_vector_map(
+        data::Data, 
+        source::String, 
+        target::String, 
+        attribute::String; 
+        allow_empty::Bool = true
+    )
+
+    Returns a `Vector{Vector{Int32}}` with the map between collections given a certain attribute that represents the relation.
+
+    If there is no relation between element `i` from the source collection and any element from the target collection with relation attribute `attribute` then `map[i]` is set to `[]`.
+
+Example:
+
+```julia
+PSRI.get_vector_map(data, "PSRGenerationConstraintData", "PSRThermalPlant", "usinas")
+```
+"""
+function get_vector_map(
+    data::Data,
+    source::String,
+    target::String,
+    attribute::String;
+    allow_empty::Bool = true,
+)
+    validate_relation(data, source, target, attribute)
+
+    relation_type = _get_relation_type(data, source, target, attribute)
+
+    if !is_vector_relation(relation_type)
+        error("For relation relation_type = '$relation_type' use get_map")
+    end
+
+    src_size = max_elements(data, source)
+
+    target_size = max_elements(data, target)
+
+    if src_size == 0
+        @warn "No '$source' elements in this study"
+        return Vector{Int32}[]
+    end
+
+    if target_size == 0
+        @warn "No '$target' elements in this study"
+        return Vector{Int32}[zeros(Int32, 0) for _ in 1:src_size]
+    end
+
+    raw = _raw(data)
+
+    out_vec = Vector{Vector{Int}}()
+
+    for src_i in keys(raw[source])
+        target_indices =
+            _get_target_indices_from_relation(data, source, src_i, target, attribute)
+        append!(out_vec, [target_indices])
+    end
+
+    return out_vec
 end
 
 function get_vector_map(
