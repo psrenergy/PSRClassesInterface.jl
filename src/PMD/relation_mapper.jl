@@ -34,6 +34,18 @@ RELATION_BACKED
     RELATION_BACKED = 8
 end
 
+const RELATION_TABLE = Dict{String, RelationType}(
+    "1_TO_1" => RELATION_1_TO_1,
+    "1_TO_N" => RELATION_1_TO_N,
+    "FROM" => RELATION_FROM,
+    "TO" => RELATION_TO,
+    "TURBINE_TO" => RELATION_TURBINE_TO,
+    "SPILL_TO" => RELATION_SPILL_TO,
+    "INFILTRATE_TO" => RELATION_INFILTRATE_TO,
+    "STORED_ENERGY_DONWSTREAM" => RELATION_STORED_ENERGY_DONWSTREAM,
+    "BACKED" => RELATION_BACKED,
+)
+
 """
     Relation(type::RelationType, attribute::String)
 """
@@ -62,7 +74,7 @@ function load_relations_struct!(path::AbstractString, relation_mapper::RelationM
             relation_mapper[source][target] = Dict{String, Relation}()
             for (attribute, info) in attributes
                 relation = Relation(
-                    RelationType(info["type"]),
+                    RELATION_TABLE[info["type"]],
                     attribute,
                     info["is_vector"],
                 )
