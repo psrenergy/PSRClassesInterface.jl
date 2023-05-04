@@ -102,8 +102,8 @@ data = PSRI.initialize_study(
 ```
 Next, we get from which bus each circuit starts and which bus it goes to with `get_map`:
 ```@example cir_bus
-cir2bus_to = PSRI.get_map(data, "PSRSerie", "PSRBus", "no2")
-cir2bus_from = PSRI.get_map(data, "PSRSerie", "PSRBus", "no1")
+cir2bus_to = PSRI.get_map(data, "PSRSerie", "PSRBus", "no1")
+cir2bus_from = PSRI.get_map(data, "PSRSerie", "PSRBus", "no2")
 ; nothing # hide
 ```
 Now we can build the incidence matrix. Each row corresponds to a circuit and each column corresponds to a bus. The element at the index (i,j) is -1 if the circuit i starts from the bus j, 1 if it goes to this bus, and 0 if they both have no relation:
