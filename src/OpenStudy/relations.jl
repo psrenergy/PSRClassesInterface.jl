@@ -424,6 +424,44 @@ function check_relation_vector(relation_type::PMD.RelationType)
 end
 
 function get_reverse_map(
+    data::Data,
+    source::String,
+    target::String,
+    attribute::String;
+    allow_empty::Bool = true,
+)
+    validate_relation(data, source, target, attribute)
+
+    relation_type = _get_relation_type(data, source, target, attribute)
+
+    if is_vector_relation(relation_type)
+        error("For relation relation_type = '$relation_type' use get_reverse_vector_map")
+    end
+
+    if !haskey(data.raw, target)
+        return zeros(Int32, 0)
+    end
+
+    raw = _raw(data)
+
+    out_vec = Vector{Int}()
+
+    for target_element in raw[target]
+        target_id = target_element["reference_id"]
+        source_indices = _get_sources_indices_from_relations(data, source, target, target_id, attribute)
+        if !isempty(source_indices)
+            append!(out_vec, [source_indices][1])
+        else
+            append!(out_vec, 0)
+        end
+    end
+
+    return out_vec
+
+    
+end
+
+function get_reverse_map(
     data::AbstractData,
     lst_from::String,
     lst_to::String;
@@ -476,6 +514,32 @@ function get_reverse_map(
         end
     end
     return out
+end
+
+function get_reverse_vector_map(
+    data::AbstractData,
+    source::String,
+    target::String,
+    attribute::String;
+    allow_empty::Bool = true,
+)
+    validate_relation(data, source, target, attribute)
+
+    if !haskey(data.raw, target)
+        return Vector{Int32}[]
+    end
+
+    raw = _raw(data)
+
+    out_vec = Vector{Vector{Int32}}()
+
+    for target_element in raw[target]
+        target_id = target_element["reference_id"]
+        source_indices = _get_sources_indices_from_relations(data, source, target, target_id, attribute)
+        append!(out_vec, [source_indices])
+    end
+
+    return out_vec
 end
 
 function get_reverse_vector_map(
