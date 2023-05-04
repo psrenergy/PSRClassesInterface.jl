@@ -153,10 +153,10 @@ attr5 = PSRI._get_relation_attribute(
     original_relation_type = PSRI.PMD.RELATION_TURBINE_TO,
 ) == Vector{Int32}[[], [1]]
 @test PSRI.get_reverse_vector_map(
-    data, 
+    data,
     "PSRHydroPlant",
     "PSRHydroPlant",
-    "turbinning"
+    "turbinning",
 ) == Vector{Int32}[[], [1]]
 
 # for each hydro - return its maintenance data
@@ -179,7 +179,7 @@ attr = PSRI._get_relation_attribute(
     data,
     "PSRMaintenanceData",
     "PSRHydroPlant",
-    attr
+    attr,
 ) == Vector{Int32}[[1], []]
 
 # for each thermal - return all Gen Ctr it belongs

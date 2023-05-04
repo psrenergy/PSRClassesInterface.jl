@@ -448,7 +448,8 @@ function get_reverse_map(
 
     for target_element in raw[target]
         target_id = target_element["reference_id"]
-        source_indices = _get_sources_indices_from_relations(data, source, target, target_id, attribute)
+        source_indices =
+            _get_sources_indices_from_relations(data, source, target, target_id, attribute)
         if !isempty(source_indices)
             append!(out_vec, [source_indices][1])
         else
@@ -457,8 +458,6 @@ function get_reverse_map(
     end
 
     return out_vec
-
-    
 end
 
 function get_reverse_map(
@@ -535,7 +534,8 @@ function get_reverse_vector_map(
 
     for target_element in raw[target]
         target_id = target_element["reference_id"]
-        source_indices = _get_sources_indices_from_relations(data, source, target, target_id, attribute)
+        source_indices =
+            _get_sources_indices_from_relations(data, source, target, target_id, attribute)
         append!(out_vec, [source_indices])
     end
 
