@@ -14,16 +14,18 @@ const DAYS_IN_MONTH = Int[
 ]
 
 const STAGES_IN_YEAR = Dict{StageType, Int}(
+    STAGE_HOUR => 8760,
+    STAGE_DAY => 365,
     STAGE_WEEK => 52,
     STAGE_MONTH => 12,
-    STAGE_DAY => 365,
     STAGE_YEAR => 1,
 )
 
 const HOURS_IN_STAGE = Dict{StageType, Int}(
+    STAGE_HOUR => 1,
+    STAGE_DAY => 24,
     STAGE_WEEK => 168,
     # STAGE_MONTH => 744,
-    STAGE_DAY => 24,
     STAGE_YEAR => 8760,
 )
 
