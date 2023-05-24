@@ -102,7 +102,7 @@ function array_to_file(
         agents = agents,
         unit = unit,
         # optional
-        is_hourly = is_hourly
+        is_hourly = is_hourly,
         name_length = name_length,
         block_type = block_type,
         scenarios_type = scenarios_type,
