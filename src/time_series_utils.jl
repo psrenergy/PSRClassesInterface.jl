@@ -73,7 +73,7 @@ function array_to_file(
     agents::Vector{String} = String[],
     unit::Union{Nothing, String} = nothing,
     # optional
-    # is_hourly::Bool = false,
+    is_hourly::Bool = false,
     name_length::Integer = 24,
     block_type::Integer = 1,
     scenarios_type::Integer = 1,
@@ -102,6 +102,7 @@ function array_to_file(
         agents = agents,
         unit = unit,
         # optional
+        is_hourly = is_hourly
         name_length = name_length,
         block_type = block_type,
         scenarios_type = scenarios_type,
