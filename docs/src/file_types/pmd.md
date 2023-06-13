@@ -5,12 +5,12 @@
 > ⚠ **Warning:** The syntax for PMD files is case-sensitive 
 
 
-PMD files are used to define classes accross multiple PSR software.
+PMD files are used to define models accross multiple PSR software.
 It stores metadata about every attribute and relation.
 
-## Defining a class
+## Defining a model
 
-To define a class `Custom_Model_v1`, you need to use the following structure.
+To define a model `Custom_Model_v1`, you need to use the following structure.
 
 ```
 DEFINE_MODEL MODL:Custom_Model_v1
