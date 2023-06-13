@@ -20,6 +20,9 @@ makedocs(;
             "examples/modification.md",
             "examples/custom_study.md",
         ],
+        "File type manual" => String[
+            "file_types/pmd.md"
+        ]
     ],
 )
 
