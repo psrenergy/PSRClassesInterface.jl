@@ -1,5 +1,5 @@
 function test_fixed_duration()
-    data = PSRI.initialize_study(
+    data = PSRI.load_study(
         PSRI.OpenInterface();
         data_path = joinpath(".", "data", "case1"),
     )
@@ -30,7 +30,7 @@ end
 test_fixed_duration()
 
 function test_hour_block_map_duration()
-    data = PSRI.initialize_study(
+    data = PSRI.load_study(
         PSRI.OpenInterface();
         data_path = joinpath(".", "data", "case2"),
     )
@@ -67,7 +67,7 @@ end
 test_hour_block_map_duration()
 
 function test_variable_duration()
-    data = PSRI.initialize_study(
+    data = PSRI.load_study(
         PSRI.OpenInterface();
         data_path = joinpath(".", "data", "case3"),
     )

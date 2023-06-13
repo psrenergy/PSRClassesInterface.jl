@@ -1,6 +1,6 @@
 PATH_CASE_0 = joinpath(@__DIR__, "data", "case0")
 
-data = PSRI.initialize_study(
+data = PSRI.load_study(
     PSRI.OpenInterface();
     data_path = PATH_CASE_0,
 )

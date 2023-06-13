@@ -8,7 +8,7 @@ const PSRI = PSRClassesInterface
 
 PATH_CASE_EXAMPLE_DEM = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "case1")
 
-data = PSRI.initialize_study(
+data = PSRI.load_study(
     PSRI.OpenInterface(),
     data_path = PATH_CASE_EXAMPLE_DEM
 )
@@ -108,7 +108,7 @@ const PSRI = PSRClassesInterface
 
 PATH_CASE_EXAMPLE_THER_PRICES = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "case1")
 
-data = PSRI.initialize_study(
+data = PSRI.load_study(
     PSRI.OpenInterface(),
     data_path = PATH_CASE_EXAMPLE_THER_PRICES
 )

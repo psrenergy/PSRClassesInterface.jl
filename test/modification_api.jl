@@ -4,12 +4,12 @@ function test_api(data_path::String)
 
     mkpath(temp_path)
 
-    src_data = PSRI.initialize_study(PSRI.OpenInterface(); data_path = data_path)
+    src_data = PSRI.load_study(PSRI.OpenInterface(); data_path = data_path)
     raw_data = PSRI._raw(src_data)
 
     PSRI.write_data(src_data, json_path)
 
-    dest_data = PSRI.initialize_study(PSRI.OpenInterface(); data_path = temp_path)
+    dest_data = PSRI.load_study(PSRI.OpenInterface(); data_path = temp_path)
 
     @test PSRI._raw(dest_data) == raw_data
 
@@ -175,7 +175,7 @@ function test_api4() # Tests set_related!() and set_vector_related!() methods
 
     PSRI.write_data(data)
 
-    data_copy = PSRI.initialize_study(PSRI.OpenInterface(); data_path = temp_path)
+    data_copy = PSRI.load_study(PSRI.OpenInterface(); data_path = temp_path)
 
     map_copy = PSRI.get_map(data_copy, "PSRThermalPlant", "PSRSystem")
     @test map_copy == map
@@ -256,7 +256,7 @@ function test_api7() #tests delete_element!
     PSRI.delete_element!(data, "PSRBus", 3)
     PSRI.write_data(data)
 
-    data_copy = PSRI.initialize_study(PSRI.OpenInterface(); data_path = temp_path)
+    data_copy = PSRI.load_study(PSRI.OpenInterface(); data_path = temp_path)
 
     @test data_copy.raw["PSRBus"][3]["code"] == 8
     @test length(data_copy.raw["PSRBus"]) == 3
@@ -314,7 +314,7 @@ function test_api8() #tests delete_relation!
 
     PSRI.write_data(data)
 
-    data_copy = PSRI.initialize_study(PSRI.OpenInterface(); data_path = temp_path)
+    data_copy = PSRI.load_study(PSRI.OpenInterface(); data_path = temp_path)
 
     @test !PSRI.has_relations(data_copy, "PSRBus", index1)
     @test !PSRI.has_relations(data_copy, "PSRBus", index2)
@@ -369,7 +369,7 @@ function test_api9() #tests delete_vector_relation!
 
     PSRI.write_data(data)
 
-    data_copy = PSRI.initialize_study(PSRI.OpenInterface(); data_path = temp_path)
+    data_copy = PSRI.load_study(PSRI.OpenInterface(); data_path = temp_path)
 
     map_vec_copy = PSRI.get_vector_map(data_copy, "PSRThermalPlant", "PSRFuel")
     @test map_vec_copy == Vector{Int32}[[]]

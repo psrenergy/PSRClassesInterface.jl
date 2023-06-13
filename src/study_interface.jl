@@ -15,7 +15,7 @@ abstract type AbstractData end
 abstract type AbstractStudyInterface end
 
 """
-    initialize_study(::AbstractStudyInterface; kwargs...)
+    load_study(::AbstractStudyInterface; kwargs...)
 
 Initialize all data structures of the study.
 
@@ -27,13 +27,13 @@ Initialize all data structures of the study.
 Example:
 
 ```julia
-data = PSRI.initialize_study(
+data = PSRI.load_study(
     PSRI.OpenInterface();
     data_path = PATH_CASE_EXAMPLE_BATTERIES,
 )
 ```
 """
-function initialize_study end
+function load_study end
 
 """
     PSRI.get_vector(

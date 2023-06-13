@@ -71,7 +71,7 @@ function test_graf()
     @test sort(PSRI.Tables.columnnames(graf_table)) == sort(column_names)
     @test haskey(graf_table, Symbol("X"))
 
-    data_copy = PSRI.initialize_study(PSRI.OpenInterface(); data_path = temp_path)
+    data_copy = PSRI.load_study(PSRI.OpenInterface(); data_path = temp_path)
 
     @test PSRI.has_graf_file(data_copy, "PSRDemand")
     @test PSRI.has_graf_file(data_copy, "PSRDemand", "Duracao")

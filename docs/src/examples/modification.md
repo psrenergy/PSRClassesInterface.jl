@@ -6,7 +6,7 @@ In this example we will be showing how to modify your study in runtime, adding/d
 
 You can modify a pre-existing study or a new one with the following functions:
 - [`PSRI.create_study`](@ref) &rarr; to create a new study;
-- [`PSRI.initialize_study`](@ref) &rarr; to load an old study.
+- [`PSRI.load_study`](@ref) &rarr; to load an old study.
 
 In this example, we will be working with a new empty study.
 

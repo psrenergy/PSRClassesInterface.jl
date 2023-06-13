@@ -4,12 +4,12 @@ function test_api(data_path::String)
 
     mkpath(temp_path)
 
-    src_data = PSRI.initialize_study(PSRI.OpenInterface(); data_path = data_path)
+    src_data = PSRI.load_study(PSRI.OpenInterface(); data_path = data_path)
     raw_data = PSRI._raw(src_data)::Dict{String, <:Any}
 
     PSRI.write_data(src_data, json_path)
 
-    dest_data = PSRI.initialize_study(PSRI.OpenInterface(); data_path = temp_path)
+    dest_data = PSRI.load_study(PSRI.OpenInterface(); data_path = temp_path)
 
     @test PSRI._raw(dest_data) == raw_data
 

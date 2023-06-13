@@ -16,7 +16,7 @@ const PSRI = PSRClassesInterface
 ```@docs
 PSRClassesInterface.AbstractData
 PSRClassesInterface.AbstractStudyInterface
-PSRClassesInterface.initialize_study
+PSRClassesInterface.load_study
 PSRClassesInterface.description
 PSRClassesInterface.max_elements
 ```

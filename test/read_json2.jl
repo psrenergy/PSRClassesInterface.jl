@@ -1,4 +1,4 @@
-data = PSRI.initialize_study(
+data = PSRI.load_study(
     PSRI.OpenInterface();
     data_path = joinpath(".", "data", "case1"),
 )
