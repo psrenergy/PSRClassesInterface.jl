@@ -52,7 +52,7 @@
                 "type": "1_TO_1"
             }
         },
-        "PSRGaugingStation": {
+        "PSRGndGaugingStation": {
             "station": {
                 "is_vector": false,
                 "type": "1_TO_1"
