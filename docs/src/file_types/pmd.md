@@ -119,4 +119,7 @@ This difference between names is explained in the [Model Template manual](./mode
 
 Also, we define a `REFERENCE` only in the models which play the role of <i><b>source</b></i>. 
 
+There is another way to define relations in a study.
+For that, see the [Relation Mapper manual](relation_mapper.md).
+
 

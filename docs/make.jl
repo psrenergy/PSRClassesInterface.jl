@@ -1,4 +1,6 @@
 using Documenter
+using DocumenterDiagrams
+
 using PSRClassesInterface
 const PSRI = PSRClassesInterface
 
@@ -21,7 +23,9 @@ makedocs(;
             "examples/custom_study.md",
         ],
         "File type manual" => String[
-            "file_types/pmd.md"
+            "file_types/file_diagram.md",
+            "file_types/pmd.md",
+            "file_types/model_template.md",
         ]
     ],
 )
