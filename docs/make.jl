@@ -14,6 +14,13 @@ makedocs(;
     pages = [
         "Home" => "index.md",
         "manual.md",
+        "Files and Structs manual" => String[
+            "file_types/file_diagram.md",
+            "file_types/pmd.md",
+            "file_types/model_template.md",
+            "file_types/relation_mapper.md",
+            "file_types/psrclasses.md",
+        ],
         "Examples" => String[
             "examples/reading_parameters.md",
             "examples/reading_relations.md",
@@ -21,12 +28,6 @@ makedocs(;
             "examples/reading_demands.md",
             "examples/modification.md",
             "examples/custom_study.md",
-        ],
-        "Files and Structs manual" => String[
-            "file_types/file_diagram.md",
-            "file_types/pmd.md",
-            "file_types/model_template.md",
-            "file_types/relation_mapper.md",
         ]
     ],
 )

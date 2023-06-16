@@ -71,3 +71,31 @@ graph TD
 
 
 ### Creating a relation
+
+When creating a relation between two collections, PSRI uses the `Relation Mapper` to check if:
+- The relation is defined in the `Relation Mapper`
+- The elements exist in the study
+
+
+```@diagram mermaid
+%%{init: {"flowchart": {"htmlLabels": false}} }%%
+
+graph TD
+  CEL["`PSRI.set_related!(data, Collection1, Collection2, ...)`"]
+
+  Q1{"`Is there a defined relation between the collections, with the exact parameters?`"}
+  Q2{"`Do the elements exist in the study?`"}
+
+
+  E["`Error`"]
+  D["`Add to Study`"]
+
+  style E fill:#FF0000
+  style D fill:#00FF00
+
+  CEL --> Q1;
+  Q1 --"YES"--> Q2;
+  Q1 --"NO"--> E;
+  Q2 --"YES"--> D;
+  Q2 --"NO"--> E;
+```
