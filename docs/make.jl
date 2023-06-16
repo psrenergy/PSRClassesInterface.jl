@@ -22,10 +22,11 @@ makedocs(;
             "examples/modification.md",
             "examples/custom_study.md",
         ],
-        "File type manual" => String[
+        "Files and Structs manual" => String[
             "file_types/file_diagram.md",
             "file_types/pmd.md",
             "file_types/model_template.md",
+            "file_types/relation_mapper.md",
         ]
     ],
 )

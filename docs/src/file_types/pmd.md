@@ -109,15 +109,15 @@ END_MODEL
 ```
 
 In this example, our Custom_Model_v1 model has two relations:
-- a relation of `1 to 1` (for being a `PARM` parameter) with elements of collection <i>TargetCollection</i>
-- a relation of `1 to N` (for being a `VECTOR` parameter) with elements of collection <i>SecondTargetCollection</i>
+- a relation of `1 to 1` (for being a `PARM` parameter) with elements of collection TargetCollection
+- a relation of `1 to N` (for being a `VECTOR` parameter) with elements of collection SecondTargetCollection
 
-The `Plant` and `Items` parameters store the `reference_id` of the corresponding elements from collections <i>TargetCollection</i> and <i>SecondTargetCollection</i>, respectively.
+The `Plant` and `Items` parameters store the `reference_id` of the corresponding elements from collections TargetCollection and SecondTargetCollection, respectively.
 
-Note that the names <i>TargetCollection</i> and <i>SecondTargetCollection</i> are the name of the collections inside the study, not their name in the PMD file. 
+Note that the names TargetCollection and SecondTargetCollection are the name of the collections inside the study, not their name in the PMD file. 
 This difference between names is explained in the [Model Template manual](./model_template.md).
 
-Also, we define a `REFERENCE` only in the models which play the role of <i><b>source</b></i>. 
+Also, we define a `REFERENCE` only in the models which play the role of source. 
 
 There is another way to define relations in a study.
 For that, see the [Relation Mapper manual](relation_mapper.md).
