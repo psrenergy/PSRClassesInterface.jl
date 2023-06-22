@@ -15,7 +15,8 @@ In the example below, we have a Relation Mapper file with the following informat
     - The first relation with `FourthCollection` is a `FROM` relation, and the parameter is called `no1`.
     - The second relation with `FourthCollection` is a `TO` relation, and the parameter is called `no2`.
 
-> 💭 **Reminder:** The relation parameter stores the `reference_id` from the element of the Target Collection. See [PMD manual](./pmd.md)
+!!! info "💭 Reminder"
+    The relation parameter stores the `reference_id` from the element of the Target Collection. See [PMD manual](./pmd.md)
 
 
 ```json
