@@ -31,7 +31,8 @@ It has the following structure:
 
 ```
 
-> ‼ **Important:** Note that in the `SecondCollection` there are two parameters `Generation(1)` and `Generation(2)`. They represent the values for the parameter `Generation` in two different dimensions.
+!!! note
+    In the `SecondCollection` there are two parameters `Generation(1)` and `Generation(2)`. They represent the values for the parameter `Generation` in two different dimensions.
 
 
 ## Defaults
