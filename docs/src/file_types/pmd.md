@@ -1,8 +1,10 @@
 # PMD
 
-> 💡 **Tip:** We have a syntax highlighter for .pmd files available on [Visual Studio's Marktetplace](https://marketplace.visualstudio.com/items?itemName=pedromxavier.psr-pmd)
+!!! tip
+    We have a syntax highlighter for .pmd files available on [Visual Studio's Marktetplace](https://marketplace.visualstudio.com/items?itemName=pedromxavier.psr-pmd)
 
-> ⚠ **Warning:** The syntax for PMD files is case-sensitive 
+!!! warning
+    The syntax for PMD files is case-sensitive 
 
 
 PMD files are used to define models accross multiple PSR software.
