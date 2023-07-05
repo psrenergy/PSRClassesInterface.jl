@@ -628,5 +628,5 @@ function PSRI.close(ior::Reader)
 end
 
 function _file_name(ior::Reader)
-    return ior.filename
+    return ior.file_path
 end
