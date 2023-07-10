@@ -306,7 +306,6 @@ function write_registry end
 """
 function array_to_file end
 
-
 """
     PSRI.file_path(ior::AbstractReader)
     PSRI.file_path(iow::AbstractWriter)
