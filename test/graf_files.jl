@@ -20,6 +20,7 @@ function test_graf()
         initial_stage = 1,
         initial_year = 2006,
     )
+    @test first(splitext(PSRI.file_path(io))) == graf_path
 
     for estagio in 1:STAGES, serie in 1:SCENARIOS, bloco in 1:BLOCKS
         X = estagio + serie + 0.0

@@ -380,6 +380,6 @@ function PSRI.close(io::Writer)
     return nothing
 end
 
-function _file_name(iow::Writer)
+function PSRI.file_path(iow::Writer)
     return iow.file_path
 end

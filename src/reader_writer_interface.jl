@@ -305,3 +305,12 @@ function write_registry end
     PSRI.array_to_file
 """
 function array_to_file end
+
+
+"""
+    PSRI.file_path(ior::AbstractReader)
+    PSRI.file_path(iow::AbstractWriter)
+
+Returns the path of the file associated with the [`PSRI.AbstractReader`](@ref) or [`PSRI.AbstractWriter`](@ref) instance.
+"""
+function file_path end
