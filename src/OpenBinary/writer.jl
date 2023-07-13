@@ -39,6 +39,8 @@ Base.@kwdef mutable struct Writer <: PSRI.AbstractWriter
 
     # relative_stage_skip::Int
     offset::Int # Header size
+
+    file_path::String = ""
 end
 
 function PSRI.open(
@@ -282,6 +284,7 @@ function PSRI.open(
         reopen_mode = reopen_mode,
         FILE_PATH = PATH_BIN,
         is_open = !reopen_mode,
+        file_path = PATH_BIN,
     )
 end
 
@@ -375,4 +378,8 @@ function PSRI.close(io::Writer)
 
     Base.close(io.io)
     return nothing
+end
+
+function PSRI.file_path(iow::Writer)
+    return iow.file_path
 end

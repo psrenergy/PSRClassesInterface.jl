@@ -39,6 +39,8 @@ Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
     offset::Int = 0 # Header size
 
     single_binary::Bool = false
+
+    file_path::String = ""
 end
 
 function Base.show(io::IO, ptr::Reader)
@@ -355,6 +357,7 @@ function PSRI.open(
         io = io,
         offset = header_size,
         single_binary = single_binary,
+        file_path = bin_path,
     )
 
     finalizer(ior) do (ior_ptr::Reader)
@@ -622,4 +625,8 @@ function PSRI.close(ior::Reader)
     ior.scenario_current = 0
     ior.block_current = 0
     return nothing
+end
+
+function PSRI.file_path(ior::Reader)
+    return ior.file_path
 end

@@ -102,6 +102,7 @@ function read_write_binary_block_single_binary()
             stage_type = stage_type,
             single_binary = true,
         )
+        @test first(splitext(PSRI.file_path(iow))) == FILE_PATH
 
         for t in 1:STAGES, s in 1:SCENARIOS, b in 1:BLOCKS
             X = t + s + 0.0
@@ -119,6 +120,7 @@ function read_write_binary_block_single_binary()
             use_header = false,
             single_binary = true,
         )
+        @test first(splitext(PSRI.file_path(ior))) == FILE_PATH
 
         @test PSRI.max_stages(ior) == STAGES
         @test PSRI.max_scenarios(ior) == SCENARIOS
