@@ -82,7 +82,7 @@ function array_to_file(
     initial_year::Integer = 1900,
     # addtional
     allow_unsafe_name_length::Bool = false,
-    verbose_hour_block_check ::Bool = true,
+    verbose_hour_block_check::Bool = true,
 ) where {T <: AbstractWriter}
     (nagents, blocks, scenarios, stages) = size(data)
     if isempty(agents)
