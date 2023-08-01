@@ -223,7 +223,7 @@ function _merge_psr_transformer_and_psr_serie!(data::Data)
     return nothing
 end
 
-function initialize_study(
+function load_study(
     ::OpenInterface;
     data_path = "",
     pmd_files = String[],

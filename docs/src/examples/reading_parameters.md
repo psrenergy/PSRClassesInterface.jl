@@ -11,7 +11,7 @@ const PSRI = PSRClassesInterface
 
 PATH_CASE_EXAMPLE_CONFIGS = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "case0")
 
-data = PSRI.initialize_study(
+data = PSRI.load_study(
     PSRI.OpenInterface(),
     data_path = PATH_CASE_EXAMPLE_CONFIGS
 )
@@ -45,7 +45,7 @@ const PSRI = PSRClassesInterface
 
 PATH_CASE_EXAMPLE_THERMALS = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "case0")
 
-data = PSRI.initialize_study(
+data = PSRI.load_study(
     PSRI.OpenInterface(),
     data_path = PATH_CASE_EXAMPLE_THERMALS
 )
@@ -92,7 +92,7 @@ const PSRI = PSRClassesInterface
 
 PATH_CASE_EXAMPLE_BATTERIES = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "case1")
 
-data = PSRI.initialize_study(
+data = PSRI.load_study(
     PSRI.OpenInterface(),
     data_path = PATH_CASE_EXAMPLE_BATTERIES
 )

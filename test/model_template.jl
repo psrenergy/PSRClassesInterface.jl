@@ -47,7 +47,7 @@ function test_model_template1()
 
     PSRI.PMD.dump_model_template(mt_copy_path, data)
 
-    data_copy = PSRI.initialize_study(
+    data_copy = PSRI.load_study(
         PSRI.OpenInterface();
         data_path = temp_path,
         json_struct_path = data_struct_path,

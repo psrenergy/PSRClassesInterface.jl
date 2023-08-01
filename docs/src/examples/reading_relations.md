@@ -36,7 +36,7 @@ const PSRI = PSRClassesInterface
 
 PATH_CASE_EXAMPLE_GAUGING = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "case2")
 
-data = PSRI.initialize_study(
+data = PSRI.load_study(
     PSRI.OpenInterface(),
     data_path = PATH_CASE_EXAMPLE_GAUGING
 )
@@ -58,7 +58,7 @@ const PSRI = PSRClassesInterface
 
 PATH_CASE_EXAMPLE_BUS = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "case1")
 
-data = PSRI.initialize_study(
+data = PSRI.load_study(
     PSRI.OpenInterface(),
     data_path = PATH_CASE_EXAMPLE_BUS
 )
@@ -94,7 +94,7 @@ const PSRI = PSRClassesInterface
 
 PATH_CASE_EXAMPLE_CIR_BUS = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "case1")
 
-data = PSRI.initialize_study(
+data = PSRI.load_study(
     PSRI.OpenInterface(),
     data_path = PATH_CASE_EXAMPLE_CIR_BUS
 )
