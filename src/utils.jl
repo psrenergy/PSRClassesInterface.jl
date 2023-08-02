@@ -51,11 +51,11 @@ function blocks_in_stage(is_hourly, hour_discretization, stage_type, initial_sta
     return io.blocks
 end
 
-function blocks_in_stage(io, t)::Int
+function blocks_in_stage(io, t, t0 = initial_stage(io))::Int
     if is_hourly(io)
         if stage_type(io) == STAGE_MONTH
             return hour_discretization(io) *
-                   DAYS_IN_MONTH[mod1(t - 1 + initial_stage(io), 12)] * 24
+                   DAYS_IN_MONTH[mod1(t - 1 + t0, 12)] * 24
         else
             return hour_discretization(io) * HOURS_IN_STAGE[stage_type(io)]
         end

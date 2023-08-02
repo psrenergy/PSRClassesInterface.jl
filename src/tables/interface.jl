@@ -8,8 +8,7 @@ struct SeriesTable <: Tables.AbstractColumns
             error("Series columns must have the same length")
         end
 
-        attrs =
-            Dict{Symbol, Int}(attr => i for (i, attr) in enumerate(Symbol.(keys(buffer))))
+        attrs = Dict{Symbol, Int}(attr => i for (i, attr) in enumerate(Symbol.(keys(buffer))))
         types = eltype.(values(buffer))
         table = Vector{Vector}(undef, length(attrs))
 
@@ -35,11 +34,14 @@ function Base.:(==)(tsx::SeriesTable, tsy::SeriesTable)
         for attr in keys(tsx.attrs)
             if tsx.types[tsx.attrs[attr]] != tsy.types[tsy.attrs[attr]] ||
                tsx.table[tsx.attrs[attr]] != tsy.table[tsy.attrs[attr]]
+
                 return false
             end
         end
+
         return true
     end
+
     return false
 end
 
@@ -84,7 +86,7 @@ struct GrafTable{T} <: Tables.AbstractColumns
 
         # Load
         reader = open(OpenBinary.Reader, path; kws...)
-        columns = [[:stage, :series, :block]; Symbol.(reader.agent_names)]
+        columns = [[:stage, :series, :block]; Symbol.(strip.(reader.agent_names))]
         agents = Dict{Symbol, Int}(
             Symbol(reader.agent_names[i]) => i for i in 1:reader.agents_total
         )
@@ -99,17 +101,19 @@ struct GrafTable{T} <: Tables.AbstractColumns
 
             i = 0
 
-            for t in 1:reader.stage_total, s in 1:reader.scenario_total
+            relative_stages = reader.first_relative_stage:(reader.stage_total+reader.first_relative_stage-1)
+
+            for t in relative_stages, s in 1:reader.scenario_total
                 for b in 1:reader.blocks_per_stage[t]
                     i += 1
+
+                    goto(reader, t, s, b)
 
                     domain[i, :] .= [t, s, b]
 
                     for a in 1:reader.agents_total
                         matrix[i, a] = reader[a]
                     end
-
-                    next_registry(reader)
                 end
             end
         else
@@ -119,19 +123,18 @@ struct GrafTable{T} <: Tables.AbstractColumns
 
             i = 0
 
-            for t in 1:reader.stage_total,
-                s in 1:reader.scenario_total,
-                b in 1:reader.block_total
+            relative_stages = reader.first_relative_stage:(reader.stage_total+reader.first_relative_stage-1)
 
+            for t in relative_stages, s in 1:reader.scenario_total, b in 1:reader.block_total
                 i += 1
 
+                goto(reader, t, s, b)
+                
                 domain[i, :] .= [t, s, b]
 
                 for a in 1:reader.agents_total
                     matrix[i, a] = reader[a]
                 end
-
-                next_registry(reader)
             end
         end
 
@@ -159,6 +162,7 @@ function Base.:(==)(gtx::GrafTable, gty::GrafTable)
             end
         end
     end
+
     return false
 end
 
