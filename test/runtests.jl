@@ -53,6 +53,8 @@ end
     end
     @testset "Graf Files" begin
         @time include("graf_files.jl")
+
+        @time include("negative_stages.jl")
     end
     @testset "Utils" begin
         @time include("utils.jl")

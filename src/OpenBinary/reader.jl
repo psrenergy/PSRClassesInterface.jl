@@ -418,8 +418,16 @@ PSRI.current_block(graf::Reader) = graf.block_current
 function unsafe_agent_names(graf::Reader)
     return graf.agent_names
 end
+
 function PSRI.agent_names(graf::Reader)
     return deepcopy(unsafe_agent_names(graf))
+end
+
+function _check_position_bounds(graf::Reader, t::Integer, b::Integer, b_total::Integer)
+    @assert 0 <= t - graf.first_relative_stage < graf.stage_total
+    @assert 1 <= b <= b_total
+
+    return nothing
 end
 
 function PSRI.goto(graf::Reader, t::Integer, s::Integer = 1, b::Integer = 1)
@@ -437,11 +445,9 @@ function PSRI.goto(graf::Reader, t::Integer, s::Integer = 1, b::Integer = 1)
     ss = ifelse(graf.scenario_exist, mod1(s, graf.scenario_total), 1)
     # add option for non-auto ignore
     bb = ifelse(graf.block_exist || graf.hours_exist, b, 1)
-    if t != graf.stage_current ||
-       ss != graf.scenario_current ||
-       bb != graf.block_current
-        @assert 1 <= tt <= graf.stage_total
-        @assert 1 <= bb <= block_total_current
+    if t != graf.stage_current || ss != graf.scenario_current || bb != graf.block_current
+        _check_position_bounds(graf, tt, bb, block_total_current)
+
         # move to position
         current_pos = position(graf.io)
         next_pos = _get_position(graf, tt, ss, bb)

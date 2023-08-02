@@ -8,3 +8,6 @@
 # Exceptions
 !caso_graf.bin
 !caso_graf.hdr
+
+!inflow.bin
+!inflow.hdr
