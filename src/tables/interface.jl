@@ -8,7 +8,8 @@ struct SeriesTable <: Tables.AbstractColumns
             error("Series columns must have the same length")
         end
 
-        attrs = Dict{Symbol, Int}(attr => i for (i, attr) in enumerate(Symbol.(keys(buffer))))
+        attrs =
+            Dict{Symbol, Int}(attr => i for (i, attr) in enumerate(Symbol.(keys(buffer))))
         types = eltype.(values(buffer))
         table = Vector{Vector}(undef, length(attrs))
 
@@ -34,7 +35,6 @@ function Base.:(==)(tsx::SeriesTable, tsy::SeriesTable)
         for attr in keys(tsx.attrs)
             if tsx.types[tsx.attrs[attr]] != tsy.types[tsy.attrs[attr]] ||
                tsx.table[tsx.attrs[attr]] != tsy.table[tsy.attrs[attr]]
-
                 return false
             end
         end
@@ -101,7 +101,8 @@ struct GrafTable{T} <: Tables.AbstractColumns
 
             i = 0
 
-            relative_stages = reader.first_relative_stage:(reader.stage_total+reader.first_relative_stage-1)
+            relative_stages =
+                reader.first_relative_stage:(reader.stage_total+reader.first_relative_stage-1)
 
             for t in relative_stages, s in 1:reader.scenario_total
                 for b in 1:reader.blocks_per_stage[t]
@@ -123,13 +124,16 @@ struct GrafTable{T} <: Tables.AbstractColumns
 
             i = 0
 
-            relative_stages = reader.first_relative_stage:(reader.stage_total+reader.first_relative_stage-1)
+            relative_stages =
+                reader.first_relative_stage:(reader.stage_total+reader.first_relative_stage-1)
 
-            for t in relative_stages, s in 1:reader.scenario_total, b in 1:reader.block_total
+            for t in relative_stages, s in 1:reader.scenario_total,
+                b in 1:reader.block_total
+
                 i += 1
 
                 goto(reader, t, s, b)
-                
+
                 domain[i, :] .= [t, s, b]
 
                 for a in 1:reader.agents_total

@@ -200,7 +200,7 @@ function PSRI.open(
         read!(ioh, agent_name_buffer)
 
         agent_name = strip(Encodings.decode(agent_name_buffer, Encodings.ISO_LATIN_1()))
-    
+
         push!(agent_names, agent_name)
     end
 
@@ -439,7 +439,7 @@ function PSRI.goto(graf::Reader, t::Integer, s::Integer = 1, b::Integer = 1)
 
     tt = t + graf.relative_stage_skip
     block_total_current = graf.block_total_current
-    
+
     if t != graf.stage_current
         block_total_current = if graf.stage_type == PSRI.STAGE_MONTH
             PSRI.blocks_in_stage(graf, tt)
@@ -450,30 +450,30 @@ function PSRI.goto(graf::Reader, t::Integer, s::Integer = 1, b::Integer = 1)
 
     # add option for non-auto cycle
     ss = ifelse(graf.scenario_exist, mod1(s, graf.scenario_total), 1)
-    
+
     # add option for non-auto ignore
     bb = ifelse(graf.block_exist || graf.hours_exist, b, 1)
-    
+
     if t != graf.stage_current || ss != graf.scenario_current || bb != graf.block_current
         _check_position_bounds(graf, tt, bb, block_total_current)
 
         # move to position
         current_pos = position(graf.io)
         next_pos = _get_position(graf, tt, ss, bb)
-        
+
         if next_pos >= current_pos
             skip(graf.io, next_pos - current_pos)
         else
             seek(graf.io, next_pos)
         end
-        
+
         graf.block_total_current = block_total_current
         graf.stage_current = t # this is different
         graf.scenario_current = ss
         graf.block_current = bb
-        
+
         read!(graf.io, graf.data_buffer)
-        
+
         for (index, value) in enumerate(graf.indices)
             @inbounds graf.data[index] = graf.data_buffer[value]
         end
@@ -607,27 +607,27 @@ function PSRI.next_registry(graf::Reader)
     end
 
     read!(graf.io, graf.data_buffer)
-    
+
     for (index, value) in enumerate(graf.indices)
         @inbounds graf.data[index] = graf.data_buffer[value]
     end
-    
+
     @assert graf.block_current >= 1
-    
+
     if graf.block_current < graf.block_total_current
         graf.block_current += 1
     else
         graf.block_current = 1
-        
+
         @assert graf.scenario_current >= 1
-        
+
         if graf.scenario_current < graf.scenario_total
             graf.scenario_current += 1
         else
             graf.scenario_current = 1
 
             @assert graf.stage_current >= graf.first_relative_stage
-            
+
             if graf.stage_current < graf.stage_total
                 graf.stage_current += 1
 
@@ -647,17 +647,17 @@ end
 
 function PSRI.close(ior::Reader)
     Base.close(ior.io)
-    
+
     ior.is_open = false
-    
+
     empty!(ior.data)
     empty!(ior.data_buffer)
     empty!(ior.agent_names)
-    
+
     ior.stage_current = 0
     ior.scenario_current = 0
     ior.block_current = 0
-    
+
     return nothing
 end
 
