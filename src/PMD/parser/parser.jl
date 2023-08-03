@@ -314,11 +314,11 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
             _cache_merge!(parser, collection, model_name)
 
             _push_state!(parser, PMD_MERGE_CLASS(collection))
-            
+
             return nothing
         else
             _syntax_warning(parser, "Unknown model '$(model_name)'")
-    
+
             # By setting the collection to 'nothing', we are telling
             # the parser to ignore the block and its contents
             _push_state!(parser, PMD_MERGE_CLASS(nothing))
