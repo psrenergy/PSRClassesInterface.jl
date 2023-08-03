@@ -310,11 +310,21 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
         collection = String(m[1])
         model_name = String(m[2])
 
-        _cache_merge!(parser, collection, model_name)
+        if _hasinv(parser.model_template, model_name)
+            _cache_merge!(parser, collection, model_name)
 
-        _push_state!(parser, PMD_MERGE_CLASS(collection))
+            _push_state!(parser, PMD_MERGE_CLASS(collection))
+            
+            return nothing
+        else
+            _syntax_warning(parser, "Unknown model '$(model_name)'")
+    
+            # By setting the collection to 'nothing', we are telling
+            # the parser to ignore the block and its contents
+            _push_state!(parser, PMD_MERGE_CLASS(nothing))
 
-        return nothing
+            return nothing
+        end
     end
 
     return _syntax_error(parser, "Invalid input: '$line'")
@@ -381,6 +391,45 @@ function _parse_line!(
 )
     if startswith(line, "END_CLASS")
         _pop_state!(parser)
+        return nothing
+    end
+
+    # If collection is nothing, ignore it
+    if state.collection === nothing
+        return nothing
+    end
+
+    if _parse_attribute!(parser, line, state)
+        return nothing
+    end
+
+    if _parse_dimension!(parser, line, state)
+        return nothing
+    end
+
+    if _parse_reference!(parser, line, state)
+        return nothing
+    end
+
+    if _parse_inline_tag!(parser, line, state)
+        return nothing
+    end
+
+    return _syntax_error(parser, "Invalid input: '$line'")
+end
+
+function _parse_line!(
+    parser::Parser,
+    line::AbstractString,
+    state::PMD_MERGE_CLASS,
+)
+    if startswith(line, "END_CLASS")
+        _pop_state!(parser)
+        return nothing
+    end
+
+    # If collection is nothing, ignore it
+    if state.collection === nothing
         return nothing
     end
 
