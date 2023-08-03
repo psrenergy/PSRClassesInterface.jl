@@ -469,7 +469,7 @@ function get_parms(
     check_parm::Bool = true,
     ignore::Bool = false,
     default::T = _default_value(T),
-) where {T}
+)::Vector{T} where {T}
     attribute_struct = get_attribute_struct(data, collection, attribute)
     if check_type
         _check_type(attribute_struct, T, collection, attribute)
@@ -518,7 +518,7 @@ function get_parms_1d(
     check_parm::Bool = true,
     ignore::Bool = false,
     default::T = _default_value(T),
-) where {T}
+)::Vector{Vector{T}} where {T}
     attribute_struct = get_attribute_struct(data, collection, attribute)
     if check_type
         _check_type(attribute_struct, T, collection, attribute)
@@ -568,7 +568,7 @@ function get_parms_2d(
     check_parm::Bool = true,
     ignore::Bool = false,
     default::T = _default_value(T),
-) where {T}
+)::Vector{Matrix{T}} where {T}
     attribute_struct = get_attribute_struct(data, collection, attribute)
     if check_type
         _check_type(attribute_struct, T, collection, attribute)
@@ -596,7 +596,7 @@ Example:
 PSRI.get_code(data, "PSRThermalPlant")
 ```
 """
-function get_code(data::AbstractData, collection::String)
+function get_code(data::AbstractData, collection::String)::Vector{Int32}
     return get_parms(data, collection, "code", Int32)
 end
 
@@ -612,7 +612,7 @@ PSRI.get_name(data, "PSRThermalPlant")
 PSRI.get_name(data, "PSRGaugingStation")
 ```
 """
-function get_name(data::AbstractData, collection::String)
+function get_name(data::AbstractData, collection::String)::Vector{String}
     return get_parms(data, collection, "name", String)
 end
 

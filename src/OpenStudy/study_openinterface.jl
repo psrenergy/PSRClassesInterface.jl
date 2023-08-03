@@ -505,7 +505,7 @@ function get_parm(
     default::T = _default_value(T),
     dim1::Union{Integer, Nothing} = nothing,
     dim2::Union{Integer, Nothing} = nothing,
-) where {T}
+)::T where {T}
     # Retrieve attribute metadata
     attribute_struct = get_attribute_struct(data, collection, attribute)
 
@@ -539,7 +539,7 @@ function get_parm_1d(
     index::Integer,
     ::Type{T};
     default::T = _default_value(T),
-) where {T}
+)::Vector{T} where {T}
     attribute_struct = get_attribute_struct(data, collection, attribute)
 
     dim = get_attribute_dim(attribute_struct)
@@ -590,7 +590,7 @@ function get_parm_2d(
     index::Integer,
     ::Type{T};
     default::T = _default_value(T),
-) where {T}
+)::Matrix{T} where {T}
     attribute_struct = get_attribute_struct(data, collection, attribute)
 
     dim = get_attribute_dim(attribute_struct)
