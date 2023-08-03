@@ -374,6 +374,15 @@ function load_study(
     return data
 end
 
+function initialize_study(args...; kws...)
+    @warn """
+        `initialize_study` is deprecated and will be removed in a future release.
+        Use `load_study` instead.
+    """
+
+    return load_study(args...; kws...)
+end
+
 function load_json_struct!(::Data, ::Nothing) end
 
 function load_json_struct!(data::Data, paths::Vector{String})
