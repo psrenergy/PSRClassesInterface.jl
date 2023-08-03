@@ -91,6 +91,10 @@ function _syntax_warning(
 end
 
 function _cache_merge!(parser::Parser, collection::String, model_name::String)
+    if !haskey(parser.model_template.inv, model_name)
+        _error(parser, "'$model_name' not found in model template")
+    end
+
     if !haskey(parser.merge, collection)
         parser.merge[collection] = []
     end
