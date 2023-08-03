@@ -91,6 +91,10 @@ function _syntax_warning(
 end
 
 function _cache_merge!(parser::Parser, collection::String, model_name::String)
+    if !haskey(parser.model_template.inv, model_name)
+        _error(parser, "'$model_name' not found in model template")
+    end
+
     if !haskey(parser.merge, collection)
         parser.merge[collection] = []
     end
@@ -155,6 +159,11 @@ function _apply_tag!(
             "Unhandled '$tag' tag for '$(attribute)' within '$(collection)' definition",
         )
     elseif tag == "@hourly_dense"
+        _syntax_warning(
+            parser,
+            "Unhandled '$tag' tag for '$(attribute)' within '$(collection)' definition",
+        )
+    elseif tag == "@chronological"
         _syntax_warning(
             parser,
             "Unhandled '$tag' tag for '$(attribute)' within '$(collection)' definition",
@@ -301,11 +310,21 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
         collection = String(m[1])
         model_name = String(m[2])
 
-        _cache_merge!(parser, collection, model_name)
+        if _hasinv(parser.model_template, model_name)
+            _cache_merge!(parser, collection, model_name)
 
-        _push_state!(parser, PMD_MERGE_CLASS(collection))
+            _push_state!(parser, PMD_MERGE_CLASS(collection))
 
-        return nothing
+            return nothing
+        else
+            _syntax_warning(parser, "Unknown model '$(model_name)'")
+
+            # By setting the collection to 'nothing', we are telling
+            # the parser to ignore the block and its contents
+            _push_state!(parser, PMD_MERGE_CLASS(nothing))
+
+            return nothing
+        end
     end
 
     return _syntax_error(parser, "Invalid input: '$line'")
@@ -358,6 +377,10 @@ function _parse_line!(
         return nothing
     end
 
+    if _parse_inline_tag!(parser, line, state)
+        return nothing
+    end
+
     return _syntax_error(parser, "Invalid input: '$line'")
 end
 
@@ -371,6 +394,11 @@ function _parse_line!(
         return nothing
     end
 
+    # If collection is nothing, ignore it
+    if state.collection === nothing
+        return nothing
+    end
+
     if _parse_attribute!(parser, line, state)
         return nothing
     end
@@ -380,6 +408,44 @@ function _parse_line!(
     end
 
     if _parse_reference!(parser, line, state)
+        return nothing
+    end
+
+    if _parse_inline_tag!(parser, line, state)
+        return nothing
+    end
+
+    return _syntax_error(parser, "Invalid input: '$line'")
+end
+
+function _parse_line!(
+    parser::Parser,
+    line::AbstractString,
+    state::PMD_MERGE_CLASS,
+)
+    if startswith(line, "END_CLASS")
+        _pop_state!(parser)
+        return nothing
+    end
+
+    # If collection is nothing, ignore it
+    if state.collection === nothing
+        return nothing
+    end
+
+    if _parse_attribute!(parser, line, state)
+        return nothing
+    end
+
+    if _parse_dimension!(parser, line, state)
+        return nothing
+    end
+
+    if _parse_reference!(parser, line, state)
+        return nothing
+    end
+
+    if _parse_inline_tag!(parser, line, state)
         return nothing
     end
 
@@ -538,6 +604,32 @@ function _parse_attribute!(
 
         if tag !== nothing
             _apply_tag!(parser, state.collection, name, tag)
+        end
+
+        return true
+    else
+        return false
+    end
+end
+
+function _parse_inline_tag!(
+    parser::Parser,
+    line::AbstractString,
+    ::S,
+) where {S <: Union{PMD_DEF_MODEL, PMD_DEF_CLASS, PMD_MERGE_CLASS}}
+    m = match(r"(\@\S+)\s+(\S+)?", line)
+
+    if m !== nothing
+        if m[2] !== nothing
+            _syntax_warning(
+                parser,
+                "Unhandled inline tag '$(m[1])' with args: '$(m[2])'",
+            )
+        else
+            _syntax_warning(
+                parser,
+                "Unhandled inline tag '$(m[1])' with no args",
+            )
         end
 
         return true

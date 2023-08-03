@@ -22,11 +22,13 @@ DEFINE_CLASS PSRElement
 END_CLASS
 
 DEFINE_CLASS PSRGeneratorUnit
+	@dictionary psrgeneratorunit, psrgenun
 	PARM   INTEGER   NumberUnits
 	PARM   INTEGER   Code        
     PARM   REFERENCE Bus         PSRBus
-	VECTOR   REFERENCE Buses         PSRBus
-	VECTOR   REFERENCE Element       PSRElement
+	VECTOR REFERENCE Buses       PSRBus
+	VECTOR REFERENCE Element     PSRElement
+	VETOR  DATE      Date        @chronological
 END_CLASS
 
 DEFINE_MODEL PSRTest
