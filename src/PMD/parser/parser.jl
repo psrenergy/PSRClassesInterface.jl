@@ -159,6 +159,11 @@ function _apply_tag!(
             parser,
             "Unhandled '$tag' tag for '$(attribute)' within '$(collection)' definition",
         )
+    elseif tag == "@chronological"
+        _syntax_warning(
+            parser,
+            "Unhandled '$tag' tag for '$(attribute)' within '$(collection)' definition",
+        )
     else
         _syntax_error(
             parser,
@@ -358,6 +363,10 @@ function _parse_line!(
         return nothing
     end
 
+    if _parse_inline_tag!(parser, line, state)
+        return nothing
+    end
+
     return _syntax_error(parser, "Invalid input: '$line'")
 end
 
@@ -380,6 +389,10 @@ function _parse_line!(
     end
 
     if _parse_reference!(parser, line, state)
+        return nothing
+    end
+
+    if _parse_inline_tag!(parser, line, state)
         return nothing
     end
 
@@ -538,6 +551,32 @@ function _parse_attribute!(
 
         if tag !== nothing
             _apply_tag!(parser, state.collection, name, tag)
+        end
+
+        return true
+    else
+        return false
+    end
+end
+
+function _parse_inline_tag!(
+    parser::Parser,
+    line::AbstractString,
+    ::S,
+) where {S <: Union{PMD_DEF_MODEL, PMD_DEF_CLASS, PMD_MERGE_CLASS}}
+    m = match(r"(\@\S+)\s+(\S+)?", line)
+
+    if m !== nothing
+        if m[2] !== nothing
+            _syntax_warning(
+                parser,
+                "Unhandled inline tag '$(m[1])' with args: '$(m[2])'",
+            )
+        else
+            _syntax_warning(
+                parser,
+                "Unhandled inline tag '$(m[1])' with no args",
+            )
         end
 
         return true
