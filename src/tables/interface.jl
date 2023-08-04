@@ -119,7 +119,8 @@ struct GrafTable{T} <: Tables.AbstractColumns
 
             i = 0
 
-            for t in 1:reader.stage_total, s in 1:reader.scenario_total,
+            for t in 1:reader.stage_total,
+                s in 1:reader.scenario_total,
                 b in 1:reader.block_total
 
                 i += 1
