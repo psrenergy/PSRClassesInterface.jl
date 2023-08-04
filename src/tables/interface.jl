@@ -109,7 +109,7 @@ struct GrafTable{T} <: Tables.AbstractColumns
                         matrix[i, a] = reader[a]
                     end
 
-                    PSRI.next_registry(reader)
+                    next_registry(reader)
                 end
             end
         else
@@ -121,6 +121,7 @@ struct GrafTable{T} <: Tables.AbstractColumns
 
             for t in 1:reader.stage_total, s in 1:reader.scenario_total,
                 b in 1:reader.block_total
+
                 i += 1
 
                 domain[i, :] .= [t, s, b]
@@ -129,7 +130,7 @@ struct GrafTable{T} <: Tables.AbstractColumns
                     matrix[i, a] = reader[a]
                 end
 
-                PSRI.next_registry(reader)
+                next_registry(reader)
             end
         end
 

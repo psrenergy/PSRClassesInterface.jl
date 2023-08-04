@@ -1,15 +1,18 @@
 Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
     io::IOStream
 
+    # stages
     stage_total::Int
     first_year::Int
     first_stage::Int
     first_relative_stage::Int
     stage_type::PSRI.StageType
 
+    # scenarios
     scenario_total::Int
     scenario_exist::Bool
 
+    # blocks/hours
     block_total::Int # max in hours
     block_total_current::Int # for hourly cases
     block_exist::Bool
@@ -19,11 +22,15 @@ Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
     hour_discretization::Int
     _block_type::Int
 
+    # agents
     name_length::Int
     agents_total::Int
     agent_names::Vector{String}
+
+    # unit
     unit::String
 
+    # others
     data_buffer::Vector{Float32}
 
     indices::Vector{Int} # header ordering
@@ -36,7 +43,7 @@ Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
     is_open::Bool = true
 
     relative_stage_skip::Int
-    offset::Int = 0 # Header size
+    offset::Int = 0 # header size
 
     single_binary::Bool = false
 

@@ -1,15 +1,18 @@
 Base.@kwdef mutable struct Writer <: PSRI.AbstractWriter
     io::IOStream
 
+    # stages
     stage_total::Int
     # first_year::Int
     initial_stage::Int
     # first_relative_stage::Int
     stage_type::PSRI.StageType
 
+    # scenarios
     scenario_total::Int
     # scenario_exist::Bool
 
+    # blocks/hours
     block_total::Int # max in hours
     # block_total_current::Int # for hourly cases
     # block_exist::Bool
@@ -19,11 +22,15 @@ Base.@kwdef mutable struct Writer <: PSRI.AbstractWriter
     hour_discretization::Int
     # _block_type::Int
 
+    # agents
     # name_length::Int
     agents_total::Int
     # agent_names::Vector{String}
+
+    # unit
     # unit::String
 
+    # others
     # data_buffer::Vector{Float32}
 
     # index::Vector{Int} # header ordering
