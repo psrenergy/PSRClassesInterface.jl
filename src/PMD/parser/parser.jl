@@ -485,10 +485,10 @@ function _parse_merge!(
     line::AbstractString,
     state::PMD_DEF_MODEL,
 )
-    m = match(r"MERGE_MODEL\s+MODL:(\S+)", line)
+    m = match(r"MERGE_MODEL\s+(MODL:)?(\S+)", line)
 
     if m !== nothing
-        model_name = String(m[1])
+        model_name = String(m[2])
 
         _cache_merge!(parser, state.collection, model_name)
 
