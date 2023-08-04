@@ -2,8 +2,14 @@ Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
     io::IOStream
 
     stage_total::Int
+    first_year::Int
+    first_stage::Int
+    first_relative_stage::Int
+    stage_type::PSRI.StageType
+
     scenario_total::Int
     scenario_exist::Bool
+
     block_total::Int # max in hours
     block_total_current::Int # for hourly cases
     block_exist::Bool
@@ -11,13 +17,7 @@ Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
     blocks_until_stage::Vector{Int}
     hours_exist::Bool
     hour_discretization::Int
-
     _block_type::Int
-
-    first_year::Int
-    first_stage::Int
-    first_relative_stage::Int
-    stage_type::PSRI.StageType
 
     name_length::Int
     agents_total::Int

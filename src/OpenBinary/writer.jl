@@ -2,8 +2,14 @@ Base.@kwdef mutable struct Writer <: PSRI.AbstractWriter
     io::IOStream
 
     stage_total::Int
+    # first_year::Int
+    initial_stage::Int
+    # first_relative_stage::Int
+    stage_type::PSRI.StageType
+
     scenario_total::Int
     # scenario_exist::Bool
+
     block_total::Int # max in hours
     # block_total_current::Int # for hourly cases
     # block_exist::Bool
@@ -11,13 +17,7 @@ Base.@kwdef mutable struct Writer <: PSRI.AbstractWriter
     blocks_until_stage::Vector{Int}
     is_hourly::Bool
     hour_discretization::Int
-
     # _block_type::Int
-
-    # first_year::Int
-    initial_stage::Int
-    # first_relative_stage::Int
-    stage_type::PSRI.StageType
 
     # name_length::Int
     agents_total::Int
@@ -47,9 +47,9 @@ function PSRI.open(
     ::Type{Writer},
     path::String;
     # mandatory
+    stages::Integer = 0,
     blocks::Integer = 0,
     scenarios::Integer = 0,
-    stages::Integer = 0,
     agents::Vector{String} = String[],
     unit::Union{Nothing, String} = nothing,
     # optional
