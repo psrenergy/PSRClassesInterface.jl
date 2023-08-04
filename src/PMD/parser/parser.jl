@@ -491,7 +491,7 @@ function _parse_merge!(
     parser::Parser,
     line::AbstractString,
     state::S,
-) where {S<:Union{PMD_DEF_MODEL, PMD_DEF_CLASS, PMD_MERGE_CLASS}}
+) where {S <: Union{PMD_DEF_MODEL, PMD_DEF_CLASS, PMD_MERGE_CLASS}}
     m = match(r"MERGE_MODEL\s+(MODL:)?(\S+)", line)
 
     if m !== nothing

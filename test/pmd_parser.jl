@@ -317,7 +317,7 @@ function test_pmd_source_2()
             "PSRLoad" => Dict(
                 "AVId" => PSRI.PMD.Attribute("AVId", false, String, 0, ""),
                 "name" => PSRI.PMD.Attribute("name", false, String, 0, ""),
-                "P"    => PSRI.PMD.Attribute("P", true, Float64, 1, "Data"),
+                "P" => PSRI.PMD.Attribute("P", true, Float64, 1, "Data"),
                 "PerF" => PSRI.PMD.Attribute("PerF", true, Float64, 1, "Data"),
                 "Data" => PSRI.PMD.Attribute("Data", true, Dates.Date, 0, ""),
                 "Pind" => PSRI.PMD.Attribute("Pind", true, Float64, 1, "Data"),
