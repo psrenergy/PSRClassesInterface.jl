@@ -1,6 +1,16 @@
 function test_pmd_parser()
+    test_pmd_source_0()
+    test_pmd_source_1()
+    test_pmd_source_2()
+    test_pmd_source_3()
+    test_pmd_source_3_relations()
+
+    return nothing
+end
+
+function test_pmd_source_0()
     model_template = PSRI.PMD.load_model_template(
-        joinpath(@__DIR__, "..", "src", "json_metadata", "modeltemplates.sddp.json"),
+        joinpath(PSRI.JSON_METADATA_PATH, "modeltemplates.sddp.json"),
     )
 
     @testset "source0.pmd" begin
@@ -184,22 +194,274 @@ function test_pmd_parser()
             ),
         )
     end
+
+    return nothing
 end
 
-function test_pmd_parser_2()
+function test_pmd_source_1()
+    model_template = PSRI.PMD.load_model_template(
+        joinpath(PSRI.JSON_METADATA_PATH, "modeltemplates.sddp.json"),
+    )
+
+    @testset "source1.pmd" begin
+        path = joinpath(@__DIR__, "data", "pmd", "source1.pmd")
+        data = PSRI.PMD.parse(path, model_template; verbose = true)
+
+        @test data == Dict{String, Dict{String, PSRI.PMD.Attribute}}(
+            "Contract_Forward" => Dict(
+                "AVId" =>
+                    PSRI.PMD.Attribute("AVId", false, String, 0, ""),
+                "name" =>
+                    PSRI.PMD.Attribute("name", false, String, 0, ""),
+                "SpreadUnit" => PSRI.PMD.Attribute(
+                    "SpreadUnit",
+                    false,
+                    Int32,
+                    0,
+                    "",
+                ),
+                "Spread" =>
+                    PSRI.PMD.Attribute("Spread", false, Float64, 0, ""),
+                "code" =>
+                    PSRI.PMD.Attribute("code", false, Int32, 0, ""),
+            ),
+            "PSRGeneratorUnit" => Dict(
+                "AVId" =>
+                    PSRI.PMD.Attribute("AVId", false, String, 0, ""),
+                "name" =>
+                    PSRI.PMD.Attribute("name", false, String, 0, ""),
+                "FixedOEM" => PSRI.PMD.Attribute(
+                    "FixedOEM",
+                    true,
+                    Float64,
+                    0,
+                    "DataOptfolio",
+                ),
+                "Code" =>
+                    PSRI.PMD.Attribute("Code", false, Int32, 0, ""),
+                "code" =>
+                    PSRI.PMD.Attribute("code", false, Int32, 0, ""),
+                "NumberUnits" => PSRI.PMD.Attribute(
+                    "NumberUnits",
+                    false,
+                    Int32,
+                    0,
+                    "",
+                ),
+            ),
+            "MODELX" => Dict(
+                "DataHP" => PSRI.PMD.Attribute(
+                    "DataHP",
+                    true,
+                    Dates.Date,
+                    0,
+                    "",
+                ),
+                "code" =>
+                    PSRI.PMD.Attribute("code", false, Int32, 0, ""),
+                "DataN" =>
+                    PSRI.PMD.Attribute("DataN", false, String, 0, ""),
+                "DataDP" => PSRI.PMD.Attribute(
+                    "DataDP",
+                    true,
+                    Dates.Date,
+                    0,
+                    "",
+                ),
+                "AVId" =>
+                    PSRI.PMD.Attribute("AVId", false, String, 0, ""),
+                "name" =>
+                    PSRI.PMD.Attribute("name", false, String, 0, ""),
+                "DataD" => PSRI.PMD.Attribute(
+                    "DataD",
+                    false,
+                    Dates.Date,
+                    0,
+                    "",
+                ),
+                "DataPTS" => PSRI.PMD.Attribute(
+                    "DataPTS",
+                    true,
+                    Float64,
+                    1,
+                    "DataP",
+                ),
+                "DataP" =>
+                    PSRI.PMD.Attribute("DataP", false, Float64, 0, ""),
+                "DataU" =>
+                    PSRI.PMD.Attribute("DataU", false, Int32, 0, ""),
+                "DataPHTS" => PSRI.PMD.Attribute(
+                    "DataPHTS",
+                    true,
+                    Float64,
+                    0,
+                    "DataHP",
+                ),
+            ),
+        )
+    end
+
+    return nothing
+end
+
+function test_pmd_source_2()
+    model_template = PSRI.PMD.load_model_template(
+        joinpath(PSRI.JSON_METADATA_PATH, "modeltemplates.sddp.json"),
+    )
+
+    @testset "source2.pmd" begin
+        path = joinpath(@__DIR__, "data", "pmd", "source2.pmd")
+        data = PSRI.PMD.parse(path, model_template; verbose = true)
+
+        @test data == Dict{String, Dict{String, PSRI.PMD.Attribute}}(
+            "PSRLoad" => Dict(
+                "AVId" => PSRI.PMD.Attribute("AVId", false, String, 0, ""),
+                "name" => PSRI.PMD.Attribute("name", false, String, 0, ""),
+                "P"    => PSRI.PMD.Attribute("P", true, Float64, 1, "Data"),
+                "PerF" => PSRI.PMD.Attribute("PerF", true, Float64, 1, "Data"),
+                "Data" => PSRI.PMD.Attribute("Data", true, Dates.Date, 0, ""),
+                "Pind" => PSRI.PMD.Attribute("Pind", true, Float64, 1, "Data"),
+                "code" => PSRI.PMD.Attribute("code", false, Int32, 0, ""),
+                "icca" => PSRI.PMD.Attribute("icca", true, Int32, 0, ""),
+            ),
+        )
+    end
+
+    return nothing
+end
+
+function test_pmd_source_3()
+    model_template = PSRI.PMD.load_model_template(
+        joinpath(PSRI.JSON_METADATA_PATH, "modeltemplates.sddp.json"),
+    )
+
+    @testset "source3.pmd" begin
+        path = joinpath(@__DIR__, "data", "pmd", "source3.pmd")
+        data = PSRI.PMD.parse(path, model_template; verbose = true)
+
+        @test data == Dict{String, Dict{String, PSRI.PMD.Attribute}}(
+            "PSRElement" => Dict(
+                "AVId" =>
+                    PSRI.PMD.Attribute("AVId", false, String, 0, ""),
+                "name" =>
+                    PSRI.PMD.Attribute("name", false, String, 0, ""),
+                "Code" =>
+                    PSRI.PMD.Attribute("Code", false, Int32, 0, ""),
+                "code" =>
+                    PSRI.PMD.Attribute("code", false, Int32, 0, ""),
+                "NumberUnits" => PSRI.PMD.Attribute(
+                    "NumberUnits",
+                    false,
+                    Int32,
+                    0,
+                    "",
+                ),
+            ),
+            "PSRBus" => Dict(
+                "AVId" =>
+                    PSRI.PMD.Attribute("AVId", false, String, 0, ""),
+                "name" =>
+                    PSRI.PMD.Attribute("name", false, String, 0, ""),
+                "Code" =>
+                    PSRI.PMD.Attribute("Code", false, Int32, 0, ""),
+                "code" =>
+                    PSRI.PMD.Attribute("code", false, Int32, 0, ""),
+                "NumberUnits" => PSRI.PMD.Attribute(
+                    "NumberUnits",
+                    false,
+                    Int32,
+                    0,
+                    "",
+                ),
+            ),
+            "PSRTest" => Dict(
+                "AVId" =>
+                    PSRI.PMD.Attribute("AVId", false, String, 0, ""),
+                "name" =>
+                    PSRI.PMD.Attribute("name", false, String, 0, ""),
+                "Code" =>
+                    PSRI.PMD.Attribute("Code", false, Int32, 0, ""),
+                "code" =>
+                    PSRI.PMD.Attribute("code", false, Int32, 0, ""),
+                "NumberUnits" => PSRI.PMD.Attribute(
+                    "NumberUnits",
+                    false,
+                    Int32,
+                    0,
+                    "",
+                ),
+            ),
+            "PSRGeneratorUnit" => Dict(
+                "AVId" =>
+                    PSRI.PMD.Attribute("AVId", false, String, 0, ""),
+                "name" =>
+                    PSRI.PMD.Attribute("name", false, String, 0, ""),
+                "Code" =>
+                    PSRI.PMD.Attribute("Code", false, Int32, 0, ""),
+                "Date" =>
+                    PSRI.PMD.Attribute("Date", true, Dates.Date, 0, ""),
+                "code" =>
+                    PSRI.PMD.Attribute("code", false, Int32, 0, ""),
+                "NumberUnits" => PSRI.PMD.Attribute(
+                    "NumberUnits",
+                    false,
+                    Int32,
+                    0,
+                    "",
+                ),
+            ),
+            "Custom_StudyConfig" => Dict(
+                "AVId" =>
+                    PSRI.PMD.Attribute("AVId", false, String, 0, ""),
+                "name" =>
+                    PSRI.PMD.Attribute("name", false, String, 0, ""),
+                "Ano_inicial" => PSRI.PMD.Attribute(
+                    "Ano_inicial",
+                    false,
+                    Int32,
+                    0,
+                    "",
+                ),
+                "Tipo_Etapa" => PSRI.PMD.Attribute(
+                    "Tipo_Etapa",
+                    false,
+                    Int32,
+                    0,
+                    "",
+                ),
+                "code" =>
+                    PSRI.PMD.Attribute("code", false, Int32, 0, ""),
+                "Etapa_inicial" => PSRI.PMD.Attribute(
+                    "Etapa_inicial",
+                    false,
+                    Int32,
+                    0,
+                    "",
+                ),
+            ),
+        )
+    end
+
+    return nothing
+end
+
+function test_pmd_source_3_relations()
     model_template = PSRI.PMD.load_model_template(
         joinpath(@__DIR__, "data", "model_template_test", "modeltemplates.source3.json"),
     )
+
     pmds_path = [joinpath(@__DIR__, "data", "pmd", "source3.pmd")]
 
     @testset "source3.pmd" begin
         relation_mapper = PSRI.PMD.RelationMapper()
+
         PSRI.PMD.load_model(
             "",
             pmds_path,
             model_template,
             relation_mapper,
         )
+
         @test relation_mapper == PSRI.PMD.RelationMapper(
             Dict(
                 "PSRGeneratorUnit" =>
@@ -239,4 +501,3 @@ function test_pmd_parser_2()
 end
 
 test_pmd_parser()
-test_pmd_parser_2()

@@ -402,6 +402,10 @@ function _parse_line!(
         return nothing
     end
 
+    if _parse_merge!(parser, line, state)
+        return nothing
+    end
+
     if _parse_dimension!(parser, line, state)
         return nothing
     end
@@ -433,6 +437,10 @@ function _parse_line!(
     end
 
     if _parse_attribute!(parser, line, state)
+        return nothing
+    end
+
+    if _parse_merge!(parser, line, state)
         return nothing
     end
 
@@ -482,8 +490,8 @@ end
 function _parse_merge!(
     parser::Parser,
     line::AbstractString,
-    state::PMD_DEF_MODEL,
-)
+    state::S,
+) where {S<:Union{PMD_DEF_MODEL, PMD_DEF_CLASS, PMD_MERGE_CLASS}}
     m = match(r"MERGE_MODEL\s+(MODL:)?(\S+)", line)
 
     if m !== nothing
