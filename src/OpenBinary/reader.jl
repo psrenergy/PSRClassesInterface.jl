@@ -1,9 +1,18 @@
 Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
     io::IOStream
 
+    # stages
     stage_total::Int
+    first_year::Int
+    first_stage::Int
+    first_relative_stage::Int
+    stage_type::PSRI.StageType
+
+    # scenarios
     scenario_total::Int
     scenario_exist::Bool
+
+    # blocks/hours
     block_total::Int # max in hours
     block_total_current::Int # for hourly cases
     block_exist::Bool
@@ -11,19 +20,17 @@ Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
     blocks_until_stage::Vector{Int}
     hours_exist::Bool
     hour_discretization::Int
-
     _block_type::Int
 
-    first_year::Int
-    first_stage::Int
-    first_relative_stage::Int
-    stage_type::PSRI.StageType
-
+    # agents
     name_length::Int
     agents_total::Int
     agent_names::Vector{String}
+
+    # unit
     unit::String
 
+    # others
     data_buffer::Vector{Float32}
 
     indices::Vector{Int} # header ordering
@@ -36,7 +43,7 @@ Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
     is_open::Bool = true
 
     relative_stage_skip::Int
-    offset::Int = 0 # Header size
+    offset::Int = 0 # header size
 
     single_binary::Bool = false
 
@@ -442,19 +449,23 @@ function PSRI.goto(graf::Reader, t::Integer, s::Integer = 1, b::Integer = 1)
        bb != graf.block_current
         @assert 1 <= tt <= graf.stage_total
         @assert 1 <= bb <= block_total_current
+
         # move to position
         current_pos = position(graf.io)
         next_pos = _get_position(graf, tt, ss, bb)
+
         if next_pos >= current_pos
             skip(graf.io, next_pos - current_pos)
         else
             seek(graf.io, next_pos)
         end
+
         graf.block_total_current = block_total_current
         graf.stage_current = t # this is different
         graf.scenario_current = ss
         graf.block_current = bb
         read!(graf.io, graf.data_buffer)
+
         for (index, value) in enumerate(graf.indices)
             @inbounds graf.data[index] = graf.data_buffer[value]
         end
@@ -585,16 +596,21 @@ function PSRI.next_registry(graf::Reader)
        graf.block_current == graf.block_total
         seek(graf.io, graf.offset)
     end
+
     read!(graf.io, graf.data_buffer)
+
     for (index, value) in enumerate(graf.indices)
         @inbounds graf.data[index] = graf.data_buffer[value]
     end
+
     @assert graf.block_current >= 1
+
     if graf.block_current < graf.block_total_current
         graf.block_current += 1
     else
         graf.block_current = 1
         @assert graf.scenario_current >= 1
+
         if graf.scenario_current < graf.scenario_total
             graf.scenario_current += 1
         else
