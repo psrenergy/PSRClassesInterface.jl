@@ -81,7 +81,7 @@ function _error(
     return error("Error in '$(parser.path):$(parser.lineno)': $msg")
 end
 
-function _syntax_warning(
+function _warning(
     parser::Parser,
     msg::AbstractString,
 )
@@ -91,15 +91,18 @@ function _syntax_warning(
 end
 
 function _cache_merge!(parser::Parser, collection::String, model_name::String)
-    if !haskey(parser.model_template.inv, model_name)
-        _error(parser, "'$model_name' not found in model template")
-    end
-
     if !haskey(parser.merge, collection)
         parser.merge[collection] = []
     end
 
-    push!(parser.merge[collection], parser.model_template.inv[model_name])
+    if !haskey(parser.model_template.inv, model_name)
+        _warning(parser, "'$model_name' not found in model template")
+    end
+
+    push!(
+        parser.merge[collection],
+        get(parser.model_template.inv, model_name, model_name),
+    )
 
     return nothing
 end
@@ -115,7 +118,13 @@ function _apply_merge!(parser::Parser, target::String, merge_path::Set{String})
 
     for source in parser.merge[target]
         if source in merge_path
-            error("Circular merge between '$target' and '$source'")
+            _error(parser, "Circular merge between '$target' and '$source'")
+        end
+
+        if !haskey(parser.data_struct, source)
+            _warning(parser, "Unknown collection '$source' for merging into '$target'")
+
+            continue
         end
 
         _merge_path = deepcopy(merge_path)
@@ -154,17 +163,17 @@ function _apply_tag!(
     tag::AbstractString,
 )
     if tag == "@id"
-        _syntax_warning(
+        _warning(
             parser,
             "Unhandled '$tag' tag for '$(attribute)' within '$(collection)' definition",
         )
     elseif tag == "@hourly_dense"
-        _syntax_warning(
+        _warning(
             parser,
             "Unhandled '$tag' tag for '$(attribute)' within '$(collection)' definition",
         )
     elseif tag == "@chronological"
-        _syntax_warning(
+        _warning(
             parser,
             "Unhandled '$tag' tag for '$(attribute)' within '$(collection)' definition",
         )
@@ -253,17 +262,7 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
     if m !== nothing
         model_name = String(m[2])
 
-        if _hasinv(parser.model_template, model_name)
-            collection = parser.model_template.inv[model_name]
-        else
-            _syntax_warning(parser, "Unknown model '$(model_name)'")
-
-            # By setting the collection to 'nothing', we are telling
-            # the parser to ignore the block and its contents
-            _push_state!(parser, PMD_DEF_MODEL(nothing))
-
-            return nothing
-        end
+        collection = get(parser.model_template.inv, model_name, model_name)
 
         parser.data_struct[collection] = Dict{String, Attribute}()
 
@@ -317,7 +316,7 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
 
             return nothing
         else
-            _syntax_warning(parser, "Unknown model '$(model_name)'")
+            _warning(parser, "Unknown model '$(model_name)'")
 
             # By setting the collection to 'nothing', we are telling
             # the parser to ignore the block and its contents
@@ -403,6 +402,10 @@ function _parse_line!(
         return nothing
     end
 
+    if _parse_merge!(parser, line, state)
+        return nothing
+    end
+
     if _parse_dimension!(parser, line, state)
         return nothing
     end
@@ -434,6 +437,10 @@ function _parse_line!(
     end
 
     if _parse_attribute!(parser, line, state)
+        return nothing
+    end
+
+    if _parse_merge!(parser, line, state)
         return nothing
     end
 
@@ -483,12 +490,12 @@ end
 function _parse_merge!(
     parser::Parser,
     line::AbstractString,
-    state::PMD_DEF_MODEL,
-)
-    m = match(r"MERGE_MODEL\s+MODL:(\S+)", line)
+    state::S,
+) where {S <: Union{PMD_DEF_MODEL, PMD_DEF_CLASS, PMD_MERGE_CLASS}}
+    m = match(r"MERGE_MODEL\s+(MODL:)?(\S+)", line)
 
     if m !== nothing
-        model_name = String(m[1])
+        model_name = String(m[2])
 
         _cache_merge!(parser, state.collection, model_name)
 
@@ -509,7 +516,7 @@ function _parse_submodel!(
         src_model = String(m[2])
         dst_model = String(m[4])
 
-        _syntax_warning(
+        _warning(
             parser,
             "Unhandled 'SUB_MODEL' statement from $(src_model) to $(dst_model) within $(state.collection)",
         )
@@ -528,7 +535,7 @@ function _parse_dimension!(
     m = match(r"DIMENSION\s+(\S+)", line)
 
     if m !== nothing
-        _syntax_warning(
+        _warning(
             parser,
             "Unhandled dimension '$(m[1])' within '$(state.collection)'",
         )
@@ -621,12 +628,12 @@ function _parse_inline_tag!(
 
     if m !== nothing
         if m[2] !== nothing
-            _syntax_warning(
+            _warning(
                 parser,
                 "Unhandled inline tag '$(m[1])' with args: '$(m[2])'",
             )
         else
-            _syntax_warning(
+            _warning(
                 parser,
                 "Unhandled inline tag '$(m[1])' with no args",
             )
