@@ -1,9 +1,18 @@
 Base.@kwdef mutable struct Writer <: PSRI.AbstractWriter
     io::IOStream
 
+    # stages
     stage_total::Int
+    # first_year::Int
+    initial_stage::Int
+    # first_relative_stage::Int
+    stage_type::PSRI.StageType
+
+    # scenarios
     scenario_total::Int
     # scenario_exist::Bool
+
+    # blocks/hours
     block_total::Int # max in hours
     # block_total_current::Int # for hourly cases
     # block_exist::Bool
@@ -11,19 +20,17 @@ Base.@kwdef mutable struct Writer <: PSRI.AbstractWriter
     blocks_until_stage::Vector{Int}
     is_hourly::Bool
     hour_discretization::Int
-
     # _block_type::Int
 
-    # first_year::Int
-    initial_stage::Int
-    # first_relative_stage::Int
-    stage_type::PSRI.StageType
-
+    # agents
     # name_length::Int
     agents_total::Int
     # agent_names::Vector{String}
+
+    # unit
     # unit::String
 
+    # others
     # data_buffer::Vector{Float32}
 
     # index::Vector{Int} # header ordering
@@ -47,9 +54,9 @@ function PSRI.open(
     ::Type{Writer},
     path::String;
     # mandatory
+    stages::Integer = 0,
     blocks::Integer = 0,
     scenarios::Integer = 0,
-    stages::Integer = 0,
     agents::Vector{String} = String[],
     unit::Union{Nothing, String} = nothing,
     # optional
@@ -59,7 +66,7 @@ function PSRI.open(
     block_type::Integer = 1,
     scenarios_type::Integer = 1,
     stage_type::PSRI.StageType = PSRI.STAGE_MONTH, # important for header
-    initial_stage::Integer = 1, #month or week
+    initial_stage::Integer = 1,
     initial_year::Integer = 1900,
     sequential_model::Bool = false,
     # addtional
@@ -78,36 +85,46 @@ function PSRI.open(
             )
         end
     end
+
     if !(0 <= block_type <= 3)
         error("block_type must be between 0 and 3, got $block_type")
     end
+
     if block_type == 0 && blocks != 1
         error("block_type = 0, requires blocks = 1, got blocks = $blocks")
     end
+
     if !(0 <= scenarios_type <= 1)
         error("scenarios_type must be between 0 and 1, got $scenarios_type")
     end
+
     if scenarios_type == 0 && scenarios != 1
         error("scenarios_type = 0, requires scenarios = 1, got scenarios = $scenarios")
     end
+
     if unit === nothing
         error("Please provide a unit string: unit = \"MW\"")
     end
+
     if !(0 < initial_stage <= PSRI.STAGES_IN_YEAR[stage_type])
         error(
             "initial_stage must be between 1 and $(PSRI.STAGES_IN_YEAR[stage_type]) for $stage_type files, got: $initial_stage",
         )
     end
+
     if !(0 < initial_year <= 1_000_000_000)
         error("initial_year must be a positive integer, got: $initial_year")
     end
+
     if is_hourly
         if block_type == 0
             error("hourly files cannot have block_type == 0")
         end
+
         if 0 < blocks && verbose_hour_block_check
             println("hourly files will ignore block dimension")
         end
+
         if !(hour_discretization in [1, 2, 3, 4, 6, 12])
             error(
                 "hour_discretization must belong to {1, 2, 3, 4, 6, 12}, got: $hour_discretization",
@@ -118,28 +135,32 @@ function PSRI.open(
             error("blocks must be a positive integer, got: $blocks")
         end
     end
+
     if !(0 < scenarios < 1_000_000_000)
         error("scenarios must be a positive integer, got: $scenarios")
     end
+
     if !(0 < stages < 1_000_000_000)
         error("stages must be a positive integer, got: $stages")
     end
+
     if isempty(agents)
         error("empty agents vector")
     else
-        for ag in agents
-            if length(ag) > name_length
-                error("Agent name $ag is larger than name_length = $name_length")
+        for agent in agents
+            if length(agent) > name_length
+                error("Agent name $agent is larger than name_length = $name_length")
             end
         end
     end
+
     if !allunique(agents)
         error("agents must be unique.")
     end
 
-    dir = dirname(path)
-    if !isdir(dir)
-        error("Directory $dir does not exist.")
+    directory = dirname(path)
+    if !isdir(directory)
+        error("Directory $directory does not exist.")
     end
 
     if !isempty(splitext(path)[2])
@@ -185,14 +206,14 @@ function PSRI.open(
             write(ioh, Char(0))
         end
     else
-        len = length(unit)
+        unit_length = length(unit)
 
-        if len > 7
+        if unit_length > 7
             error("unit")
         end
 
         for i in 1:7
-            if i <= len
+            if i <= unit_length
                 write(ioh, unit[i])
             else
                 write(ioh, ' ')
@@ -208,8 +229,8 @@ function PSRI.open(
     if !is_hourly
         write(ioh, Int32(0))
         write(ioh, Int32(0))
-        write(ioh, Int32(0)) #offset1
-        write(ioh, Int32(blocks)) #offset2 -> block_total = offset2 - offset1
+        write(ioh, Int32(0)) # offset1
+        write(ioh, Int32(blocks)) # offset2 -> block_total = offset2 - offset1
         for i in first_relative_stage:stages-1
             write(ioh, Int32(0))
         end
@@ -237,14 +258,14 @@ function PSRI.open(
         end
     end
 
-    for ag in agents
+    for agent in agents
         write(ioh, Int32(0))
         write(ioh, Int32(0))
 
-        len = length(ag)
+        len = length(agent)
         for i in 1:name_length
             if i <= len
-                write(ioh, ag[i])
+                write(ioh, agent[i])
             else
                 write(ioh, ' ')
             end

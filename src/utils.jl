@@ -117,7 +117,7 @@ function _year_week(date::Dates.Date, go_back_if_needed = false)
         end
     end
     # use a non-leap year as ref
-    w = div(Dates.dayofyear(Date.Date(2002, m, d)) - 1, 7) + 1
+    w = div(Dates.dayofyear(Dates.Date(2002, m, d)) - 1, 7) + 1
     @assert 1 <= w <= 52
     return y, w
 end
