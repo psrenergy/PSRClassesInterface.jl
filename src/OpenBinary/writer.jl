@@ -5,7 +5,7 @@ Base.@kwdef mutable struct Writer <: PSRI.AbstractWriter
     stage_total::Int
     # first_year::Int
     initial_stage::Int
-    # first_relative_stage::Int
+    first_relative_stage::Int
     stage_type::PSRI.StageType
 
     # scenarios
@@ -67,6 +67,7 @@ function PSRI.open(
     scenarios_type::Integer = 1,
     stage_type::PSRI.StageType = PSRI.STAGE_MONTH, # important for header
     initial_stage::Integer = 1,
+    first_relative_stage::Integer = 1,
     initial_year::Integer = 1900,
     sequential_model::Bool = false,
     # addtional
@@ -189,7 +190,6 @@ function PSRI.open(
     write(ioh, Int32(version))
     write(ioh, Int32(0))
     write(ioh, Int32(0))
-    first_relative_stage = 1 # TODO
     write(ioh, Int32(first_relative_stage)) # relative stage
     write(ioh, Int32(stages))
     write(ioh, Int32(scenarios))
@@ -300,6 +300,7 @@ function PSRI.open(
         is_hourly = is_hourly,
         hour_discretization = hour_discretization,
         initial_stage = initial_stage,
+        first_relative_stage = first_relative_stage,
         stage_type = stage_type,
         agents_total = length(agents),
         reopen_mode = reopen_mode,
@@ -328,8 +329,8 @@ function PSRI.write_registry(
         error("File is not in open state.")
     end
 
-    if !(1 <= stage <= io.stage_total)
-        error("stage should be between 1 and $(io.stage_total)")
+    if !(io.first_relative_stage <= stage <= io.stage_total)
+        error("stage should be between '$(io.first_relative_stage)' and '$(io.stage_total)', not '$stage'")
     end
 
     if !(1 <= scenario <= io.scenario_total)
@@ -346,9 +347,13 @@ function PSRI.write_registry(
     end
 
     current = position(io.io)
-    next = _get_position(io, stage, scenario, block)
+    next    = _get_position(io, stage, scenario, block)
 
     if current != next
+        if next < 0
+            error("next = '$next' ($stage, $scenario, $block; offset = $(_get_relative_offset(io)))")
+        end
+
         seek(io.io, next)
     end
 
@@ -403,4 +408,8 @@ end
 
 function PSRI.file_path(iow::Writer)
     return iow.file_path
+end
+
+function _get_relative_offset(iow::Writer)
+    return 4 * iow.agents_total * iow.scenario_total * (iow.first_relative_stage - 1)
 end
