@@ -119,17 +119,18 @@ function read_write_binary_block_single_binary()
             FILE_PATH;
             use_header = false,
             single_binary = true,
+            verbose_header = true,
         )
         @test first(splitext(PSRI.file_path(ior))) == FILE_PATH
 
-        @test PSRI.max_stages(ior) == STAGES
+        @test PSRI.max_stages(ior)    == STAGES
         @test PSRI.max_scenarios(ior) == SCENARIOS
-        @test PSRI.max_blocks(ior) == BLOCKS
-        @test PSRI.stage_type(ior) == stage_type
+        @test PSRI.max_blocks(ior)    == BLOCKS
+        @test PSRI.stage_type(ior)    == stage_type
         @test PSRI.initial_stage(ior) == INITIAL_STAGE
-        @test PSRI.initial_year(ior) == 2006
-        @test PSRI.data_unit(ior) == "MW"
-        @test PSRI.is_hourly(ior) == false
+        @test PSRI.initial_year(ior)  == 2006
+        @test PSRI.data_unit(ior)     == "MW"
+        @test PSRI.is_hourly(ior)     == false
 
         # obtem número de colunas
         @test PSRI.agent_names(ior) == ["X", "Y", "Z"]
@@ -144,6 +145,8 @@ function read_write_binary_block_single_binary()
             ref = [X, Y, Z]
             for agent in 1:3
                 @test ior[agent] == ref[agent]
+
+                ior[agent] != ref[agent] && error("($t, $s, $b)")
             end
             PSRI.next_registry(ior)
         end

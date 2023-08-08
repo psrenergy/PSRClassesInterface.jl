@@ -3,9 +3,10 @@ Base.@kwdef mutable struct Reader <: PSRI.AbstractReader
 
     # stages
     stage_total::Int
-    first_year::Int
     first_stage::Int
-    first_relative_stage::Int
+    last_stage::Int
+    initial_year::Int
+    initial_stage::Int
     stage_type::PSRI.StageType
 
     # scenarios
@@ -75,7 +76,7 @@ function PSRI.open(
     header::Vector{String} = String[],
     use_header::Bool = true,
     allow_empty::Bool = false,
-    first_stage::Dates.Date = Dates.Date(1900, 1, 1),
+    initial_stage::Dates.Date = Dates.Date(1900, 1, 1),
     verbose_header::Bool = false,
     single_binary::Bool = false,
 )
@@ -122,16 +123,22 @@ function PSRI.open(
     if version == 1
         skip(ioh, 4 * 2)
 
-        first_relative_stage = read(ioh, Int32)
-        stage_total = read(ioh, Int32)
+        first_stage = read(ioh, Int32)
+        last_stage  = read(ioh, Int32)
+        stage_total = last_stage - first_stage + 1
+
+        if !(stage_total > 0)
+            error("'stage_total' must be a positive integer, not '$(stage_total)'")
+        end
+
         scenario_total = read(ioh, Int32)
         block_total = read(ioh, Int32)
         total_agents = read(ioh, Int32)
         variable_by_series = read(ioh, Int32)
         variable_by_block = read(ioh, Int32)
         stage_type = PSRI.StageType(read(ioh, Int32))
-        _first_stage = read(ioh, Int32) # month or week
-        first_year = read(ioh, Int32)   # year
+        _initial_stage = read(ioh, Int32) # month or week
+        initial_year = read(ioh, Int32)   # year
         unit = _read_unit!(ioh)
         name_length = read(ioh, Int32)
 
@@ -140,16 +147,22 @@ function PSRI.open(
     else
         skip(ioh, 4 * 2)
 
-        first_relative_stage = read(ioh, Int32)
-        stage_total = read(ioh, Int32)
+        first_stage = read(ioh, Int32)
+        last_stage  = read(ioh, Int32)
+        stage_total = last_stage - first_stage + 1
+
+        if !(stage_total > 0)
+            error("'stage_total' must be a positive integer, not '$(stage_total)'")
+        end
+
         scenario_total = read(ioh, Int32)
         total_agents = read(ioh, Int32)
         variable_by_series = read(ioh, Int32)
         variable_by_block = read(ioh, Int32)
         variable_by_hour = read(ioh, Int32)
         stage_type = PSRI.StageType(read(ioh, Int32))
-        _first_stage = read(ioh, Int32) # month or week
-        first_year = read(ioh, Int32)   # year
+        _initial_stage = read(ioh, Int32) # month or week
+        initial_year = read(ioh, Int32)   # year
         unit = _read_unit!(ioh)
         name_length = read(ioh, Int32)
 
@@ -163,25 +176,24 @@ function PSRI.open(
 
             block_total = offset2 - offset1
 
-            skip(ioh, 4 * (stage_total - first_relative_stage))
+            skip(ioh, 4 * stage_total)
 
             number_blocks = Int32[]
         elseif variable_by_hour == 1
             skip(ioh, 4 * 2)
 
-            number_blocks = zeros(Int32, stage_total + 1 - first_relative_stage)
-            offsets = zeros(Int32, 1 + stage_total + 1 - first_relative_stage)
+            number_blocks = zeros(Int32, stage_total)
+            offsets       = zeros(Int32, stage_total + 1)
 
-            for i in first_relative_stage:(stage_total+1)
+            for i in first_stage:(last_stage+1)
                 # NOTE: This 'let' statement was introduced to dodge naming clashes.
                 # It is also a good practice for variables who live inside loops.
                 # TODO: Rename variables to better adhere to their meanings.
                 let offset = read(ioh, Int32)
-                    offsets[i-first_relative_stage+1] = offset
+                    offsets[i-first_stage+1] = offset
 
-                    if i > first_relative_stage
-                        number_blocks[i-first_relative_stage] =
-                            offset - offsets[i-first_relative_stage]
+                    if i > first_stage
+                        number_blocks[i-first_stage] = offset - offsets[i-first_stage]
                     end
                 end
             end
@@ -219,12 +231,8 @@ function PSRI.open(
         close(ioh)
     end
 
-    if !(stage_total > 0)
-        error("'stage_total' must be a positive integer, not '$(stage_total)'")
-    end
-
-    if !(first_relative_stage <= stage_total)
-        error("'first_relative_stage' must be less than or equal to 'stage_total'")
+    if !(first_stage <= last_stage)
+        error("'first_stage' ($first_stage) must be less than or equal to 'last_stage' ($last_stage)")
     end
 
     if variable_by_series == 0
@@ -315,19 +323,19 @@ function PSRI.open(
     end
 
     data_buffer = zeros(Float32, total_agents)
-    data = zeros(Float64, total_agents)
+    data        = zeros(Float64, total_agents)
 
-    if first_stage != Dates.Date(1900, 1, 1)
-        _year = first_year
-        _date = _get_first_stage_date(stage_type, _year, _first_stage)
+    if initial_stage != Dates.Date(1900, 1, 1)
+        _year = initial_year
+        _date = _get_initial_stage_date(stage_type, _year, _initial_stage)
 
-        relative_first_stage = PSRI._stage_from_date(first_stage, stage_type, _date)
+        relative_initial_stage = PSRI._stage_from_date(initial_stage, stage_type, _date)
 
-        if relative_first_stage < 1
-            error("first_stage = $first_stage is earlier than file initial stage = $_date")
+        if relative_initial_stage < 1
+            error("initial_stage = $initial_stage is earlier than file initial stage = $_date")
         end
 
-        relative_stage_skip = relative_first_stage - 1
+        relative_stage_skip = relative_initial_stage - 1
     else
         relative_stage_skip = 0
     end
@@ -341,33 +349,34 @@ function PSRI.open(
     end
 
     ior = Reader(;
-        stage_total = Int(stage_total),
-        scenario_total = Int(scenario_total),
-        scenario_exist = scenario_exist,
-        block_total = Int(block_total), # max in hours
+        io                  = io,
+        first_stage         = first_stage,
+        last_stage          = last_stage,
+        stage_total         = Int(stage_total),
+        scenario_total      = Int(scenario_total),
+        scenario_exist      = scenario_exist,
+        block_total         = Int(block_total), # max in hours
         block_total_current = Int(0), # for hourly cases
-        block_exist = block_exist,
-        blocks_per_stage = number_blocks,
-        blocks_until_stage = cumsum(vcat(Int[0], number_blocks)),
-        hours_exist = hours_exist,
+        block_exist         = block_exist,
+        blocks_per_stage    = number_blocks,
+        blocks_until_stage  = cumsum(vcat(Int[0], number_blocks)),
+        hours_exist         = hours_exist,
         hour_discretization = hour_discretization,
-        _block_type = Int(variable_by_block),
-        first_year = Int(first_year),
-        first_stage = Int(_first_stage),
-        first_relative_stage = Int(first_relative_stage),
-        stage_type = stage_type,
-        agents_total = total_agents,
-        name_length = Int(name_length),
-        agent_names = agent_names,
-        unit = unit,
-        data_buffer = data_buffer,
-        indices = indices, # header ordering
-        data = data, # float cache
+        _block_type         = Int(variable_by_block),
+        initial_year        = Int(initial_year),
+        initial_stage       = Int(_initial_stage),
+        stage_type          = stage_type,
+        agents_total        = total_agents,
+        name_length         = Int(name_length),
+        agent_names         = agent_names,
+        unit                = unit,
+        data_buffer         = data_buffer,
+        indices             = indices, # header ordering
+        data                = data, # float cache
         relative_stage_skip = relative_stage_skip,
-        io = io,
-        offset = header_size,
-        single_binary = single_binary,
-        file_path = bin_path,
+        offset              = header_size,
+        single_binary       = single_binary,
+        file_path           = bin_path,
     )
 
     finalizer(ior) do (ior_ptr::Reader)
@@ -391,7 +400,7 @@ end
 function _rewind!(ior::Reader)
     seek(ior.io, ior.offset)
 
-    PSRI.goto(ior, ior.first_relative_stage, 1, 1)
+    PSRI.goto(ior, ior.first_stage, 1, 1)
 
     return nothing
 end
@@ -406,25 +415,28 @@ function Base.getindex(graf::Reader, args...)
     return Base.getindex(graf.data, args...)
 end
 
-PSRI.is_hourly(graf::Reader) = graf.hours_exist
+PSRI.is_hourly(graf::Reader)           = graf.hours_exist
 PSRI.hour_discretization(graf::Reader) = graf.hour_discretization
 
-PSRI.max_stages(graf::Reader) = graf.stage_total - graf.relative_stage_skip
-PSRI.max_scenarios(graf::Reader) = graf.scenario_total
-PSRI.max_blocks(graf::Reader) = graf.block_total
-PSRI.max_blocks_current(graf::Reader) = graf.block_total_current
+PSRI.max_stages(graf::Reader)                   = graf.stage_total
+PSRI.max_scenarios(graf::Reader)                = graf.scenario_total
+PSRI.max_blocks(graf::Reader)                   = graf.block_total
+PSRI.max_blocks_current(graf::Reader)           = graf.block_total_current
 PSRI.max_blocks_stage(graf::Reader, t::Integer) = Int(graf.blocks_per_stage[t])
-PSRI.max_agents(graf::Reader) = length(graf.indices)
+PSRI.max_agents(graf::Reader)                   = length(graf.indices)
 
-PSRI.stage_type(graf::Reader) = graf.stage_type
-PSRI.initial_stage(graf::Reader) = graf.first_stage
-PSRI.initial_year(graf::Reader) = graf.first_year
+PSRI.stage_type(graf::Reader)    = graf.stage_type
+PSRI.initial_stage(graf::Reader) = graf.initial_stage
+PSRI.initial_year(graf::Reader)  = graf.initial_year
 
 PSRI.data_unit(graf::Reader) = graf.unit
 
-PSRI.current_stage(graf::Reader) = graf.stage_current
+PSRI.current_stage(graf::Reader)    = graf.stage_current
 PSRI.current_scenario(graf::Reader) = graf.scenario_current
-PSRI.current_block(graf::Reader) = graf.block_current
+PSRI.current_block(graf::Reader)    = graf.block_current
+
+PSRI.first_stage(graf::Reader) = graf.first_stage
+PSRI.last_stage(graf::Reader)  = graf.last_stage
 
 function unsafe_agent_names(graf::Reader)
     return graf.agent_names
@@ -435,7 +447,7 @@ function PSRI.agent_names(graf::Reader)
 end
 
 function _check_position_bounds(graf::Reader, t::Integer, b::Integer, b_total::Integer)
-    @assert 0 <= t - graf.first_relative_stage < graf.stage_total
+    @assert graf.first_stage <= t <= graf.last_stage
     @assert 1 <= b <= b_total
 
     return nothing
@@ -490,7 +502,7 @@ function PSRI.goto(graf::Reader, t::Integer, s::Integer = 1, b::Integer = 1)
 end
 
 function _get_relative_offset(ior::Reader)
-    return 4 * ior.agents_total * ior.scenario_total * (ior.first_relative_stage - 1)
+    return 4 * ior.agents_total * ior.scenario_total * (ior.first_stage - 1)
 end
 
 function _get_relative_offset(::Any)
@@ -519,24 +531,24 @@ function _get_position(io, t::Integer, s::Integer, b::Integer)
     end
 end
 
-function _get_first_stage_date(
+function _get_initial_stage_date(
     stage_type::PSRI.StageType,
     _year::Integer,
-    _first_stage::Integer,
+    _initial_stage::Integer,
 )
     if stage_type == PSRI.STAGE_MONTH
-        @assert 1 <= _first_stage <= 12
+        @assert 1 <= _initial_stage <= 12
 
-        return Dates.Date(_year, 1, 1) + Dates.Month(_first_stage - 1)
+        return Dates.Date(_year, 1, 1) + Dates.Month(_initial_stage - 1)
     elseif stage_type == PSRI.STAGE_WEEK
-        @assert 1 <= _first_stage <= 52
+        @assert 1 <= _initial_stage <= 52
 
-        return Dates.Date(_year, 1, 1) + Dates.Week(_first_stage - 1)
+        return Dates.Date(_year, 1, 1) + Dates.Week(_initial_stage - 1)
     elseif stage_type == PSRI.STAGE_DAY
-        @assert 1 <= _first_stage <= 365
-        ret = Dates.Date(_year, 1, 1) + Dates.Day(_first_stage - 1)
+        @assert 1 <= _initial_stage <= 365
+        ret = Dates.Date(_year, 1, 1) + Dates.Day(_initial_stage - 1)
 
-        if Dates.isleapyear(_year) && _first_stage > 24 * (31 + 28)
+        if Dates.isleapyear(_year) && _initial_stage > 24 * (31 + 28)
             ret += Dates.Day(1)
         end
 
@@ -569,7 +581,7 @@ function _get_hour_discretization(stage_type::PSRI.StageType, block_total::Integ
 end
 
 function _get_expected_bin_size(ior::Reader)
-    t = ior.stage_total
+    t = ior.last_stage
     s = ior.scenario_total
     b = ior.hours_exist ? ior.blocks_per_stage[end] : ior.block_total
     a = ior.agents_total
@@ -595,10 +607,13 @@ function _get_bin_size(ior::Reader)
 end
 
 function _check_bin_size(ior::Reader)
-    size_delta = _get_expected_bin_size(ior) - _get_bin_size(ior)
+    expected_size = _get_expected_bin_size(ior)
+    actual_size   = _get_bin_size(ior)
+
+    size_delta = expected_size - actual_size
 
     if size_delta > 0
-        error("File is truncated by $(size_delta) bytes")
+        error("File is truncated by $(size_delta) bytes (expected $expected_size, got $actual_size)")
     elseif size_delta < 0
         @info("File has $(abs(size_delta)) extra bytes")
     end
@@ -607,9 +622,7 @@ function _check_bin_size(ior::Reader)
 end
 
 function PSRI.next_registry(graf::Reader)
-    if graf.stage_current == graf.stage_total &&
-       graf.scenario_current == graf.scenario_total &&
-       graf.block_current == graf.block_total
+    if graf.stage_current == graf.last_stage && graf.scenario_current == graf.scenario_total && graf.block_current == graf.block_total
         seek(graf.io, graf.offset)
     end
 
@@ -633,17 +646,16 @@ function PSRI.next_registry(graf::Reader)
         else
             graf.scenario_current = 1
 
-            @assert graf.stage_current >= graf.first_relative_stage
+            @assert graf.stage_current >= graf.first_stage
 
-            if graf.stage_current < graf.stage_total
+            if graf.stage_current < graf.last_stage
                 graf.stage_current += 1
 
                 if graf.hours_exist
-                    graf.block_total_current =
-                        PSRI.blocks_in_stage(graf, graf.stage_current)
+                    graf.block_total_current = PSRI.blocks_in_stage(graf, graf.stage_current)
                 end
             else
-                graf.stage_current = graf.first_relative_stage
+                graf.stage_current = graf.first_stage
                 #cycle back
             end
         end

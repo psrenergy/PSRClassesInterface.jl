@@ -160,6 +160,20 @@ Returns an `Int` indicating maximum number of stages in the file read by [`PSRI.
 function max_stages end
 
 """
+    PSRI.first_stage(ior::AbstractReader)
+
+Returns an `Int` indicating the first stage in the file read by [`PSRI.AbstractReader`](@ref).
+"""
+function first_stage end
+
+"""
+    PSRI.last_stage(ior::AbstractReader)
+
+Returns an `Int` indicating the last stage in the file read by [`PSRI.AbstractReader`](@ref).
+"""
+function last_stage end
+
+"""
     PSRI.max_scenarios(ior::AbstractReader)
 
 Returns an `Int` indicating maximum number of scenarios in the file read by [`PSRI.AbstractReader`](@ref).

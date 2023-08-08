@@ -8,12 +8,11 @@ function test_nonpositive_indices()
     )
 
     @test ior isa PSRI.OpenBinary.Reader
-    @test ior.first_stage == 1
-    @test ior.first_relative_stage == -5
+    @test ior.first_stage == -5
     @test ior.relative_stage_skip == 0
     @test PSRI.OpenBinary._get_position(
         ior,
-        ior.first_relative_stage,
+        ior.first_stage,
         1,
         1,
     ) == 0

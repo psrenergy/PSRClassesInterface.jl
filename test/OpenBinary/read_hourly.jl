@@ -15,7 +15,7 @@ function read_binary_subhourly()
 
             io = PSRI.open(PSRI.OpenBinary.Reader, path; use_header = false)
 
-            @test PSRI.max_stages(io) == STAGES
+            @test PSRI.max_stages(io)    == STAGES
             @test PSRI.max_scenarios(io) == SCENARIOS
             @test PSRI.max_blocks(io) ==
                   hour_discretization *
@@ -23,9 +23,9 @@ function read_binary_subhourly()
             @test PSRI.stage_type(io) == stage_type
             @test PSRI.initial_stage(io) == 2
             @test PSRI.initial_year(io) == 2006
-            @test PSRI.data_unit(io) == UNIT
+            @test PSRI.data_unit(io)   == UNIT
             @test PSRI.agent_names(io) == AGENTS
-            @test PSRI.is_hourly(io) == true
+            @test PSRI.is_hourly(io)   == true
             @test PSRI.hour_discretization(io) == hour_discretization
 
             for t in 1:STAGES
@@ -41,6 +41,8 @@ function read_binary_subhourly()
                         ref = [X, Y, Z]
                         for agent in 1:3
                             @test io[agent] == ref[agent]
+
+                            io[agent] != ref[agent] && error("($t, $s, $b)")
                         end
                         PSRI.next_registry(io)
                     end

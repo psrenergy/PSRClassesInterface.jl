@@ -41,7 +41,7 @@ function add_reader!(
         T,
         path;
         header = header,
-        first_stage = mapper.first_date,
+        initial_stage = mapper.first_date,
     )
 
     push!(mapper.list, graf)

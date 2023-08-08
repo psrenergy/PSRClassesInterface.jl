@@ -44,16 +44,16 @@ function read_write_binary_hourly()
             use_header = false,
         )
 
-        @test PSRI.max_stages(ior) == STAGES
+        @test PSRI.max_stages(ior)    == STAGES
         @test PSRI.max_scenarios(ior) == SCENARIOS
         @test PSRI.max_blocks(ior) ==
               (stage_type == PSRI.STAGE_MONTH ? 744 : PSRI.HOURS_IN_STAGE[stage_type])
         @test PSRI.stage_type(ior) == stage_type
         @test PSRI.initial_stage(ior) == 2
-        @test PSRI.initial_year(ior) == 2006
-        @test PSRI.data_unit(ior) == "MW"
+        @test PSRI.initial_year(ior)  == 2006
+        @test PSRI.data_unit(ior)   == "MW"
         @test PSRI.agent_names(ior) == ["X", "Y", "Z"]
-        @test PSRI.is_hourly(ior) == true
+        @test PSRI.is_hourly(ior)   == true
         @test PSRI.hour_discretization(ior) == 1
 
         for t in 1:1, s in 1:1
@@ -68,6 +68,8 @@ function read_write_binary_hourly()
                 ref = [X, Y, Z]
                 for agent in 1:3
                     @test ior[agent] == ref[agent]
+
+                    ior[agent] != ref[agent] && error("($t, $s, $b)")
                 end
                 PSRI.next_registry(ior)
             end

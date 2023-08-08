@@ -104,7 +104,7 @@ struct GrafTable{T} <: Tables.AbstractColumns
             relative_stages =
                 reader.first_relative_stage:(reader.stage_total+reader.first_relative_stage-1)
 
-            for t in relative_stages, s in 1:reader.scenario_total
+            for t in reader.first_stage:reader.last_stage, s in 1:reader.scenario_total
                 for b in 1:reader.blocks_per_stage[t]
                     i += 1
 
@@ -124,10 +124,7 @@ struct GrafTable{T} <: Tables.AbstractColumns
 
             i = 0
 
-            relative_stages =
-                reader.first_relative_stage:(reader.stage_total+reader.first_relative_stage-1)
-
-            for t in relative_stages, s in 1:reader.scenario_total,
+            for t in reader.first_stage:reader.last_stage, s in 1:reader.scenario_total,
                 b in 1:reader.block_total
 
                 i += 1

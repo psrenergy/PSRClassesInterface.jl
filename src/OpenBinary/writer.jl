@@ -5,8 +5,11 @@ Base.@kwdef mutable struct Writer <: PSRI.AbstractWriter
     stage_total::Int
     # first_year::Int
     initial_stage::Int
-    first_relative_stage::Int
+    # first_relative_stage::Int
     stage_type::PSRI.StageType
+
+    first_stage::Int
+    last_stage::Int
 
     # scenarios
     scenario_total::Int
@@ -67,7 +70,8 @@ function PSRI.open(
     scenarios_type::Integer = 1,
     stage_type::PSRI.StageType = PSRI.STAGE_MONTH, # important for header
     initial_stage::Integer = 1,
-    first_relative_stage::Integer = 1,
+    first_stage::Integer = 1,
+    last_stage::Integer = first_stage + stages - 1,
     initial_year::Integer = 1900,
     sequential_model::Bool = false,
     # addtional
@@ -190,7 +194,7 @@ function PSRI.open(
     write(ioh, Int32(version))
     write(ioh, Int32(0))
     write(ioh, Int32(0))
-    write(ioh, Int32(first_relative_stage)) # relative stage
+    write(ioh, Int32(first_stage)) # first_relative_stage
     write(ioh, Int32(stages))
     write(ioh, Int32(scenarios))
     write(ioh, Int32(length(agents)))
@@ -231,17 +235,20 @@ function PSRI.open(
         write(ioh, Int32(0))
         write(ioh, Int32(0)) # offset1
         write(ioh, Int32(blocks)) # offset2 -> block_total = offset2 - offset1
-        for i in first_relative_stage:stages-1
+
+        for _ in first_stage:last_stage
             write(ioh, Int32(0))
         end
     else
         write(ioh, Int32(0))
         write(ioh, Int32(0))
+        
         # try start with 0 the other option sis star with current duration
         write(ioh, Int32(0))
         acc = Int32(0)
         blocks = 0
-        for t in first_relative_stage:stages
+
+        for t in first_stage:last_stage
             # TODO write hourly files
             b = PSRI.blocks_in_stage(
                 is_hourly,
@@ -250,10 +257,15 @@ function PSRI.open(
                 initial_stage,
                 t,
             )
+
             blocks = max(blocks, b)
+
             push!(blocks_until_stage, acc) # TODO check
+
             acc += Int32(b)
+
             write(ioh, Int32(acc))
+
             push!(blocks_per_stage, b)
         end
     end
@@ -263,6 +275,7 @@ function PSRI.open(
         write(ioh, Int32(0))
 
         len = length(agent)
+
         for i in 1:name_length
             if i <= len
                 write(ioh, agent[i])
@@ -290,23 +303,24 @@ function PSRI.open(
     end
 
     return Writer(;
-        io = io,
-        offset = header_size,
-        stage_total = stages,
-        scenario_total = scenarios,
-        block_total = blocks,
-        blocks_per_stage = blocks_per_stage,
-        blocks_until_stage = blocks_until_stage,
-        is_hourly = is_hourly,
+        io                  = io,
+        offset              = header_size,
+        first_stage         = first_stage,
+        last_stage          = last_stage,
+        stage_total         = stages,
+        scenario_total      = scenarios,
+        block_total         = blocks,
+        blocks_per_stage    = blocks_per_stage,
+        blocks_until_stage  = blocks_until_stage,
+        is_hourly           = is_hourly,
         hour_discretization = hour_discretization,
-        initial_stage = initial_stage,
-        first_relative_stage = first_relative_stage,
-        stage_type = stage_type,
-        agents_total = length(agents),
-        reopen_mode = reopen_mode,
-        FILE_PATH = PATH_BIN,
-        is_open = !reopen_mode,
-        file_path = PATH_BIN,
+        initial_stage       = initial_stage,
+        stage_type          = stage_type,
+        agents_total        = length(agents),
+        reopen_mode         = reopen_mode,
+        FILE_PATH           = PATH_BIN,
+        file_path           = PATH_BIN,
+        is_open             = !reopen_mode,
     )
 end
 
@@ -315,6 +329,9 @@ PSRI.hour_discretization(graf::Writer) = graf.hour_discretization
 PSRI.stage_type(graf::Writer) = graf.stage_type
 PSRI.max_blocks(graf::Writer) = graf.block_total
 PSRI.initial_stage(graf::Writer) = graf.initial_stage
+
+PSRI.first_stage(graf::Writer) = graf.first_stage
+PSRI.last_stage(graf::Writer)  = graf.last_stage
 
 function PSRI.write_registry(
     io::Writer,
@@ -329,8 +346,8 @@ function PSRI.write_registry(
         error("File is not in open state.")
     end
 
-    if !(io.first_relative_stage <= stage <= io.stage_total)
-        error("stage should be between '$(io.first_relative_stage)' and '$(io.stage_total)', not '$stage'")
+    if !(io.first_stage <= stage <= io.last_stage)
+        error("stage should be between '$(io.first_stage)' and '$(io.last_stage)', not '$stage'")
     end
 
     if !(1 <= scenario <= io.scenario_total)
@@ -338,6 +355,7 @@ function PSRI.write_registry(
     end
 
     blocks_in_stage = PSRI.blocks_in_stage(io, stage)
+
     if !(1 <= block <= blocks_in_stage) # io.blocks
         error("block should be between 1 and $blocks_in_stage")
     end
@@ -358,7 +376,7 @@ function PSRI.write_registry(
     end
 
     for i in eachindex(data)
-        @inbounds write(io.io, Float32(data[i]))
+        write(io.io, Float32(data[i]))
     end
 
     _reopen_pos_write(io)
@@ -411,5 +429,5 @@ function PSRI.file_path(iow::Writer)
 end
 
 function _get_relative_offset(iow::Writer)
-    return 4 * iow.agents_total * iow.scenario_total * (iow.first_relative_stage - 1)
+    return 4 * iow.agents_total * iow.scenario_total * (iow.first_stage - 1)
 end

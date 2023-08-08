@@ -18,12 +18,9 @@ function test_negative_stages(; depth = 100)
 
             @test_throws AssertionError PSRI.goto(io_r, -6, 1, 1)
 
-            # Check size first
-            @test size(src_table) == size(dst_table)
+            @test size(src_table) == size(dst_table) # Check size first
 
-            # Compare both ends
-            @test Matrix(src_table[begin:depth, :]) ≈ Matrix(dst_table[begin:depth, :])
-            @test Matrix(src_table[depth:end, :]) ≈ Matrix(dst_table[depth:end, :])
+            @test Matrix(src_table) ≈ Matrix(dst_table)
         end
 
         temp_path = tempname()
@@ -31,7 +28,7 @@ function test_negative_stages(; depth = 100)
         io_w = PSRI.open(
             PSRI.OpenBinary.Writer,
             temp_path;
-            first_relative_stage = -5,
+            first_stage = -5,
             unit      = io_r.unit,
             stages    = io_r.stage_total,
             blocks    = io_r.block_total,
@@ -40,7 +37,7 @@ function test_negative_stages(; depth = 100)
         )
         
         @testset "Write" begin
-            @test io_w.first_relative_stage == -5
+            @test io_w.first_stage == -5
 
             for row in eachrow(src_table)
                 t, s, b, data... = row
