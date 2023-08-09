@@ -124,7 +124,7 @@ struct GrafTable{T} <: Tables.AbstractColumns
                 b in 1:reader.block_total
 
                 i += 1
-                
+
                 goto(reader, t, s, b)
 
                 domain[i, :] .= [t, s, b]

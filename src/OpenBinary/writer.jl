@@ -299,8 +299,8 @@ function PSRI.open(
 
     return Writer(;
         first_stage = first_stage,
-        last_stage  = last_stage,
-        num_stages  = num_stages,
+        last_stage = last_stage,
+        num_stages = num_stages,
         io = io,
         offset = header_size,
         stage_total = stages,
@@ -358,11 +358,13 @@ function PSRI.write_registry(
     end
 
     if length(data) != io.agents_total
-        error("data vector has length '$(length(data))' and expected was '$(io.agents_total)'")
+        error(
+            "data vector has length '$(length(data))' and expected was '$(io.agents_total)'",
+        )
     end
 
     current = position(io.io)
-    next    = _get_position(io, stage, scenario, block)
+    next = _get_position(io, stage, scenario, block)
 
     if current != next
         seek(io.io, next)
@@ -409,11 +411,11 @@ function _get_last_position(io)
 end
 
 function PSRI.close(io::Writer)
-    io.is_open     = false
+    io.is_open = false
     io.reopen_mode = false # so that it wont try to reopen
 
     seekend(io.io)
-     
+
     curr_pos = position(io.io)
     last_pos = _get_last_position(io)
 
@@ -421,8 +423,10 @@ function PSRI.close(io::Writer)
         seek(io.io, last_pos - _get_registry_size(io))
 
         write(io.io, Float32(0))
-        
-        @warn("File not writen completely. Expected $(div(last, 4)) registries, got $(div(current, 4))")
+
+        @warn(
+            "File not writen completely. Expected $(div(last, 4)) registries, got $(div(current, 4))"
+        )
     end
 
     Base.close(io.io)

@@ -126,8 +126,8 @@ function PSRI.open(
         skip(ioh, 4 * 2)
 
         first_stage = read(ioh, Int32)
-        last_stage  = stage_total = read(ioh, Int32)
-        num_stages  = last_stage - first_stage + 1
+        last_stage = stage_total = read(ioh, Int32)
+        num_stages = last_stage - first_stage + 1
 
         scenario_total = read(ioh, Int32)
         block_total = read(ioh, Int32)
@@ -146,21 +146,21 @@ function PSRI.open(
         skip(ioh, 4 * 2)
 
         first_stage = read(ioh, Int32)
-        last_stage  = stage_total = read(ioh, Int32)
-        num_stages  = last_stage - first_stage + 1
+        last_stage = stage_total = read(ioh, Int32)
+        num_stages = last_stage - first_stage + 1
 
         scenario_total = read(ioh, Int32)
-        total_agents   = read(ioh, Int32)
-        
+        total_agents = read(ioh, Int32)
+
         variable_by_series = read(ioh, Int32)
-        variable_by_block  = read(ioh, Int32)
-        variable_by_hour   = read(ioh, Int32)
+        variable_by_block = read(ioh, Int32)
+        variable_by_hour = read(ioh, Int32)
 
-        stage_type     = PSRI.StageType(read(ioh, Int32))
+        stage_type = PSRI.StageType(read(ioh, Int32))
         _initial_stage = read(ioh, Int32) # month or week
-        initial_year   = read(ioh, Int32) # year
+        initial_year = read(ioh, Int32) # year
 
-        unit        = _read_unit!(ioh)
+        unit = _read_unit!(ioh)
         name_length = read(ioh, Int32)
 
         hour_discretization = 1
@@ -169,7 +169,7 @@ function PSRI.open(
             skip(ioh, 4 * 2)
 
             number_blocks = Int32[]
-            offsets       = zeros(Int32, 2)
+            offsets = zeros(Int32, 2)
 
             offsets[1] = read(ioh, Int32)
             offsets[2] = read(ioh, Int32)
@@ -181,14 +181,14 @@ function PSRI.open(
             skip(ioh, 4 * 2)
 
             number_blocks = zeros(Int32, num_stages)
-            offsets       = zeros(Int32, num_stages + 1)
+            offsets = zeros(Int32, num_stages + 1)
 
             for i in 1:(num_stages+1)
                 offsets[i] = read(ioh, Int32)
             end
 
             number_blocks .= diff(offsets)
-            
+
             block_total = maximum(number_blocks)
 
             hour_discretization = _get_hour_discretization(stage_type, block_total)
@@ -228,7 +228,7 @@ function PSRI.open(
 
     if !single_binary
         close(ioh)
-    end    
+    end
 
     if variable_by_series == 0
         # previous versions of the file simply leave the number of scenarios
@@ -328,7 +328,9 @@ function PSRI.open(
         relative_first_stage = PSRI._stage_from_date(initial_stage, stage_type, _date)
 
         if relative_first_stage < 1
-            error("initial_stage = $initial_stage is earlier than file initial stage = $_date")
+            error(
+                "initial_stage = $initial_stage is earlier than file initial stage = $_date",
+            )
         end
 
         relative_stage_skip = relative_first_stage - 1
@@ -346,8 +348,8 @@ function PSRI.open(
 
     ior = Reader(;
         first_stage = first_stage,
-        last_stage  = last_stage,
-        num_stages  = num_stages,
+        last_stage = last_stage,
+        num_stages = num_stages,
         stage_total = num_stages,
         scenario_total = Int(scenario_total),
         scenario_exist = scenario_exist,
@@ -446,7 +448,7 @@ function PSRI.goto(graf::Reader, t::Integer, s::Integer = 1, b::Integer = 1)
     tt = t + graf.relative_stage_skip
 
     block_total_current = graf.block_total_current
-    
+
     if t != graf.stage_current
         block_total_current = if graf.stage_type == PSRI.STAGE_MONTH
             PSRI.blocks_in_stage(graf, t)
@@ -465,7 +467,7 @@ function PSRI.goto(graf::Reader, t::Integer, s::Integer = 1, b::Integer = 1)
 
         # move to position
         current_pos = position(graf.io)
-        next_pos    = _get_position(graf, tt, ss, bb)
+        next_pos = _get_position(graf, tt, ss, bb)
 
         if next_pos >= current_pos
             skip(graf.io, next_pos - current_pos)
@@ -510,7 +512,8 @@ function _get_position(io, t::Integer, s::Integer, b::Integer)
 
     abs_pos = bin_pos + io.offset
 
-    if abs_pos < io.offset || ((t == io.first_stage && s == 1 && b == 1) && abs_pos != io.offset)
+    if abs_pos < io.offset ||
+       ((t == io.first_stage && s == 1 && b == 1) && abs_pos != io.offset)
         error(
             """
             is hourly? $(PSRI.is_hourly(io) ? "Yes" : "No")
@@ -524,7 +527,7 @@ function _get_position(io, t::Integer, s::Integer, b::Integer)
             abs_pos         = $abs_pos
             offset          = $(io.offset)
             relative_offset = $relative_offset
-            """
+            """,
         )
     end
 
@@ -620,7 +623,9 @@ function _check_bin_size(ior::Reader)
 end
 
 function PSRI.next_registry(graf::Reader)
-    if graf.stage_current == graf.last_stage && graf.scenario_current == graf.scenario_total && graf.block_current == graf.block_total
+    if graf.stage_current == graf.last_stage &&
+       graf.scenario_current == graf.scenario_total &&
+       graf.block_current == graf.block_total
         seek(graf.io, graf.offset)
     end
 
@@ -650,7 +655,8 @@ function PSRI.next_registry(graf::Reader)
                 graf.stage_current += 1
 
                 if graf.hours_exist
-                    graf.block_total_current = PSRI.blocks_in_stage(graf, graf.stage_current)
+                    graf.block_total_current =
+                        PSRI.blocks_in_stage(graf, graf.stage_current)
                 end
             else
                 graf.stage_current = graf.first_stage #cycle back
