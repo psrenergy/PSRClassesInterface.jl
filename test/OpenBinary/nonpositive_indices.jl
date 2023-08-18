@@ -5,7 +5,7 @@ function test_nonpositive_indices()
 
     @test io_r isa PSRI.OpenBinary.Reader
     @test io_r.initial_stage == 5
-    @test io_r.first_stage == -5
+    @test io_r.first_stage == -2
     @test io_r.relative_stage_skip == 0
     @test PSRI.OpenBinary._get_position(
         io_r,
@@ -25,9 +25,9 @@ function test_nonpositive_indices()
     )
 
     @testset "Read" begin
-        @test PSRI.goto(io_r, -5, 1, 1) === nothing
+        @test PSRI.goto(io_r, -2, 1, 1) === nothing
 
-        @test_throws AssertionError PSRI.goto(io_r, -6, 1, 1)
+        @test_throws AssertionError PSRI.goto(io_r, -3, 1, 1)
 
         @test size(src_table) == size(dst_table) # Check size first
 
@@ -39,7 +39,7 @@ function test_nonpositive_indices()
     io_w = PSRI.open(
         PSRI.OpenBinary.Writer,
         temp_path;
-        first_stage = -5,
+        first_stage = -2,
         unit = io_r.unit,
         stages = io_r.stage_total,
         blocks = io_r.block_total,
@@ -48,7 +48,7 @@ function test_nonpositive_indices()
     )
 
     @testset "Write" begin
-        @test io_w.first_stage == -5
+        @test io_w.first_stage == -2
 
         for row in eachrow(src_table)
             t, s, b, data... = row
