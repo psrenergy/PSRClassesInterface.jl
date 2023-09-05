@@ -482,7 +482,7 @@ function create_study(
         if haskey(study_defaults[study_collection], "Ano_inicial")
             study_defaults[study_collection]["Ano_inicial"]
         else
-            if verbose 
+            if verbose
                 @warn "Study collection does not have an inital year ('Ano_inicial'). Using default value '2023'"
             end
             2023
@@ -491,7 +491,7 @@ function create_study(
     first_stage = if haskey(study_defaults[study_collection], "Etapa_inicial")
         study_defaults[study_collection]["Etapa_inicial"]
     else
-        if verbose 
+        if verbose
             @warn "Study collection does not have a first stage ('Etapa_inicial'). Using default value '1'"
         end
         1
