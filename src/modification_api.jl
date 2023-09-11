@@ -425,6 +425,7 @@ function create_study(
     model_template_path::Union{String, Nothing} = nothing,
     relations_defaults_path = PMD._DEFAULT_RELATIONS_PATH,
     study_collection::String = "PSRStudy",
+    verbose::Bool = true,
 )
     if !isdir(data_path)
         error("data_path = '$data_path' must be a directory")
@@ -471,7 +472,9 @@ function create_study(
         if haskey(study_defaults[study_collection], "Tipo_Etapa")
             StageType(study_defaults[study_collection]["Tipo_Etapa"])
         else
-            @warn "Study collection does not have a stage type ('Tipo_Etapa'). Using default value 'STAGE_WEEK'"
+            if verbose
+                @warn "Study collection does not have a stage type ('Tipo_Etapa'). Using default value 'STAGE_WEEK'"
+            end
             STAGE_WEEK
         end
 
@@ -479,14 +482,18 @@ function create_study(
         if haskey(study_defaults[study_collection], "Ano_inicial")
             study_defaults[study_collection]["Ano_inicial"]
         else
-            @warn "Study collection does not have an inital year ('Ano_inicial'). Using default value '2023'"
+            if verbose
+                @warn "Study collection does not have an inital year ('Ano_inicial'). Using default value '2023'"
+            end
             2023
         end
 
     first_stage = if haskey(study_defaults[study_collection], "Etapa_inicial")
         study_defaults[study_collection]["Etapa_inicial"]
     else
-        @warn "Study collection does not have a first stage ('Etapa_inicial'). Using default value '1'"
+        if verbose
+            @warn "Study collection does not have a first stage ('Etapa_inicial'). Using default value '1'"
+        end
         1
     end
 
