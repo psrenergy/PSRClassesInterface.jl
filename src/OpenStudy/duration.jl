@@ -145,7 +145,7 @@ function _variable_duration_to_file!(data::Data)
         OpenBinary.Reader,
         FILE_NAME;
         use_header = false,
-        first_stage = data.first_date,
+        initial_stage = data.first_date,
     )
 
     data.variable_duration = ior
@@ -242,13 +242,13 @@ function _hour_block_map_to_file!(data::Data)
         OpenBinary.Reader,
         FILE_NAME_DUR;
         use_header = false,
-        first_stage = data.first_date,
+        initial_stage = data.first_date,
     )
     ior_hbm = open(
         OpenBinary.Reader,
         FILE_NAME_HBM;
         use_header = false,
-        first_stage = data.first_date,
+        initial_stage = data.first_date,
     )
 
     data.variable_duration = ior_dur

@@ -99,17 +99,17 @@ struct GrafTable{T} <: Tables.AbstractColumns
 
             i = 0
 
-            for t in 1:reader.stage_total, s in 1:reader.scenario_total
+            for t in reader.first_stage:reader.last_stage, s in 1:reader.scenario_total
                 for b in 1:reader.blocks_per_stage[t]
                     i += 1
+
+                    goto(reader, t, s, b)
 
                     domain[i, :] .= [t, s, b]
 
                     for a in 1:reader.agents_total
                         matrix[i, a] = reader[a]
                     end
-
-                    next_registry(reader)
                 end
             end
         else
@@ -119,19 +119,19 @@ struct GrafTable{T} <: Tables.AbstractColumns
 
             i = 0
 
-            for t in 1:reader.stage_total,
+            for t in reader.first_stage:reader.last_stage,
                 s in 1:reader.scenario_total,
                 b in 1:reader.block_total
 
                 i += 1
+
+                goto(reader, t, s, b)
 
                 domain[i, :] .= [t, s, b]
 
                 for a in 1:reader.agents_total
                     matrix[i, a] = reader[a]
                 end
-
-                next_registry(reader)
             end
         end
 

@@ -3,6 +3,9 @@ Base.@kwdef mutable struct Writer <: PSRI.AbstractWriter
 
     # stages
     stage_total::Int
+    first_stage::Int
+    last_stage::Int
+    num_stages::Int
     # first_year::Int
     initial_stage::Int
     # first_relative_stage::Int
@@ -57,6 +60,8 @@ function PSRI.open(
     stages::Integer = 0,
     blocks::Integer = 0,
     scenarios::Integer = 0,
+    first_stage::Integer = 1,
+    last_stage::Integer = first_stage + stages - 1,
     agents::Vector{String} = String[],
     unit::Union{Nothing, String} = nothing,
     # optional
@@ -159,6 +164,7 @@ function PSRI.open(
     end
 
     directory = dirname(path)
+
     if !isdir(directory)
         error("Directory $directory does not exist.")
     end
@@ -185,13 +191,14 @@ function PSRI.open(
         version = 4
     end
 
+    num_stages = last_stage - first_stage + 1
+
     write(ioh, Int32(0))
     write(ioh, Int32(version))
     write(ioh, Int32(0))
     write(ioh, Int32(0))
-    first_relative_stage = 1 # TODO
-    write(ioh, Int32(first_relative_stage)) # relative stage
-    write(ioh, Int32(stages))
+    write(ioh, Int32(first_stage))
+    write(ioh, Int32(last_stage))
     write(ioh, Int32(scenarios))
     write(ioh, Int32(length(agents)))
     write(ioh, Int32(scenarios_type))
@@ -231,7 +238,8 @@ function PSRI.open(
         write(ioh, Int32(0))
         write(ioh, Int32(0)) # offset1
         write(ioh, Int32(blocks)) # offset2 -> block_total = offset2 - offset1
-        for i in first_relative_stage:stages-1
+
+        for _ in first_stage:(num_stages-1)
             write(ioh, Int32(0))
         end
     else
@@ -241,7 +249,7 @@ function PSRI.open(
         write(ioh, Int32(0))
         acc = Int32(0)
         blocks = 0
-        for t in first_relative_stage:stages
+        for t in first_stage:stages
             # TODO write hourly files
             b = PSRI.blocks_in_stage(
                 is_hourly,
@@ -290,6 +298,9 @@ function PSRI.open(
     end
 
     return Writer(;
+        first_stage = first_stage,
+        last_stage = last_stage,
+        num_stages = num_stages,
         io = io,
         offset = header_size,
         stage_total = stages,
@@ -307,6 +318,10 @@ function PSRI.open(
         is_open = !reopen_mode,
         file_path = PATH_BIN,
     )
+end
+
+function _get_stage_offset(ior::Writer)
+    return 4 * ior.agents_total * ior.scenario_total * (ior.first_stage - 1)
 end
 
 PSRI.is_hourly(graf::Writer) = graf.is_hourly
@@ -328,21 +343,24 @@ function PSRI.write_registry(
         error("File is not in open state.")
     end
 
-    if !(1 <= stage <= io.stage_total)
-        error("stage should be between 1 and $(io.stage_total)")
+    if !(io.first_stage <= stage <= io.last_stage)
+        error("stage should be between '$(io.first_stage)' and '$(io.last_stage)'")
     end
 
     if !(1 <= scenario <= io.scenario_total)
-        error("scenarios should be between 1 and $(io.scenario_total)")
+        error("scenarios should be between '1' and '$(io.scenario_total)'")
     end
 
     blocks_in_stage = PSRI.blocks_in_stage(io, stage)
+
     if !(1 <= block <= blocks_in_stage) # io.blocks
-        error("block should be between 1 and $blocks_in_stage")
+        error("block should be between '1' and '$blocks_in_stage'")
     end
 
     if length(data) != io.agents_total
-        error("data vector has length $(length(data)) and expected was $(io.agents_total)")
+        error(
+            "data vector has length '$(length(data))' and expected was '$(io.agents_total)'",
+        )
     end
 
     current = position(io.io)
@@ -366,38 +384,53 @@ function _reopen_pre_write(io::Writer)
         io.io = Base.open(io.FILE_PATH, "a")
         io.is_open = true
     end
+
     return nothing
 end
+
 function _reopen_pos_write(io::Writer)
     if io.reopen_mode
         Base.close(io.io)
         io.is_open = false
     end
+
     return nothing
+end
+
+function _get_registry_size(io)
+    return sizeof(Float32) * io.agents_total
+end
+
+function _get_last_position(io)
+    return _get_position(
+        io,
+        io.last_stage,
+        io.scenario_total,
+        io.is_hourly ? io.blocks_per_stage[end] : io.block_total,
+    ) + _get_registry_size(io)
 end
 
 function PSRI.close(io::Writer)
     io.is_open = false
     io.reopen_mode = false # so that it wont try to reopen
-    seekend(io.io)
-    current = position(io.io)
-    last =
-        _get_position(
-            io,
-            io.stage_total,
-            io.scenario_total,
-            io.is_hourly ? io.blocks_per_stage[end] : io.block_total,
-        ) + 4 * io.agents_total
 
-    if current != last
-        seek(io.io, last - 4 * io.agents_total)
+    seekend(io.io)
+
+    curr_pos = position(io.io)
+    last_pos = _get_last_position(io)
+
+    if curr_pos != last_pos
+        seek(io.io, last_pos - _get_registry_size(io))
+
         write(io.io, Float32(0))
-        println(
-            "File not writen completely. Expected $(div(last, 4)) registries, got $(div(current, 4))",
+
+        @warn(
+            "File not writen completely. Expected $(div(last, 4)) registries, got $(div(current, 4))"
         )
     end
 
     Base.close(io.io)
+
     return nothing
 end
 
