@@ -7,7 +7,7 @@ mutable struct Parser
     # original pmd path and current line number, used to
     # compose better error/warning messages
     path::String
-    lineno::Int
+    line_number::Int
 
     # current parser state
     state::Vector{Any}
@@ -19,8 +19,12 @@ mutable struct Parser
     verbose::Bool
 
     # Study info
+    # data structure containgin the class and attribute definitions to be filled
+    # by the parser
     data_struct::DataStruct
+    # contains the relations between the classes obtaned from the json file OR from pmd
     relation_mapper::RelationMapper
+    # maps classes like PSRHydroPlant to especific models like MODL:SDDP_V10.2_Bateria
     model_template::ModelTemplate
 
     function Parser(
@@ -34,7 +38,7 @@ mutable struct Parser
         return new(
             io,
             path,
-            0,                          # lineno
+            0,                          # line_number
             [],                         # state
             Dict{String, Vector{Any}}(), # merge
             verbose,
@@ -71,14 +75,14 @@ function _syntax_error(
     parser::Parser,
     msg::AbstractString,
 )
-    return error("Syntax Error in '$(parser.path):$(parser.lineno)': $msg")
+    return error("Syntax Error in '$(parser.path):$(parser.line_number)': $msg")
 end
 
 function _error(
     parser::Parser,
     msg::AbstractString,
 )
-    return error("Error in '$(parser.path):$(parser.lineno)': $msg")
+    return error("Error in '$(parser.path):$(parser.line_number)': $msg")
 end
 
 function _warning(
@@ -86,7 +90,7 @@ function _warning(
     msg::AbstractString,
 )
     if parser.verbose
-        @warn("In '$(parser.path):$(parser.lineno)': $msg")
+        @warn("In '$(parser.path):$(parser.line_number)': $msg")
     end
 end
 
@@ -192,9 +196,9 @@ end
         verbose::Bool = false,
     )
 
+It is intended to be useful when **writing tests** for the parser.
 Parses a PMD file with as little context as possible.
 Besides the file path, only the model template is necessary.
-It is intended to be useful when writing tests for the parser.
 """
 function parse end
 
@@ -231,7 +235,7 @@ end
 
 function parse!(parser::Parser)
     for line in readlines(parser.io)
-        parser.lineno += 1
+        parser.line_number += 1
 
         # remove comments & trailing spaces
         m = match(r"^\s*(.*?)\s*(\/\/.*)?$", line)
@@ -243,8 +247,9 @@ function parse!(parser::Parser)
         _parse_line!(parser, m[1], _get_state(parser))
     end
 
+    # after parsing, we should be in the idle state
     if !(_get_state(parser) isa PMD_IDLE)
-        _syntax_error(parser, "Unexpected EOF")
+        _syntax_error(parser, "Unexpected parsing completion")
     end
 
     # apply merges
@@ -262,8 +267,15 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
     if m !== nothing
         model_name = String(m[2])
 
+        # obtain the collection (class) linked to a given model in this database
         collection = get(parser.model_template.inv, model_name, model_name)
 
+        _warning(parser, "DEFINE_MODEL '$model_name' for class '$collection'")
+
+        # TODO - verify if already existed? and throw error?
+        if haskey(parser.data_struct, collection)
+            _warning(parser, "Replacing definition of class '$collection' fwith model '$model_name'")
+        end
         parser.data_struct[collection] = Dict{String, Attribute}()
 
         # default attributes that belong to "all collections"
@@ -271,6 +283,7 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
         parser.data_struct[collection]["code"] = Attribute("code", false, Int32, 0, "")
         parser.data_struct[collection]["AVId"] = Attribute("AVId", false, String, 0, "")
 
+        # special attributes from specific classes
         if collection == "PSRSystem"
             parser.data_struct[collection]["id"] = Attribute("id", false, String, 0, "")
         end
@@ -286,6 +299,12 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
     if m !== nothing
         collection = String(m[1])
 
+        _warning(parser, "DEFINE_CLASS '$collection'")
+
+        # TODO - verify if already existed? and throw error?
+        if haskey(parser.data_struct, collection)
+            _warning(parser, "Replacing definition of class '$collection'")
+        end
         parser.data_struct[collection] = Dict{String, Attribute}()
 
         # default attributes that belong to "all collections"
@@ -309,21 +328,15 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
         collection = String(m[1])
         model_name = String(m[2])
 
-        if _hasinv(parser.model_template, model_name)
-            _cache_merge!(parser, collection, model_name)
+        _warning(parser, "MERGE_CLASS to add new attributes from temporary '$model_name' to existing class '$collection'")
 
-            _push_state!(parser, PMD_MERGE_CLASS(collection))
-
-            return nothing
-        else
-            _warning(parser, "Unknown model '$(model_name)'")
-
-            # By setting the collection to 'nothing', we are telling
-            # the parser to ignore the block and its contents
-            _push_state!(parser, PMD_MERGE_CLASS(nothing))
-
-            return nothing
+        if !haskey(parser.data_struct, collection)
+            _error(parser, "Class '$collection no found. Consider changing pmd load order.'")
         end
+
+        _push_state!(parser, PMD_MERGE_CLASS(collection))
+
+        return nothing
     end
 
     return _syntax_error(parser, "Invalid input: '$line'")

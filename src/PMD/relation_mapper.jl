@@ -1,5 +1,6 @@
 using JSON
 
+# TODO non portable
 const _DEFAULT_RELATIONS_PATH =
     joinpath(@__DIR__(), "..", "json_metadata", "relations.default.json")
 
@@ -50,9 +51,9 @@ const RELATION_TABLE = Dict{String, RelationType}(
     Relation(type::RelationType, attribute::String)
 """
 struct Relation
-    type::RelationType # deprecated ?
-    attribute::String
-    is_vector::Bool
+    type::RelationType # deprecated ? # attribute type originally defined in PSRClasses
+    attribute::String # relation name
+    is_vector::Bool # relation maps the current element to a vector of elements or to a single element'
 
     function Relation(type::RelationType, attribute::String)
         return new(type, attribute, type == RELATION_1_TO_N || type == RELATION_BACKED)

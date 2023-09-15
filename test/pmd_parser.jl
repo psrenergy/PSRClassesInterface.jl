@@ -210,6 +210,26 @@ function test_pmd_source_1()
         @test haskey(data["PSRHydroPlant"], "Included")
 
         @test data == Dict{String, Dict{String, PSRI.PMD.Attribute}}(
+            "PSRHydroPlant" => Dict(
+                "AVId" =>
+                    PSRI.PMD.Attribute("AVId", false, String, 0, ""),
+                "name" =>
+                    PSRI.PMD.Attribute("name", false, String, 0, ""),
+                "code" =>
+                    PSRI.PMD.Attribute("code", false, Int32, 0, ""),
+                "test" =>
+                    PSRI.PMD.Attribute("test", false, Int32, 0, ""),
+                "DataSensib" =>
+                    PSRI.PMD.Attribute("DataSensib", true, Dates.Date, 0, ""),
+                "MinCOD" =>
+                    PSRI.PMD.Attribute("MinCOD", false, Dates.Date, 0, ""),
+                "SensibPotInst" =>
+                    PSRI.PMD.Attribute("SensibPotInst", true, Float64, 0, "DataSensib"),
+                "Included" =>
+                    PSRI.PMD.Attribute("Included", false, Int32, 0, ""),
+                "Percentage" =>
+                    PSRI.PMD.Attribute("Percentage", false, Float64, 0, ""),
+            ),
             "Contract_Forward" => Dict(
                 "AVId" =>
                     PSRI.PMD.Attribute("AVId", false, String, 0, ""),
