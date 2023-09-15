@@ -66,7 +66,8 @@ function _load_model!(
     filepath::AbstractString,
     loaded_files::Set{String},
     model_template::ModelTemplate,
-    relation_mapper::RelationMapper,
+    relation_mapper::RelationMapper;
+    verbose::Bool = false,
 )
     if !isfile(filepath)
         error("'$filepath' is not a valid file")
@@ -79,7 +80,7 @@ function _load_model!(
     filename = basename(filepath)
 
     if !in(filename, loaded_files)
-        parse!(filepath, data_struct, relation_mapper, model_template)
+        parse!(filepath, data_struct, relation_mapper, model_template; verbose)
 
         push!(loaded_files, filename)
     end
@@ -93,7 +94,8 @@ function _load_model!(
     files::Vector{String},
     loaded_files::Set{String},
     model_template::ModelTemplate,
-    relation_mapper::RelationMapper,
+    relation_mapper::RelationMapper;
+    verbose::Bool = false,
 )
     if !isempty(files)
         for filepath in files
@@ -102,7 +104,8 @@ function _load_model!(
                 filepath,
                 loaded_files,
                 model_template,
-                relation_mapper,
+                relation_mapper;
+                verbose
             )
         end
     else
@@ -117,7 +120,8 @@ function _load_model!(
                     filepath,
                     loaded_files,
                     model_template,
-                    relation_mapper,
+                    relation_mapper;
+                    verbose
                 )
             end
         end
@@ -130,7 +134,8 @@ function load_model(
     path_pmds::AbstractString,
     files::Vector{String},
     model_template::ModelTemplate,
-    relation_mapper::RelationMapper,
+    relation_mapper::RelationMapper;
+    verbose::Bool = false,
 )
     data_struct = DataStruct()
     loaded_files = Set{String}()
@@ -141,7 +146,8 @@ function load_model(
         files,
         loaded_files,
         model_template,
-        relation_mapper,
+        relation_mapper;
+        verbose
     )
 
     return data_struct, loaded_files

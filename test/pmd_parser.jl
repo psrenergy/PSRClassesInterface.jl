@@ -207,6 +207,8 @@ function test_pmd_source_1()
         path = joinpath(@__DIR__, "data", "pmd", "source1.pmd")
         data = PSRI.PMD.parse(path, model_template; verbose = true)
 
+        @test haskey(data["PSRHydroPlant"], "Included")
+
         @test data == Dict{String, Dict{String, PSRI.PMD.Attribute}}(
             "Contract_Forward" => Dict(
                 "AVId" =>
