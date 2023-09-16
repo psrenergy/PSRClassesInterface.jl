@@ -514,21 +514,30 @@ function get_parm(
     default::T = _default_value(T),
     dim1::Union{Integer, Nothing} = nothing,
     dim2::Union{Integer, Nothing} = nothing,
+    validate::Bool = true,
 )::T where {T}
-    # Retrieve attribute metadata
-    attribute_struct = get_attribute_struct(data, collection, attribute)
-
     # Basic checks
-    _check_dim(attribute_struct, collection, attribute, dim1, dim2)
-    _check_type(attribute_struct, T, collection, attribute)
-    _check_parm(attribute_struct, collection, attribute)
+    if validate
+        attribute_struct = get_attribute_struct(data, collection, attribute)
+        _check_dim(attribute_struct, collection, attribute, dim1, dim2)
+        _check_type(attribute_struct, T, collection, attribute)
+        _check_parm(attribute_struct, collection, attribute)
+        dim = get_attribute_dim(attribute_struct)
+    else
+        if dim2 !== nothing && dim2 > 0
+            dim = 2
+        elseif dim1 !== nothing && dim1 > 0
+            dim = 1
+        else
+            dim = 0
+        end
+    end
     _check_element_range(data, collection, index)
 
     # This is assumed to be a mutable dictionary
     element = _get_element(data, collection, index)
 
     # Format according to dimension
-    dim = get_attribute_dim(attribute_struct)
     key = _get_attribute_key(attribute, dim, 1 => dim1, 2 => dim2)
 
     # Here, a choice is made to return a default
@@ -548,30 +557,30 @@ function get_parm_1d(
     index::Integer,
     ::Type{T};
     default::T = _default_value(T),
+    validate::Bool = true,
 )::Vector{T} where {T}
-    attribute_struct = get_attribute_struct(data, collection, attribute)
-
-    dim = get_attribute_dim(attribute_struct)
-
-    if dim != 1
-        if dim == 0
-            error("""
-                  Attribute '$attribute' from collection '$colllection' has no dimensions.
-                  Consider using `get_parm` instead.
-                  """)
-        else
-            error(
-                """
-                Attribute '$attribute' from collection '$colllection' has $(attribute_struct.dim) dimensions.
-                Consider using `get_parm_$(attribute_struct.dim)d` instead.
-                """,
-            )
+    if validate
+        attribute_struct = get_attribute_struct(data, collection, attribute)
+        dim = get_attribute_dim(attribute_struct)
+        if dim != 1
+            if dim == 0
+                error("""
+                    Attribute '$attribute' from collection '$colllection' has no dimensions.
+                    Consider using `get_parm` instead.
+                    """)
+            else
+                error(
+                    """
+                    Attribute '$attribute' from collection '$colllection' has $(attribute_struct.dim) dimensions.
+                    Consider using `get_parm_$(attribute_struct.dim)d` instead.
+                    """,
+                )
+            end
         end
+        _check_type(attribute_struct, T, collection, attribute)
+        _check_parm(attribute_struct, collection, attribute)
+        _check_element_range(data, collection, index)
     end
-
-    _check_type(attribute_struct, T, collection, attribute)
-    _check_parm(attribute_struct, collection, attribute)
-    _check_element_range(data, collection, index)
 
     dim1 = get_attribute_dim1(data, collection, attribute, index)
 
@@ -599,30 +608,30 @@ function get_parm_2d(
     index::Integer,
     ::Type{T};
     default::T = _default_value(T),
+    validate::Bool = true,
 )::Matrix{T} where {T}
-    attribute_struct = get_attribute_struct(data, collection, attribute)
-
-    dim = get_attribute_dim(attribute_struct)
-
-    if dim != 2
-        if dim == 0
-            error("""
-                  Attribute '$attribute' from collection '$colllection' has no dimensions.
-                  Consider using `get_parm` instead.
-                  """)
-        else
-            error(
-                """
-                Attribute '$attribute' from collection '$colllection' has $(dim) dimensions.
-                Consider using `get_parm_$(dim)d` instead.
-                """,
-            )
+    if validate
+        attribute_struct = get_attribute_struct(data, collection, attribute)
+        dim = get_attribute_dim(attribute_struct)
+        if dim != 2
+            if dim == 0
+                error("""
+                    Attribute '$attribute' from collection '$colllection' has no dimensions.
+                    Consider using `get_parm` instead.
+                    """)
+            else
+                error(
+                    """
+                    Attribute '$attribute' from collection '$colllection' has $(dim) dimensions.
+                    Consider using `get_parm_$(dim)d` instead.
+                    """,
+                    )
+            end
         end
+        _check_type(attribute_struct, T, collection, attribute)
+        _check_parm(attribute_struct, collection, attribute)
+        _check_element_range(data, collection, index)
     end
-
-    _check_type(attribute_struct, T, collection, attribute)
-    _check_parm(attribute_struct, collection, attribute)
-    _check_element_range(data, collection, index)
 
     dim1 = get_attribute_dim1(data, collection, attribute, index)
     dim2 = get_attribute_dim2(data, collection, attribute, index)
@@ -632,7 +641,7 @@ function get_parm_2d(
     out = Matrix{T}(undef, dim1, dim2)
 
     for i in 1:dim1, j in 1:dim2
-        key = _get_attribute_key(attribute, dim, 1 => i, 2 => j)
+        key = _get_attribute_key(attribute, 2, 1 => i, 2 => j)
 
         out[i, j] = if haskey(element, key)
             _cast(T, element[key], default)
@@ -790,12 +799,15 @@ function get_vector(
     dim1::Union{Integer, Nothing} = nothing,
     dim2::Union{Integer, Nothing} = nothing,
     default::T = _default_value(T),
+    validate::Bool = true,
 ) where {T}
     attribute_struct = get_attribute_struct(data, collection, attribute)
 
-    _check_dim(attribute_struct, collection, attribute, dim1, dim2)
-    _check_vector(attribute_struct, collection, attribute)
-    _check_type(attribute_struct, T, collection, attribute)
+    if validate
+        _check_dim(attribute_struct, collection, attribute, dim1, dim2)
+        _check_type(attribute_struct, T, collection, attribute)
+        _check_vector(attribute_struct, collection, attribute)
+    end
     _check_element_range(data, collection, index)
 
     dim = get_attribute_dim(attribute_struct)
@@ -817,30 +829,30 @@ function get_vector_1d(
     index::Integer,
     ::Type{T};
     default::T = _default_value(T),
+    validate::Bool = true,
 ) where {T}
-    attribute_struct = get_attribute_struct(data, collection, attribute)
-
-    dim = get_attribute_dim(attribute_struct)
-
-    if dim != 1
-        if dim == 0
-            error("""
-                  Attribute '$attribute' from collection '$colllection' has no dimensions.
-                  Consider using `get_parm` instead.
-                  """)
-        else
-            error(
-                """
-                Attribute '$attribute' from collection '$colllection' has $(dim) dimensions.
-                Consider using `get_parm_$(dim)d` instead.
-                """,
-            )
+    if validate
+        attribute_struct = get_attribute_struct(data, collection, attribute)
+        dim = get_attribute_dim(attribute_struct)
+        if dim != 1
+            if dim == 0
+                error("""
+                    Attribute '$attribute' from collection '$colllection' has no dimensions.
+                    Consider using `get_parm` instead.
+                    """)
+            else
+                error(
+                    """
+                    Attribute '$attribute' from collection '$colllection' has $(dim) dimensions.
+                    Consider using `get_parm_$(dim)d` instead.
+                    """,
+                )
+            end
         end
+        _check_type(attribute_struct, T, collection, attribute)
+        _check_vector(attribute_struct, collection, attribute)
+        _check_element_range(data, collection, index)
     end
-
-    _check_vector(attribute_struct, collection, attribute)
-    _check_type(attribute_struct, T, collection, attribute)
-    _check_element_range(data, collection, index)
 
     dim1 = get_attribute_dim1(data, collection, attribute, index)
 
@@ -849,7 +861,7 @@ function get_vector_1d(
     out = Vector{Vector{T}}(undef, dim1)
 
     for i in 1:dim1
-        key = _get_attribute_key(attribute, dim, 1 => i)
+        key = _get_attribute_key(attribute, 1, 1 => i)
 
         out[i] = if haskey(element, key)
             _cast_vector(T, element[key], default)
@@ -868,29 +880,29 @@ function get_vector_2d(
     index::Integer,
     ::Type{T};
     default::T = _default_value(T),
+    validate::Bool = true,
 ) where {T}
-    attribute_struct = get_attribute_struct(data, collection, attribute)
-
-    dim = get_attribute_dim(attribute_struct)
-
-    if dim != 2
-        if dim == 0
-            error("""
-                  Attribute '$attribute' from collection '$colllection' has no dimensions.
-                  Consider using `get_parm` instead.
-                  """)
-        else
-            error(
-                """
-                Attribute '$attribute' from collection '$collection' has $(dim) dimensions.
-                Consider using `get_parm_$(dim)d` instead.
-                """,
-            )
+    if validate
+        attribute_struct = get_attribute_struct(data, collection, attribute)
+        dim = get_attribute_dim(attribute_struct)
+        if dim != 2
+            if dim == 0
+                error("""
+                    Attribute '$attribute' from collection '$colllection' has no dimensions.
+                    Consider using `get_parm` instead.
+                    """)
+            else
+                error(
+                    """
+                    Attribute '$attribute' from collection '$collection' has $(dim) dimensions.
+                    Consider using `get_parm_$(dim)d` instead.
+                    """,
+                )
+            end
         end
+        _check_type(attribute_struct, T, collection, attribute)
+        _check_vector(attribute_struct, collection, attribute)
     end
-
-    _check_vector(attribute_struct, collection, attribute)
-    _check_type(attribute_struct, T, collection, attribute)
     _check_element_range(data, collection, index)
 
     dim1 = get_attribute_dim1(data, collection, attribute, index)
@@ -901,7 +913,7 @@ function get_vector_2d(
     out = Matrix{Vector{T}}(undef, dim1, dim2)
 
     for i in 1:dim1, j in 1:dim2
-        key = _get_attribute_key(attribute, dim, 1 => i, 2 => j)
+        key = _get_attribute_key(attribute, 2, 1 => i, 2 => j)
 
         out[i, j] = if haskey(element, key)
             _cast_vector(T, element[key], default)

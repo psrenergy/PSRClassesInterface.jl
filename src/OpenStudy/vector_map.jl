@@ -10,6 +10,7 @@ function mapped_vector(
     map_key = collection, # reference for PSRMap pointer, if empty use class name
     filters = String[], # for calling just within a subset instead of the full call
     default = _default_value(T),
+    validate::Bool = true,
 ) where {T} #<: Union{Float64, Int32}
     if has_graf_file(data, collection, attribute)
         if isnothing(data.mapper)
@@ -30,8 +31,10 @@ function mapped_vector(
 
     attribute_struct = get_attribute_struct(data, collection, attribute)
 
-    _check_type(attribute_struct, T, collection, attribute)
-    _check_vector(attribute_struct, collection, attribute)
+    if validate
+        _check_type(attribute_struct, T, collection, attribute)
+        _check_vector(attribute_struct, collection, attribute)
+    end
     _check_dim(attribute_struct, collection, attribute, dim1, dim2)
 
     dim = get_attribute_dim(attribute_struct)

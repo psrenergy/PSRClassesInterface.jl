@@ -100,12 +100,12 @@ function set_parm!(
     collection::String,
     attribute::String,
     index::Int,
-    value::T,
+    value::T;
+    validate::Bool = true,
 ) where {T <: MainTypes}
-    attribute_struct = get_attribute_struct(data, collection, attribute)
-
-    _check_parm(attribute_struct, collection, attribute)
-    _check_type(attribute_struct, T, collection, attribute)
+    if validate
+        _check_type_parm(data, collection, attribute, T)
+    end
 
     element = _get_element(data, collection, index)
 
@@ -124,13 +124,12 @@ function set_vector!(
     collection::String,
     attribute::String,
     index::Int,
-    buffer::Vector{T},
+    buffer::Vector{T};
+    validate::Bool = true,
 ) where {T <: MainTypes}
-    attribute_struct = get_attribute_struct(data, collection, attribute)
-
-    _check_vector(attribute_struct, collection, attribute)
-    _check_type(attribute_struct, T, collection, attribute)
-
+    if validate
+        _check_type_parm(data, collection, attribute, T)
+    end
     element = _get_element(data, collection, index)
     vector = element[attribute]::Vector
 
@@ -211,7 +210,8 @@ function set_series!(
     collection::String,
     indexing_attribute::String,
     index::Int,
-    series::SeriesTable,
+    series::SeriesTable;
+    check_type::Bool = true
 )
     attributes = _get_indexed_attributes(data, collection, index, indexing_attribute)
 
@@ -259,14 +259,16 @@ function set_series!(
     element = _get_element(data, collection, index)
 
     # validate types
-    for attribute in keys(series)
-        attribute_struct = get_attribute_struct(data, collection, String(attribute))
-        _check_type(
-            attribute_struct,
-            eltype(series[attribute]),
-            collection,
-            String(attribute),
-        )
+    if check_type
+        for attribute in keys(series)
+            attribute_struct = get_attribute_struct(data, collection, String(attribute))
+            _check_type(
+                attribute_struct,
+                eltype(series[attribute]),
+                collection,
+                String(attribute),
+            )
+        end
     end
 
     for attribute in keys(series)

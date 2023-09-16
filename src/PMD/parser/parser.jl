@@ -41,7 +41,7 @@ mutable struct Parser
             0,                          # line_number
             [],                         # state
             Dict{String, Vector{Any}}(), # merge
-            verbose,
+            false,
             data_struct,
             relation_mapper,
             model_template,
