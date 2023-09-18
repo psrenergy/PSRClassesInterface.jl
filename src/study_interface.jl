@@ -469,12 +469,20 @@ function get_parms(
     default::T = _default_value(T),
 )::Vector{T} where {T}
     if validate
-        _check_type_parm(data, collection, attribute, T)
+        _check_type_attribute(data, collection, attribute, T)
     end
     n = max_elements(data, collection)
     out = Vector{T}(undef, n)
     for i in 1:n
-        out[i] = get_parm(data, collection, attribute, i, T; default = default, validate = validate)
+        out[i] = get_parm(
+            data,
+            collection,
+            attribute,
+            i,
+            T;
+            default = default,
+            validate = validate,
+        )
     end
     return out
 end
@@ -511,21 +519,38 @@ function get_parms_1d(
     default::T = _default_value(T),
 )::Vector{Vector{T}} where {T}
     if validate
-        _check_type_parm(data, collection, attribute, T)
+        _check_type_attribute(data, collection, attribute, T)
     end
 
     n = max_elements(data, collection)
     out = Vector{Vector{T}}(undef, n)
     for i in 1:n
-        out[i] = get_parm_1d(data, collection, attribute, i, T; default = default, validate = validate)
+        out[i] = get_parm_1d(
+            data,
+            collection,
+            attribute,
+            i,
+            T;
+            default = default,
+            validate = validate,
+        )
     end
     return out
 end
 
-function _check_type_parm(data, collection, attribute, T)
+function _check_type_attribute(
+    data::AbstractData,
+    collection::String,
+    attribute::String,
+    ::Type{T},
+) where {T}
     attribute_struct = get_attribute_struct(data, collection, attribute)
     _check_type(attribute_struct, T, collection, attribute)
-    _check_parm(attribute_struct, collection, attribute)
+    if attribute_struct.is_vector
+        _check_vector(attribute_struct, collection, attribute)
+    else
+        _check_parm(attribute_struct, collection, attribute)
+    end
     return nothing
 end
 
@@ -562,13 +587,21 @@ function get_parms_2d(
     default::T = _default_value(T),
 )::Vector{Matrix{T}} where {T}
     if validate
-        _check_type_parm(data, collection, attribute, T)
+        _check_type_attribute(data, collection, attribute, T)
     end
 
     n = max_elements(data, collection)
     out = Vector{Matrix{T}}(undef, n)
     for i in 1:n
-        out[i] = get_parm_2d(data, collection, attribute, i, T; default = default, validate = validate)
+        out[i] = get_parm_2d(
+            data,
+            collection,
+            attribute,
+            i,
+            T;
+            default = default,
+            validate = validate,
+        )
     end
     return out
 end

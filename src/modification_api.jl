@@ -104,7 +104,7 @@ function set_parm!(
     validate::Bool = true,
 ) where {T <: MainTypes}
     if validate
-        _check_type_parm(data, collection, attribute, T)
+        _check_type_attribute(data, collection, attribute, T)
     end
 
     element = _get_element(data, collection, index)
@@ -128,7 +128,7 @@ function set_vector!(
     validate::Bool = true,
 ) where {T <: MainTypes}
     if validate
-        _check_type_parm(data, collection, attribute, T)
+        _check_type_attribute(data, collection, attribute, T)
     end
     element = _get_element(data, collection, index)
     vector = element[attribute]::Vector
@@ -211,7 +211,7 @@ function set_series!(
     indexing_attribute::String,
     index::Int,
     series::SeriesTable;
-    check_type::Bool = true
+    check_type::Bool = true,
 )
     attributes = _get_indexed_attributes(data, collection, index, indexing_attribute)
 
@@ -427,7 +427,7 @@ function create_study(
     model_template_path::Union{String, Nothing} = nothing,
     relations_defaults_path = PMD._DEFAULT_RELATIONS_PATH,
     study_collection::String = "PSRStudy",
-    verbose::Bool = true,
+    verbose::Bool = false,
 )
     if !isdir(data_path)
         error("data_path = '$data_path' must be a directory")
@@ -468,7 +468,7 @@ function create_study(
     PMD.load_relations_struct!(relations_defaults_path, relation_mapper)
 
     data_struct, model_files_added =
-        PMD.load_model(pmds_path, pmd_files, model_template, relation_mapper)
+        PMD.load_model(pmds_path, pmd_files, model_template, relation_mapper; verbose)
 
     stage_type =
         if haskey(study_defaults[study_collection], "Tipo_Etapa")

@@ -41,7 +41,7 @@ mutable struct Parser
             0,                          # line_number
             [],                         # state
             Dict{String, Vector{Any}}(), # merge
-            false,
+            verbose,
             data_struct,
             relation_mapper,
             model_template,
@@ -274,18 +274,22 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
 
         # TODO - verify if already existed? and throw error?
         if haskey(parser.data_struct, collection)
-            _warning(parser, "Replacing definition of class '$collection' fwith model '$model_name'")
-        end
-        parser.data_struct[collection] = Dict{String, Attribute}()
+            _warning(
+                parser,
+                "Merging definition of class '$collection' with model '$model_name'",
+            )
+        else
+            parser.data_struct[collection] = Dict{String, Attribute}()
 
-        # default attributes that belong to "all collections"
-        parser.data_struct[collection]["name"] = Attribute("name", false, String, 0, "")
-        parser.data_struct[collection]["code"] = Attribute("code", false, Int32, 0, "")
-        parser.data_struct[collection]["AVId"] = Attribute("AVId", false, String, 0, "")
+            # default attributes that belong to "all collections"
+            parser.data_struct[collection]["name"] = Attribute("name", false, String, 0, "")
+            parser.data_struct[collection]["code"] = Attribute("code", false, Int32, 0, "")
+            parser.data_struct[collection]["AVId"] = Attribute("AVId", false, String, 0, "")
 
-        # special attributes from specific classes
-        if collection == "PSRSystem"
-            parser.data_struct[collection]["id"] = Attribute("id", false, String, 0, "")
+            # special attributes from specific classes
+            if collection == "PSRSystem"
+                parser.data_struct[collection]["id"] = Attribute("id", false, String, 0, "")
+            end
         end
 
         _push_state!(parser, PMD_DEF_MODEL(collection))
@@ -303,17 +307,17 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
 
         # TODO - verify if already existed? and throw error?
         if haskey(parser.data_struct, collection)
-            _warning(parser, "Replacing definition of class '$collection'")
-        end
-        parser.data_struct[collection] = Dict{String, Attribute}()
+            _warning(parser, "Merging definition of class '$collection'")
+        else
+            parser.data_struct[collection] = Dict{String, Attribute}()
+            # default attributes that belong to "all collections"
+            parser.data_struct[collection]["name"] = Attribute("name", false, String, 0, "")
+            parser.data_struct[collection]["code"] = Attribute("code", false, Int32, 0, "")
+            parser.data_struct[collection]["AVId"] = Attribute("AVId", false, String, 0, "")
 
-        # default attributes that belong to "all collections"
-        parser.data_struct[collection]["name"] = Attribute("name", false, String, 0, "")
-        parser.data_struct[collection]["code"] = Attribute("code", false, Int32, 0, "")
-        parser.data_struct[collection]["AVId"] = Attribute("AVId", false, String, 0, "")
-
-        if collection == "PSRSystem"
-            parser.data_struct[collection]["id"] = Attribute("id", false, String, 0, "")
+            if collection == "PSRSystem"
+                parser.data_struct[collection]["id"] = Attribute("id", false, String, 0, "")
+            end
         end
 
         _push_state!(parser, PMD_DEF_CLASS(collection))
@@ -328,10 +332,16 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
         collection = String(m[1])
         model_name = String(m[2])
 
-        _warning(parser, "MERGE_CLASS to add new attributes from temporary '$model_name' to existing class '$collection'")
+        _warning(
+            parser,
+            "MERGE_CLASS to add new attributes from temporary '$model_name' to existing class '$collection'",
+        )
 
         if !haskey(parser.data_struct, collection)
-            _error(parser, "Class '$collection no found. Consider changing pmd load order.'")
+            _error(
+                parser,
+                "Class '$collection no found. Consider changing pmd load order.'",
+            )
         end
 
         _push_state!(parser, PMD_MERGE_CLASS(collection))
@@ -613,6 +623,39 @@ function _parse_attribute!(
         dims = m[5]
         index = m[8]
         tag = m[10]
+
+        if haskey(parser.data_struct[state.collection], name)
+            if PMD._is_vector(kind) != parser.data_struct[state.collection][name].is_vector
+                overwritten = true
+                _warning(
+                    parser,
+                    "Attribute '$name' already defined within '$(state.collection)' with different vector type",
+                )
+            end
+            if PMD._get_type(type) != parser.data_struct[state.collection][name].type
+                overwritten = true
+                _warning(
+                    parser,
+                    "Attribute '$name' already defined within '$(state.collection)' with different data type",
+                )
+            end
+            _dim = (dims === nothing) ? 0 : count(",", dims) + 1
+            if _dim != parser.data_struct[state.collection][name].dim
+                overwritten = true
+                _warning(
+                    parser,
+                    "Attribute '$name' already defined within '$(state.collection)' with different dimension",
+                )
+            end
+            _index = (index === nothing) ? "" : index
+            if _index != parser.data_struct[state.collection][name].index
+                overwritten = true
+                _warning(
+                    parser,
+                    "Attribute '$name' already defined within '$(state.collection)' with different index",
+                )
+            end
+        end
 
         parser.data_struct[state.collection][name] = Attribute(
             name,

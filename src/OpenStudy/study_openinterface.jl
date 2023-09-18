@@ -564,10 +564,12 @@ function get_parm_1d(
         dim = get_attribute_dim(attribute_struct)
         if dim != 1
             if dim == 0
-                error("""
-                    Attribute '$attribute' from collection '$colllection' has no dimensions.
-                    Consider using `get_parm` instead.
-                    """)
+                error(
+                    """
+                  Attribute '$attribute' from collection '$colllection' has no dimensions.
+                  Consider using `get_parm` instead.
+                  """,
+                )
             else
                 error(
                     """
@@ -615,17 +617,19 @@ function get_parm_2d(
         dim = get_attribute_dim(attribute_struct)
         if dim != 2
             if dim == 0
-                error("""
-                    Attribute '$attribute' from collection '$colllection' has no dimensions.
-                    Consider using `get_parm` instead.
-                    """)
+                error(
+                    """
+                  Attribute '$attribute' from collection '$colllection' has no dimensions.
+                  Consider using `get_parm` instead.
+                  """,
+                )
             else
                 error(
                     """
                     Attribute '$attribute' from collection '$colllection' has $(dim) dimensions.
                     Consider using `get_parm_$(dim)d` instead.
                     """,
-                    )
+                )
             end
         end
         _check_type(attribute_struct, T, collection, attribute)
@@ -836,10 +840,12 @@ function get_vector_1d(
         dim = get_attribute_dim(attribute_struct)
         if dim != 1
             if dim == 0
-                error("""
-                    Attribute '$attribute' from collection '$colllection' has no dimensions.
-                    Consider using `get_parm` instead.
-                    """)
+                error(
+                    """
+                  Attribute '$attribute' from collection '$colllection' has no dimensions.
+                  Consider using `get_parm` instead.
+                  """,
+                )
             else
                 error(
                     """
@@ -887,10 +893,12 @@ function get_vector_2d(
         dim = get_attribute_dim(attribute_struct)
         if dim != 2
             if dim == 0
-                error("""
-                    Attribute '$attribute' from collection '$colllection' has no dimensions.
-                    Consider using `get_parm` instead.
-                    """)
+                error(
+                    """
+                  Attribute '$attribute' from collection '$colllection' has no dimensions.
+                  Consider using `get_parm` instead.
+                  """,
+                )
             else
                 error(
                     """
