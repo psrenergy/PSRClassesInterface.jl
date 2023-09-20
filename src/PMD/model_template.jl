@@ -16,7 +16,12 @@ struct ModelTemplate
     map::Dict{String, Set{String}}
     inv::Dict{String, String}
 
-    ModelTemplate() = new(Dict{String, Set{String}}(), Dict{String, String}())
+    function ModelTemplate(
+        map::Dict{String, Set{String}} = Dict{String, Set{String}}(),
+        inv::Dict{String, String} = Dict{String, String}(),
+    )
+        return new(map, inv)
+    end
 end
 
 function Base.push!(mt::ModelTemplate, ps::Pair{String, String}...)
