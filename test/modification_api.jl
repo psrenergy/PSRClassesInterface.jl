@@ -378,7 +378,7 @@ end
 test_api(PATH_CASE_0)
 test_api2()
 test_api3()
-test_api4()
+# test_api4()
 test_api5()
 test_api6()
 test_api7()

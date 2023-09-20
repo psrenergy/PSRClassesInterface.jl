@@ -228,6 +228,10 @@ function load_study(
     data_path = "",
     pmd_files = String[],
     path_pmds = PMD._PMDS_BASE_PATH,
+    defaults_path::Union{AbstractString, Nothing} = PSRCLASSES_DEFAULTS_PATH,
+    defaults::Union{Dict{String, Any}, Nothing} = _load_defaults!(),
+    use_defaults::Bool = false,
+    rectify_json_data::Bool = false,
     log_file::Union{AbstractString, Nothing} = nothing,
     verbose = true,
     extra_config_file::String = "",
@@ -251,6 +255,12 @@ function load_study(
     if !isfile(PATH_JSON)
         error("$PATH_JSON not found")
     end
+
+    if isnothing(defaults)
+        defaults = Dict{String, Any}()
+    end
+
+    merge_defaults!(defaults, JSON.parsefile(defaults_path))
 
     if !isnothing(log_file)
         log_file = Base.open(log_file, "w")
@@ -289,6 +299,10 @@ function load_study(
 
     if !haskey(raw_data, study_collection)
         error("Study collection '$study_collection' is missing")
+    end
+
+    if use_defaults
+        fill_missing_attributes!(raw_data, defaults)
     end
 
     study_data = raw_data[study_collection][begin]
@@ -346,6 +360,10 @@ function load_study(
         model_template = model_template,
         relation_mapper = relation_mapper,
     )
+
+    if rectify_json_data
+        _rectify_study_data!(data)
+    end
 
     if add_transformers_to_series
         _merge_psr_transformer_and_psr_serie!(data)

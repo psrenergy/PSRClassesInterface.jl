@@ -8,7 +8,7 @@ function is_vector_relation(relation::PMD.RelationType)
 end
 
 """
-    _has_relation_attribute(relations::Vector{PMD.Relation}, relation_attribute::String)
+    _has_relation_attribute(relations::Dict{String, PMD.Relation}, relation_attribute::String)
 
     Returns true if there is a relation with attribute 'relation_attribute' in a 'Vector{PMD.Relation}'
 """
@@ -18,6 +18,34 @@ function _has_relation_attribute(
 )
     for relation in values(relations)
         if relation.attribute == relation_attribute
+            return true
+        end
+    end
+    return false
+end
+
+function _has_relation_attribute(
+    relations::Dict{String, Dict{String, PMD.Relation}},
+    relation_attribute::String,
+)
+    for (target, relations) in relations
+        if _has_relation_attribute(relations, relation_attribute)
+            return true
+        end
+    end
+    return false
+end
+
+function _has_relation_attribute(
+    relations::Dict{String, Dict{String, Dict{String, PSRClassesInterface.PMD.Relation}}},
+    source::String,
+    relation_attribute::String,
+)
+    if !haskey(relations, source)
+        return false
+    end
+    for (source, source_relations) in relations[source]
+        if _has_relation_attribute(source_relations, relation_attribute)
             return true
         end
     end

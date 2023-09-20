@@ -23,6 +23,9 @@ end
     @testset "Read json durations" begin
         @time include("duration.jl")
     end
+    @testset "Read json defaults" begin
+        @time include("read_defaults.jl")
+    end
     @testset "OpenBinary file format" begin
         @testset "Read and write with monthly data" begin
             @time include("OpenBinary/read_and_write_blocks.jl")
