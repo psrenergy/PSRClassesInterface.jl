@@ -8,7 +8,7 @@
     {
         "classname": "PSRSystem",
         "models": [
-            "SDDP_V10.2_Sistema", "Optgen_Sistema"
+            "SDDP_V10.2_Sistema"
         ]
     },  
     {
