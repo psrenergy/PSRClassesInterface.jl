@@ -387,7 +387,7 @@ function load_study(
 
     # Assigns to every `reference_id` the corresponding instance index
     # as a pair (collection, index)
-    _build_index!(data)
+    _build_index!(data, rectify_json_data)
 
     return data
 end

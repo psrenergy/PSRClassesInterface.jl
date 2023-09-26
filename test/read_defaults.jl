@@ -15,7 +15,6 @@ function test_read_defaults()
     @test bus_collection[1]["AVId"] == "string"
     @test bus_collection[1]["name"] == "string"
     @test bus_collection[1]["Kv"] == 0.0
-    @test bus_collection[1]["reference_id"] == 2
     @test bus_collection[1]["code"] == 0
     @test bus_collection[1]["icca"] == 0
 
