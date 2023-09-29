@@ -1,7 +1,7 @@
 """
     is_vector_relation(relation::PMD.RelationType)
 
-Returns true is `relation` is a vector relation.
+Returns true if `relation` is a vector relation.
 """
 function is_vector_relation(relation::PMD.RelationType)
     return relation == PMD.RELATION_1_TO_N || relation == PMD.RELATION_BACKED

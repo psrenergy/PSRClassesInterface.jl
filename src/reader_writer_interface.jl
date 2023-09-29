@@ -61,6 +61,9 @@ Write a file to an array and header
 """
 function file_to_array_and_header end
 
+# o link de "Writing and reading a time series into a file" não está funcionando
+# https://psrenergy.github.io/PSRClassesInterface.jl/dev/examples/graf_files/#Writing-a-time-series-into-a-Graf-file
+# a função PSRI.open(reader...) não fica destacada como função
 """
     PSRI.open(::Type{<:AbstractWriter}, path::String; kwargs...)
 
@@ -96,8 +99,6 @@ Examples:
 
   - [Writing and reading a time series into a file](@ref)
 
-* * *
-
     PSRI.open(reader::Type{<:AbstractReader}, path::String; kwargs...)
 
 Method for opening file and reading time series data.
@@ -129,8 +130,6 @@ function open end
     PSRI.close(ior::AbstractReader)
 
 Closes the [`PSRI.AbstractReader`](@ref) instance.
-
-* * *
 
     PSRI.close(iow::AbstractWriter)
 

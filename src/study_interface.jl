@@ -51,8 +51,10 @@ element with index `index`.
 Example:
 
 ```julia
-PSRI.get_vector(data, "PSRGaugingStation", "Vazao", 1, Float64)
+using Dates
+
 PSRI.get_vector(data, "PSRGaugingStation", "Data", 1, Dates.Date)
+PSRI.get_vector(data, "PSRGaugingStation", "Vazao", 1, Float64)
 ```
 """
 function get_vector end
@@ -70,7 +72,7 @@ function get_vector end
 Returns a `Vector{Vector{T}}` of entries of the `attribute` of `collection` at the
 element with index `index`.
 The outer vector contains one entry per index in dimension 1, while the inner
-vector is sized according to the main vector index which is tipicaaly time.
+vector is sized according to the main vector index which is tipically time.
 
 Example:
 
@@ -95,7 +97,7 @@ Returns a `Matrix{Vector{T}}` of entries of the `attribute` of `collection` at t
 element with index `index`.
 The outer matrix contains one entry per index in dimension 1 and dimension 2,
 while the inner
-vector is sized according to the main vector index which is tipicaaly time.
+vector is sized according to the main vector index which is tipically time.
 
 Example:
 
@@ -224,8 +226,8 @@ function max_elements end
 """
     get_map(
         data::AbstractData,
-        lst_from::String,
-        lst_to::String;
+        collection_from::String,
+        collection_to::String;
         allow_empty::Bool = true,
         relation_type::RelationType = RELATION_1_TO_1, # type of the direct relation
     )
@@ -298,12 +300,12 @@ function get_vector_map end
 """
     get_reverse_map(
         data::AbstractData,
-        lst_from::String,
-        lst_to::String;
+        collection_from::String,
+        collection_to::String;
         original_relation_type::RelationType = RELATION_1_TO_1,
     )
 
-Obtains the relation between `lst_from` and `lst_to` though `original_relation_type`.
+Obtains the relation between `collection_from` and `collection_to` though `original_relation_type`.
 But returns a `Vector{Int32}` with the relation reversed.
 Some relations cannot be reversed this way since they are not bijections,
 in this case use `get_reverse_vector_map`.
@@ -386,9 +388,9 @@ This function is used to get data from collections that don't vary over time.
 Example:
 
 ```julia
-PSRI.get_parm(data, "PSRBattery", "Einic", Float64, 1)
-PSRI.get_parm(data, "PSRBattery", "ChargeRamp", Float64, 1)
-PSRI.get_parm(data, "PSRBattery", "DischargeRamp", Float64, 1)
+PSRI.get_parm(data, "PSRBattery", "Einic", 1, Float64)
+PSRI.get_parm(data, "PSRBattery", "ChargeRamp", 1, Float64)
+PSRI.get_parm(data, "PSRBattery", "DischargeRamp", 1, Float64)
 ```
 """
 function get_parm end
@@ -409,8 +411,8 @@ This function is used to get data from collections that don't vary over time.
 Example:
 
 ```julia
-PSRI.get_parm_1d(data, "PSRHydroPlant", "FP", Float64, 1)
-PSRI.get_parm_1d(data, "PSRHydroPlant", "FP.VOL", Float64, 1)
+PSRI.get_parm_1d(data, "PSRHydroPlant", "FP", 1, Float64)
+PSRI.get_parm_1d(data, "PSRHydroPlant", "FP.VOL", 1, Float64)
 ```
 """
 function get_parm_1d end
@@ -505,8 +507,8 @@ This function is used to get data from collections that don't vary over time
 Example:
 
 ```julia
-PSRI.get_parm_1d(data, "PSRHydroPlant", "FP", Float64)
-PSRI.get_parm_1d(data, "PSRHydroPlant", "FP.VOL", Float64)
+PSRI.get_parms_1d(data, "PSRHydroPlant", "FP", Float64)
+PSRI.get_parms_1d(data, "PSRHydroPlant", "FP.VOL", Float64)
 ```
 """
 function get_parms_1d(
@@ -843,7 +845,7 @@ Returns the required configuration parameter from the case. If the parameter is 
         default::Vector{T},
     ) where T <: MainTypes
 
-Returns the rquired configuration parameters from the case that are vectors that are vectors. If the parameter is not registered returns the default value.
+Returns the rquired configuration parameters from the case that are vectors. If the parameter is not registered returns the default value.
 
 ## Examples:
 
@@ -1065,6 +1067,10 @@ function write_data end
 Returns the size of dimension 1 of `attribute` from `collection` at element
 `index`.
 Errors if attribute has zero dimensions.
+Example:
+```
+julia> PSRI.get_attribute_dim1(data, "PSRThermalPlant", "CEsp", 1)
+```
 """
 function get_attribute_dim1 end
 
@@ -1079,15 +1085,26 @@ function get_attribute_dim1 end
 Returns the size of dimension 2 of `attribute` from `collection` at element
 `index`.
 Errors if attribute has zero or one dimensions.
+Example:
+```
+julia> PSRI.get_attribute_dim2(data, "PSRThermalPlant", "CEsp", 1)
+```
 """
 function get_attribute_dim2 end
 
 """
-    get_attribute_struct(data::AbstractData)
+    get_data_struct(data::AbstractData)
 
-Return a struct of type `DataStruct` with collection names (strings) as keys
-and maps from attributes names (string) to attributes data definitions
-`Attribute`.
+Returns a dictionary where the keys represent the names of the collections, 
+and the values are another dictionary. In the inner dictionary, the keys 
+correspond to attribute names, while the values are the associated `Attribute` structs.
+
+Example:
+```
+julia> 
+data_struct = PSRI.get_data_struct(data)
+data_struct["PSRThermalPlant"]["PotInst"]
+```
 """
 function get_data_struct(data::AbstractData)
     return data.data_struct
@@ -1128,6 +1145,11 @@ end
     get_attributes(data::AbstractData, collection::String)
 
 Return `Vector{String}` of valid attributes from `collection`.
+
+Example:
+```julia
+PSRI.get_attributes(data, "PSRMaintenanceData")
+```
 """
 function get_attributes(data::AbstractData, collection::String)
     return get_attributes(get_data_struct(data), collection)
@@ -1146,6 +1168,12 @@ end
 
 Return `Vector{String}` of valid vector attributes from `collection` that are
 indexed by `indexing_attribute`.
+
+Example:
+```julia
+PSRI.get_attributes_indexed_by(data, "PSRThermalPlant", "Data")
+```
+
 """
 function get_attributes_indexed_by(
     data::AbstractData,
@@ -1219,6 +1247,13 @@ end
 
 """
     get_attribute_dim(attribute_struct::Attribute)
+Returns the dimension of the specified attribute.
+Example:
+```julia
+cesp_struct = PSRI.get_attribute_struct(data, "PSRThermalPlant", "CEsp")
+get_attribute_dim(cesp_struct)
+```
+
 """
 function get_attribute_dim end
 

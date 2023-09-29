@@ -4,7 +4,7 @@ const _DEFAULT_RELATIONS_PATH =
     joinpath(@__DIR__(), "..", "json_metadata", "relations.default.json")
 
 """
-    RelationType
+    PSRI.RelationType
 
 Possible relation types used in mapping function such as [`get_map`](@ref), [`get_reverse_map`](@ref), etc.
 
@@ -22,6 +22,7 @@ RELATION_STORED_ENERGY_DONWSTREAM
 RELATION_BACKED
 ```
 """
+# Falta alguma coisa pra descrição do RelationType aparecer no manual. Acho que é o PSRI. na descrição.
 @enum RelationType begin
     RELATION_1_TO_1 = 0
     RELATION_1_TO_N = 1
