@@ -100,12 +100,12 @@ function set_parm!(
     collection::String,
     attribute::String,
     index::Int,
-    value::T,
+    value::T;
+    validate::Bool = true,
 ) where {T <: MainTypes}
-    attribute_struct = get_attribute_struct(data, collection, attribute)
-
-    _check_parm(attribute_struct, collection, attribute)
-    _check_type(attribute_struct, T, collection, attribute)
+    if validate
+        _check_type_attribute(data, collection, attribute, T)
+    end
 
     element = _get_element(data, collection, index)
 
@@ -113,6 +113,7 @@ function set_parm!(
 
     return nothing
 end
+
 
 function get_attribute_type(data::Data, collection::String, attribute::String)
     attribute_data = get_attribute_struct(data, collection, attribute)
@@ -124,13 +125,12 @@ function set_vector!(
     collection::String,
     attribute::String,
     index::Int,
-    buffer::Vector{T},
+    buffer::Vector{T};
+    validate::Bool = true,
 ) where {T <: MainTypes}
-    attribute_struct = get_attribute_struct(data, collection, attribute)
-
-    _check_vector(attribute_struct, collection, attribute)
-    _check_type(attribute_struct, T, collection, attribute)
-
+    if validate
+        _check_type_attribute(data, collection, attribute, T)
+    end
     element = _get_element(data, collection, index)
     vector = element[attribute]::Vector
 
@@ -211,7 +211,8 @@ function set_series!(
     collection::String,
     indexing_attribute::String,
     index::Int,
-    series::SeriesTable,
+    series::SeriesTable;
+    check_type::Bool = true,
 )
     attributes = _get_indexed_attributes(data, collection, index, indexing_attribute)
 
@@ -259,14 +260,16 @@ function set_series!(
     element = _get_element(data, collection, index)
 
     # validate types
-    for attribute in keys(series)
-        attribute_struct = get_attribute_struct(data, collection, String(attribute))
-        _check_type(
-            attribute_struct,
-            eltype(series[attribute]),
-            collection,
-            String(attribute),
-        )
+    if check_type
+        for attribute in keys(series)
+            attribute_struct = get_attribute_struct(data, collection, String(attribute))
+            _check_type(
+                attribute_struct,
+                eltype(series[attribute]),
+                collection,
+                String(attribute),
+            )
+        end
     end
 
     for attribute in keys(series)
@@ -276,6 +279,7 @@ function set_series!(
 
     return nothing
 end
+
 
 function write_data(data::Data, path::Union{AbstractString, Nothing} = nothing)
     # Retrieves JSON-like raw data
@@ -425,7 +429,7 @@ function create_study(
     model_template_path::Union{String, Nothing} = nothing,
     relations_defaults_path = PMD._DEFAULT_RELATIONS_PATH,
     study_collection::String = "PSRStudy",
-    verbose::Bool = true,
+    verbose::Bool = false,
 )
     if !isdir(data_path)
         error("data_path = '$data_path' must be a directory")
@@ -466,7 +470,7 @@ function create_study(
     PMD.load_relations_struct!(relations_defaults_path, relation_mapper)
 
     data_struct, model_files_added =
-        PMD.load_model(pmds_path, pmd_files, model_template, relation_mapper)
+        PMD.load_model(pmds_path, pmd_files, model_template, relation_mapper; verbose)
 
     stage_type =
         if haskey(study_defaults[study_collection], "Tipo_Etapa")
