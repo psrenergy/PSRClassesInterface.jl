@@ -1,6 +1,10 @@
 // ---------------------
 // --- Some comments ---
 // ---------------------
+DEFINE_CLASS PSRHydroPlant
+	PARM   INTEGER   test
+END_CLASS
+
 DEFINE_CLASS PSRGeneratorUnit
 	PARM   INTEGER   NumberUnits
 	PARM   INTEGER   Code        @id
@@ -24,7 +28,6 @@ MERGE_CLASS PSRHydroPlant Optfolio_HydroPlant
 	VECTOR  REFERENCE  Costs         Optfolio_GenericCosts
 	PARM    INTEGER Included
 	PARM	REAL	Percentage
-	PARM	INTEGER flagMRE
 END_CLASS
 
 // Comment

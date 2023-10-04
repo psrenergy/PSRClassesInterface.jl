@@ -1,5 +1,19 @@
 using JSON
 
+
+"""
+    ModelTemplate
+
+struct ModelTemplate
+    map::Dict{String, Set{String}}
+    inv::Dict{String, String}
+end
+
+Data structure to store the model template information.
+The keys of `map` contain the class name, for instance, `PSRHydroPlant`, the values
+contain the models names in the pmd files.
+
+"""
 struct ModelTemplate
     map::Dict{String, Set{String}}
     inv::Dict{String, String}
@@ -27,6 +41,7 @@ Base.iterate(mt::ModelTemplate, i::Integer) = iterate(mt.map, i)
 _hasmap(mt::ModelTemplate, k::AbstractString) = haskey(mt.map, string(k))
 _hasinv(mt::ModelTemplate, v::AbstractString) = haskey(mt.inv, string(v))
 
+# TODO - document file output format
 function dump_model_template(path::String, model_template::ModelTemplate)
     list = []
 
@@ -55,6 +70,8 @@ function load_model_template(path::AbstractString)
     return model_template
 end
 
+# TODO
+# in-place operations have the first argument as the data that will be modified.
 function load_model_template!(path::AbstractString, model_template::ModelTemplate)
     raw_struct = JSON.parsefile(path)
 

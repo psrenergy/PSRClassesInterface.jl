@@ -28,8 +28,10 @@ const DataStruct = Dict{String, Dict{String, Attribute}}
 include("model_template.jl")
 include("relation_mapper.jl")
 
+# TODO non portable
 const _PMDS_BASE_PATH = joinpath(@__DIR__(), "pmds")
 
+# TODO non portable
 const PMD_MODEL_TEMPLATES_PATH =
     joinpath(@__DIR__(), "..", "json_metadata", "modeltemplates.sddp.json")
 

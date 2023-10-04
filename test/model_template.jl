@@ -45,6 +45,7 @@ function test_model_template1()
 
     mt_copy_path = joinpath(temp_path, "modeltemplate.copy.json")
 
+    # TODO - test resulting file at `mt_copy_path`
     PSRI.PMD.dump_model_template(mt_copy_path, data)
 
     data_copy = PSRI.load_study(

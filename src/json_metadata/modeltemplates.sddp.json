@@ -220,5 +220,11 @@
         "models": [
             "SDDP_V10.2_RestricaoSoma"
         ]
+    },
+    {
+        "classname": "PSRExpansionProject",
+        "models": [
+            "Optgen_ProjetoExpansao"
+        ]
     }
 ]
