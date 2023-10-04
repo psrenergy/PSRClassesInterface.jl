@@ -114,7 +114,6 @@ function set_parm!(
     return nothing
 end
 
-
 function get_attribute_type(data::Data, collection::String, attribute::String)
     attribute_data = get_attribute_struct(data, collection, attribute)
     return attribute_data.type::Type{<:MainTypes}
@@ -279,7 +278,6 @@ function set_series!(
 
     return nothing
 end
-
 
 function write_data(data::Data, path::Union{AbstractString, Nothing} = nothing)
     # Retrieves JSON-like raw data
