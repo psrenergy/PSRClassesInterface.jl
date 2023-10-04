@@ -107,7 +107,7 @@ function _load_model!(
                 loaded_files,
                 model_template,
                 relation_mapper;
-                verbose
+                verbose,
             )
         end
     else
@@ -123,7 +123,7 @@ function _load_model!(
                     loaded_files,
                     model_template,
                     relation_mapper;
-                    verbose
+                    verbose,
                 )
             end
         end
@@ -149,7 +149,7 @@ function load_model(
         loaded_files,
         model_template,
         relation_mapper;
-        verbose
+        verbose,
     )
 
     return data_struct, loaded_files

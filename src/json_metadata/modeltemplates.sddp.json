@@ -10,7 +10,7 @@
         "models": [
             "SDDP_V10.2_Sistema"
         ]
-    },
+    },  
     {
         "classname": "PSRArea",
         "models": [

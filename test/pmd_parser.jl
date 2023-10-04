@@ -333,9 +333,9 @@ function test_pmd_source_2()
 
     @testset "source2.pmd" begin
         path = joinpath(@__DIR__, "data", "pmd", "source2.pmd")
-        data = PSRI.PMD.parse(path, model_template; verbose = true)
+        data_struct = PSRI.PMD.parse(path, model_template; verbose = true)
 
-        @test data == Dict{String, Dict{String, PSRI.PMD.Attribute}}(
+        @test data_struct == Dict{String, Dict{String, PSRI.PMD.Attribute}}(
             "PSRLoad" => Dict(
                 "AVId" => PSRI.PMD.Attribute("AVId", false, String, 0, ""),
                 "name" => PSRI.PMD.Attribute("name", false, String, 0, ""),
@@ -345,6 +345,7 @@ function test_pmd_source_2()
                 "Pind" => PSRI.PMD.Attribute("Pind", true, Float64, 1, "Data"),
                 "code" => PSRI.PMD.Attribute("code", false, Int32, 0, ""),
                 "icca" => PSRI.PMD.Attribute("icca", true, Int32, 0, ""),
+                "HourP" => PSRI.PMD.Attribute("HourP", true, Float64, 0, ""),
             ),
         )
     end

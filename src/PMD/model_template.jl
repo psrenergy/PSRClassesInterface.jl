@@ -1,24 +1,27 @@
 using JSON
 
-
 """
     ModelTemplate
 
 struct ModelTemplate
-    map::Dict{String, Set{String}}
-    inv::Dict{String, String}
+map::Dict{String, Set{String}}
+inv::Dict{String, String}
 end
 
 Data structure to store the model template information.
 The keys of `map` contain the class name, for instance, `PSRHydroPlant`, the values
 contain the models names in the pmd files.
-
 """
 struct ModelTemplate
     map::Dict{String, Set{String}}
     inv::Dict{String, String}
 
-    ModelTemplate() = new(Dict{String, Set{String}}(), Dict{String, String}())
+    function ModelTemplate(
+        map::Dict{String, Set{String}} = Dict{String, Set{String}}(),
+        inv::Dict{String, String} = Dict{String, String}(),
+    )
+        return new(map, inv)
+    end
 end
 
 function Base.push!(mt::ModelTemplate, ps::Pair{String, String}...)
