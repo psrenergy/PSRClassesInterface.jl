@@ -241,16 +241,3 @@ function merge_defaults!(dst::Dict{String, Any}, src::Dict{String, Any})
         end
     end
 end
-
-function fill_missing_attributes!(
-    study_data::Dict{String, Any},
-    defaults::Dict{String, Any},
-)
-    for (collection, elements) in study_data
-        if haskey(defaults, collection)
-            for element_index in 1:length(elements)
-                merge!(study_data[collection][element_index], defaults[collection])
-            end
-        end
-    end
-end

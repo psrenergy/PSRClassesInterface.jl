@@ -925,9 +925,7 @@ function _set_index!(data::Data, reference_id::Integer, collection::String, inde
     return nothing
 end
 
-function _build_index!(data::Data, add_missing::Bool = false)
-    missing_elements = Vector{Pair{String, Int32}}()
-
+function _build_index!(data::Data)
     for collection in get_collections(data)
         if max_elements(data, collection) == 0
             continue
@@ -938,19 +936,9 @@ function _build_index!(data::Data, add_missing::Bool = false)
                 reference_id = element["reference_id"]::Integer
 
                 _set_index!(data, reference_id, collection, index)
-            elseif add_missing
-                push!(missing_elements, Pair(collection, index))
             else
                 @warn "Missing reference_id for element in collection '$collection' with index '$index'"
             end
-        end
-    end
-
-    if add_missing && !isempty(missing_elements)
-        for (collection, index) in missing_elements
-            reference_id = _generate_reference_id(data)
-            data.raw[collection][index]["reference_id"] = reference_id
-            _set_index!(data, reference_id, collection, index)
         end
     end
     return nothing
