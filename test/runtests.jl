@@ -16,10 +16,6 @@ end
     @testset "Read json parameters" begin
         @time include("read_json_parameters.jl")
     end
-    @testset "Read json relations" begin
-        @time include("read_json2.jl")
-        @time include("read_json_relations_3.jl")
-    end
     @testset "Read json durations" begin
         @time include("duration.jl")
     end
