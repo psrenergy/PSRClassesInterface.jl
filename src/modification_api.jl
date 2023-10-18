@@ -711,6 +711,10 @@ end
 
 function _cast_element!(data::Data, collection::String, element::Dict{String, Any})
     for (attribute, value) in element
+        if _has_relation_attribute(data.relation_mapper, collection, attribute) ||
+           attribute == "reference_id"
+            continue
+        end
         T = get_attribute_type(data, collection, attribute)
 
         if is_vector_attribute(data, collection, attribute)
@@ -804,6 +808,14 @@ function delete_element!(data::Data, collection::String, index::Int)
         )
     end
     return nothing
+end
+
+function _rectify_study_data!(data::Data)
+    for (collection, elements) in data.raw
+        for element in 1:length(elements)
+            _cast_element!(data, collection, data.raw[collection][element])
+        end
+    end
 end
 
 summary(io::IO, args...) = print(io, summary(args...))
@@ -929,7 +941,6 @@ function _build_index!(data::Data)
             end
         end
     end
-
     return nothing
 end
 

@@ -228,6 +228,7 @@ function load_study(
     data_path = "",
     pmd_files = String[],
     path_pmds = PMD._PMDS_BASE_PATH,
+    rectify_json_data::Bool = false,
     log_file::Union{AbstractString, Nothing} = nothing,
     verbose = true,
     extra_config_file::String = "",
@@ -346,6 +347,10 @@ function load_study(
         model_template = model_template,
         relation_mapper = relation_mapper,
     )
+
+    if rectify_json_data
+        _rectify_study_data!(data)
+    end
 
     if add_transformers_to_series
         _merge_psr_transformer_and_psr_serie!(data)
