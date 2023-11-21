@@ -425,7 +425,7 @@ function PSRI.close(io::Writer)
         write(io.io, Float32(0))
 
         @warn(
-            "File not writen completely. Expected $(div(last, 4)) registries, got $(div(current, 4))"
+            "File not writen completely. Expected $(div(last_pos, 4)) registries, got $(div(curr_pos, 4)). Filling the missing data with zeros."
         )
     end
 

@@ -32,6 +32,9 @@ end
         @testset "Read data with Nonpositive Indices" begin
             @time include("OpenBinary/nonpositive_indices.jl")
         end
+        @testset "Write file partially" begin
+            @time include("OpenBinary/incomplete_file.jl")
+        end
     end
     @testset "ReaderMapper" begin
         @time include("reader_mapper.jl")
