@@ -48,7 +48,7 @@ function incomplete_file()
     ior = PSRI.open(
         PSRI.OpenBinary.Reader,
         bin_path;
-        header = agents
+        header = agents,
     )
 
     @test ior.data == [1.0, 2.0, 3.0]
@@ -61,7 +61,7 @@ function incomplete_file()
 
     @test ior.data == [0.0, 0.0, 0.0]
 
-    PSRI.close(ior)
+    return PSRI.close(ior)
 end
 
 incomplete_file()
