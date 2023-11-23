@@ -314,6 +314,27 @@ function set_related!(
     return nothing
 end
 
+function set_related!(
+    data::Data,
+    source::String,
+    target::String,
+    source_name::String,
+    target_name::String;
+    relation_type::PMD.RelationType = PMD.RELATION_1_TO_1,
+)
+    source_idx = _get_index(data, source, source_name)
+    target_idx = _get_index(data, target, target_name)
+
+    return set_related!(
+        data,
+        source,
+        target,
+        source_idx,
+        target_idx;
+        relation_type = relation_type,
+    )
+end
+
 function set_related_by_code!(
     data::Data,
     source::String,
@@ -355,6 +376,29 @@ function set_vector_related!(
     return nothing
 end
 
+function set_vector_related!(
+    data::Data,
+    source::String,
+    target::String,
+    source_name::String,
+    target_names::Vector{T},
+    relation_type::PMD.RelationType = PMD.RELATION_1_TO_N,
+) where {T <: String}
+    source_idx = _get_index(data, source, source_name)
+    target_indices = Vector{Integer}()
+    for target_name in target_names
+        push!(target_indices, _get_index(data, target, target_name))
+    end
+    return set_vector_related!(
+        data,
+        source,
+        target,
+        source_idx,
+        target_indices,
+        relation_type,
+    )
+end
+
 function delete_relation!(
     data::Data,
     source::String,
@@ -380,6 +424,18 @@ function delete_relation!(
     end
 
     return nothing
+end
+
+function delete_relation!(
+    data::Data,
+    source::String,
+    target::String,
+    source_name::String,
+    target_name::String,
+)
+    source_idx = _get_index(data, source, source_name)
+    target_idx = _get_index(data, target, target_name)
+    return delete_relation!(data, source, target, source_idx, target_idx)
 end
 
 function delete_vector_relation!(
@@ -410,6 +466,21 @@ function delete_vector_relation!(
     end
 
     return nothing
+end
+
+function delete_vector_relation!(
+    data::Data,
+    source::String,
+    target::String,
+    source_name::String,
+    target_names::Vector{String},
+)
+    source_idx = _get_index(data, source, source_name)
+    target_indices = Vector{Int}()
+    for target_name in target_names
+        push!(target_indices, _get_index(data, target, target_name))
+    end
+    return delete_vector_relation!(data, source, target, source_idx, target_indices)
 end
 
 function Base.show(io::IO, data::Data)

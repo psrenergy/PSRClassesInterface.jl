@@ -363,6 +363,11 @@ function _get_element_related(data::Data, collection::String, index::Integer)
     return relations_as_source, relations_as_target
 end
 
+function _get_element_related(data::Data, collection::String, name::String)
+    idx = _get_index(data, collection, name)
+    return _get_element_related(data, collection, idx)
+end
+
 """
     has_relations(data::Data, collection::String)
 
@@ -389,6 +394,11 @@ function has_relations(data::Data, collection::String, index::Int)
     end
 
     return false
+end
+
+function has_relations(data::Data, collection::String, name::String)
+    idx = _get_index(data, collection, name)
+    return has_relations(data, collection, idx)
 end
 
 """
@@ -425,6 +435,11 @@ function relations_summary(data::Data, collection::String, index::Integer)
     end
 
     return
+end
+
+function relations_summary(data::Data, collection::String, name::String)
+    idx = _get_index(data, collection, name)
+    return relations_summary(data, collection, idx)
 end
 
 """
@@ -859,6 +874,17 @@ function get_related(
     return 0 # for type stability
 end
 
+function get_related(
+    data::Data,
+    source::String,
+    target::String,
+    source_name::String;
+    relation_type::PMD.RelationType = PMD.RELATION_1_TO_1,
+)
+    idx = _get_index(data, source, source_name)
+    return get_related(data, source, target, idx; relation_type = relation_type)
+end
+
 function get_vector_related(
     data::Data,
     source::String,
@@ -892,4 +918,15 @@ function get_vector_related(
     end
 
     return target_index_list
+end
+
+function get_vector_related(
+    data::Data,
+    source::String,
+    target::String,
+    source_name::String,
+    relation_type::PMD.RelationType = PMD.RELATION_1_TO_N,
+)
+    idx = _get_index(data, source, source_name)
+    return get_vector_related(data, source, target, idx, relation_type)
 end
