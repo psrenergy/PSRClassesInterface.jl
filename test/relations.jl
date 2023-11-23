@@ -206,8 +206,134 @@ function test_relations5()
     end
 end
 
+function test_relations6()
+    mktempdir() do temp_path
+        data = PSRI.create_study(PSRI.OpenInterface(); data_path = temp_path)
+
+        PSRI.create_element!(data, "PSRSerie", "name" => "Serie1")
+
+        PSRI.create_element!(data, "PSRBus", "name" => "Bus1")
+        PSRI.create_element!(data, "PSRBus", "name" => "Bus2")
+
+        PSRI.set_related!(
+            data,
+            "PSRSerie",
+            "PSRBus",
+            "Serie1",
+            "Bus1";
+            relation_type = PSRI.PMD.RELATION_TO,
+        )
+
+        PSRI.set_related!(
+            data,
+            "PSRSerie",
+            "PSRBus",
+            "Serie1",
+            "Bus2";
+            relation_type = PSRI.PMD.RELATION_FROM,
+        )
+
+        @test PSRI.has_relations(
+            data, "PSRSerie", "Serie1",
+        ) == true
+
+        @test PSRI.has_relations(
+            data, "PSRBus", "Bus1",
+        ) == true
+
+        @test PSRI.has_relations(
+            data, "PSRBus", "Bus2",
+        ) == true
+
+        PSRI.relations_summary(
+            data, "PSRSerie", "Serie1",
+        )
+
+        @test PSRI.get_related(
+            data,
+            "PSRSerie",
+            "PSRBus",
+            Int32(1);
+            relation_type = PSRI.PMD.RELATION_TO,
+        ) == PSRI.get_related(
+            data,
+            "PSRSerie",
+            "PSRBus",
+            "Serie1";
+            relation_type = PSRI.PMD.RELATION_TO,
+        )
+
+        @test PSRI.get_related(
+            data,
+            "PSRSerie",
+            "PSRBus",
+            Int32(1);
+            relation_type = PSRI.PMD.RELATION_FROM,
+        ) == PSRI.get_related(
+            data,
+            "PSRSerie",
+            "PSRBus",
+            "Serie1";
+            relation_type = PSRI.PMD.RELATION_FROM,
+        )
+    end
+end
+
+function test_relations7()
+    mktempdir() do temp_path
+        data = PSRI.create_study(PSRI.OpenInterface(); data_path = temp_path)
+
+        PSRI.create_element!(
+            data,
+            "PSRReserveGenerationConstraintData",
+            "name" => "Reserve1",
+        )
+        PSRI.create_element!(data, "PSRThermalPlant", "name" => "Thermal1")
+        PSRI.create_element!(data, "PSRThermalPlant", "name" => "Thermal2")
+        PSRI.create_element!(data, "PSRThermalPlant", "name" => "Thermal3")
+        PSRI.create_element!(data, "PSRThermalPlant", "name" => "Thermal4")
+
+        PSRI.set_vector_related!(
+            data,
+            "PSRReserveGenerationConstraintData",
+            "PSRThermalPlant",
+            "Reserve1",
+            ["Thermal1", "Thermal2"],
+        )
+        PSRI.set_vector_related!(
+            data,
+            "PSRReserveGenerationConstraintData",
+            "PSRThermalPlant",
+            "Reserve1",
+            ["Thermal3", "Thermal4"],
+            PSRI.PMD.RELATION_BACKED,
+        )
+
+        @test PSRI.get_vector_related(
+            data,
+            "PSRReserveGenerationConstraintData",
+            "PSRThermalPlant",
+            1,
+        ) == PSRI.get_vector_related(
+            data,
+            "PSRReserveGenerationConstraintData",
+            "PSRThermalPlant",
+            "Reserve1",
+        )
+        @test PSRI.get_vector_related(
+            data,
+            "PSRReserveGenerationConstraintData",
+            "PSRThermalPlant",
+            1,
+            PSRI.PMD.RELATION_BACKED,
+        ) == [3, 4]
+    end
+end
+
 test_relations1()
 test_relations2()
 test_relations3()
 test_relations4()
 test_relations5()
+test_relations6()
+test_relations7()

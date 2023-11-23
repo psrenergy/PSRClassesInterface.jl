@@ -271,10 +271,10 @@ function test_api8() #tests delete_relation!
 
     data = PSRI.create_study(PSRI.OpenInterface(); data_path = temp_path)
 
-    index1 = PSRI.create_element!(data, "PSRBus")
-    index2 = PSRI.create_element!(data, "PSRBus")
+    index1 = PSRI.create_element!(data, "PSRBus", "name" => "Bus1")
+    index2 = PSRI.create_element!(data, "PSRBus", "name" => "Bus2")
 
-    index3 = PSRI.create_element!(data, "PSRSerie")
+    index3 = PSRI.create_element!(data, "PSRSerie", "name" => "Serie1")
 
     PSRI.set_related!(
         data,
@@ -309,7 +309,7 @@ function test_api8() #tests delete_relation!
     @test PSRI.get_map(data, "PSRSerie", "PSRBus"; relation_type = PSRI.PMD.RELATION_TO) ==
           [1]
 
-    PSRI.delete_relation!(data, "PSRSerie", "PSRBus", index3, index1)
+    PSRI.delete_relation!(data, "PSRSerie", "PSRBus", "Serie1", "Bus1")
     PSRI.delete_relation!(data, "PSRSerie", "PSRBus", index3, index2)
 
     PSRI.write_data(data)
@@ -375,6 +375,51 @@ function test_api9() #tests delete_vector_relation!
     @test map_vec_copy == Vector{Int32}[[]]
 end
 
+function test_api10() #tests delete_vector_relation!
+    temp_path = joinpath(tempdir(), "PSRI_10")
+    json_path = joinpath(temp_path, "psrclasses.json")
+
+    mkpath(temp_path)
+
+    data = PSRI.create_study(PSRI.OpenInterface(); data_path = temp_path)
+
+    PSRI.create_element!(
+        data,
+        "PSRThermalPlant",
+        "ShutDownCost" => 1.0,
+        "name" => "Thermal1",
+    )
+    PSRI.create_element!(data, "PSRFuel", "name" => "Fuel1")
+    PSRI.create_element!(data, "PSRFuel", "name" => "Fuel2")
+    PSRI.create_element!(data, "PSRFuel", "name" => "Fuel3")
+
+    PSRI.set_vector_related!(
+        data,
+        "PSRThermalPlant",
+        "PSRFuel",
+        "Thermal1",
+        ["Fuel1", "Fuel2", "Fuel3"],
+    )
+    map_vec = PSRI.get_vector_map(data, "PSRThermalPlant", "PSRFuel")
+    @test map_vec == Vector{Int32}[[1, 2, 3]]
+    PSRI.write_data(data)
+
+    PSRI.delete_vector_relation!(
+        data,
+        "PSRThermalPlant",
+        "PSRFuel",
+        "Thermal1",
+        ["Fuel1", "Fuel2", "Fuel3"],
+    )
+
+    PSRI.write_data(data)
+
+    data_copy = PSRI.load_study(PSRI.OpenInterface(); data_path = temp_path)
+
+    map_vec_copy = PSRI.get_vector_map(data_copy, "PSRThermalPlant", "PSRFuel")
+    @test map_vec_copy == Vector{Int32}[[]]
+end
+
 test_api(PATH_CASE_0)
 test_api2()
 test_api3()
@@ -384,3 +429,4 @@ test_api6()
 test_api7()
 test_api8()
 test_api9()
+test_api10()

@@ -223,6 +223,23 @@ function _merge_psr_transformer_and_psr_serie!(data::Data)
     return nothing
 end
 
+"""
+    _get_index(data::Data, collection::String, name::String)
+
+    Returns the index of an element from a collection, based on its name attribute
+"""
+function _get_index(data::Data, collection::String, name::String)
+    elements = data.raw[collection]
+    for idx in eachindex(elements)
+        if elements[idx]["name"] == name
+            return idx
+        end
+    end
+    return error(
+        "Element from collection $(collection) with name $(name) not found.",
+    )
+end
+
 function load_study(
     ::OpenInterface;
     data_path = "",
