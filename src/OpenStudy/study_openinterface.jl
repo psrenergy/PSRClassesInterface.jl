@@ -240,21 +240,6 @@ function _get_index(data::Data, collection::String, name::String)
     )
 end
 
-"""
-    _has_name(data::Data, collection::String, name::String)
-
-    Returns true if there is an element in collection with the given name
-"""
-function _has_name(data::Data, collection::String, name::String)
-    elements = data.raw[collection]
-    for idx in eachindex(elements)
-        if elements[idx]["name"] == name
-            return true
-        end
-    end
-    return false
-end
-
 function load_study(
     ::OpenInterface;
     data_path = "",
