@@ -1,6 +1,6 @@
 # PSRClassesInterface.jl
 
-[build-img]: https://github.com/psrenergy/PSRClassesInterface.jl/workflows/CI/badge.svg?branch=master
+[build-img]: https://github.com/psrenergy/PSRClassesInterface.jl/actions/workflows/ci.yml/badge.svg?branch=master
 [build-url]: https://github.com/psrenergy/PSRClassesInterface.jl/actions?query=workflow%3ACI
 
 [codecov-img]: https://codecov.io/gh/psrenergy/PSRClassesInterface.jl/coverage.svg?branch=master
