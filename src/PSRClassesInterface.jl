@@ -21,6 +21,9 @@ include("PMD/PMD.jl")
 const Attribute = PMD.Attribute
 const DataStruct = PMD.DataStruct
 
+include("OpenSQL/OpenSQL.jl")
+include("sql_interface.jl")
+
 # simple and generic interface
 include("study_interface.jl")
 include("reader_writer_interface.jl")

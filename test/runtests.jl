@@ -58,4 +58,7 @@ end
     @testset "Utils" begin
         @time include("utils.jl")
     end
+    @testset "OpenSQL" begin
+        @time include("OpenSQL/create_case.jl")
+    end
 end
