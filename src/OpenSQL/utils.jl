@@ -110,4 +110,8 @@ function id_exist_in_table(db::SQLite.DB, table::String, id::String)
     return nothing
 end
 
+function is_vector_parameter(db::SQLite.DB, table::String, column::String)
+    return table_exist_in_db(db, "_" * table * "_" * column)
+end
+
 close(db::SQLite.DB) = DBInterface.close!(db)

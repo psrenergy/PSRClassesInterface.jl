@@ -3,6 +3,10 @@ function read_parameter(
     table::String,
     column::String,
 )
+    if !column_exist_in_table(db, table, column) && is_vector_parameter(db, table, column)
+        error("column $column is a vector parameter, use `read_vector` instead.")
+    end
+
     sanity_check(db, table, column)
 
     query = "SELECT $column FROM $table"
@@ -18,6 +22,10 @@ function read_parameter(
     column::String,
     id::String,
 )
+    if !column_exist_in_table(db, table, column) && is_vector_parameter(db, table, column)
+        error("column $column is a vector parameter, use `read_vector` instead.")
+    end
+
     sanity_check(db, table, column)
 
     query = "SELECT $column FROM $table WHERE id = '$id'"
@@ -61,4 +69,25 @@ function read_vector(
     # This could be a missing value
     result = df[!, 1]
     return result
+end
+
+function has_relation(
+    db::SQLite.DB,
+    table_1::String,
+    table_2::String,
+    table_1_id::String,
+    table_2_id::String,
+)
+    sanity_check(db, table_1, "id")
+    sanity_check(db, table_2, "id")
+    id_exist_in_table(db, table_1, table_1_id)
+    id_exist_in_table(db, table_2, table_2_id)
+
+    id_parameter_on_table_1 = lowercase(table_2) * "_id"
+
+    if read_parameter(db, table_1, id_parameter_on_table_1, table_1_id) == table_2_id
+        return true
+    else
+        return false
+    end
 end

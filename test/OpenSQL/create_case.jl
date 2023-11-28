@@ -57,6 +57,10 @@ function create_case_1()
         commitment_type = "Linearized",
     )
 
+    @test PSRI.get_parm(db, "PowerAsset", "capacity", "Generator 1") == 50.0
+    PSRI.set_parm!(db, "PowerAsset", "capacity", "Generator 1", 400.0)
+    @test PSRI.get_parm(db, "PowerAsset", "capacity", "Generator 1") == 400.0
+
     PSRI.create_element!(
         db,
         "PowerAsset";
@@ -112,6 +116,14 @@ function create_case_1()
         unit = "MW",
     )
 
+    @test PSRI.get_vector(
+        db,
+        "ConversionCurve",
+        "conversion_efficiencies",
+        "Conversion curve 2",
+    ) ==
+          [1.0, 2.0, 4.0]
+
     PSRI.set_related!(
         db,
         "PowerAsset",
@@ -133,6 +145,10 @@ function create_case_1()
         "Generator 3",
         "R3",
     )
+
+    @test PSRI.max_elements(db, "PowerAsset") == 4
+    @test PSRI.max_elements(db, "Resource") == 3
+    @test PSRI.max_elements(db, "ConversionCurve") == 3
 
     PSRI.OpenSQL.close(db)
 
@@ -174,6 +190,24 @@ function create_case_1()
         "Generator 3",
         "R3",
     )
+
+    @test PSRI.get_parm(db, "PowerAsset", "resource_id", "Generator 1") == "R1"
+
+    @test PSRI.max_elements(db, "PowerAsset") == 4
+    @test PSRI.max_elements(db, "Resource") == 3
+
+    PSRI.delete_element!(db, "PowerAsset", "Generator 4")
+    PSRI.delete_element!(db, "Resource", "R3")
+
+    @test PSRI.max_elements(db, "PowerAsset") == 3
+    @test PSRI.max_elements(db, "Resource") == 2
+
+    @test PSRI.get_attributes(db, "Resource") ==
+          ["id", "description", "grouping_label", "unit", "big_unit",
+        "aux_resource_type", "shared_type", "subperiod_av_type",
+        "av_unit_type", "subperiod_cost_type", "storage_type",
+        "ref_cost", "ref_availability", "ref_cost_vector",
+        "ref_availability_vector"]
 
     PSRI.OpenSQL.close(db)
 
