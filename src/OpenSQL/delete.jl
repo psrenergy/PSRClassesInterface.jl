@@ -19,17 +19,17 @@ function delete_relation!(
     table_1_id::String,
     table_2_id::String,
 )
-    if !has_relation(db, table_1, table_2, table_1_id, table_2_id)
+    if !are_related(db, table_1, table_2, table_1_id, table_2_id)
         error(
             "Element with id $table_1_id from table $table_1 is not related to element with id $table_2_id from table $table_2.",
         )
     end
 
-    id_parameter_on_table_1 = lowercase(table2) * "_id"
+    id_parameter_on_table_1 = lowercase(table_2) * "_id"
 
     DBInterface.execute(
         db,
-        "UPDATE $table1 SET $id_parameter_on_table_1 = '' WHERE id = '$id_1'",
+        "UPDATE $table_1 SET $id_parameter_on_table_1 = '' WHERE id = '$table_1_id'",
     )
 
     return nothing

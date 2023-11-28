@@ -35,6 +35,16 @@ function create_case_1()
     @test PSRI.get_parm(db, "Plant", "id", "Plant 2") == "Plant 2"
     @test PSRI.get_parm(db, "Plant", "capacity", "Plant 2") == 0.0
 
+    PSRI.set_parm!(
+        db,
+        "Plant",
+        "capacity",
+        "Plant 2",
+        100.0,
+    )
+
+    @test PSRI.get_parm(db, "Plant", "capacity", "Plant 2") == 100.0
+
     PSRI.create_element!(
         db,
         "Resource";
@@ -65,6 +75,12 @@ function create_case_1()
         "R2",
     ) == [4.0, 5.0, 6.0]
 
+    @test PSRI.get_vectors(
+        db,
+        "Resource",
+        "some_values",
+    ) == [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]
+
     PSRI.set_related!(
         db,
         "Plant",
@@ -80,12 +96,24 @@ function create_case_1()
         "R2",
     )
 
+    @test PSRI.get_parm(db, "Plant", "resource_id", "Plant 1") == "R1"
+
+    PSRI.delete_relation!(
+        db,
+        "Plant",
+        "Resource",
+        "Plant 1",
+        "R1",
+    )
+
+    @test PSRI.get_parm(db, "Plant", "resource_id", "Plant 1") == ""
+
     @test PSRI.max_elements(db, "Plant") == 2
     @test PSRI.max_elements(db, "Resource") == 2
 
     PSRI.OpenSQL.close(db)
 
-    db = PSRI.OpenSQL.load_db(joinpath(case_path, "psrclasses.sqlite"))
+    db = PSRI.load_study(PSRI.SQLInterface(); data_path = joinpath(case_path, "psrclasses.sqlite"))
 
     PSRI.delete_element!(db, "Plant", "Plant 1")
     PSRI.delete_element!(db, "Resource", "R1")

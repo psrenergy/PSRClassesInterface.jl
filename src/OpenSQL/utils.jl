@@ -99,7 +99,7 @@ function is_vector_parameter(db::SQLite.DB, table::String, column::String)
     return table_exist_in_db(db, "_" * table * "_" * column)
 end
 
-function has_relation(
+function are_related(
     db::SQLite.DB,
     table_1::String,
     table_2::String,
