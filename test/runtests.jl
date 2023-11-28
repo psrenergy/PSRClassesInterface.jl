@@ -60,5 +60,6 @@ end
     end
     @testset "OpenSQL" begin
         @time include("OpenSQL/create_case.jl")
+        @time include("OpenSQL/time_series.jl")
     end
 end

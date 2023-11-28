@@ -38,9 +38,15 @@ function get_attributes(db::OpenSQL.DB, collection::String)
     tables = OpenSQL.table_names(db)
     vector_attributes = Vector{String}()
     for table in tables
-        if startswith(table, "_" * collection * "_")
+        if startswith(table, "_" * collection * "_") && !endswith(table, "_TimeSeries")
             push!(vector_attributes, split(table, collection * "_")[end])
         end
+    end
+    if OpenSQL.has_time_series(db, collection)
+        time_series_table = "_" * collection * "_TimeSeries"
+        time_series_attributes = OpenSQL.column_names(db, time_series_table)
+        deleteat!(time_series_attributes, findfirst(x -> x == "id", time_series_attributes))
+        return vcat(columns, vector_attributes, time_series_attributes)
     end
     return vcat(columns, vector_attributes)
 end
@@ -85,3 +91,43 @@ delete_relation!(
     source_id::String,
     target_id::String,
 ) = OpenSQL.delete_relation!(db, source, target, source_id, target_id)
+
+# Graf files
+has_graf_file(db::OpenSQL.DB, collection::String, attribute::String) =
+    OpenSQL.has_time_series(db, collection, attribute)
+
+function link_series_to_file(
+    db::OpenSQL.DB,
+    collection::String,
+    attribute::String,
+    file_path::String,
+)
+    if !OpenSQL.has_time_series(db, collection, attribute)
+        error("Collection $collection does not have a graf file for attribute $attribute.")
+    end
+    time_series_table = OpenSQL._time_series_table_name(collection)
+
+    if max_elements(db, time_series_table) == 0
+        OpenSQL.create_element!(db, time_series_table; id = collection * "_timeseries")
+    end
+    OpenSQL.update!(db, time_series_table, attribute, collection * "_timeseries", file_path)
+    return nothing
+end
+
+function mapped_vector(db::OpenSQL.DB, collection::String, attribute::String)
+    if !has_graf_file(db, collection, attribute)
+        error("Collection $collection does not have a graf file for attribute $attribute.")
+    end
+    time_series_table = OpenSQL._time_series_table_name(collection)
+
+    graf_file = get_parms(db, time_series_table, attribute)[1]
+    agents = get_parms(db, collection, "id")
+
+    ior = OpenBinary.PSRI.open(
+        OpenBinary.Reader,
+        graf_file;
+        header = agents,
+    )
+
+    return ior
+end

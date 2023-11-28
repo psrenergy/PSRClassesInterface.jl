@@ -7,207 +7,96 @@ function create_case_1()
     db = PSRI.create_study(
         PSRI.SQLInterface();
         data_path = case_path,
-        schema = "current_schema",
-        study_collection = "StudyParameters",
+        schema = "toy_schema",
+        study_collection = "Study",
         id = "Toy Case",
-        n_periods = 3,
-        n_subperiods = 2,
-        subperiod_duration = 24.0,
+        value1 = 1.0,
     )
 
-    @test typeof(db) == PSRI.OpenSQL.DB
+    @test PSRI.get_parm(db, "Study", "id", "Toy Case") == "Toy Case"
+    @test PSRI.get_parm(db, "Study", "value1", "Toy Case") == 1.0
+    @test PSRI.get_parm(db, "Study", "enum1", "Toy Case") == "A"
+
+    PSRI.create_element!(
+        db,
+        "Plant";
+        id = "Plant 1",
+        capacity = 50.0,
+    )
+
+    PSRI.create_element!(
+        db,
+        "Plant";
+        id = "Plant 2",
+    )
+
+    @test PSRI.get_parm(db, "Plant", "id", "Plant 1") == "Plant 1"
+    @test PSRI.get_parm(db, "Plant", "capacity", "Plant 1") == 50.0
+    @test PSRI.get_parm(db, "Plant", "id", "Plant 2") == "Plant 2"
+    @test PSRI.get_parm(db, "Plant", "capacity", "Plant 2") == 0.0
 
     PSRI.create_element!(
         db,
         "Resource";
         id = "R1",
-        ref_availability = 100.0,
-        subperiod_av_type = "PerPeriod",
-        subperiod_cost_type = "PerPeriod",
-        ref_cost = 1.0,
+        type = "E",
+        some_values = [1.0, 2.0, 3.0],
     )
 
     PSRI.create_element!(
         db,
         "Resource";
         id = "R2",
-        ref_availability = 20.0,
-        subperiod_av_type = "PerSubperiodConstant",
-        subperiod_cost_type = "PerPeriod",
-        ref_cost = 1.0,
-    )
-
-    PSRI.create_element!(
-        db,
-        "Resource";
-        id = "R3",
-        ref_availability = 100.0,
-        subperiod_av_type = "PerPeriod",
-        subperiod_cost_type = "PerPeriod",
-        ref_cost = 1.0,
-    )
-
-    PSRI.create_element!(
-        db,
-        "PowerAsset";
-        id = "Generator 1",
-        capacity = 50.0,
-        output_cost = 10.0,
-        resource_cost_multiplier = 10.0,
-        commitment_type = "Linearized",
-    )
-
-    @test PSRI.get_parm(db, "PowerAsset", "capacity", "Generator 1") == 50.0
-    PSRI.set_parm!(db, "PowerAsset", "capacity", "Generator 1", 400.0)
-    @test PSRI.get_parm(db, "PowerAsset", "capacity", "Generator 1") == 400.0
-
-    PSRI.create_element!(
-        db,
-        "PowerAsset";
-        id = "Generator 2",
-        capacity = 100.0,
-        output_cost = 12.0,
-        resource_cost_multiplier = 12.0,
-        commitment_type = "Linearized",
-    )
-
-    PSRI.create_element!(
-        db,
-        "PowerAsset";
-        id = "Generator 3",
-        capacity = 100.0,
-        output_cost = 15.0,
-        resource_cost_multiplier = 15.0,
-        commitment_type = "Linearized",
-    )
-
-    PSRI.create_element!(
-        db,
-        "PowerAsset";
-        id = "Generator 4",
-        output_sign = "DemandLike",
-        curve_type = "Forced",
-        commitment_type = "AlwaysOn",
-        capacity = 100.0,
-    )
-
-    PSRI.create_element!(
-        db,
-        "ConversionCurve";
-        id = "Conversion curve 1",
-        unit = "MW",
-        max_capacity_fractions = [0.1, 0.2, 0.3, 0.4],
-        conversion_efficiencies = [1.0, 2.0],
-    )
-
-    PSRI.create_element!(
-        db,
-        "ConversionCurve";
-        id = "Conversion curve 2",
-        unit = "MW",
-        max_capacity_fractions = [0.5, 0.3, 0.2, 0.1],
-        conversion_efficiencies = [1.0, 2.0, 4.0],
-    )
-
-    PSRI.create_element!(
-        db,
-        "ConversionCurve";
-        id = "Conversion curve 3",
-        unit = "MW",
+        type = "F",
+        some_values = [4.0, 5.0, 6.0],
     )
 
     @test PSRI.get_vector(
         db,
-        "ConversionCurve",
-        "conversion_efficiencies",
-        "Conversion curve 2",
-    ) ==
-          [1.0, 2.0, 4.0]
+        "Resource",
+        "some_values",
+        "R1",
+    ) == [1.0, 2.0, 3.0]
+
+    @test PSRI.get_vector(
+        db,
+        "Resource",
+        "some_values",
+        "R2",
+    ) == [4.0, 5.0, 6.0]
 
     PSRI.set_related!(
         db,
-        "PowerAsset",
+        "Plant",
         "Resource",
-        "Generator 1",
+        "Plant 1",
         "R1",
     )
     PSRI.set_related!(
         db,
-        "PowerAsset",
+        "Plant",
         "Resource",
-        "Generator 2",
+        "Plant 2",
         "R2",
     )
-    PSRI.set_related!(
-        db,
-        "PowerAsset",
-        "Resource",
-        "Generator 3",
-        "R3",
-    )
 
-    @test PSRI.max_elements(db, "PowerAsset") == 4
-    @test PSRI.max_elements(db, "Resource") == 3
-    @test PSRI.max_elements(db, "ConversionCurve") == 3
+    @test PSRI.max_elements(db, "Plant") == 2
+    @test PSRI.max_elements(db, "Resource") == 2
 
     PSRI.OpenSQL.close(db)
 
     db = PSRI.OpenSQL.load_db(joinpath(case_path, "psrclasses.sqlite"))
 
-    @test PSRI.get_parm(db, "StudyParameters", "id", "Toy Case") == "Toy Case"
-    @test PSRI.get_parm(db, "StudyParameters", "n_periods", "Toy Case") == 3
-    @test PSRI.get_parm(db, "StudyParameters", "n_subperiods", "Toy Case") == 2
-    @test PSRI.get_parm(db, "StudyParameters", "subperiod_duration", "Toy Case") == 24.0
+    PSRI.delete_element!(db, "Plant", "Plant 1")
+    PSRI.delete_element!(db, "Resource", "R1")
 
-    @test PSRI.get_parms(db, "Resource", "id") == ["R1", "R2", "R3"]
-    @test PSRI.get_parms(db, "Resource", "ref_availability") == [100.0, 20.0, 100.0]
-    @test PSRI.get_parms(db, "Resource", "subperiod_av_type") ==
-          ["PerPeriod", "PerSubperiodConstant", "PerPeriod"]
-    @test PSRI.get_parms(db, "Resource", "subperiod_cost_type") ==
-          ["PerPeriod", "PerPeriod", "PerPeriod"]
-    @test PSRI.get_parms(db, "Resource", "ref_cost") == [1.0, 1.0, 1.0]
+    @test PSRI.max_elements(db, "Plant") == 1
+    @test PSRI.max_elements(db, "Resource") == 1
 
-    PSRI.set_related!(
-        db,
-        "PowerAsset",
-        "Resource",
-        "Generator 1",
-        "R1",
-    )
+    @test PSRI.get_attributes(db, "Resource") == ["id", "type", "some_values"]
 
-    PSRI.set_related!(
-        db,
-        "PowerAsset",
-        "Resource",
-        "Generator 2",
-        "R2",
-    )
-
-    PSRI.set_related!(
-        db,
-        "PowerAsset",
-        "Resource",
-        "Generator 3",
-        "R3",
-    )
-
-    @test PSRI.get_parm(db, "PowerAsset", "resource_id", "Generator 1") == "R1"
-
-    @test PSRI.max_elements(db, "PowerAsset") == 4
-    @test PSRI.max_elements(db, "Resource") == 3
-
-    PSRI.delete_element!(db, "PowerAsset", "Generator 4")
-    PSRI.delete_element!(db, "Resource", "R3")
-
-    @test PSRI.max_elements(db, "PowerAsset") == 3
-    @test PSRI.max_elements(db, "Resource") == 2
-
-    @test PSRI.get_attributes(db, "Resource") ==
-          ["id", "description", "grouping_label", "unit", "big_unit",
-        "aux_resource_type", "shared_type", "subperiod_av_type",
-        "av_unit_type", "subperiod_cost_type", "storage_type",
-        "ref_cost", "ref_availability", "ref_cost_vector",
-        "ref_availability_vector"]
+    @test PSRI.get_attributes(db, "Plant") ==
+          ["id", "capacity", "resource_id", "generation_file"]
 
     PSRI.OpenSQL.close(db)
 

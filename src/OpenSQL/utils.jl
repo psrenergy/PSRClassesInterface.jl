@@ -31,21 +31,6 @@ function load_db(database_path::String)
     return db
 end
 
-function set_related!(
-    db::SQLite.DB,
-    table1::String,
-    table2::String,
-    id_1::String,
-    id_2::String,
-)
-    id_parameter_on_table_1 = lowercase(table2) * "_id"
-    SQLite.execute(
-        db,
-        "UPDATE $table1 SET $id_parameter_on_table_1 = '$id_2' WHERE id = '$id_1'",
-    )
-    return nothing
-end
-
 function column_names(db::SQLite.DB, table::String)
     cols = SQLite.columns(db, table) |> DataFrame
     return cols.name
@@ -113,5 +98,47 @@ end
 function is_vector_parameter(db::SQLite.DB, table::String, column::String)
     return table_exist_in_db(db, "_" * table * "_" * column)
 end
+
+function has_relation(
+    db::SQLite.DB,
+    table_1::String,
+    table_2::String,
+    table_1_id::String,
+    table_2_id::String,
+)
+    sanity_check(db, table_1, "id")
+    sanity_check(db, table_2, "id")
+    id_exist_in_table(db, table_1, table_1_id)
+    id_exist_in_table(db, table_2, table_2_id)
+
+    id_parameter_on_table_1 = lowercase(table_2) * "_id"
+
+    if read_parameter(db, table_1, id_parameter_on_table_1, table_1_id) == table_2_id
+        return true
+    else
+        return false
+    end
+end
+
+function has_time_series(db::SQLite.DB, table::String)
+    time_series_table = _time_series_table_name(table)
+    return table_exist_in_db(db, time_series_table)
+end
+
+function has_time_series(db::SQLite.DB, table::String, column::String)
+    sanity_check(db, table, "id")
+    time_series_table = _time_series_table_name(table)
+    if table_exist_in_db(db, time_series_table)
+        if column in column_names(db, time_series_table)
+            return true
+        else
+            return false
+        end
+    else
+        return false
+    end
+end
+
+_time_series_table_name(table::String) = "_" * table * "_TimeSeries"
 
 close(db::SQLite.DB) = DBInterface.close!(db)
