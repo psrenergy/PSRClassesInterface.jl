@@ -113,7 +113,10 @@ function create_case_1()
 
     PSRI.OpenSQL.close(db)
 
-    db = PSRI.load_study(PSRI.SQLInterface(); data_path = joinpath(case_path, "psrclasses.sqlite"))
+    db = PSRI.load_study(
+        PSRI.SQLInterface();
+        data_path = joinpath(case_path, "psrclasses.sqlite"),
+    )
 
     PSRI.delete_element!(db, "Plant", "Plant 1")
     PSRI.delete_element!(db, "Resource", "R1")
