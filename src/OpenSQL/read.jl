@@ -43,6 +43,7 @@ function read_vector(
     table::String,
     vector_name::String,
 )
+    table_name = _vector_table_name(table, vector_name)
     sanity_check(db, table_name, vector_name)
     ids_in_table = read_parameter(db, table, "id")
 
@@ -68,4 +69,11 @@ function read_vector(
     # This could be a missing value
     result = df[!, 1]
     return result
+end
+
+function number_of_rows(db::SQLite.DB, table::String, column::String = "id")
+    sanity_check(db, table, column)
+    query = "SELECT COUNT($column) FROM $table"
+    df = DBInterface.execute(db, query) |> DataFrame
+    return df[!, 1][1]
 end

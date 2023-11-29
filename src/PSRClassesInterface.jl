@@ -22,7 +22,6 @@ const Attribute = PMD.Attribute
 const DataStruct = PMD.DataStruct
 
 include("OpenSQL/OpenSQL.jl")
-include("sql_interface.jl")
 
 # simple and generic interface
 include("study_interface.jl")
@@ -47,5 +46,8 @@ include("tables/interface.jl")
 
 # modification API
 include("modification_api.jl")
+
+# SQL API
+include("sql_interface.jl")
 
 end

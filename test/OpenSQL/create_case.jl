@@ -75,11 +75,19 @@ function create_case_1()
         "R2",
     ) == [4.0, 5.0, 6.0]
 
+    PSRI.set_vector!(
+        db,
+        "Resource",
+        "some_values",
+        "R1",
+        [7.0, 8.0, 9.0],
+    )
+
     @test PSRI.get_vectors(
         db,
         "Resource",
         "some_values",
-    ) == [[1.0, 2.0, 3.0], [4.0, 5.0, 6.0]]
+    ) == [[7.0, 8.0, 9.0], [4.0, 5.0, 6.0]]
 
     PSRI.set_related!(
         db,

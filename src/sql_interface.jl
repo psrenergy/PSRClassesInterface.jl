@@ -107,7 +107,7 @@ function link_series_to_file(
     end
     time_series_table = OpenSQL._time_series_table_name(collection)
 
-    if length(get_parms(db, time_series_table, attribute)) == 0
+    if OpenSQL.number_of_rows(db, time_series_table, attribute) == 0
         OpenSQL.create_parameters!(db, time_series_table, Dict(attribute => file_path))
     else
         OpenSQL.update!(db, time_series_table, attribute, file_path)
@@ -123,20 +123,72 @@ function link_series_to_files(
     return OpenSQL.create_related_time_series!(db, collection; kwargs...)
 end
 
-function mapped_vector(db::OpenSQL.DB, collection::String, attribute::String)
+function open(
+    ::Type{OpenBinary.Reader},
+    db::OpenSQL.DB,
+    collection::String,
+    attribute::String;
+    kwargs...,
+)
     if !has_graf_file(db, collection, attribute)
         error("Collection $collection does not have a graf file for attribute $attribute.")
     end
     time_series_table = OpenSQL._time_series_table_name(collection)
 
-    graf_file = get_parms(db, time_series_table, attribute)[1]
+    raw_files = get_parms(db, time_series_table, attribute)
+
+    if OpenSQL.number_of_rows(db, time_series_table, attribute) == 0
+        error("Collection $collection does not have a graf file for attribute $attribute.")
+    end
+
+    graf_file = raw_files[findfirst(x -> !ismissing(x), raw_files)]
+
     agents = get_parms(db, collection, "id")
 
-    ior = OpenBinary.PSRI.open(
+    ior = open(
         OpenBinary.Reader,
         graf_file;
         header = agents,
+        kwargs...,
     )
 
     return ior
+end
+
+function open(
+    ::Type{OpenBinary.Writer},
+    db::OpenSQL.DB,
+    collection::String,
+    attribute::String,
+    path::String;
+    kwargs...,
+)
+    if !has_graf_file(db, collection, attribute)
+        error("Collection $collection does not have a graf file for attribute $attribute.")
+    end
+    time_series_table = OpenSQL._time_series_table_name(collection)
+
+    graf_file = if OpenSQL.number_of_rows(db, time_series_table, attribute) == 0
+        link_series_to_file(db, collection, attribute, path)
+        path
+    else
+        raw_files = get_parms(db, time_series_table, attribute)
+        if raw_files[1] != path
+            link_series_to_file(db, collection, attribute, path)
+            path
+        else
+            raw_files[1]
+        end
+    end
+
+    agents = get_parms(db, collection, "id")
+
+    iow = open(
+        OpenBinary.Writer,
+        graf_file;
+        agents = agents,
+        kwargs...,
+    )
+
+    return iow
 end

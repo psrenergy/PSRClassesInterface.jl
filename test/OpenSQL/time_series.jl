@@ -26,11 +26,13 @@ function test_time_series()
 
     iow = PSRI.open(
         PSRI.OpenBinary.Writer,
+        db,
+        "Plant",
+        "generation_file",
         joinpath(case_path, "generation");
         blocks = 3,
         scenarios = 2,
         stages = 12,
-        agents = ["Plant 1", "Plant 2"],
         unit = "MW",
     )
 
@@ -40,14 +42,7 @@ function test_time_series()
 
     PSRI.close(iow)
 
-    PSRI.link_series_to_file(
-        db,
-        "Plant",
-        "generation_file",
-        joinpath(case_path, "generation"),
-    )
-
-    ior = PSRI.mapped_vector(db, "Plant", "generation_file")
+    ior = PSRI.open(PSRI.OpenBinary.Reader, db, "Plant", "generation_file")
 
     for t in 1:12, s in 1:2, b in 1:3
         @test ior.data == [(t + s + b) * 100.0, (t + s + b) * 300.0]
@@ -58,6 +53,9 @@ function test_time_series()
 
     iow = PSRI.open(
         PSRI.OpenBinary.Writer,
+        db,
+        "Plant",
+        "cost_file",
         joinpath(case_path, "cost");
         blocks = 3,
         scenarios = 2,
@@ -72,12 +70,37 @@ function test_time_series()
 
     PSRI.close(iow)
 
-    PSRI.link_series_to_file(db, "Plant", "cost_file", joinpath(case_path, "cost"))
-
-    ior = PSRI.mapped_vector(db, "Plant", "cost_file")
+    ior = PSRI.open(PSRI.OpenBinary.Reader, db, "Plant", "cost_file")
 
     for t in 1:12, s in 1:2, b in 1:3
         @test ior.data == [(t + s + b) * 500.0, (t + s + b) * 400.0]
+        PSRI.next_registry(ior)
+    end
+
+    PSRI.close(ior)
+
+    iow = PSRI.open(
+        PSRI.OpenBinary.Writer,
+        db,
+        "Plant",
+        "generation_file",
+        joinpath(case_path, "generation_new");
+        blocks = 3,
+        scenarios = 2,
+        stages = 12,
+        unit = "MW",
+    )
+
+    for t in 1:12, s in 1:2, b in 1:3
+        PSRI.write_registry(iow, [(t + s + b) * 50.0, (t + s + b) * 20.0], t, s, b)
+    end
+
+    PSRI.close(iow)
+
+    ior = PSRI.open(PSRI.OpenBinary.Reader, db, "Plant", "generation_file")
+
+    for t in 1:12, s in 1:2, b in 1:3
+        @test ior.data == [(t + s + b) * 50.0, (t + s + b) * 20.0]
         PSRI.next_registry(ior)
     end
 
@@ -153,7 +176,7 @@ function test_time_series_2()
         cost_file = joinpath(case_path, "cost"),
     )
 
-    ior = PSRI.mapped_vector(db, "Plant", "generation_file")
+    ior = PSRI.open(PSRI.OpenBinary.Reader, db, "Plant", "generation_file")
 
     for t in 1:12, s in 1:2, b in 1:3
         @test ior.data == [(t + s + b) * 100.0, (t + s + b) * 300.0]
@@ -162,7 +185,7 @@ function test_time_series_2()
 
     PSRI.close(ior)
 
-    ior = PSRI.mapped_vector(db, "Plant", "cost_file")
+    ior = PSRI.open(PSRI.OpenBinary.Reader, db, "Plant", "cost_file")
 
     for t in 1:12, s in 1:2, b in 1:3
         @test ior.data == [(t + s + b) * 500.0, (t + s + b) * 400.0]

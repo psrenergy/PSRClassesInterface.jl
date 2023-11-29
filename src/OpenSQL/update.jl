@@ -31,11 +31,20 @@ function update!(
     if !is_vector_parameter(db, table, column)
         error("Column $column is not a vector parameter.")
     end
-    
+
     vector_table = _vector_table_name(table, column)
 
-    DBInterface.execute(db, "UPDATE $vector_table SET $column = '$vals' WHERE id = '$id'")
+    current_vector = read_vector(db, table, column, id)
+    current_length = length(current_vector)
 
-    error("Updating vectors is not yet implemented.")
+    for idx in 1:current_length
+        DBInterface.execute(
+            db,
+            "DELETE FROM $vector_table WHERE id = '$id' AND idx = $idx",
+        )
+    end
+
+    create_vector!(db, table, id, column, vals)
+
     return nothing
 end
