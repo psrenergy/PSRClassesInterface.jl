@@ -109,7 +109,7 @@ function link_series_to_file(
 
     if length(get_parms(db, time_series_table, attribute)) == 0
         OpenSQL.create_parameters!(db, time_series_table, Dict(attribute => file_path))
-    else 
+    else
         OpenSQL.update!(db, time_series_table, attribute, file_path)
     end
     return nothing

@@ -3,8 +3,8 @@ function update!(
     table::String,
     column::String,
     id::String,
-    val,
-)
+    val::T,
+) where {T <: ValidOpenSQLDataType}
     sanity_check(db, table, column)
     DBInterface.execute(db, "UPDATE $table SET $column = '$val' WHERE id = '$id'")
     return nothing
@@ -14,8 +14,8 @@ function update!(
     db::SQLite.DB,
     table::String,
     column::String,
-    val,
-)
+    val::T,
+) where {T <: ValidOpenSQLDataType}
     sanity_check(db, table, column)
     DBInterface.execute(db, "UPDATE $table SET $column = '$val'")
     return nothing

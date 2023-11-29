@@ -130,7 +130,6 @@ function test_time_series_2()
 
     PSRI.close(iow)
 
-    
     iow = PSRI.open(
         PSRI.OpenBinary.Writer,
         joinpath(case_path, "cost");
