@@ -588,16 +588,19 @@ function _parse_reference!(
 
         if !haskey(parser.relation_mapper[state.collection], target)
             parser.relation_mapper[state.collection][target] = Dict{String, Relation}()
-            if _is_vector(kind)
-                relation_type = RELATION_1_TO_N
-            else
-                relation_type = RELATION_1_TO_1
-            end
+        end
+
+        if _is_vector(kind)
+            relation_type = RELATION_1_TO_N
+        else
+            relation_type = RELATION_1_TO_1
+        end
+
+        if !haskey(parser.relation_mapper[state.collection][target], attribute)
             relation = Relation(relation_type, attribute)
-    
             parser.relation_mapper[state.collection][target][attribute] = relation
         end
-        
+
         return true
     else
         return false

@@ -4,7 +4,8 @@
 Returns true is `relation` is a vector relation.
 """
 function is_vector_relation(relation::PMD.RelationType)
-    return relation == PMD.RELATION_1_TO_N || relation == PMD.RELATION_BACKED || relation == PMD.RELATION_INPUTS || relation == PMD.RELATION_OUTPUTS
+    return relation == PMD.RELATION_1_TO_N || relation == PMD.RELATION_BACKED ||
+           relation == PMD.RELATION_INPUTS || relation == PMD.RELATION_OUTPUTS
 end
 
 """
