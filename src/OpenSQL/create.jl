@@ -19,7 +19,7 @@ function create_vector!(
     vector_name::String,
     values::V,
 ) where {V <: AbstractVector}
-    table_name = "_" * table * "_" * vector_name
+    table_name = _vector_table_name(table, vector_name)
     sanity_check(db, table_name, vector_name)
     num_values = length(values)
     ids = fill(id, num_values)
@@ -72,7 +72,7 @@ function create_related_time_series!(
     table::String;
     kwargs...,
 )
-    table_name = "_" * table * "_TimeSeries"
+    table_name = _time_series_table_name(table)
     dict_time_series = Dict()
     for (key, value) in kwargs
         @assert isa(value, String)

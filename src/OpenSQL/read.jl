@@ -43,7 +43,6 @@ function read_vector(
     table::String,
     vector_name::String,
 )
-    table_name = "_" * table * "_" * vector_name
     sanity_check(db, table_name, vector_name)
     ids_in_table = read_parameter(db, table, "id")
 
@@ -61,7 +60,7 @@ function read_vector(
     vector_name::String,
     id::String,
 )
-    table_name = "_" * table * "_" * vector_name
+    table_name = _vector_table_name(table, vector_name)
     sanity_check(db, table_name, vector_name)
 
     query = "SELECT $vector_name FROM $table_name WHERE id = '$id' ORDER BY idx"

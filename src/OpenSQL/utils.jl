@@ -96,7 +96,7 @@ function id_exist_in_table(db::SQLite.DB, table::String, id::String)
 end
 
 function is_vector_parameter(db::SQLite.DB, table::String, column::String)
-    return table_exist_in_db(db, "_" * table * "_" * column)
+    return table_exist_in_db(db, _vector_table_name(table, column))
 end
 
 function are_related(
@@ -140,5 +140,6 @@ function has_time_series(db::SQLite.DB, table::String, column::String)
 end
 
 _time_series_table_name(table::String) = "_" * table * "_TimeSeries"
+_vector_table_name(table::String, column::String) = "_" * table * "_" * column
 
 close(db::SQLite.DB) = DBInterface.close!(db)

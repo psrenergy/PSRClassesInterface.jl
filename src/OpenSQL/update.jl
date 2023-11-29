@@ -24,10 +24,18 @@ end
 function update!(
     db::SQLite.DB,
     table::String,
-    columns::String,
+    column::String,
     id::String,
     vals::V,
 ) where {V <: AbstractVector}
+    if !is_vector_parameter(db, table, column)
+        error("Column $column is not a vector parameter.")
+    end
+    
+    vector_table = _vector_table_name(table, column)
+
+    DBInterface.execute(db, "UPDATE $vector_table SET $column = '$vals' WHERE id = '$id'")
+
     error("Updating vectors is not yet implemented.")
     return nothing
 end
