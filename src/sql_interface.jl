@@ -107,11 +107,20 @@ function link_series_to_file(
     end
     time_series_table = OpenSQL._time_series_table_name(collection)
 
-    if max_elements(db, time_series_table) == 0
-        OpenSQL.create_element!(db, time_series_table; id = collection * "_timeseries")
+    if length(get_parms(db, time_series_table, attribute)) == 0
+        OpenSQL.create_parameters!(db, time_series_table, Dict(attribute => file_path))
+    else 
+        OpenSQL.update!(db, time_series_table, attribute, file_path)
     end
-    OpenSQL.update!(db, time_series_table, attribute, collection * "_timeseries", file_path)
     return nothing
+end
+
+function link_series_to_files(
+    db::OpenSQL.DB,
+    collection::String;
+    kwargs...,
+)
+    return OpenSQL.create_related_time_series!(db, collection; kwargs...)
 end
 
 function mapped_vector(db::OpenSQL.DB, collection::String, attribute::String)

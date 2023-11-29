@@ -7,7 +7,6 @@ CREATE TABLE Plant (
 );
 
 CREATE TABLE _Plant_TimeSeries (
-    id TEXT PRIMARY KEY,
     generation_file TEXT,
     cost_file TEXT
 );
