@@ -8,8 +8,6 @@ using DataFrames
 
 const DB = SQLite.DB
 
-const ValidOpenSQLDataType = Union{AbstractString, Integer, Real, Bool}
-
 """
 SQLInterface
 """

@@ -120,7 +120,7 @@ function link_series_to_files(
     collection::String;
     kwargs...,
 )
-    return OpenSQL.create_related_time_series!(db, collection; kwargs...)
+    return OpenSQL.set_related_time_series!(db, collection; kwargs...)
 end
 
 function open(

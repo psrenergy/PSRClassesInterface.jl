@@ -71,7 +71,7 @@ function read_vector(
     return result
 end
 
-function number_of_rows(db::SQLite.DB, table::String, column::String = "id")
+function number_of_rows(db::SQLite.DB, table::String, column::String)
     sanity_check(db, table, column)
     query = "SELECT COUNT($column) FROM $table"
     df = DBInterface.execute(db, query) |> DataFrame
