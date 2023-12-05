@@ -139,7 +139,14 @@ function has_time_series(db::SQLite.DB, table::String, column::String)
     end
 end
 
-_time_series_table_name(table::String) = "_" * table * "_TimeSeries"
-_vector_table_name(table::String, column::String) = "_" * table * "_" * column
+is_table_name(table::String) =
+    !isnothing(match(r"^(?:[A-Z][a-z]*_{1})*[A-Z][a-z]*$", table))
+
+is_vector_table_name(table::String) = occursin(r"_vector_", table)
+
+_time_series_table_name(table::String) = table * "_timeseries"
+_vector_table_name(table::String, column::String) = table * "_vector_" * column
+_relation_table_name(table_1::String, table_2::String) = table_1 * "_relation_" * table_2
 
 close(db::SQLite.DB) = DBInterface.close!(db)
+# ^(?:[a-z]+_{1})*[a-z]*$

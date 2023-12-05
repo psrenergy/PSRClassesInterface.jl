@@ -6,7 +6,7 @@ CREATE TABLE Plant (
     id TEXT PRIMARY KEY
 );
 
-CREATE TABLE _Plant_TimeSeries (
-    generation_file TEXT,
-    cost_file TEXT
+CREATE TABLE Plant_timeseries (
+    generation TEXT,
+    cost TEXT
 );

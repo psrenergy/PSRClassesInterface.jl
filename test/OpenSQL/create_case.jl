@@ -8,14 +8,14 @@ function create_case_1()
         PSRI.SQLInterface();
         data_path = case_path,
         schema = "toy_schema",
-        study_collection = "Study",
+        study_collection = "Configuration",
         id = "Toy Case",
         value1 = 1.0,
     )
 
-    @test PSRI.get_parm(db, "Study", "id", "Toy Case") == "Toy Case"
-    @test PSRI.get_parm(db, "Study", "value1", "Toy Case") == 1.0
-    @test PSRI.get_parm(db, "Study", "enum1", "Toy Case") == "A"
+    @test PSRI.get_parm(db, "Configuration", "id", "Toy Case") == "Toy Case"
+    @test PSRI.get_parm(db, "Configuration", "value1", "Toy Case") == 1.0
+    @test PSRI.get_parm(db, "Configuration", "enum1", "Toy Case") == "A"
 
     PSRI.create_element!(
         db,
@@ -50,7 +50,7 @@ function create_case_1()
         "Resource";
         id = "R1",
         type = "E",
-        some_values = [1.0, 2.0, 3.0],
+        some_value = [1.0, 2.0, 3.0],
     )
 
     PSRI.create_element!(
@@ -58,27 +58,27 @@ function create_case_1()
         "Resource";
         id = "R2",
         type = "F",
-        some_values = [4.0, 5.0, 6.0],
+        some_value = [4.0, 5.0, 6.0],
     )
 
     @test PSRI.get_vector(
         db,
         "Resource",
-        "some_values",
+        "some_value",
         "R1",
     ) == [1.0, 2.0, 3.0]
 
     @test PSRI.get_vector(
         db,
         "Resource",
-        "some_values",
+        "some_value",
         "R2",
     ) == [4.0, 5.0, 6.0]
 
     PSRI.set_vector!(
         db,
         "Resource",
-        "some_values",
+        "some_value",
         "R1",
         [7.0, 8.0, 9.0],
     )
@@ -86,7 +86,7 @@ function create_case_1()
     @test PSRI.get_vectors(
         db,
         "Resource",
-        "some_values",
+        "some_value",
     ) == [[7.0, 8.0, 9.0], [4.0, 5.0, 6.0]]
 
     PSRI.set_related!(
@@ -132,10 +132,18 @@ function create_case_1()
     @test PSRI.max_elements(db, "Plant") == 1
     @test PSRI.max_elements(db, "Resource") == 1
 
-    @test PSRI.get_attributes(db, "Resource") == ["id", "type", "some_values"]
+    @test PSRI.get_attributes(db, "Resource") == ["id", "type", "some_value"]
 
     @test PSRI.get_attributes(db, "Plant") ==
-          ["id", "capacity", "resource_id", "generation_file"]
+          [
+        "id",
+        "capacity",
+        "resource_id",
+        "plant_turbine_to",
+        "plant_spill_to",
+        "generation",
+        "cost",
+    ]
 
     PSRI.OpenSQL.close(db)
 

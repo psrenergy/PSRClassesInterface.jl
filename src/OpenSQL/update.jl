@@ -52,23 +52,26 @@ function update!(
 end
 
 function set_related!(
-    db::DBInterface.Connection, 
-    table1::String, 
+    db::DBInterface.Connection,
+    table1::String,
     table2::String,
     id_1::String,
-    id_2::String
+    id_2::String,
 )
     id_parameter_on_table_1 = lowercase(table2) * "_id"
-    SQLite.execute(db, "UPDATE $table1 SET $id_parameter_on_table_1 = '$id_2' WHERE id = '$id_1'")
+    SQLite.execute(
+        db,
+        "UPDATE $table1 SET $id_parameter_on_table_1 = '$id_2' WHERE id = '$id_1'",
+    )
     return nothing
 end
 
 function set_related_time_series!(
-    db::DBInterface.Connection, 
+    db::DBInterface.Connection,
     table::String;
-    kwargs...
+    kwargs...,
 )
-    table_name = "_" * table * "_TimeSeries"
+    table_name = table * "_timeseries"
     dict_time_series = Dict()
     for (key, value) in kwargs
         @assert isa(value, String)

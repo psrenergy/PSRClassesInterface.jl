@@ -37,7 +37,6 @@ Example:
 ```sql
 CREATE TABLE Thermal_Plant(
     id TEXT PRIMARY KEY,
-    thermal_plant_name TEXT NOT NULL,
     capacity REAL NOT NULL
 );
 ```

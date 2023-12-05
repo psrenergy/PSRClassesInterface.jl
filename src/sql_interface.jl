@@ -38,12 +38,12 @@ function get_attributes(db::OpenSQL.DB, collection::String)
     tables = OpenSQL.table_names(db)
     vector_attributes = Vector{String}()
     for table in tables
-        if startswith(table, "_" * collection * "_") && !endswith(table, "_TimeSeries")
-            push!(vector_attributes, split(table, collection * "_")[end])
+        if startswith(table, collection * "_vector_") && !endswith(table, "_timeseries")
+            push!(vector_attributes, split(table, collection * "_vector_")[end])
         end
     end
     if OpenSQL.has_time_series(db, collection)
-        time_series_table = "_" * collection * "_TimeSeries"
+        time_series_table = collection * "_timeseries"
         time_series_attributes = OpenSQL.column_names(db, time_series_table)
         deleteat!(time_series_attributes, findfirst(x -> x == "id", time_series_attributes))
         return vcat(columns, vector_attributes, time_series_attributes)
