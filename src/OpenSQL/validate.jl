@@ -22,7 +22,7 @@ _is_valid_table_relation_name(table::String) =
             table,
         ),
     )
-# ^[a-z]{1}(?:[a-z]*[0-9]*[a-z]*_{1})*[a-z0-9]*$
+
 function _validate_generic_table_name(table::String)
     if _is_not_valid_generic_table_name(table)
         error("""
