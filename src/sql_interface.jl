@@ -1,9 +1,9 @@
 const SQLInterface = OpenSQL.SQLInterface
 
 function create_study(
-    ::SQLInterface;
+    ::SQLInterface,
     path_db::AbstractString,
-    path_schema::AbstractString,
+    path_schema::AbstractString;
     kwargs...,
 )
     db = OpenSQL.create_empty_db(path_db, path_schema)
@@ -11,7 +11,7 @@ function create_study(
     return db
 end
 
-load_study(::SQLInterface; data_path::String) = OpenSQL.load_db(data_path)
+load_study(::SQLInterface, data_path::String) = OpenSQL.load_db(data_path)
 
 # Read
 get_vector(db::OpenSQL.DB, table::String, vector_name::String, element_id::String) =

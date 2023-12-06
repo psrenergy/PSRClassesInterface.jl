@@ -1,4 +1,4 @@
-CREATE TABLE Study (
+CREATE TABLE Configuration (
     id TEXT PRIMARY KEY
 );
 

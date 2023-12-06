@@ -1,14 +1,13 @@
 function test_time_series()
     case_path = joinpath(@__DIR__, "data", "case_2")
-    if isfile(joinpath(case_path, "psrclasses.sqlite"))
-        rm(joinpath(case_path, "psrclasses.sqlite"))
+    if isfile(joinpath(case_path, "simplecase.sqlite"))
+        rm(joinpath(case_path, "simplecase.sqlite"))
     end
 
     db = PSRI.create_study(
-        PSRI.SQLInterface();
-        data_path = case_path,
-        schema_path = joinpath(case_path, "simple_schema.sql"),
-        study_collection = "Study",
+        PSRI.SQLInterface(),
+        joinpath(case_path, "simplecase.sqlite"),
+        joinpath(case_path, "simple_schema.sql");
         id = "Toy Case",
     )
 
@@ -108,20 +107,19 @@ function test_time_series()
 
     PSRI.OpenSQL.close(db)
 
-    return rm(joinpath(case_path, "psrclasses.sqlite"))
+    return rm(joinpath(case_path, "simplecase.sqlite"))
 end
 
 function test_time_series_2()
     case_path = joinpath(@__DIR__, "data", "case_2")
-    if isfile(joinpath(case_path, "psrclasses.sqlite"))
-        rm(joinpath(case_path, "psrclasses.sqlite"))
+    if isfile(joinpath(case_path, "simplecase.sqlite"))
+        rm(joinpath(case_path, "simplecase.sqlite"))
     end
 
     db = PSRI.create_study(
-        PSRI.SQLInterface();
-        data_path = case_path,
-        schema_path = joinpath(case_path, "simple_schema.sql"),
-        study_collection = "Study",
+        PSRI.SQLInterface(),
+        joinpath(case_path, "simplecase.sqlite"),
+        joinpath(case_path, "simple_schema.sql");
         id = "Toy Case",
     )
 
@@ -196,7 +194,7 @@ function test_time_series_2()
 
     PSRI.OpenSQL.close(db)
 
-    return rm(joinpath(case_path, "psrclasses.sqlite"))
+    return rm(joinpath(case_path, "simplecase.sqlite"))
 end
 
 test_time_series()

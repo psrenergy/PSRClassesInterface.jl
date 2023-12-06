@@ -1,5 +1,5 @@
 _is_valid_table_name(table::String) =
-    !isnothing(match(r"^(?:[A-Z][a-z]*_{1})*[A-Z][a-z]*$", table))
+    !isnothing(match(r"^(?:[A-Z][a-z]*)+$", table))
 
 _is_valid_column_name(column::String) =
     !isnothing(match(r"^[a-z][a-z0-9]*(?:_{1}[a-z0-9]+)*$", column))
@@ -7,18 +7,18 @@ _is_valid_column_name(column::String) =
 _is_valid_table_vector_name(table::String) =
     !isnothing(
         match(
-            r"^(?:[A-Z][a-z]*_{1})*[A-Z][a-z]*_vector_[a-z][a-z0-9]*(?:_{1}[a-z0-9]+)*$",
+            r"^(?:[A-Z][a-z]*)+_vector_[a-z][a-z0-9]*(?:_{1}[a-z0-9]+)*$",
             table,
         ),
     )
 
 _is_valid_table_timeseries_name(table::String) =
-    !isnothing(match(r"^(?:[A-Z][a-z]*_{1})*[A-Z][a-z]*_timeseries", table))
+    !isnothing(match(r"^(?:[A-Z][a-z]*)+_timeseries", table))
 
 _is_valid_table_relation_name(table::String) =
     !isnothing(
         match(
-            r"^(?:[A-Z][a-z]*_{1})*[A-Z][a-z]*_relation_(?:[A-Z][a-z]*_{1})*[A-Z][a-z]*$",
+            r"^(?:[A-Z][a-z]*)+_relation_(?:[A-Z][a-z]*)+$",
             table,
         ),
     )
@@ -83,7 +83,7 @@ function _validate_column_name(column::String)
     if !_is_valid_column_name(column)
         error("""
             Invalid column name: $column. \nThe valid column name format is: \n
-            - name_of_attribute
+            - name_of_attribute (may contain numerals but must start with a letter)
             """)
     end
 end
@@ -93,7 +93,7 @@ function _validate_column_name(table::String, column::String)
         error(
             """
           Invalid column name: $column for table $table. \nThe valid column name format is: \n
-          - name_of_attribute
+          - name_of_attribute (may contain numerals but must start with a letter)
           """,
         )
     end
@@ -113,10 +113,10 @@ function validate_database(db::SQLite.DB)
         else
             error("""
                 Invalid table name: $table.\nValid table name formats are: \n
-                - Collections: Name_Of_Collection\n
-                - Vector attributes: Name_Of_Collection_vector_name_of_attribute\n
-                - Time series: Name_Of_Collection_timeseries\n
-                - Relations: Name_Of_Collection_relation_Name_Of_Other_Collection
+                - Collections: NameOfCollection\n
+                - Vector attributes: NameOfCollection_vector_name_of_attribute\n
+                - Time series: NameOfCollection_timeseries\n
+                - Relations: NameOfCollection_relation_NameOfOtherCollection
                 """)
         end
     end

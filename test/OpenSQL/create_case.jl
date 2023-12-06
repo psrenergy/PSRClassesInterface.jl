@@ -1,14 +1,13 @@
 function create_case_1()
     case_path = joinpath(@__DIR__, "data", "case_1")
-    if isfile(joinpath(case_path, "psrclasses.sqlite"))
-        rm(joinpath(case_path, "psrclasses.sqlite"))
+    if isfile(joinpath(case_path, "case1.sqlite"))
+        rm(joinpath(case_path, "case1.sqlite"))
     end
 
     db = PSRI.create_study(
-        PSRI.SQLInterface();
-        data_path = case_path,
-        schema_path = joinpath(case_path, "toy_schema.sql"),
-        study_collection = "Configuration",
+        PSRI.SQLInterface(),
+        joinpath(case_path, "case1.sqlite"),
+        joinpath(case_path, "toy_schema.sql");
         id = "Toy Case",
         value1 = 1.0,
     )
@@ -132,8 +131,8 @@ function create_case_1()
     PSRI.OpenSQL.close(db)
 
     db = PSRI.load_study(
-        PSRI.SQLInterface();
-        data_path = joinpath(case_path, "psrclasses.sqlite"),
+        PSRI.SQLInterface(),
+        joinpath(case_path, "case1.sqlite"),
     )
 
     PSRI.delete_element!(db, "Plant", "Plant 1")
@@ -157,20 +156,19 @@ function create_case_1()
 
     PSRI.OpenSQL.close(db)
 
-    return rm(joinpath(case_path, "psrclasses.sqlite"))
+    return rm(joinpath(case_path, "case1.sqlite"))
 end
 
 function create_case_relations()
     case_path = joinpath(@__DIR__, "data", "case_1")
-    if isfile(joinpath(case_path, "psrclasses.sqlite"))
-        rm(joinpath(case_path, "psrclasses.sqlite"))
+    if isfile(joinpath(case_path, "case1.sqlite"))
+        rm(joinpath(case_path, "case1.sqlite"))
     end
 
     db = PSRI.create_study(
-        PSRI.SQLInterface();
-        data_path = case_path,
-        schema_path = joinpath(case_path, "toy_schema.sql"),
-        study_collection = "Configuration",
+        PSRI.SQLInterface(),
+        joinpath(case_path, "case1.sqlite"),
+        joinpath(case_path, "toy_schema.sql");
         id = "Toy Case",
         value1 = 1.0,
     )
@@ -252,7 +250,7 @@ function create_case_relations()
 
     PSRI.OpenSQL.close(db)
 
-    return rm(joinpath(case_path, "psrclasses.sqlite"))
+    return rm(joinpath(case_path, "case1.sqlite"))
 end
 
 create_case_1()
