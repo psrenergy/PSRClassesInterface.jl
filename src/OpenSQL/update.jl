@@ -57,11 +57,28 @@ function set_related!(
     table2::String,
     id_1::String,
     id_2::String,
+    relation_type::String,
 )
-    id_parameter_on_table_1 = lowercase(table2) * "_id"
+    id_parameter_on_table_1 = lowercase(table2) * "_" * relation_type
     SQLite.execute(
         db,
         "UPDATE $table1 SET $id_parameter_on_table_1 = '$id_2' WHERE id = '$id_1'",
+    )
+    return nothing
+end
+
+function set_vector_related!(
+    db::DBInterface.Connection,
+    table1::String,
+    table2::String,
+    id_1::String,
+    id_2::String,
+    relation_type::String,
+)
+    relation_table = _relation_table_name(table1, table2)
+    SQLite.execute(
+        db,
+        "INSERT INTO $relation_table (source_id, target_id, relation_type) VALUES ('$id_1', '$id_2', '$relation_type')",
     )
     return nothing
 end

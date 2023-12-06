@@ -52,6 +52,21 @@ end
 
 get_collections(db::OpenSQL.DB) = return OpenSQL.table_names(db)
 
+get_related(
+    db::OpenSQL.DB,
+    source::String,
+    target::String,
+    source_id::String,
+    relation_type::String,
+) = OpenSQL.read_related(db, source, target, source_id, relation_type)
+
+get_vector_related(
+    db::OpenSQL.DB,
+    source::String,
+    source_id::String,
+    relation_type::String,
+) = OpenSQL.read_vector_related(db, source, source_id, relation_type)
+
 # Modification
 create_element!(db::OpenSQL.DB, collection::String; kwargs...) =
     OpenSQL.create_element!(db, collection; kwargs...)
@@ -81,7 +96,17 @@ set_related!(
     target::String,
     source_id::String,
     target_id::String,
-) = OpenSQL.set_related!(db, source, target, source_id, target_id)
+    relation_type::String,
+) = OpenSQL.set_related!(db, source, target, source_id, target_id, relation_type)
+
+set_vector_related!(
+    db::OpenSQL.DB,
+    source::String,
+    target::String,
+    source_id::String,
+    target_id::String,
+    relation_type::String,
+) = OpenSQL.set_vector_related!(db, source, target, source_id, target_id, relation_type)
 
 delete_relation!(
     db::OpenSQL.DB,
