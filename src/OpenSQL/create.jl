@@ -8,6 +8,11 @@ function create_parameters!(
 
     cols = join(keys(parameters), ", ")
     vals = join(values(parameters), "', '")
+
+    for column in columns
+        _validate_column_name(column)
+    end
+
     DBInterface.execute(db, "INSERT INTO $table ($cols) VALUES ('$vals')")
     return nothing
 end
@@ -19,6 +24,11 @@ function create_vector!(
     vector_name::String,
     values::V,
 ) where {V <: AbstractVector}
+    if !_is_valid_column_name(vector_name)
+        error("""
+            Invalid vector name: $vector_name.\nValid format is: name_of_attribute.
+        """)
+    end
     table_name = _vector_table_name(table, vector_name)
     sanity_check(db, table_name, vector_name)
     num_values = length(values)
@@ -41,6 +51,9 @@ function create_element!(
     table::String;
     kwargs...,
 )
+    if !_is_valid_table_name(table)
+        error("Invalid table name: $table")
+    end
     @assert !isempty(kwargs)
     dict_parameters = Dict()
     dict_vectors = Dict()

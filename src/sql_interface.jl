@@ -38,14 +38,13 @@ function get_attributes(db::OpenSQL.DB, collection::String)
     tables = OpenSQL.table_names(db)
     vector_attributes = Vector{String}()
     for table in tables
-        if startswith(table, collection * "_vector_") && !endswith(table, "_timeseries")
-            push!(vector_attributes, split(table, collection * "_vector_")[end])
+        if startswith(table, collection * "_vector_")
+            push!(vector_attributes, OpenSQL.get_vector_attribute_name(table))
         end
     end
     if OpenSQL.has_time_series(db, collection)
-        time_series_table = collection * "_timeseries"
+        time_series_table = OpenSQL._timeseries_table_name(collection)
         time_series_attributes = OpenSQL.column_names(db, time_series_table)
-        deleteat!(time_series_attributes, findfirst(x -> x == "id", time_series_attributes))
         return vcat(columns, vector_attributes, time_series_attributes)
     end
     return vcat(columns, vector_attributes)
@@ -105,7 +104,7 @@ function link_series_to_file(
     if !OpenSQL.has_time_series(db, collection, attribute)
         error("Collection $collection does not have a graf file for attribute $attribute.")
     end
-    time_series_table = OpenSQL._time_series_table_name(collection)
+    time_series_table = OpenSQL._timeseries_table_name(collection)
 
     if OpenSQL.number_of_rows(db, time_series_table, attribute) == 0
         OpenSQL.create_parameters!(db, time_series_table, Dict(attribute => file_path))
@@ -133,7 +132,7 @@ function open(
     if !has_graf_file(db, collection, attribute)
         error("Collection $collection does not have a graf file for attribute $attribute.")
     end
-    time_series_table = OpenSQL._time_series_table_name(collection)
+    time_series_table = OpenSQL._timeseries_table_name(collection)
 
     raw_files = get_parms(db, time_series_table, attribute)
 
@@ -166,7 +165,7 @@ function open(
     if !has_graf_file(db, collection, attribute)
         error("Collection $collection does not have a graf file for attribute $attribute.")
     end
-    time_series_table = OpenSQL._time_series_table_name(collection)
+    time_series_table = OpenSQL._timeseries_table_name(collection)
 
     graf_file = if OpenSQL.number_of_rows(db, time_series_table, attribute) == 0
         link_series_to_file(db, collection, attribute, path)

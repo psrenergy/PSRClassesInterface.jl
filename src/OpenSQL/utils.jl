@@ -20,6 +20,7 @@ function create_empty_db(database_path::String, file::String)
     end
     db = SQLite.DB(database_path)
     execute_statements(db, file)
+    validate_database(db)
     return db
 end
 
@@ -28,6 +29,7 @@ function load_db(database_path::String)
         error("file not found: $database_path")
     end
     db = SQLite.DB(database_path)
+    validate_database(db)
     return db
 end
 
@@ -121,13 +123,13 @@ function are_related(
 end
 
 function has_time_series(db::SQLite.DB, table::String)
-    time_series_table = _time_series_table_name(table)
+    time_series_table = _timeseries_table_name(table)
     return table_exist_in_db(db, time_series_table)
 end
 
 function has_time_series(db::SQLite.DB, table::String, column::String)
     sanity_check(db, table, "id")
-    time_series_table = _time_series_table_name(table)
+    time_series_table = _timeseries_table_name(table)
     if table_exist_in_db(db, time_series_table)
         if column in column_names(db, time_series_table)
             return true
@@ -139,14 +141,11 @@ function has_time_series(db::SQLite.DB, table::String, column::String)
     end
 end
 
-is_table_name(table::String) =
-    !isnothing(match(r"^(?:[A-Z][a-z]*_{1})*[A-Z][a-z]*$", table))
+get_vector_attribute_name(table::String) = split(table, "_vector_")[end]
+get_collections_from_relation_table(table::String) = split(table, "_relation_")
 
-is_vector_table_name(table::String) = occursin(r"_vector_", table)
-
-_time_series_table_name(table::String) = table * "_timeseries"
+_timeseries_table_name(table::String) = table * "_timeseries"
 _vector_table_name(table::String, column::String) = table * "_vector_" * column
 _relation_table_name(table_1::String, table_2::String) = table_1 * "_relation_" * table_2
 
 close(db::SQLite.DB) = DBInterface.close!(db)
-# ^(?:[a-z]+_{1})*[a-z]*$

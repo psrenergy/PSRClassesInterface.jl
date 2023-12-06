@@ -69,7 +69,6 @@ CREATE TABLE Thermal_Plant_vector_some_value(
 
 <p style="text-align: center"> COLLECTION_NAME_vector_ATTRIBUTE_NAME</p>
 
-- The Table must contain a Column named `id`.
 - Each Column of the table should be named after the name of the attribute.
 - Each Column should store the path to the file containing the time series data.
 
@@ -77,7 +76,6 @@ Example:
 
 ```sql
 CREATE TABLE Plant_timeseries (
-    id TEXT PRIMARY KEY,
     generation TEXT,
     cost TEXT
 );

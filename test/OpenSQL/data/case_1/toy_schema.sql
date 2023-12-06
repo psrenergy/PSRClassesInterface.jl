@@ -44,7 +44,6 @@ CREATE TABLE Plant_relation_Cost (
 );
 
 CREATE TABLE Plant_timeseries (
-    id TEXT PRIMARY KEY,
     generation TEXT,
     cost TEXT
 );

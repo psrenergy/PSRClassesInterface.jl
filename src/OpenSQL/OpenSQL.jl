@@ -18,5 +18,6 @@ include("create.jl")
 include("read.jl")
 include("update.jl")
 include("delete.jl")
+include("validate.jl")
 
 end # module OpenSQL
