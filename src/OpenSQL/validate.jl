@@ -23,18 +23,6 @@ _is_valid_table_relation_name(table::String) =
         ),
     )
 
-function _validate_generic_table_name(table::String)
-    if _is_not_valid_generic_table_name(table)
-        error("""
-            Invalid table name: $table.\nValid table name formats are: \n
-            - Collections: Name_Of_Collection\n
-            - Vector attributes: Name_Of_Collection_vector_name_of_attribute\n
-            - Time series: Name_Of_Collection_timeseries\n
-            - Relations: Name_Of_Collection_relation_Name_Of_Other_Collection
-            """)
-    end
-end
-
 function _validate_table(db::SQLite.DB, table::String)
     attributes = column_names(db, table)
     if !("id" in attributes)
