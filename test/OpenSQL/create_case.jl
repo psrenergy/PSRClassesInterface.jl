@@ -7,7 +7,7 @@ function create_case_1()
     db = PSRI.create_study(
         PSRI.SQLInterface();
         data_path = case_path,
-        schema = "toy_schema",
+        schema_path = joinpath(case_path, "toy_schema.sql"),
         study_collection = "Configuration",
         id = "Toy Case",
         value1 = 1.0,
@@ -169,7 +169,7 @@ function create_case_relations()
     db = PSRI.create_study(
         PSRI.SQLInterface();
         data_path = case_path,
-        schema = "toy_schema",
+        schema_path = joinpath(case_path, "toy_schema.sql"),
         study_collection = "Configuration",
         id = "Toy Case",
         value1 = 1.0,
@@ -243,12 +243,12 @@ function create_case_relations()
         "sometype2",
     ) == ["Cost 2"]
 
-    # @test PSRI.get_vector_related(
-    #     db,
-    #     "Plant",
-    #     "Plant 2",
-    #     "sometype"
-    # ) == ["Cost 1"]
+    @test PSRI.get_vector_related(
+        db,
+        "Plant",
+        "Plant 2",
+        "sometype",
+    ) == ["Cost 1"]
 
     PSRI.OpenSQL.close(db)
 

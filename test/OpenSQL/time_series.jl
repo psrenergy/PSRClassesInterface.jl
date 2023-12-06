@@ -7,7 +7,7 @@ function test_time_series()
     db = PSRI.create_study(
         PSRI.SQLInterface();
         data_path = case_path,
-        schema = "simple_schema",
+        schema_path = joinpath(case_path, "simple_schema.sql"),
         study_collection = "Study",
         id = "Toy Case",
     )
@@ -120,7 +120,7 @@ function test_time_series_2()
     db = PSRI.create_study(
         PSRI.SQLInterface();
         data_path = case_path,
-        schema = "simple_schema",
+        schema_path = joinpath(case_path, "simple_schema.sql"),
         study_collection = "Study",
         id = "Toy Case",
     )
