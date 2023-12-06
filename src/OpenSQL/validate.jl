@@ -1,3 +1,9 @@
+# just for reference this are the main regexes
+# the functions not commented implement combinations of them
+# with other reserved words such as vector, relation and timeseries.
+# _regex_table_name() = Regex("^(?:[A-Z][a-z]*)+")
+# _regex_column_name() = Regex("^[a-z][a-z0-9]*(?:_{1}[a-z0-9]+)*")
+
 _is_valid_table_name(table::String) =
     !isnothing(match(r"^(?:[A-Z][a-z]*)+$", table))
 
