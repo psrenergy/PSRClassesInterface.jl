@@ -10,7 +10,7 @@ Following PSRI's `OpenStudy` standards, SQL schemas for the `OpenSQL` framework 
 
 - The Table name should be the same as the name of the Collection.
 - The Table name of a Collection should beging with a capital letter and be in singular form.
-- In case of a Collection with a composite name, the Table name should be separeted by an underscore.
+- In case of a Collection with a composite name, the Table name should written in Pascal Case.
 - The Table must contain a primary key named `id`.
 
 Examples:
@@ -22,7 +22,7 @@ CREATE TABLE Resource (
     type TEXT NOT NULL DEFAULT "D" CHECK(type IN ('D', 'E', 'F'))
 );
 
-CREATE TABLE Thermal_Plant(
+CREATE TABLE ThermalPlant(
     id TEXT PRIMARY KEY,
     capacity REAL NOT NULL DEFAULT 0
 );
@@ -35,7 +35,7 @@ CREATE TABLE Thermal_Plant(
 
 Example:
 ```sql
-CREATE TABLE Thermal_Plant(
+CREATE TABLE ThermalPlant(
     id TEXT PRIMARY KEY,
     capacity REAL NOT NULL
 );
@@ -53,11 +53,11 @@ CREATE TABLE Thermal_Plant(
 
 Example:
 ```sql
-CREATE TABLE Thermal_Plant_vector_some_value(
+CREATE TABLE ThermalPlant_vector_some_value(
     id TEXT,
     idx INTEGER NOT NULL,
     some_value REAL NOT NULL,
-    FOREIGN KEY (id) REFERENCES Thermal_Plant(id) ON DELETE CASCADE,
+    FOREIGN KEY (id) REFERENCES ThermalPlant(id) ON DELETE CASCADE,
     PRIMARY KEY (id, idx)
 );
 ```
