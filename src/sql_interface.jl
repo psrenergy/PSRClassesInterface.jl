@@ -2,14 +2,12 @@ const SQLInterface = OpenSQL.SQLInterface
 
 function create_study(
     ::SQLInterface;
-    data_path::AbstractString = pwd(),
-    schema_path::AbstractString = joinpath(pwd(), "psrclasses.sql"),
-    study_collection::String = "PSRStudy",
+    path_db::AbstractString,
+    path_schema::AbstractString,
     kwargs...,
 )
-    path_db = joinpath(data_path, "psrclasses.sqlite")
-    db = OpenSQL.create_empty_db(path_db, schema_path)
-    OpenSQL.create_element!(db, study_collection; kwargs...)
+    db = OpenSQL.create_empty_db(path_db, path_schema)
+    OpenSQL.create_element!(db, "Configuration"; kwargs...)
     return db
 end
 

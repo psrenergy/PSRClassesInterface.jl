@@ -14,12 +14,12 @@ function execute_statements(db::SQLite.DB, file::String)
     return nothing
 end
 
-function create_empty_db(database_path::String, file::String)
-    if isfile(database_path)
-        error("file already exists: $database_path")
+function create_empty_db(path_db::String, path_schema::String)
+    if isfile(path_db)
+        error("file already exists: $path_db")
     end
-    db = SQLite.DB(database_path)
-    execute_statements(db, file)
+    db = SQLite.DB(path_db)
+    execute_statements(db, path_schema)
     validate_database(db)
     return db
 end
