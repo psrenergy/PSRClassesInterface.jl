@@ -170,8 +170,8 @@ function test_time_series_2()
     PSRI.link_series_to_files(
         db,
         "Plant";
-        generation = joinpath(case_path, "generation"),
-        cost = joinpath(case_path, "cost"),
+        generation = "generation",
+        cost = "cost",
     )
 
     ior = PSRI.open(PSRI.OpenBinary.Reader, db, "Plant", "generation")
@@ -183,7 +183,7 @@ function test_time_series_2()
 
     PSRI.close(ior)
 
-    ior = PSRI.open(PSRI.OpenBinary.Reader, db, "Plant", "cost")
+    ior = PSRI.open(PSRI.OpenBinary.Reader, db, "Plant","cost")
 
     for t in 1:12, s in 1:2, b in 1:3
         @test ior.data == [(t + s + b) * 500.0, (t + s + b) * 400.0]

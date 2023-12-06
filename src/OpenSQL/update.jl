@@ -93,6 +93,7 @@ function set_related_time_series!(
     for (key, value) in kwargs
         @assert isa(value, String)
         # TODO we could validate if the path exists
+        _validate_time_series_attribute_value(value)
         dict_time_series[key] = [value]
     end
     df = DataFrame(dict_time_series)
