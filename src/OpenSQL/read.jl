@@ -142,9 +142,5 @@ function read_related(
         error("id \"$table_1_id\" does not exist in table \"$table_1\".")
     end
     result = df[!, 1][1]
-    if typeof(result) == String
-        return parse(Int, result)
-    else
-        return result
-    end
+    return result
 end

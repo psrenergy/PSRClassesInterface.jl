@@ -117,7 +117,7 @@ function are_related(
     possible_relations = filter(x -> startswith(x, lowercase(table_2)), columns)
 
     for relation in possible_relations
-        if parse(Int, read_parameter(db, table_1, relation, table_1_id)) == table_2_id
+        if read_parameter(db, table_1, relation, table_1_id) == table_2_id
             return true
         end
     end

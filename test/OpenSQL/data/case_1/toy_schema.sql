@@ -30,9 +30,9 @@ CREATE TABLE Plant (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT UNIQUE,
     capacity REAL NOT NULL DEFAULT 0,
-    resource_id TEXT,
-    plant_turbine_to TEXT,
-    plant_spill_to TEXT,
+    resource_id INTEGER,
+    plant_turbine_to INTEGER,
+    plant_spill_to INTEGER,
     FOREIGN KEY(resource_id) REFERENCES Resource(id),
     FOREIGN KEY(plant_turbine_to) REFERENCES Plant(id),
     FOREIGN KEY(plant_spill_to) REFERENCES Plant(id)
