@@ -51,6 +51,9 @@ function _validate_table(db::SQLite.DB, table::String)
     if !("id" in attributes)
         error("Table $table does not have an \"id\" column.")
     end
+    if !("label" in attributes)
+        error("Table $table does not have a \"label\" column.")
+    end
     for attribute in attributes
         _validate_column_name(table, attribute)
     end
@@ -125,6 +128,9 @@ end
 function validate_database(db::SQLite.DB)
     tables = table_names(db)
     for table in tables
+        if table == "sqlite_sequence"
+            continue
+        end
         if _is_valid_table_name(table)
             _validate_table(db, table)
         elseif _is_valid_table_timeseries_name(table)

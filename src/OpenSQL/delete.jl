@@ -1,7 +1,7 @@
 function delete!(
     db::SQLite.DB,
     table::String,
-    id::String,
+    id::Integer,
 )
     sanity_check(db, table, "id")
     id_exist_in_table(db, table, id)
@@ -16,8 +16,8 @@ function delete_relation!(
     db::SQLite.DB,
     table_1::String,
     table_2::String,
-    table_1_id::String,
-    table_2_id::String,
+    table_1_id::Integer,
+    table_2_id::Integer,
 )
     if !are_related(db, table_1, table_2, table_1_id, table_2_id)
         error(

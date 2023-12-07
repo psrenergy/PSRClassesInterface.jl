@@ -1,3 +1,13 @@
+function _get_id(db::SQLite.DB, table::String, label::String)
+    query = "SELECT id FROM $table WHERE label = '$label'"
+    df = DBInterface.execute(db, query) |> DataFrame
+    if isempty(df)
+        error("label \"$label\" does not exist in table \"$table\".")
+    end
+    result = df[!, 1][1]
+    return result
+end
+
 function read_parameter(
     db::SQLite.DB,
     table::String,
@@ -20,7 +30,7 @@ function read_parameter(
     db::SQLite.DB,
     table::String,
     column::String,
-    id::String,
+    id::Integer,
 )
     if !column_exist_in_table(db, table, column) && is_vector_parameter(db, table, column)
         error("column $column is a vector parameter, use `read_vector` instead.")
@@ -59,7 +69,7 @@ function read_vector(
     db::SQLite.DB,
     table::String,
     vector_name::String,
-    id::String,
+    id::Integer,
 )
     table_name = _vector_table_name(table, vector_name)
     sanity_check(db, table_name, vector_name)
@@ -81,7 +91,7 @@ end
 function read_vector_related(
     db::SQLite.DB,
     table::String,
-    id::String,
+    id::Integer,
     relation_type::String,
 )
     sanity_check(db, table, "id")
@@ -97,18 +107,20 @@ function read_vector_related(
     related = []
 
     for relation_table in table_relations_source
+        _, target = split(relation_table, "_relation_")
         query = "SELECT target_id FROM $relation_table WHERE source_id = '$id' AND relation_type = '$relation_type'"
         df = DBInterface.execute(db, query) |> DataFrame
         if !isempty(df)
-            push!(related, df[!, 1][1])
+            push!(related, read_parameter(db, String(target), "label", df[!, 1][1]))
         end
     end
 
     for relation_table in table_relations_target
+        _, source = split(relation_table, "_relation_")
         query = "SELECT source_id FROM $relation_table WHERE target_id = '$id' AND relation_type = '$relation_type'"
         df = DBInterface.execute(db, query) |> DataFrame
         if !isempty(df)
-            push!(related, df[!, 1][1])
+            push!(related, read_parameter(db, String(source), "label", df[!, 1][1]))
         end
     end
 
@@ -119,7 +131,7 @@ function read_related(
     db::SQLite.DB,
     table_1::String,
     table_2::String,
-    table_1_id::String,
+    table_1_id::Integer,
     relation_type::String,
 )
     id_parameter_on_table_1 = lowercase(table_2) * "_" * relation_type
@@ -130,5 +142,9 @@ function read_related(
         error("id \"$table_1_id\" does not exist in table \"$table_1\".")
     end
     result = df[!, 1][1]
-    return result
+    if typeof(result) == String
+        return parse(Int, result)
+    else
+        return result
+    end
 end

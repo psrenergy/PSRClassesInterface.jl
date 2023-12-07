@@ -87,7 +87,7 @@ function sanity_check(db::SQLite.DB, table::String, columns::Vector{String})
     return nothing
 end
 
-function id_exist_in_table(db::SQLite.DB, table::String, id::String)
+function id_exist_in_table(db::SQLite.DB, table::String, id::Integer)
     sanity_check(db, table, "id")
     query = "SELECT COUNT(id) FROM $table WHERE id = '$id'"
     df = DBInterface.execute(db, query) |> DataFrame
@@ -105,21 +105,23 @@ function are_related(
     db::SQLite.DB,
     table_1::String,
     table_2::String,
-    table_1_id::String,
-    table_2_id::String,
+    table_1_id::Integer,
+    table_2_id::Integer,
 )
     sanity_check(db, table_1, "id")
     sanity_check(db, table_2, "id")
     id_exist_in_table(db, table_1, table_1_id)
     id_exist_in_table(db, table_2, table_2_id)
 
-    id_parameter_on_table_1 = lowercase(table_2) * "_id"
+    columns = column_names(db, table_1)
+    possible_relations = filter(x -> startswith(x, lowercase(table_2)), columns)
 
-    if read_parameter(db, table_1, id_parameter_on_table_1, table_1_id) == table_2_id
-        return true
-    else
-        return false
+    for relation in possible_relations
+        if parse(Int, read_parameter(db, table_1, relation, table_1_id)) == table_2_id
+            return true
+        end
     end
+    return false
 end
 
 function has_time_series(db::SQLite.DB, table::String)

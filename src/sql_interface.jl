@@ -14,17 +14,27 @@ end
 load_study(::SQLInterface, data_path::String) = OpenSQL.load_db(data_path)
 
 # Read
-get_vector(db::OpenSQL.DB, table::String, vector_name::String, element_id::String) =
-    OpenSQL.read_vector(db, table, vector_name, element_id)
+get_vector(db::OpenSQL.DB, collection::String, attribute::String, element_label::String) =
+    OpenSQL.read_vector(
+        db,
+        collection,
+        attribute,
+        OpenSQL._get_id(db, collection, element_label),
+    )
 
-get_vectors(db::OpenSQL.DB, table::String, vector_name::String) =
-    OpenSQL.read_vector(db, table, vector_name)
+get_vectors(db::OpenSQL.DB, collection::String, attribute::String) =
+    OpenSQL.read_vector(db, collection, attribute)
 
 max_elements(db::OpenSQL.DB, collection::String) =
     length(get_parms(db, collection, "id"))
 
-get_parm(db::OpenSQL.DB, collection::String, attribute::String, element_id::String) =
-    OpenSQL.read_parameter(db, collection, attribute, element_id)
+get_parm(db::OpenSQL.DB, collection::String, attribute::String, element_label::String) =
+    OpenSQL.read_parameter(
+        db,
+        collection,
+        attribute,
+        OpenSQL._get_id(db, collection, element_label),
+    )
 
 get_parms(db::OpenSQL.DB, collection::String, attribute::String) =
     OpenSQL.read_parameter(db, collection, attribute)
@@ -49,69 +59,115 @@ end
 
 get_collections(db::OpenSQL.DB) = return OpenSQL.table_names(db)
 
-get_related(
+function get_related(
     db::OpenSQL.DB,
     source::String,
     target::String,
-    source_id::String,
+    source_label::String,
     relation_type::String,
-) = OpenSQL.read_related(db, source, target, source_id, relation_type)
+)
+    id = OpenSQL.read_related(
+        db,
+        source,
+        target,
+        OpenSQL._get_id(db, source, source_label),
+        relation_type,
+    )
+    return OpenSQL.read_parameter(db, target, "label", id)
+end
 
 get_vector_related(
     db::OpenSQL.DB,
     source::String,
-    source_id::String,
+    source_label::String,
     relation_type::String,
-) = OpenSQL.read_vector_related(db, source, source_id, relation_type)
+) = OpenSQL.read_vector_related(
+    db,
+    source,
+    OpenSQL._get_id(db, source, source_label),
+    relation_type,
+)
 
 # Modification
 create_element!(db::OpenSQL.DB, collection::String; kwargs...) =
     OpenSQL.create_element!(db, collection; kwargs...)
 
-delete_element!(db::OpenSQL.DB, collection::String, element_id::String) =
-    OpenSQL.delete!(db, collection, element_id)
+delete_element!(db::OpenSQL.DB, collection::String, element_label::String) =
+    OpenSQL.delete!(db, collection, OpenSQL._get_id(db, collection, element_label))
 
 set_parm!(
     db::OpenSQL.DB,
     collection::String,
     attribute::String,
-    element_id::String,
+    element_label::String,
     value,
-) = OpenSQL.update!(db, collection, attribute, element_id, value)
+) = OpenSQL.update!(
+    db,
+    collection,
+    attribute,
+    OpenSQL._get_id(db, collection, element_label),
+    value,
+)
 
 set_vector!(
     db::OpenSQL.DB,
     collection::String,
     attribute::String,
-    element_id::String,
+    element_label::String,
     values::AbstractVector,
-) = OpenSQL.update!(db, collection, attribute, element_id, values)
+) = OpenSQL.update!(
+    db,
+    collection,
+    attribute,
+    OpenSQL._get_id(db, collection, element_label),
+    values,
+)
 
 set_related!(
     db::OpenSQL.DB,
     source::String,
     target::String,
-    source_id::String,
-    target_id::String,
+    source_label::String,
+    target_label::String,
     relation_type::String,
-) = OpenSQL.set_related!(db, source, target, source_id, target_id, relation_type)
+) = OpenSQL.set_related!(
+    db,
+    source,
+    target,
+    OpenSQL._get_id(db, source, source_label),
+    OpenSQL._get_id(db, target, target_label),
+    relation_type,
+)
 
 set_vector_related!(
     db::OpenSQL.DB,
     source::String,
     target::String,
-    source_id::String,
-    target_id::String,
+    source_label::String,
+    target_label::String,
     relation_type::String,
-) = OpenSQL.set_vector_related!(db, source, target, source_id, target_id, relation_type)
+) = OpenSQL.set_vector_related!(
+    db,
+    source,
+    target,
+    OpenSQL._get_id(db, source, source_label),
+    OpenSQL._get_id(db, target, target_label),
+    relation_type,
+)
 
 delete_relation!(
     db::OpenSQL.DB,
     source::String,
     target::String,
-    source_id::String,
-    target_id::String,
-) = OpenSQL.delete_relation!(db, source, target, source_id, target_id)
+    source_label::String,
+    target_label::String,
+) = OpenSQL.delete_relation!(
+    db,
+    source,
+    target,
+    OpenSQL._get_id(db, source, source_label),
+    OpenSQL._get_id(db, target, target_label),
+)
 
 # Graf files
 has_graf_file(db::OpenSQL.DB, collection::String, attribute::String) =

@@ -2,7 +2,7 @@ function update!(
     db::SQLite.DB,
     table::String,
     column::String,
-    id::String,
+    id::Integer,
     val,
 )
     sanity_check(db, table, column)
@@ -25,7 +25,7 @@ function update!(
     db::SQLite.DB,
     table::String,
     column::String,
-    id::String,
+    id::Integer,
     vals::V,
 ) where {V <: AbstractVector}
     if !is_vector_parameter(db, table, column)
@@ -55,8 +55,8 @@ function set_related!(
     db::DBInterface.Connection,
     table1::String,
     table2::String,
-    id_1::String,
-    id_2::String,
+    id_1::Integer,
+    id_2::Integer,
     relation_type::String,
 )
     id_parameter_on_table_1 = lowercase(table2) * "_" * relation_type
@@ -71,8 +71,8 @@ function set_vector_related!(
     db::DBInterface.Connection,
     table1::String,
     table2::String,
-    id_1::String,
-    id_2::String,
+    id_1::Integer,
+    id_2::Integer,
     relation_type::String,
 )
     relation_table = _relation_table_name(table1, table2)

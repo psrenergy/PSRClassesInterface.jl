@@ -8,30 +8,30 @@ function create_case_1()
         PSRI.SQLInterface(),
         joinpath(case_path, "case1.sqlite"),
         joinpath(case_path, "toy_schema.sql");
-        id = "Toy Case",
+        label = "Toy Case",
         value1 = 1.0,
     )
 
-    @test PSRI.get_parm(db, "Configuration", "id", "Toy Case") == "Toy Case"
+    @test PSRI.get_parm(db, "Configuration", "label", "Toy Case") == "Toy Case"
     @test PSRI.get_parm(db, "Configuration", "value1", "Toy Case") == 1.0
     @test PSRI.get_parm(db, "Configuration", "enum1", "Toy Case") == "A"
 
     PSRI.create_element!(
         db,
         "Plant";
-        id = "Plant 1",
+        label = "Plant 1",
         capacity = 50.0,
     )
 
     PSRI.create_element!(
         db,
         "Plant";
-        id = "Plant 2",
+        label = "Plant 2",
     )
 
-    @test PSRI.get_parm(db, "Plant", "id", "Plant 1") == "Plant 1"
+    @test PSRI.get_parm(db, "Plant", "label", "Plant 1") == "Plant 1"
     @test PSRI.get_parm(db, "Plant", "capacity", "Plant 1") == 50.0
-    @test PSRI.get_parm(db, "Plant", "id", "Plant 2") == "Plant 2"
+    @test PSRI.get_parm(db, "Plant", "label", "Plant 2") == "Plant 2"
     @test PSRI.get_parm(db, "Plant", "capacity", "Plant 2") == 0.0
 
     PSRI.set_parm!(
@@ -47,7 +47,7 @@ function create_case_1()
     PSRI.create_element!(
         db,
         "Resource";
-        id = "R1",
+        label = "R1",
         type = "E",
         some_value = [1.0, 2.0, 3.0],
     )
@@ -55,7 +55,7 @@ function create_case_1()
     PSRI.create_element!(
         db,
         "Resource";
-        id = "R2",
+        label = "R2",
         type = "F",
         some_value = [4.0, 5.0, 6.0],
     )
@@ -113,8 +113,6 @@ function create_case_1()
         "id",
     ) == "R1"
 
-    @test PSRI.get_parm(db, "Plant", "resource_id", "Plant 1") == "R1"
-
     PSRI.delete_relation!(
         db,
         "Plant",
@@ -141,11 +139,12 @@ function create_case_1()
     @test PSRI.max_elements(db, "Plant") == 1
     @test PSRI.max_elements(db, "Resource") == 1
 
-    @test PSRI.get_attributes(db, "Resource") == ["id", "type", "some_value"]
+    @test PSRI.get_attributes(db, "Resource") == ["id", "label", "type", "some_value"]
 
     @test PSRI.get_attributes(db, "Plant") ==
           [
         "id",
+        "label",
         "capacity",
         "resource_id",
         "plant_turbine_to",
@@ -169,34 +168,34 @@ function create_case_relations()
         PSRI.SQLInterface(),
         joinpath(case_path, "case1.sqlite"),
         joinpath(case_path, "toy_schema.sql");
-        id = "Toy Case",
+        label = "Toy Case",
         value1 = 1.0,
     )
 
     PSRI.create_element!(
         db,
         "Plant";
-        id = "Plant 1",
+        label = "Plant 1",
         capacity = 50.0,
     )
 
     PSRI.create_element!(
         db,
         "Plant";
-        id = "Plant 2",
+        label = "Plant 2",
     )
 
     PSRI.create_element!(
         db,
         "Cost";
-        id = "Cost 1",
+        label = "Cost 1",
         value = 30.0,
     )
 
     PSRI.create_element!(
         db,
         "Cost";
-        id = "Cost 2",
+        label = "Cost 2",
         value = 40.0,
     )
 

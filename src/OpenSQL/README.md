@@ -11,19 +11,19 @@ Following PSRI's `OpenStudy` standards, SQL schemas for the `OpenSQL` framework 
 - The Table name should be the same as the name of the Collection.
 - The Table name of a Collection should beging with a capital letter and be in singular form.
 - In case of a Collection with a composite name, the Table name should written in Pascal Case.
-- The Table must contain a primary key named `id`.
+- The Table must contain a primary key named `id` that is an `INTEGER`.
 
 Examples:
 
 
 ```sql
 CREATE TABLE Resource (
-    id TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     type TEXT NOT NULL DEFAULT "D" CHECK(type IN ('D', 'E', 'F'))
 );
 
 CREATE TABLE ThermalPlant(
-    id TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     capacity REAL NOT NULL DEFAULT 0
 );
 ```
@@ -36,7 +36,7 @@ CREATE TABLE ThermalPlant(
 Example:
 ```sql
 CREATE TABLE ThermalPlant(
-    id TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     capacity REAL NOT NULL
 );
 ```
@@ -54,7 +54,7 @@ CREATE TABLE ThermalPlant(
 Example:
 ```sql
 CREATE TABLE ThermalPlant_vector_some_value(
-    id TEXT,
+    id INTEGER,
     idx INTEGER NOT NULL,
     some_value REAL NOT NULL,
     FOREIGN KEY (id) REFERENCES ThermalPlant(id) ON DELETE CASCADE,
@@ -91,9 +91,9 @@ Example:
 
 ```sql
 CREATE TABLE Plant (
-    id TEXT PRIMARY KEY,
+    id INTEGER PRIMARY KEY,
     capacity REAL NOT NULL DEFAULT 0,
-    resource_id TEXT,
+    resource_id INTEGER,
     plant_turbine_to TEXT,
     plant_spill_to TEXT,
     FOREIGN KEY(resource_id) REFERENCES Resource(id),
@@ -115,8 +115,8 @@ Example:
 
 ```sql
 CREATE TABLE Plant_relation_Cost (
-    source_id TEXT,
-    target_id TEXT,
+    source_id INTEGER,
+    target_id INTEGER,
     relation_type TEXT,
     FOREIGN KEY(source_id) REFERENCES Plant(id) ON DELETE CASCADE,
     FOREIGN KEY(target_id) REFERENCES Costs(id) ON DELETE CASCADE,

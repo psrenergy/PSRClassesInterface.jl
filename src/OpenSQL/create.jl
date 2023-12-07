@@ -20,7 +20,7 @@ end
 function create_vector!(
     db::SQLite.DB,
     table::String,
-    id::String,
+    id::Integer,
     vector_name::String,
     values::V,
 ) where {V <: AbstractVector}
@@ -39,7 +39,7 @@ function create_vector!(
     return nothing
 end
 
-function create_vectors!(db::SQLite.DB, table::String, id::String, vectors)
+function create_vectors!(db::SQLite.DB, table::String, id::Integer, vectors)
     for (vector_name, values) in vectors
         create_vector!(db, table, id, string(vector_name), values)
     end
@@ -66,15 +66,13 @@ function create_element!(
         end
     end
 
-    if !haskey(dict_parameters, :id)
-        error("A new object requires an \"id\".")
-    end
-    id = dict_parameters[:id]
-
     # TODO a gente deveria ter algum esquema de transactions aqui
     # se um for bem sucedido e o outro não, deveriamos dar rollback para 
     # antes de começar a salvar esse cara.
     create_parameters!(db, table, dict_parameters)
+
+    id = _get_id(db, table, dict_parameters[:label])
+
     create_vectors!(db, table, id, dict_vectors)
 
     return nothing

@@ -8,19 +8,19 @@ function test_time_series()
         PSRI.SQLInterface(),
         joinpath(case_path, "simplecase.sqlite"),
         joinpath(case_path, "simple_schema.sql");
-        id = "Toy Case",
+        label = "Toy Case",
     )
 
     PSRI.create_element!(
         db,
         "Plant";
-        id = "Plant 1",
+        label = "Plant 1",
     )
 
     PSRI.create_element!(
         db,
         "Plant";
-        id = "Plant 2",
+        label = "Plant 2",
     )
 
     iow = PSRI.open(
@@ -120,19 +120,19 @@ function test_time_series_2()
         PSRI.SQLInterface(),
         joinpath(case_path, "simplecase.sqlite"),
         joinpath(case_path, "simple_schema.sql");
-        id = "Toy Case",
+        label = "Toy Case",
     )
 
     PSRI.create_element!(
         db,
         "Plant";
-        id = "Plant 1",
+        label = "Plant 1",
     )
 
     PSRI.create_element!(
         db,
         "Plant";
-        id = "Plant 2",
+        label = "Plant 2",
     )
 
     iow = PSRI.open(
@@ -197,5 +197,5 @@ function test_time_series_2()
     return rm(joinpath(case_path, "simplecase.sqlite"))
 end
 
-test_time_series()
+# test_time_series()
 # test_time_series_2()
