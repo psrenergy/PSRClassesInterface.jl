@@ -29,15 +29,20 @@ _is_valid_table_relation_name(table::String) =
         ),
     )
 
-_is_valid_time_series_attribute_value(value::String) = !isnothing(match(r"^[a-zA-Z][a-zA-Z0-9]*(?:_{1}[a-zA-Z0-9]+)*(?:\.[a-z]+){0,1}$", value))
+_is_valid_time_series_attribute_value(value::String) =
+    !isnothing(
+        match(r"^[a-zA-Z][a-zA-Z0-9]*(?:_{1}[a-zA-Z0-9]+)*(?:\.[a-z]+){0,1}$", value),
+    )
 
 function _validate_time_series_attribute_value(value::String)
     if !_is_valid_time_series_attribute_value(value)
-        error("""Invalid time series file name: $value. \nThe valid time series attribute name format is: \n
-            - name_of_aTTribute123\n
-            - name_of_attribute.extension\n
-            OBS: It must be the name of the file, not the path.
-            """)
+        error(
+            """Invalid time series file name: $value. \nThe valid time series attribute name format is: \n
+          - name_of_aTTribute123\n
+          - name_of_attribute.extension\n
+          OBS: It must be the name of the file, not the path.
+          """,
+        )
     end
 end
 
