@@ -1,5 +1,4 @@
 using Documenter
-using DocumenterDiagrams
 
 using PSRClassesInterface
 const PSRI = PSRClassesInterface
@@ -14,12 +13,12 @@ makedocs(;
     pages = [
         "Home" => "index.md",
         "manual.md",
-        "Files and Structs manual" => String[
-            "file_types/file_diagram.md",
-            "file_types/pmd.md",
-            "file_types/model_template.md",
-            "file_types/relation_mapper.md",
-            "file_types/psrclasses.md",
+        "OpenStudy Files and Structs" => String[
+            "openstudy_files/file_diagram.md",
+            "openstudy_files/pmd.md",
+            "openstudy_files/model_template.md",
+            "openstudy_files/relation_mapper.md",
+            "openstudy_files/psrclasses.md",
         ],
         "Examples" => String[
             "examples/reading_parameters.md",

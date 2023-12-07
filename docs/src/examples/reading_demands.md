@@ -3,7 +3,7 @@
 ## Determining elasticity and value of demands
 In this example we will read demand segments, obtain the value of demands, discover wheter each demand is elastic or inelastic, and then obtain the sums of demands by elasticity. The first step is to read the study data:
 ```@example demand
-import PSRClassesInterface
+using PSRClassesInterface
 const PSRI = PSRClassesInterface
 
 PATH_CASE_EXAMPLE_DEM = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "case1")

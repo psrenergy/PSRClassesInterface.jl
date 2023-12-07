@@ -6,7 +6,8 @@ In this tutorial you will learn how to customize several items of your study.
 
 First of all, it's important to understand how we define the default rules for each collection in our study.
 
-Let's take a look at the function [`PSRI.create_study`](@ref):
+Let's take a look at the function [`PSRClassesInterface.create_study`](@ref) for the `OpenStudy` interface. It has the following signature:
+
 ```
 function create_study(
     ::OpenInterface;
@@ -66,9 +67,9 @@ Now we need a Model Template file, to map our PMD Model to collections. Just as 
 ]
 ```
 
-After that, we can create a Study with [`PSRI.create_study`](@ref) using a few extra mandatory parameters.
+After that, we can create a Study with [`PSRClassesInterface.create_study`](@ref) using a few extra mandatory parameters.
 
-```
+```@example custom_study
 import PSRClassesInterface
 const PSRI = PSRClassesInterface
 

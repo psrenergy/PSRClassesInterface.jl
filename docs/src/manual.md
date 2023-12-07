@@ -97,9 +97,10 @@ PSRClassesInterface.get_relations
 PSRClassesInterface.get_attribute_dim
 ```
 
-## Write Graf files
+## Read and Write Graf files
 ### Open and Close
 ```@docs
+PSRClassesInterface.AbstractReader
 PSRClassesInterface.AbstractWriter
 PSRClassesInterface.open
 PSRClassesInterface.close
@@ -113,14 +114,6 @@ PSRClassesInterface.array_to_file
 ### Write registry
 ```@docs
 PSRClassesInterface.write_registry
-```
-
-## Read Graf files
-### Open and Close
-```@docs
-PSRClassesInterface.AbstractReader
-PSRClassesInterface.open
-PSRClassesInterface.close
 ```
 
 ### Header information
@@ -165,7 +158,7 @@ PSRClassesInterface.add_reader!
 ```@docs
 PSRClassesInterface.ReaderMapper
 PSRClassesInterface.add_reader!
-PSRClassesInterface.goto
+<!-- PSRClassesInterface.goto -->
 PSRClassesInterface.close
 ```
 

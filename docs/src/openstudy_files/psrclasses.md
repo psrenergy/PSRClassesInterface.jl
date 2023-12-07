@@ -1,6 +1,6 @@
 # psrclasses.json and Defaults
 
-The `psrclasses.json` file stores the data from the PSRI study.
+The `psrclasses.json` file stores the data from the `OpenStudy` model.
 
 It has the following structure:
 

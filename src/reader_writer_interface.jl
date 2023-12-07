@@ -113,7 +113,7 @@ Returns updated `AbstractReader` instance.
 
   - `is_hourly::Bool`: if data to be read is hourly, other than blockly.
 
-  - `stage_type::PSRI.StageType`: the [`PSRI.StageType`](@ref) of the data, defaults to `PSRI.STAGE_MONTH`.
+  - `stage_type::PSRI.StageType`: the [`PSRClassesInterface.StageType`](@ref) of the data, defaults to `PSRI.STAGE_MONTH`.
   - `header::Vector{String}`: if file has a header with metadata.
   - `use_header::Bool`: if data from header should be retrieved.
   - `first_stage::Dates.Date`: stage at which start reading.
@@ -128,20 +128,20 @@ function open end
 """
     PSRI.close(ior::AbstractReader)
 
-Closes the [`PSRI.AbstractReader`](@ref) instance.
+Closes the [`PSRClassesInterface.AbstractReader`](@ref) instance.
 
 * * *
 
     PSRI.close(iow::AbstractWriter)
 
-Closes the [`PSRI.AbstractWriter`](@ref) instance.
+Closes the [`PSRClassesInterface.AbstractWriter`](@ref) instance.
 """
 function close end
 
 """
     PSRI.is_hourly(ior::AbstractReader)
 
-Returns a `Bool` indicating whether the data in the file read by [`PSRI.AbstractReader`](@ref) is hourly.
+Returns a `Bool` indicating whether the data in the file read by [`PSRClassesInterface.AbstractReader`](@ref) is hourly.
 """
 function is_hourly end
 
@@ -155,42 +155,42 @@ function hour_discretization end
 """
     PSRI.max_stages(ior::AbstractReader)
 
-Returns an `Int` indicating maximum number of stages in the file read by [`PSRI.AbstractReader`](@ref).
+Returns an `Int` indicating maximum number of stages in the file read by [`PSRClassesInterface.AbstractReader`](@ref).
 """
 function max_stages end
 
 """
     PSRI.max_scenarios(ior::AbstractReader)
 
-Returns an `Int` indicating maximum number of scenarios in the file read by [`PSRI.AbstractReader`](@ref).
+Returns an `Int` indicating maximum number of scenarios in the file read by [`PSRClassesInterface.AbstractReader`](@ref).
 """
 function max_scenarios end
 
 """
     PSRI.max_blocks(ior::AbstractReader)
 
-Returns an `Int` indicating maximum number of blocks in the file read by [`PSRI.AbstractReader`](@ref).
+Returns an `Int` indicating maximum number of blocks in the file read by [`PSRClassesInterface.AbstractReader`](@ref).
 """
 function max_blocks end
 
 """
     PSRI.max_blocks_current(ior::AbstractReader)
 
-Returns an `Int` indicating maximum number of blocks in the cuurent stage in the file read by [`PSRI.AbstractReader`](@ref).
+Returns an `Int` indicating maximum number of blocks in the cuurent stage in the file read by [`PSRClassesInterface.AbstractReader`](@ref).
 """
 function max_blocks_current end
 
 """
     PSRI.max_blocks_stage(ior::AbstractReader, t::Integer)
 
-Returns an `Int` indicating maximum number of blocks in the stage `t` in the file read by [`PSRI.AbstractReader`](@ref).
+Returns an `Int` indicating maximum number of blocks in the stage `t` in the file read by [`PSRClassesInterface.AbstractReader`](@ref).
 """
 function max_blocks_stage end
 
 """
     PSRI.max_agents(ior::AbstractReader)
 
-Returns an `Int` indicating maximum number of agents in the file read by [`PSRI.AbstractReader`](@ref).
+Returns an `Int` indicating maximum number of agents in the file read by [`PSRClassesInterface.AbstractReader`](@ref).
 """
 function max_agents end
 
@@ -202,49 +202,49 @@ function stage_type end
 """
     PSRI.initial_stage(ior::AbstractReader)
 
-Returns an `Int` indicating the initial stage in the file read by [`PSRI.AbstractReader`](@ref).
+Returns an `Int` indicating the initial stage in the file read by [`PSRClassesInterface.AbstractReader`](@ref).
 """
 function initial_stage end
 
 """
     PSRI.initial_year(ior::AbstractReader)
 
-Returns an `Int` indicating the initial year in the file read by [`PSRI.AbstractReader`](@ref).
+Returns an `Int` indicating the initial year in the file read by [`PSRClassesInterface.AbstractReader`](@ref).
 """
 function initial_year end
 
 """
     PSRI.data_unit(ior::AbstractReader)
 
-Returns a `String` indicating the unit of the data in the file read by [`PSRI.AbstractReader`](@ref).
+Returns a `String` indicating the unit of the data in the file read by [`PSRClassesInterface.AbstractReader`](@ref).
 """
 function data_unit end
 
 """
     PSRI.current_stage(ior::AbstractReader)
 
-Returns an `Int` indicating the current stage in the stream of the [`PSRI.AbstractReader`](@ref).
+Returns an `Int` indicating the current stage in the stream of the [`PSRClassesInterface.AbstractReader`](@ref).
 """
 function current_stage end
 
 """
     PSRI.current_scenario(ior::AbstractReader)
 
-Returns an `Int` indicating the current scenarios in the stream of the [`PSRI.AbstractReader`](@ref).
+Returns an `Int` indicating the current scenarios in the stream of the [`PSRClassesInterface.AbstractReader`](@ref).
 """
 function current_scenario end
 
 """
     PSRI.current_block(ior::AbstractReader)
 
-Returns an `Int` indicating the current block in the stream of the [`PSRI.AbstractReader`](@ref).
+Returns an `Int` indicating the current block in the stream of the [`PSRClassesInterface.AbstractReader`](@ref).
 """
 function current_block end
 
 """
     PSRI.agent_names(ior::AbstractReader)
 
-Returns a `Vector{String}` with the agent names in the file read by [`PSRI.AbstractReader`](@ref).
+Returns a `Vector{String}` with the agent names in the file read by [`PSRClassesInterface.AbstractReader`](@ref).
 """
 function agent_names end
 
@@ -263,7 +263,7 @@ function goto end
 """
     PSRI.next_registry(ior::AbstractReader)
 
-Goes to the next registry on the [`PSRI.AbstractReader`](@ref).
+Goes to the next registry on the [`PSRClassesInterface.AbstractReader`](@ref).
 """
 function next_registry end
 
@@ -288,7 +288,7 @@ function add_reader! end
         block::Integer = 1,
     ) where T <: Real
 
-Writes a data row into opened file through [`PSRI.AbstractWriter`](@ref) instance.
+Writes a data row into opened file through [`PSRClassesInterface.AbstractWriter`](@ref) instance.
 
 ### Arguments:
 
@@ -310,6 +310,6 @@ function array_to_file end
     PSRI.file_path(ior::AbstractReader)
     PSRI.file_path(iow::AbstractWriter)
 
-Returns the path of the file associated with the [`PSRI.AbstractReader`](@ref) or [`PSRI.AbstractWriter`](@ref) instance.
+Returns the path of the file associated with the [`PSRClassesInterface.AbstractReader`](@ref) or [`PSRClassesInterface.AbstractWriter`](@ref) instance.
 """
 function file_path end

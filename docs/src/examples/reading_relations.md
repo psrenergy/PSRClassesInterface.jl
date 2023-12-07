@@ -1,9 +1,9 @@
 # Reading Relations
 
-## Introduction to the [`PSRI.get_map`](@ref) method
+## Introduction to the [`PSRClassesInterface.get_map`](@ref) method
 
-There are two dispatches for  the [`PSRI.get_map`](@ref) function. 
-The first requires the attribute name that represents the relation, while the second needs the [`PSRI.PMD.RelationType`](@ref) between the elements.
+There are two dispatches for  the [`PSRClassesInterface.get_map`](@ref) function. 
+The first requires the attribute name that represents the relation, while the second needs the [`PSRClassesInterface.PMD.RelationType`](@ref) between the elements.
 
 Here is how this function works:
 
@@ -12,6 +12,18 @@ There is a relation between elements of these two collections represented by an 
 
 If we execute the following code:
 ```@example get_map
+using PSRClassesInterface
+const PSRI = PSRClassesInterface
+
+PSRI.create_element!(data, "PSRSerie")
+PSRI.create_element!(data, "PSRSerie")
+PSRI.create_element!(data, "PSRSerie")
+PSRI.create_element!(data, "PSRBus")
+PSRI.create_element!(data, "PSRBus")
+
+PSRI.set_related!(data, "PSRSerie", "PSRBus", 1, 2, relation_type = PSRI.PMD.RELATION_TO)
+PSRI.set_related!(data, "PSRSerie", "PSRBus", 3, 1, relation_type = PSRI.PMD.RELATION_TO)
+
 PSRI.get_map(data, "PSRSerie", "PSRBus", "no2")
 ```
 
@@ -23,7 +35,7 @@ This means that:
 - the source element of index `2` in the collection `PSRSerie` is not related to any element from collection `PSRBus`
 -  the source element of index `3` in the collection `PSRSerie` is related to the target element of index `1` in the collection `PSRBus`. 
 
-**Note:** There is also a [`PSRI.get_vector_map`](@ref) method that works just as [`PSRI.get_map`](@ref). 
+**Note:** There is also a [`PSRClassesInterface.get_vector_map`](@ref) method that works just as [`PSRClassesInterface.get_map`](@ref). 
 
 Now we can move to a more practical example.
 
@@ -31,8 +43,6 @@ Now we can move to a more practical example.
 
 In this example we will demonstrate how to make a simple use of a relationship map. That will be achieved by determining a subsystem from a certain hydro plant through its parameters. The program will initiate by the standard reading procedure:
 ```@example sys_by_gaug
-import PSRClassesInterface
-const PSRI = PSRClassesInterface
 
 PATH_CASE_EXAMPLE_GAUGING = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "case2")
 
@@ -89,8 +99,6 @@ targetBus = gen2bus[target_generator]
 ## Determining which buses are connected by each circuit
 Each circuit connects two buses, it starts from a bus and goes to another. In this example we'll discover these buses for each circuit and then we'll build an incidence matrix of buses by circuits. The first step is to read the data:
 ```@example cir_bus
-import PSRClassesInterface
-const PSRI = PSRClassesInterface
 
 PATH_CASE_EXAMPLE_CIR_BUS = joinpath(pathof(PSRI) |> dirname |> dirname, "test", "data", "case1")
 

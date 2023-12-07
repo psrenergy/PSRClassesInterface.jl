@@ -1,12 +1,19 @@
 # PSRClassesInterface Documentation
 
-Repository to read and write open-source formats for PSR models.
+
+PSRClassesInterface, or PSRI, is a Julia package that provides an interface to read and write open-source formats for PSR models.
+It is comprised of three main modules:
+- `OpenStudy`: Reads and writes data in the JSON format
+- `OpenBinary`: Reads and writes time series data in the binary format
+- `OpenSQL`: Reads and writes data in the SQL format
 
 ## Installation
 
 This package is registered so you can simply `add` it using Julia's `Pkg` manager:
 ```julia
-pkg> add PSRClassesInterface
+julia> import Pkg
+
+julia> Pkg.add("PSRClassesInterface")
 ```
 
 ## Contributing
