@@ -10,6 +10,15 @@
 PMD files are used to define models accross multiple PSR software.
 It stores metadata about every attribute and relation.
 
+
+## Good practices
+
+In order to make the PMD file more readable and easier to maintain, we recommend the following good practices:
+- Decide whether you want to use PascalCase, snake_case or camelCase and stick to it.
+- Always write the name for the `Attributes` and `Collections` in English.
+- Do not use special characters other than "_" (underscore) in the names.
+- Define understandable names for the `Attributes` and `Collections`, as other users may use your model in the future.
+
 ## Defining a model
 
 To define a model `Custom_Model_v1`, you need to use the following structure:

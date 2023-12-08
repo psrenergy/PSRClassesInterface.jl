@@ -1,6 +1,6 @@
 # Model Template
 
-The models defined in a [PMD](./pmd.md) file are mapped to collections in a PSRI study with a Model Template file.
+The models defined in a [PMD](./pmd.md) file are mapped to collections in an `OpenStudy` instance with a Model Template file.
 
 A Model Template is a JSON file with the following syntax.
 

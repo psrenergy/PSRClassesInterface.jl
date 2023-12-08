@@ -5,7 +5,7 @@ When these relations are parsed, they are stored in a Julia dictionary, the Rela
 
 ## Relation Mapper JSON file
 
-However, it is also possible to fill the Relation Mapper with a JSON file, that follows the same structure as PSRI's dictionary for relations.
+However, it is also possible to fill the Relation Mapper with a JSON file, that follows the same structure as `OpenStudy`'s dictionary for relations.
 
 In the example below, we have a Relation Mapper file with the following information:
 - The model `CustomModel` has two relations defined, one with `SecondCollection` and another with `ThirdCollection`.

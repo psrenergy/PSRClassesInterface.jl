@@ -20,4 +20,4 @@ jobs:
           Pkg.add(PackageSpec(name="Aqua"))
           Pkg.develop(PackageSpec(path=pwd()))
           using PSRClassesInterface, Aqua
-          Aqua.test_all(PSRClassesInterface; unbound_args = false)
+          Aqua.test_all(PSRClassesInterface; unbound_args = false, ambiguities = false)

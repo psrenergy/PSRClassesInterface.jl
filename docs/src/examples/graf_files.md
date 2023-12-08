@@ -7,6 +7,8 @@ Some attributes in a Study represent a time series indexed by another attribute.
 First we create a Dict with `EmissionCost` and `DateEmissionCost` data.
 
 ```@example rw_file
+using PSRClassesInterface
+PSRI = PSRClassesInterface
 using Dates
 
 series = Dict{String,Vector}(
@@ -19,7 +21,7 @@ series = Dict{String,Vector}(
     )
 ```
 
-Then, we save the time series to the study using the function [`PSRI.set_series!`](@ref). Notice that when we are saving this time series, we are specifying the element from the collection that has this series, using its index.
+Then, we save the time series to the study using the function [`PSRClassesInterface.set_series!`](@ref). Notice that when we are saving this time series, we are specifying the element from the collection that has this series, using its index.
 
 ```@example rw_file
 temp_path = joinpath(tempdir(), "PSRI")
@@ -39,7 +41,7 @@ PSRI.set_series!(
 
 ### Using a SeriesTable
 
-We can later retrieve the series for the element in the collection with [`PSRI.get_series`](@ref), which will return a `SeriesTable` object. It can be later displayed as a table in your terminal.
+We can later retrieve the series for the element in the collection with [`PSRClassesInterface.get_series`](@ref), which will return a `SeriesTable` object. It can be later displayed as a table in your terminal.
 
 When using this function, we need the collection, the element index and the attribute that indexes the elements.
 
@@ -141,7 +143,7 @@ nothing #hide
 ```
 
 There are two ways of saving the data to a file, save the data in the file directly or iteratively.
-To save the data directly use the function [`PSRI.array_to_file`](@ref) by calling:
+To save the data directly use the function [`PSRClassesInterface.array_to_file`](@ref) by calling:
 ```@example rw_file
 FILE_PATH = joinpath(tempdir(), "example")
 
@@ -156,9 +158,9 @@ PSRI.array_to_file(
 )
 ```
 
-To save the data iteractively use the function [`PSRI.open`](@ref) to create an [`PSRI.AbstractWriter`](@ref).
-Save the data of each registry to the file using the function [`PSRI.write_registry`](@ref) and then close the data stream
-calling the function [`PSRI.close`](@ref).
+To save the data iteractively use the function [`PSRClassesInterface.open`](@ref) to create an [`PSRClassesInterface.AbstractWriter`](@ref).
+Save the data of each registry to the file using the function [`PSRClassesInterface.write_registry`](@ref) and then close the data stream
+calling the function [`PSRClassesInterface.close`](@ref).
 
 ```@example rw_file 
 iow = PSRI.open(
@@ -188,7 +190,7 @@ PSRI.close(iow)
 ## Reading a time series from a graf file
 
 A similar logic can be used to read the data from a file. You can read it directly or iteratively.
-To read the data directly use the function [`PSRI.file_to_array`](@ref) or [`PSRI.file_to_array_and_header`](@ref)
+To read the data directly use the function [`PSRClassesInterface.file_to_array`](@ref) or [`PSRClassesInterface.file_to_array_and_header`](@ref)
 ```@example rw_file
 data_from_file = PSRI.file_to_array(
         PSRI.OpenBinary.Reader, 
@@ -219,8 +221,8 @@ data_from_file = PSRI.file_to_array(
 @assert all(isapprox.(data_from_file[end, :, :, :], time_series_data[1, :, :, :], atol=1E-7))
 ```
 
-To read the data iteractively use the function [`PSRI.open`](@ref) to create an [`PSRI.AbstractReader`](@ref) and
-read each registry iteratively. At the end you should close the [`PSRI.AbstractReader`](@ref) by calling [`PSRI.close`](@ref)
+To read the data iteractively use the function [`PSRClassesInterface.open`](@ref) to create an [`PSRClassesInterface.AbstractReader`](@ref) and
+read each registry iteratively. At the end you should close the [`PSRClassesInterface.AbstractReader`](@ref) by calling [`PSRClassesInterface.close`](@ref)
 ```@example rw_file
 ior = PSRI.open(
     PSRI.OpenBinary.Reader, 
@@ -243,7 +245,7 @@ PSRI.close(ior)
 
 As presented earlier, an attribute for a collection can have its data stored in a Graf file, all that being specified in the `GrafScenarios` entry of the study JSON. 
 
-If you have a Graf file that should be linked to a study, you can use the function [`PSRI.link_series_to_file`](@ref) to do so.
+If you have a Graf file that should be linked to a study, you can use the function [`PSRClassesInterface.link_series_to_file`](@ref) to do so.
 
 ```@example rw_file
 PSRI.create_element!(data, "PSRDemand", "AVId" => "Agent 1")
@@ -263,7 +265,7 @@ PSRI.link_series_to_file(
 
 ### Using a GrafTable
 
-We can retrieve the data stored in a Graf file using the [`PSRI.get_graf_series`](@ref) function. This function returns a `GrafTable` object. 
+We can retrieve the data stored in a Graf file using the [`PSRClassesInterface.get_graf_series`](@ref) function. This function returns a `GrafTable` object. 
 
 When using this function, we need the collection and its attribute that is linked to a Graf file.
 
@@ -288,7 +290,7 @@ DataFrame(graf_table)
 
 You can get a vector that corresponds to a row in a Graf file with the values for the agents correspoding to the current `stage`, `scenario` and `block`.
 
-For that, we will have to use the function [`PSRI.mapped_vector`](@ref). 
+For that, we will have to use the function [`PSRClassesInterface.mapped_vector`](@ref). 
 
 ```@example rw_file
 vec = PSRI.mapped_vector(
@@ -299,11 +301,11 @@ vec = PSRI.mapped_vector(
     )
 ```
 The parameters that were used to retrieve the row value in the Graf table can be changed with the following functions:
-- [`PSRI.go_to_stage`](@ref)
-- [`PSRI.go_to_scenario`](@ref)
-- [`PSRI.go_to_block`](@ref)
+- [`PSRClassesInterface.go_to_stage`](@ref)
+- [`PSRClassesInterface.go_to_scenario`](@ref)
+- [`PSRClassesInterface.go_to_block`](@ref)
 
-These methods don't automatically update the vector. For that, we use the function [`PSRI.update_vectors!`](@ref), which update all vectors from our Study.
+These methods don't automatically update the vector. For that, we use the function [`PSRClassesInterface.update_vectors!`](@ref), which update all vectors from our Study.
 
 ```@example rw_file
 PSRI.update_vectors!(data)

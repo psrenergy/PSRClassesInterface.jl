@@ -3,7 +3,7 @@
 ## Reading configuration parameters 
 
 Most cases have configuration parameters such as the maximum number of iterations, the discount rate, the deficit cost etc. The
-function [`PSRI.configuration_parameter`](@ref) reads all the parameters from the cases.
+function [`PSRClassesInterface.configuration_parameter`](@ref) reads all the parameters from the cases.
 
 ```@example thermal_gens_pars
 import PSRClassesInterface
@@ -52,7 +52,7 @@ data = PSRI.load_study(
 ; nothing # hide
 ```
 
-We can initialize the struct with the parameters of the first stage using the function [`PSRI.mapped_vector`](@ref)
+We can initialize the struct with the parameters of the first stage using the function [`PSRClassesInterface.mapped_vector`](@ref)
 ```@example thermal_gens_pars
 therm_gen = ThermalGenerators()
 therm_gen.names = PSRI.get_name(data, "PSRThermalPlant")
