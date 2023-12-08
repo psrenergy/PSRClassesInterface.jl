@@ -18,12 +18,14 @@ Examples:
 
 ```sql
 CREATE TABLE Resource (
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    label TEXT UNIQUE NOT NULL,
     type TEXT NOT NULL DEFAULT "D" CHECK(type IN ('D', 'E', 'F'))
 );
 
 CREATE TABLE ThermalPlant(
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    label TEXT UNIQUE NOT NULL,
     capacity REAL NOT NULL DEFAULT 0
 );
 ```
@@ -36,7 +38,8 @@ CREATE TABLE ThermalPlant(
 Example:
 ```sql
 CREATE TABLE ThermalPlant(
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    label TEXT UNIQUE NOT NULL,
     capacity REAL NOT NULL
 );
 ```
@@ -45,7 +48,7 @@ CREATE TABLE ThermalPlant(
 
 - In case of a vector attribute, a Table should be created with its name indicating the name of the Collection and the name of the attribute, separated by `_vector_`, as presented below
 
-<p style="text-align: center;"> COLLECTION_NAME_vector_ATTRIBUTE_NAME</p>
+<p style="text-align: center;"> COLLECTION_vector_ATTRIBUTE</p>
 
 - Note that after **_vector_** the name of the attribute should follow the same rule as non-vector attributes.
 - The Table must contain a Column named `id` and another named `idx`.
@@ -67,7 +70,7 @@ CREATE TABLE ThermalPlant_vector_some_value(
 - All Time Series for the elements from a Collection should be stored in a Table
 - The Table name should be the same as the name of the Collection followed by `_timeseries`, as presented below
 
-<p style="text-align: center"> COLLECTION_NAME_vector_ATTRIBUTE_NAME</p>
+<p style="text-align: center"> COLLECTION_vector_ATTRIBUTE</p>
 
 - Each Column of the table should be named after the name of the attribute.
 - Each Column should store the path to the file containing the time series data.
@@ -91,7 +94,8 @@ Example:
 
 ```sql
 CREATE TABLE Plant (
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    label TEXT UNIQUE NOT NULL,
     capacity REAL NOT NULL DEFAULT 0,
     resource_id INTEGER,
     plant_turbine_to INTEGER,
@@ -106,7 +110,7 @@ CREATE TABLE Plant (
 
 - N to N relations should be stored in a separate Table, named after the Source and Target Collections, separated by `_relation_`, as presented below
 
-<p style="text-align: center"> SOURCE_NAME_relation_TARGET_NAME</p>
+<p style="text-align: center"> SOURCE_relation_TARGET</p>
 
 - The Table must contain a Column named `source_id` and another named `target_id`.
 - The Table must contain a Column named `relation_type`
