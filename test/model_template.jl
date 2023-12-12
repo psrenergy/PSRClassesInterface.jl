@@ -41,7 +41,7 @@ function test_model_template1()
 
     data_struct_path = joinpath(temp_path, "struct.json")
 
-    PSRI.dump_json_struct(data_struct_path, data)
+    PSRI.OpenStudy.dump_json_struct(data_struct_path, data)
 
     mt_copy_path = joinpath(temp_path, "modeltemplate.copy.json")
 
@@ -56,7 +56,7 @@ function test_model_template1()
         study_collection = "NewStudy",
     )
 
-    let element = PSRI.get_element(data_copy, "PSRLoad", Int32(5))
+    let element = PSRI.OpenStudy.get_element(data_copy, "PSRLoad", Int32(5))
         @test element["AVId"] == "test"
     end
 

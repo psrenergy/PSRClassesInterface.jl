@@ -24,6 +24,7 @@ const DataStruct = PMD.DataStruct
 # simple and generic interface
 include("study_interface.jl")
 include("reader_writer_interface.jl")
+include("tables/interface.jl")
 
 # utilities
 include("reader_mapper.jl")
@@ -32,29 +33,17 @@ include("utils.jl")
 
 # main interface
 include("OpenBinary/OpenBinary.jl")
-include("OpenStudy/study_openinterface.jl")
-include("OpenStudy/graf_utils.jl")
-include("OpenStudy/validation.jl")
-include("OpenStudy/vector_map.jl")
-include("OpenStudy/duration.jl")
-include("OpenStudy/relations.jl")
+include("OpenStudy/OpenStudy.jl")
+const OpenInterface = OpenStudy.OpenInterface
 
 include("OpenSQL/OpenSQL.jl")
 const SQLInterface = OpenSQL.SQLInterface
 
 # Tables.jl API
-include("tables/interface.jl")
 
 # modification API
 # include("modification_api.jl")
 
 # To be moved into OpenStudy
-include("openstudy_utils.jl")
-include("openstudy_create.jl")
-include("openstudy_read.jl")
-include("openstudy_update.jl")
-include("openstudy_delete.jl")
-include("openstudy_validation.jl")
-
 
 end

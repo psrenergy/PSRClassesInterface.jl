@@ -5,13 +5,13 @@ function test_api(data_path::String)
     mkpath(temp_path)
 
     src_data = PSRI.load_study(PSRI.OpenInterface(); data_path = data_path)
-    raw_data = PSRI._raw(src_data)
+    raw_data = PSRI.OpenStudy._raw(src_data)
 
     PSRI.write_data(src_data, json_path)
 
     dest_data = PSRI.load_study(PSRI.OpenInterface(); data_path = temp_path)
 
-    @test PSRI._raw(dest_data) == raw_data
+    @test PSRI.OpenStudy._raw(dest_data) == raw_data
 
     # set_parm!
     parm_data = Dict(
@@ -194,11 +194,11 @@ function test_api5() #tests get_element and _get_index_by_code for code
 
     index = PSRI.create_element!(data, "PSRBus", "code" => Int32(5))
 
-    retrieved_index = PSRI._get_index_by_code(data, "PSRBus", 5)
+    retrieved_index = PSRI.OpenStudy._get_index_by_code(data, "PSRBus", 5)
 
     @test (index == retrieved_index)
 
-    element = PSRI.get_element(data, "PSRBus", 5)
+    element = PSRI.OpenStudy.get_element(data, "PSRBus", 5)
 
     @test element["code"] == 5
 end

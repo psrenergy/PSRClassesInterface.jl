@@ -1,5 +1,5 @@
 # see main definition
-function mapped_vector(
+function PSRI.mapped_vector(
     data::Data,
     collection::String,
     attribute::String,
@@ -9,35 +9,35 @@ function mapped_vector(
     ignore::Bool = false,
     map_key = collection, # reference for PSRMap pointer, if empty use class name
     filters = String[], # for calling just within a subset instead of the full call
-    default = _default_value(T),
+    default = PSRI._default_value(T),
     validate::Bool = true,
 ) where {T} #<: Union{Float64, Int32}
-    if has_graf_file(data, collection, attribute)
+    if PSRI.has_graf_file(data, collection, attribute)
         if isnothing(data.mapper)
-            data.mapper = ReaderMapper(OpenBinary.Reader, data.controller_date)
+            data.mapper = PSRI.ReaderMapper(PSRI.OpenBinary.Reader, data.controller_date)
         end
         graf_file = _get_graf_filename(data, collection, attribute)
         header = _get_graf_agents(graf_file)
-        return add_reader!(data.mapper, graf_file, header, filters)
+        return PSRI.add_reader!(data.mapper, graf_file, header, filters)
     end
 
     raw = _raw(data)
 
-    n = max_elements(data, collection)
+    n = PSRI.max_elements(data, collection)
 
     if n == 0
         return T[]
     end
 
-    attribute_struct = get_attribute_struct(data, collection, attribute)
+    attribute_struct = PSRI.get_attribute_struct(data, collection, attribute)
 
     if validate
-        _check_type(attribute_struct, T, collection, attribute)
-        _check_vector(attribute_struct, collection, attribute)
+        PSRI._check_type(attribute_struct, T, collection, attribute)
+        PSRI._check_vector(attribute_struct, collection, attribute)
     end
     _check_dim(attribute_struct, collection, attribute, dim1, dim2)
 
-    dim = get_attribute_dim(attribute_struct)
+    dim = PSRI.get_attribute_dim(attribute_struct)
 
     dim1_val = _add_get_dim_val(data, dim1)
     dim2_val = _add_get_dim_val(data, dim2)
@@ -157,7 +157,7 @@ function _add_get_dim_val(data, axis)
 end
 
 # see main definition
-function go_to_stage(data::Data, stage::Integer)
+function PSRI.go_to_stage(data::Data, stage::Integer)
     if data.controller_stage != stage
         data.controller_stage_changed = true
     end
@@ -167,7 +167,7 @@ function go_to_stage(data::Data, stage::Integer)
 end
 
 # see main definition
-function go_to_dimension(data::Data, str::String, val::Integer)
+function PSRI.go_to_dimension(data::Data, str::String, val::Integer)
     if haskey(data.controller_dim, str)
         data.controller_dim[str] = val
     else
@@ -176,18 +176,18 @@ function go_to_dimension(data::Data, str::String, val::Integer)
     return nothing
 end
 
-function go_to_scenario(data::Data, scenario::Integer)
+function PSRI.go_to_scenario(data::Data, scenario::Integer)
     data.controller_scenario = scenario
     return nothing
 end
 
-function go_to_block(data::Data, block::Integer)
+function PSRI.go_to_block(data::Data, block::Integer)
     data.controller_block = block
     return nothing
 end
 
 # see main definition
-function update_vectors!(data::Data)
+function PSRI.update_vectors!(data::Data)
     _update_all_dates!(data)
 
     _update_all_vectors!(data, data.map_cache_real)
@@ -201,7 +201,7 @@ function update_vectors!(data::Data)
 end
 
 # see main definition
-function update_vectors!(data::Data, filter::String)
+function PSRI.update_vectors!(data::Data, filter::String)
 
     # TODO improve this with a DataCache
     _update_all_dates!(data)
@@ -243,9 +243,9 @@ function update_vectors!(data::Data, filter::String)
 end
 
 # see main definition
-function update_vectors!(data::Data, filters::Vector{String})
+function PSRI.update_vectors!(data::Data, filters::Vector{String})
     for f in filters
-        update_vectors!(data, f)
+        PSRI.update_vectors!(data, f)
     end
     return nothing
 end
@@ -285,7 +285,7 @@ function _update_all_vectors!(data::Data, map_cache)
 end
 
 function _update_graf_vectors!(data::Data)
-    return goto(
+    return PSRI.goto(
         data.mapper,
         data.controller_stage,
         data.controller_scenario,
@@ -294,7 +294,7 @@ function _update_graf_vectors!(data::Data)
 end
 
 function _update_graf_vectors!(data::Data, filter::String)
-    return goto(
+    return PSRI.goto(
         data.mapper,
         filter,
         data.controller_stage,

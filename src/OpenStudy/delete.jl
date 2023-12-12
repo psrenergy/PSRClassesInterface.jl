@@ -1,5 +1,5 @@
 
-function delete_relation!(
+function PSRI.delete_relation!(
     data::Data,
     source::String,
     target::String,
@@ -26,7 +26,7 @@ function delete_relation!(
     return nothing
 end
 
-function delete_vector_relation!(
+function PSRI.delete_vector_relation!(
     data::Data,
     source::String,
     target::String,
@@ -56,9 +56,8 @@ function delete_vector_relation!(
     return nothing
 end
 
-
-function delete_element!(data::Data, collection::String, index::Int)
-    if !has_relations(data, collection, index)
+function PSRI.delete_element!(data::Data, collection::String, index::Int)
+    if !PSRI.has_relations(data, collection, index)
         elements = _get_elements(data, collection)
 
         element_id = elements[index]["reference_id"]

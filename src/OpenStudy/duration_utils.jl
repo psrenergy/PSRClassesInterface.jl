@@ -1,81 +1,81 @@
 function _raw_stage_duration(data::Data, date::Dates.Date)::Int
-    if data.stage_type == STAGE_WEEK
+    if data.stage_type == PSRI.STAGE_WEEK
         return 168.0
-    elseif data.stage_type == STAGE_DAY
+    elseif data.stage_type == PSRI.STAGE_DAY
         return 24.0
     end
-    return DAYS_IN_MONTH[Dates.month(date)] * 24.0
+    return PSRI.DAYS_IN_MONTH[Dates.month(date)] * 24.0
 end
 
 function _raw_stage_duration(data::Data, t::Int)::Int
-    if data.stage_type == STAGE_WEEK
+    if data.stage_type == PSRI.STAGE_WEEK
         return 168.0
-    elseif data.stage_type == STAGE_DAY
+    elseif data.stage_type == PSRI.STAGE_DAY
         return 24.0
     end
-    return DAYS_IN_MONTH[Dates.month(
-        _date_from_stage(t, data.stage_type, data.first_date))] * 24.0
+    return PSRI.DAYS_IN_MONTH[Dates.month(
+        PSRI._date_from_stage(t, data.stage_type, data.first_date))] * 24.0
 end
 
-function stage_duration(data::Data, date::Dates.Date)
-    if data.duration_mode != VARIABLE_DURATION
+function PSRI.stage_duration(data::Data, date::Dates.Date)
+    if data.duration_mode != PSRI.VARIABLE_DURATION
         return _raw_stage_duration(data, date)
     end
-    t = _stage_from_date(date, data.stage_type, data.first_date)
+    t = PSRI._stage_from_date(date, data.stage_type, data.first_date)
     return _variable_stage_duration(data, t)
 end
 
-function stage_duration(data::Data, t::Int = data.controller_stage)
-    if data.duration_mode != VARIABLE_DURATION
+function PSRI.stage_duration(data::Data, t::Int = data.controller_stage)
+    if data.duration_mode != PSRI.VARIABLE_DURATION
         return _raw_stage_duration(data, t)
     end
     return _variable_stage_duration(data, t)
 end
 
-function block_duration(data::Data, date::Dates.Date, b::Int)
+function PSRI.block_duration(data::Data, date::Dates.Date, b::Int)
     if !(1 <= b <= data.number_blocks)
         error(
             "Blocks is expected to be larger than 1 and smaller than the number of blocks in the study $(data.number_blocks)",
         )
     end
-    if data.duration_mode == FIXED_DURATION
+    if data.duration_mode == PSRI.FIXED_DURATION
         raw = _raw(data)
         percent = raw["PSRStudy"][1]["Duracao($b)"] / 100.0
         return percent * _raw_stage_duration(data, date)
-    end# elseif data.duration_mode == VARIABLE_DURATION # OR HOUR_BLOCK_MAP
-    t = _stage_from_date(date, data.stage_type, data.first_date)
+    end# elseif data.duration_mode == PSRI.VARIABLE_DURATION # OR PSRI.HOUR_BLOCK_MAP
+    t = PSRI._stage_from_date(date, data.stage_type, data.first_date)
     return _variable_stage_duration(data, t, b)
 end
 
-function block_duration(data::Data, b::Int)
-    return block_duration(data, data.controller_stage, b)
+function PSRI.block_duration(data::Data, b::Int)
+    return PSRI.block_duration(data, data.controller_stage, b)
 end
 
-function block_duration(data::Data, t::Int, b::Int)
+function PSRI.block_duration(data::Data, t::Int, b::Int)
     if !(1 <= b <= data.number_blocks)
         error(
             "Blocks is expected to be larger than 1 and smaller than the number of blocks in the study $(data.number_blocks)",
         )
     end
-    if data.duration_mode == FIXED_DURATION
+    if data.duration_mode == PSRI.FIXED_DURATION
         raw = _raw(data)
         percent = raw["PSRStudy"][1]["Duracao($b)"] / 100.0
         return percent * _raw_stage_duration(data, t)
-    end# elseif data.duration_mode == VARIABLE_DURATION # OR HOUR_BLOCK_MAP
+    end# elseif data.duration_mode == PSRI.VARIABLE_DURATION # OR PSRI.HOUR_BLOCK_MAP
     return _variable_stage_duration(data, t, b)
 end
 
-function block_from_stage_hour(data::Data, t::Int, h::Int)
-    if data.duration_mode != HOUR_BLOCK_MAP
+function PSRI.block_from_stage_hour(data::Data, t::Int, h::Int)
+    if data.duration_mode != PSRI.HOUR_BLOCK_MAP
         error("Cannot query block from study with duration mode: $(data.duration_mode)")
     end
-    goto(data.hour_to_block, t, 1, h)
+    PSRI.goto(data.hour_to_block, t, 1, h)
     return data.hour_to_block[]
 end
 
-function block_from_stage_hour(data::Data, date::Dates.Date, h::Int)
-    t = _stage_from_date(date, data.stage_type, data.first_date)
-    return block_from_stage_hour(data, t, h)
+function PSRI.block_from_stage_hour(data::Data, date::Dates.Date, h::Int)
+    t = PSRI._stage_from_date(date, data.stage_type, data.first_date)
+    return PSRI.block_from_stage_hour(data, t, h)
 end
 
 #=
@@ -88,7 +88,7 @@ end
 
 function _variable_stage_duration(data::Data, t::Int)
     val = 0.0
-    goto(data.variable_duration, t)
+    PSRI.goto(data.variable_duration, t)
     for b in 1:data.number_blocks
         val += data.variable_duration[b]
     end
@@ -97,7 +97,7 @@ end
 
 function _variable_stage_duration(data::Data, t::Int, b::Int)
     val = 0.0
-    goto(data.variable_duration, t)
+    PSRI.goto(data.variable_duration, t)
     return data.variable_duration[b]
 end
 
@@ -111,10 +111,10 @@ function _variable_duration_to_file!(data::Data)
 
     STAGES = length(dates)
 
-    _year, _stage = _year_stage(_simple_date(dates[1]), data.stage_type)
+    _year, _stage = PSRI._year_stage(_simple_date(dates[1]), data.stage_type)
 
-    iow = open(
-        OpenBinary.Writer,
+    iow = PSRI.open(
+        PSRI.OpenBinary.Writer,
         FILE_NAME;
         blocks = 1,
         scenarios = 1,
@@ -136,13 +136,13 @@ function _variable_duration_to_file!(data::Data)
         for b in 1:data.number_blocks
             cache[b] = duration[b][t]
         end
-        write_registry(iow, cache, t, 1, 1)
+        PSRI.write_registry(iow, cache, t, 1, 1)
     end
 
-    close(iow)
+    PSRI.close(iow)
 
-    ior = open(
-        OpenBinary.Reader,
+    ior = PSRI.open(
+        PSRI.OpenBinary.Reader,
         FILE_NAME;
         use_header = false,
         initial_stage = data.first_date,
@@ -169,12 +169,12 @@ function _hour_block_map_to_file!(data::Data)
     _first = _simple_date(dates[1])
     _last = _simple_date(dates[end])
 
-    STAGES = _stage_from_date(_last, data.stage_type, _first)
+    STAGES = PSRI._stage_from_date(_last, data.stage_type, _first)
 
-    _year, _stage = _year_stage(_first, data.stage_type)
+    _year, _stage = PSRI._year_stage(_first, data.stage_type)
 
-    io_dur = open(
-        OpenBinary.Writer,
+    io_dur = PSRI.open(
+        PSRI.OpenBinary.Writer,
         FILE_NAME_DUR;
         blocks = 1,
         scenarios = 1,
@@ -187,8 +187,8 @@ function _hour_block_map_to_file!(data::Data)
         stage_type = data.stage_type,
     )
     # TODO check handle time in negative stages
-    io_hbm = open(
-        OpenBinary.Writer,
+    io_hbm = PSRI.open(
+        PSRI.OpenBinary.Writer,
         FILE_NAME_HBM;
         # blocks = 1,
         is_hourly = true,
@@ -213,7 +213,7 @@ function _hour_block_map_to_file!(data::Data)
 
     for t in 1:STAGES
         fill!(cache, 0.0)
-        for b in 1:blocks_in_stage(io_hbm, t)
+        for b in 1:PSRI.blocks_in_stage(io_hbm, t)
             hour += 1
             current_str = dates[hour]
             if b == 1
@@ -224,28 +224,26 @@ function _hour_block_map_to_file!(data::Data)
             last_str = current_str
             cache_hbm[] = hbmap[hour]
             @assert 1 <= cache_hbm[] <= data.number_blocks
-            write_registry(io_hbm, cache_hbm, t, 1, b)
+            PSRI.write_registry(io_hbm, cache_hbm, t, 1, b)
             cache[Int(cache_hbm[])] += 1
         end
-        if true
-            for b in 1:data.number_blocks
-                @assert cache[b] > 0
-            end
+        for b in 1:data.number_blocks
+            @assert cache[b] > 0
         end
-        write_registry(io_dur, cache, t, 1, 1)
+        PSRI.write_registry(io_dur, cache, t, 1, 1)
     end
 
-    close(io_dur)
-    close(io_hbm)
+    PSRI.close(io_dur)
+    PSRI.close(io_hbm)
 
-    ior_dur = open(
-        OpenBinary.Reader,
+    ior_dur = PSRI.open(
+        PSRI.OpenBinary.Reader,
         FILE_NAME_DUR;
         use_header = false,
         initial_stage = data.first_date,
     )
-    ior_hbm = open(
-        OpenBinary.Reader,
+    ior_hbm = PSRI.open(
+        PSRI.OpenBinary.Reader,
         FILE_NAME_HBM;
         use_header = false,
         initial_stage = data.first_date,

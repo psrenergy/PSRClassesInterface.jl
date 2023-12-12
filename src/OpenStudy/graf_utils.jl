@@ -1,5 +1,5 @@
 # Check if study has a time series for a collection stored in a Graf file
-function has_graf_file(
+function PSRI.has_graf_file(
     data::Data,
     collection::String,
     attribute::Union{String, Nothing} = nothing,
@@ -29,7 +29,7 @@ function has_graf_file(
 end
 
 function _get_graf_filename(data::Data, collection::String, attribute::String)
-    if !has_graf_file(data, collection, attribute)
+    if !PSRI.has_graf_file(data, collection, attribute)
         error("Collection '$collection' does not have a Graf file for '$attribute'.")
     end
 
@@ -44,7 +44,7 @@ function _get_graf_filename(data::Data, collection::String, attribute::String)
 end
 
 function _get_graf_agents(graf_file::String)
-    ior = open(OpenBinary.Reader, graf_file; use_header = false)
+    ior = PSRI.open(PSRI.OpenBinary.Reader, graf_file; use_header = false)
     return ior.agent_names
 end
 
@@ -54,7 +54,7 @@ function _validate_json_graf(
     elements::Vector{Dict{String, Any}},
     graf_file::String,
 )
-    ior = open(OpenBinary.Reader, graf_file; use_header = false)
+    ior = PSRI.open(PSRI.OpenBinary.Reader, graf_file; use_header = false)
 
     agents_json = Vector{String}()
     for element in elements
@@ -69,7 +69,7 @@ function _validate_json_graf(
 end
 
 # Add reference to graf file in JSON 
-function link_series_to_file(
+function PSRI.link_series_to_file(
     data::Data,
     collection::String,
     attribute::String,
@@ -103,6 +103,6 @@ function link_series_to_file(
 
     push!(data.raw["GrafScenarios"], graf_dict)
 
-    write_data(data)
+    PSRI.write_data(data)
     return
 end

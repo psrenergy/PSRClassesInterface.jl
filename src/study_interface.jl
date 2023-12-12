@@ -370,6 +370,8 @@ PSRI.get_map(data, "PSRGenerator", "PSRBus")
 """
 function get_reverse_vector_map end
 
+function _default_value end
+
 """
     get_parm(
         data::AbstractData,
@@ -538,6 +540,11 @@ function get_parms_1d(
     return out
 end
 
+function _check_type end
+
+function _check_parm end
+function _check_vector end
+
 function _check_type_attribute(
     data::AbstractData,
     collection::String,
@@ -696,6 +703,10 @@ PSRI.go_to_dimension(data, "block", 1)
 ```
 """
 function go_to_dimension end
+
+function go_to_scenario end
+
+function go_to_block end
 
 """
     update_vectors!(data::AbstractData)
@@ -1206,6 +1217,8 @@ function get_collections(data::DataStruct)
     return sort(collect(keys(data)))
 end
 
+function has_relations end
+
 """
     get_relations(data::AbstractData, collection::String)
 
@@ -1274,7 +1287,11 @@ of type `relation_type`.
 """
 function set_related! end
 
+function set_related_by_code! end
+
 function delete_relation! end
+
+function delete_vector_relation! end
 
 """
     get_vector_related(

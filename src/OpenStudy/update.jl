@@ -8,16 +8,16 @@ function _insert_element!(data::Data, collection::String, element::Any)
     return length(elements)
 end
 
-function set_parm!(
+function PSRI.set_parm!(
     data::Data,
     collection::String,
     attribute::String,
     index::Int,
     value::T;
     validate::Bool = true,
-) where {T <: MainTypes}
+) where {T <: PSRI.MainTypes}
     if validate
-        _check_type_attribute(data, collection, attribute, T)
+        PSRI._check_type_attribute(data, collection, attribute, T)
     end
 
     element = _get_element(data, collection, index)
@@ -27,16 +27,16 @@ function set_parm!(
     return nothing
 end
 
-function set_vector!(
+function PSRI.set_vector!(
     data::Data,
     collection::String,
     attribute::String,
     index::Int,
     buffer::Vector{T};
     validate::Bool = true,
-) where {T <: MainTypes}
+) where {T <: PSRI.MainTypes}
     if validate
-        _check_type_attribute(data, collection, attribute, T)
+        PSRI._check_type_attribute(data, collection, attribute, T)
     end
     element = _get_element(data, collection, index)
     vector = element[attribute]::Vector
@@ -57,24 +57,24 @@ function set_vector!(
     return nothing
 end
 
-function set_series!(
+function PSRI.set_series!(
     data::Data,
     collection::String,
     indexing_attribute::String,
     index::Int,
     buffer::Dict{String, Vector},
 )
-    series = SeriesTable(buffer)
+    series = PSRI.SeriesTable(buffer)
 
-    return set_series!(data, collection, indexing_attribute, index, series)
+    return PSRI.set_series!(data, collection, indexing_attribute, index, series)
 end
 
-function set_series!(
+function PSRI.set_series!(
     data::Data,
     collection::String,
     indexing_attribute::String,
     index::Int,
-    series::SeriesTable;
+    series::PSRI.SeriesTable;
     check_type::Bool = true,
 )
     attributes = _get_indexed_attributes(data, collection, index, indexing_attribute)
@@ -125,8 +125,9 @@ function set_series!(
     # validate types
     if check_type
         for attribute in keys(series)
-            attribute_struct = get_attribute_struct(data, collection, String(attribute))
-            _check_type(
+            attribute_struct =
+                PSRI.get_attribute_struct(data, collection, String(attribute))
+            PSRI._check_type(
                 attribute_struct,
                 eltype(series[attribute]),
                 collection,
@@ -143,51 +144,13 @@ function set_series!(
     return nothing
 end
 
-function set_related!(
-    data::Data,
-    source::String,
-    target::String,
-    source_index::Integer,
-    target_index::Integer;
-    relation_type::PMD.RelationType = PMD.RELATION_1_TO_1,
-)
-    check_relation_scalar(relation_type)
-    validate_relation(data, source, target, relation_type)
-    relation_field = _get_relation_attribute(data, source, target, relation_type)
-    source_element = _get_element(data, source, source_index)
-    target_element = _get_element(data, target, target_index)
-
-    source_element[relation_field] = target_element["reference_id"]
-
-    return nothing
-end
-
-function set_related_by_code!(
-    data::Data,
-    source::String,
-    target::String,
-    source_index::Integer,
-    target_code::Integer;
-    relation_type::PMD.RelationType = PMD.RELATION_1_TO_1,
-)
-    target_index = _get_index_by_code(data, target, target_code)
-    return set_related!(
-        data,
-        source,
-        target,
-        source_index,
-        target_index;
-        relation_type = relation_type,
-    )
-end
-
-function set_vector_related!(
+function PSRI.set_vector_related!(
     data::Data,
     source::String,
     target::String,
     source_index::Integer,
     target_indices::Vector{T},
-    relation_type::PMD.RelationType = PMD.RELATION_1_TO_N,
+    relation_type::PSRI.PMD.RelationType = PSRI.PMD.RELATION_1_TO_N,
 ) where {T <: Integer}
     check_relation_vector(relation_type)
     validate_relation(data, source, target, relation_type)
@@ -201,4 +164,42 @@ function set_vector_related!(
     end
 
     return nothing
+end
+
+function PSRI.set_related!(
+    data::Data,
+    source::String,
+    target::String,
+    source_index::Integer,
+    target_index::Integer;
+    relation_type::PSRI.PMD.RelationType = PSRI.PMD.RELATION_1_TO_1,
+)
+    check_relation_scalar(relation_type)
+    validate_relation(data, source, target, relation_type)
+    relation_field = _get_relation_attribute(data, source, target, relation_type)
+    source_element = _get_element(data, source, source_index)
+    target_element = _get_element(data, target, target_index)
+
+    source_element[relation_field] = target_element["reference_id"]
+
+    return nothing
+end
+
+function PSRI.set_related_by_code!(
+    data::Data,
+    source::String,
+    target::String,
+    source_index::Integer,
+    target_code::Integer;
+    relation_type::PSRI.PMD.RelationType = PSRI.PMD.RELATION_1_TO_1,
+)
+    target_index = _get_index_by_code(data, target, target_code)
+    return PSRI.set_related!(
+        data,
+        source,
+        target,
+        source_index,
+        target_index;
+        relation_type = relation_type,
+    )
 end

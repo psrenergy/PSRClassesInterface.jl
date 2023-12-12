@@ -23,11 +23,11 @@ function _get_indexed_attributes(
 end
 
 function _get_attribute_type(data::Data, collection::String, attribute::String)
-    attribute_data = get_attribute_struct(data, collection, attribute)
-    return attribute_data.type::Type{<:MainTypes}
+    attribute_data = PSRI.get_attribute_struct(data, collection, attribute)
+    return attribute_data.type::Type{<:PSRI.MainTypes}
 end
 
-function write_data(data::Data, path::Union{AbstractString, Nothing} = nothing)
+function PSRI.write_data(data::Data, path::Union{AbstractString, Nothing} = nothing)
     # Retrieves JSON-like raw data
     raw_data = _raw(data)
 
@@ -51,7 +51,7 @@ function _list_attributes_and_types(data::Data, collection::String, attributes::
     items = String[]
 
     for attr in sort(collect(attributes))
-        attr_struct = get_attribute_struct(data, collection, attr)
+        attr_struct = PSRI.get_attribute_struct(data, collection, attr)
 
         type = if attr_struct.is_vector
             "Vector{$(attr_struct.type)}"
@@ -64,7 +64,6 @@ function _list_attributes_and_types(data::Data, collection::String, attributes::
 
     return join(items, "\n    ")
 end
-
 
 function _cast_element!(data::Data, collection::String, element::Dict{String, Any})
     for (attribute, value) in element
@@ -92,10 +91,10 @@ function _rectify_study_data!(data::Data)
     end
 end
 
-summary(io::IO, args...) = print(io, summary(args...))
+PSRI.summary(io::IO, args...) = print(io, PSRI.summary(args...))
 
-function summary(data::Data)
-    collections = get_collections(data)
+function PSRI.summary(data::Data)
+    collections = PSRI.get_collections(data)
 
     if isempty(collections)
         return """
@@ -109,14 +108,12 @@ function summary(data::Data)
     end
 end
 
-
-
 function is_vector_attribute(data::Data, collection::String, attribute::String)
-    return get_attribute_struct(data, collection, attribute).is_vector
+    return PSRI.get_attribute_struct(data, collection, attribute).is_vector
 end
 
 function get_attribute_index(data::Data, collection::String, attribute::String)
-    index = get_attribute_struct(data, collection, attribute).index
+    index = PSRI.get_attribute_struct(data, collection, attribute).index
 
     if isnothing(index) || isempty(index)
         return nothing
@@ -125,7 +122,7 @@ function get_attribute_index(data::Data, collection::String, attribute::String)
     end
 end
 
-function summary(data::Data, collection::String)
+function PSRI.summary(data::Data, collection::String)
     attributes = sort(get_attributes(data, collection))
 
     if isempty(attributes)
@@ -184,8 +181,8 @@ function _set_index!(data::Data, reference_id::Integer, collection::String, inde
 end
 
 function _build_index!(data::Data)
-    for collection in get_collections(data)
-        if max_elements(data, collection) == 0
+    for collection in PSRI.get_collections(data)
+        if PSRI.max_elements(data, collection) == 0
             continue
         end
 

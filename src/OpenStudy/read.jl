@@ -1,4 +1,9 @@
-function get_series(data::Data, collection::String, indexing_attribute::String, index::Int)
+function PSRI.get_series(
+    data::Data,
+    collection::String,
+    indexing_attribute::String,
+    index::Int,
+)
     # TODO: review this. The element should always have all attributes even if
     # they need to be empty. the element creator should assure the data is
     # is complete. or this `get_series` should check existence and the return
@@ -8,7 +13,7 @@ function get_series(data::Data, collection::String, indexing_attribute::String, 
     buffer = Dict{String, Vector}()
 
     for attribute in attributes
-        buffer[attribute] = get_vector(
+        buffer[attribute] = PSRI.get_vector(
             data,
             collection,
             attribute,
@@ -17,12 +22,12 @@ function get_series(data::Data, collection::String, indexing_attribute::String, 
         )
     end
 
-    return SeriesTable(buffer)
+    return PSRI.SeriesTable(buffer)
 end
 
-# Get GrafTable stored in a graf file for a collection
-function get_graf_series(data::Data, collection::String, attribute::String; kws...)
-    if !has_graf_file(data, collection)
+# Get PSRI.GrafTable stored in a graf file for a collection
+function PSRI.get_graf_series(data::Data, collection::String, attribute::String; kws...)
+    if !PSRI.has_graf_file(data, collection)
         error("No time series file for collection '$collection'")
     end
 
@@ -37,7 +42,7 @@ function get_graf_series(data::Data, collection::String, attribute::String; kws.
     graf_file = first(graf_files)
     graf_path = joinpath(data.data_path, first(splitext(graf_file)))
 
-    graf_table = GrafTable{Float64}(graf_path; kws...)
+    graf_table = PSRI.GrafTable{Float64}(graf_path; kws...)
 
     return graf_table
 end

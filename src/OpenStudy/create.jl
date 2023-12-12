@@ -1,14 +1,14 @@
 
-function create_study(
+function PSRI.create_study(
     ::OpenInterface;
     data_path::AbstractString = pwd(),
     pmd_files::Vector{String} = String[],
-    pmds_path::AbstractString = PMD._PMDS_BASE_PATH,
-    defaults_path::Union{AbstractString, Nothing} = PSRCLASSES_DEFAULTS_PATH,
-    defaults::Union{Dict{String, Any}, Nothing} = _load_defaults!(),
+    pmds_path::AbstractString = PSRI.PMD._PMDS_BASE_PATH,
+    defaults_path::Union{AbstractString, Nothing} = PSRI.PSRCLASSES_DEFAULTS_PATH,
+    defaults::Union{Dict{String, Any}, Nothing} = PSRI._load_defaults!(),
     netplan::Bool = false,
     model_template_path::Union{String, Nothing} = nothing,
-    relations_defaults_path = PMD._DEFAULT_RELATIONS_PATH,
+    relations_defaults_path = PSRI.PMD._DEFAULT_RELATIONS_PATH,
     study_collection::String = "PSRStudy",
     verbose::Bool = false,
 )
@@ -24,43 +24,43 @@ function create_study(
 
     if !isnothing(defaults_path)
         merge!(study_defaults, JSON.parsefile(defaults_path))
-        merge_defaults!(study_defaults, defaults)
+        PSRI.merge_defaults!(study_defaults, defaults)
     end
 
     # Select mapping
-    model_template = PMD.ModelTemplate()
+    model_template = PSRI.PMD.ModelTemplate()
 
     if isnothing(model_template_path)
         if netplan
-            PMD.load_model_template!(
-                joinpath(JSON_METADATA_PATH, "modeltemplates.netplan.json"),
+            PSRI.PMD.load_model_template!(
+                joinpath(PSRI.JSON_METADATA_PATH, "modeltemplates.netplan.json"),
                 model_template,
             )
         else
-            PMD.load_model_template!(
-                joinpath(JSON_METADATA_PATH, "modeltemplates.sddp.json"),
+            PSRI.PMD.load_model_template!(
+                joinpath(PSRI.JSON_METADATA_PATH, "modeltemplates.sddp.json"),
                 model_template,
             )
         end
     else
-        PMD.load_model_template!(model_template_path, model_template)
+        PSRI.PMD.load_model_template!(model_template_path, model_template)
     end
 
-    relation_mapper = PMD.RelationMapper()
+    relation_mapper = PSRI.PMD.RelationMapper()
 
-    PMD.load_relations_struct!(relations_defaults_path, relation_mapper)
+    PSRI.PMD.load_relations_struct!(relations_defaults_path, relation_mapper)
 
     data_struct, model_files_added =
-        PMD.load_model(pmds_path, pmd_files, model_template, relation_mapper; verbose)
+        PSRI.PMD.load_model(pmds_path, pmd_files, model_template, relation_mapper; verbose)
 
     stage_type =
         if haskey(study_defaults[study_collection], "Tipo_Etapa")
-            StageType(study_defaults[study_collection]["Tipo_Etapa"])
+            PSRI.StageType(study_defaults[study_collection]["Tipo_Etapa"])
         else
             if verbose
-                @warn "Study collection does not have a stage type ('Tipo_Etapa'). Using default value 'STAGE_WEEK'"
+                @warn "Study collection does not have a stage type ('Tipo_Etapa'). Using default value 'PSRI.STAGE_WEEK'"
             end
-            STAGE_WEEK
+            PSRI.STAGE_WEEK
         end
 
     first_year =
@@ -83,7 +83,7 @@ function create_study(
     end
 
     first_date =
-        if stage_type == STAGE_MONTH
+        if stage_type == PSRI.STAGE_MONTH
             Dates.Date(first_year, 1, 1) + Dates.Month(first_stage - 1)
         else
             Dates.Date(first_year, 1, 1) + Dates.Week(first_stage - 1)
@@ -92,7 +92,7 @@ function create_study(
     duration_mode =
         if haskey(study_defaults[study_collection], "HourlyData") &&
            study_defaults[study_collection]["HourlyData"]["BMAP"] in [1, 2]
-            HOUR_BLOCK_MAP
+            PSRI.HOUR_BLOCK_MAP
         elseif (
             haskey(study_defaults[study_collection], "DurationModel") &&
             haskey(
@@ -100,9 +100,9 @@ function create_study(
                 "Duracao($number_blocks)",
             )
         )
-            VARIABLE_DURATION
+            PSRI.VARIABLE_DURATION
         else
-            FIXED_DURATION
+            PSRI.FIXED_DURATION
         end
 
     data = Data(;
@@ -134,39 +134,39 @@ function _create_study_collection(
     collection::String,
     defaults::Union{Dict{String, Any}, Nothing},
 )
-    create_element!(data, collection; defaults = defaults)
+    PSRI.create_element!(data, collection; defaults = defaults)
 
     return nothing
 end
 
-function create_element!(
+function PSRI.create_element!(
     data::Data,
     collection::String;
-    defaults::Union{Dict{String, Any}, Nothing} = _load_defaults!(),
+    defaults::Union{Dict{String, Any}, Nothing} = PSRI._load_defaults!(),
 )
-    return create_element!(data, collection, Dict{String, Any}(); defaults = defaults)
+    return PSRI.create_element!(data, collection, Dict{String, Any}(); defaults = defaults)
 end
 
-function create_element!(
+function PSRI.create_element!(
     data::Data,
     collection::String,
     ps::Pair{String, <:Any}...;
-    defaults::Union{Dict{String, Any}, Nothing} = _load_defaults!(),
+    defaults::Union{Dict{String, Any}, Nothing} = PSRI._load_defaults!(),
 )
     attributes = Dict{String, Any}(ps...)
 
-    return create_element!(data, collection, attributes; defaults = defaults)
+    return PSRI.create_element!(data, collection, attributes; defaults = defaults)
 end
 
-function create_element!(
+function PSRI.create_element!(
     data::Data,
     collection::String,
     attributes::Dict{String, Any};
-    defaults::Union{Dict{String, Any}, Nothing} = _load_defaults!(),
+    defaults::Union{Dict{String, Any}, Nothing} = PSRI._load_defaults!(),
 )
     _validate_collection(data, collection)
 
-    if has_graf_file(data, collection)
+    if PSRI.has_graf_file(data, collection)
         error("Cannot create element for a collection with a Graf file")
     end
 

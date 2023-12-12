@@ -1,19 +1,19 @@
 """
-    is_vector_relation(relation::PMD.RelationType)
+    is_vector_relation(relation::PSRI.PMD.RelationType)
 
 Returns true is `relation` is a vector relation.
 """
-function is_vector_relation(relation::PMD.RelationType)
-    return relation == PMD.RELATION_1_TO_N || relation == PMD.RELATION_BACKED
+function is_vector_relation(relation::PSRI.PMD.RelationType)
+    return relation == PSRI.PMD.RELATION_1_TO_N || relation == PSRI.PMD.RELATION_BACKED
 end
 
 """
-    _has_relation_attribute(relations::Dict{String, PMD.Relation}, relation_attribute::String)
+    _has_relation_attribute(relations::Dict{String, PSRI.PMD.Relation}, relation_attribute::String)
 
     Returns true if there is a relation with attribute 'relation_attribute' in a 'Vector{PMD.Relation}'
 """
 function _has_relation_attribute(
-    relations::Dict{String, PMD.Relation},
+    relations::Dict{String, PSRI.PMD.Relation},
     relation_attribute::String,
 )
     for relation in values(relations)
@@ -25,7 +25,7 @@ function _has_relation_attribute(
 end
 
 function _has_relation_attribute(
-    relations::Dict{String, Dict{String, PMD.Relation}},
+    relations::Dict{String, Dict{String, PSRI.PMD.Relation}},
     relation_attribute::String,
 )
     for (target, relations) in relations
@@ -53,13 +53,13 @@ function _has_relation_attribute(
 end
 
 """
-    _has_relation_type(relations::Vector{PMD.Relation}, relation_type::PMD.RelationType)
+    _has_relation_type(relations::Vector{PMD.Relation}, relation_type::PSRI.PMD.RelationType)
 
     Returns true if there is a relation with type 'relation_type' in a 'Vector{PMD.Relation}'
 """
 function _has_relation_type(
-    relations::Dict{String, PMD.Relation},
-    relation_type::PMD.RelationType,
+    relations::Dict{String, PSRI.PMD.Relation},
+    relation_type::PSRI.PMD.RelationType,
 )
     has_relation_type = false
     for relation in values(relations)
@@ -71,104 +71,7 @@ function _has_relation_type(
 end
 
 """
-    _check_relation(data::Data, source::String)
-
-    Returns an error message if there is no relation where collection 'source' is the source element
-"""
-function validate_relation(data::Data, source::String)
-    if !haskey(data.relation_mapper, source)
-        error("Collection $(source) is not the source for any relation in this study")
-    end
-end
-
-"""
-    validate_relation(data::Data, source::String, target::String)
-
-    Returns an error message if there is no relation between collections 'source' and 'target'
-"""
-function validate_relation(data::Data, source::String, target::String)
-    validate_relation(data, source)
-
-    if !haskey(data.relation_mapper[source], target)
-        if !haskey(data.relation_mapper, target) ||
-           !haskey(data.relation_mapper[target], source)
-            error("No relation from $source to $target.")
-        end
-        if haskey(data.relation_mapper, target) &&
-           haskey(data.relation_mapper[target], source)
-            error(
-                "No relation from $source to $target." *
-                "There is a reverse relation from $target to $source.",
-            )
-        end
-    end
-end
-
-"""
-    validate_relation(data::Data, source::String, target::String, relation_type::PMD.RelationType)
-
-    Returns an error message if there is no relation between collections 'source' and 'target' with type 'relation_type'
-"""
-function validate_relation(
-    data::Data,
-    source::String,
-    target::String,
-    relation_type::PMD.RelationType,
-)
-    validate_relation(data, source, target)
-
-    if !_has_relation_type(data.relation_mapper[source][target], relation_type)
-        if haskey(data.relation_mapper, target) &&
-           haskey(data.relation_mapper[target], source)
-            if _has_relation_type(data.relation_mapper[target][source], relation_type)
-                error(
-                    "No relation from $(source) to $(target) with type $(relation_type)." *
-                    " The there is a reverse relation from $(target) to " *
-                    "$(source)  with type $(relation_type).",
-                )
-            end
-        end
-        error(
-            "There is no relation with type $(relation_type) between collections $(source) and $(target)",
-        )
-    end
-end
-
-"""
-    validate_relation(data::Data, source::String, target::String, relation_attribute::String)
-
-    Returns an error message if there is no relation between collections 'source' and 'target' with attribute 'relation_attribute'
-"""
-function validate_relation(
-    data::Data,
-    source::String,
-    target::String,
-    relation_attribute::String,
-)
-    validate_relation(data, source, target)
-
-    if !_has_relation_attribute(data.relation_mapper[source][target], relation_attribute)
-        if haskey(data.relation_mapper, target) &&
-           haskey(data.relation_mapper[target], source)
-            if _has_relation_attribute(
-                data.relation_mapper[target][source],
-                relation_attribute,
-            )
-                error(
-                    "No relation from $(source) to $(target) with attribute $(relation_attribute)." *
-                    " The there is a reverse relation from $(target) to " *
-                    "$(source)  with attribute $(relation_attribute).",
-                )
-            end
-        end
-        error(
-            "There is no relation with attribute $(relation_attribute) between collections $(source) and $(target)",
-        )
-    end
-end
-
-"""
-    _get_relation_attribute(data::Data, source::String, target::String, relation_type::PMD.RelationType)
+    _get_relation_attribute(data::Data, source::String, target::String, relation_type::PSRI.PMD.RelationType)
 
     Returns the attribute that represents a relation between elements from collections 'source' and 'target'
 """
@@ -176,7 +79,7 @@ function _get_relation_attribute(
     data::Data,
     source::String,
     target::String,
-    relation_type::PMD.RelationType,
+    relation_type::PSRI.PMD.RelationType,
 )
     validate_relation(data, source, target, relation_type)
 
@@ -364,20 +267,20 @@ function _get_element_related(data::Data, collection::String, index::Integer)
 end
 
 """
-    has_relations(data::Data, collection::String)
+    PSRI.has_relations(data::Data, collection::String)
 
     Returns true if collection 'collection' has any defined relation
 """
-function has_relations(data::Data, collection::String)
+function PSRI.has_relations(data::Data, collection::String)
     return haskey(data.relation_mapper, collection)
 end
 
 """
-    has_relations(data::Data, collection::String, index::Integer)
+    PSRI.has_relations(data::Data, collection::String, index::Integer)
 
     Returns true if element of index 'index' from collection 'collection' has any defined relation
 """
-function has_relations(data::Data, collection::String, index::Int)
+function PSRI.has_relations(data::Data, collection::String, index::Int)
     if !haskey(data.relation_mapper, collection)
         return false
     end
@@ -401,7 +304,7 @@ end
     (The arrow always points from the source to target)
 """
 function relations_summary(data::Data, collection::String, index::Integer)
-    if !has_relations(data, collection, index)
+    if !PSRI.has_relations(data, collection, index)
         println("This element does not have any relations")
         return
     end
@@ -428,11 +331,11 @@ function relations_summary(data::Data, collection::String, index::Integer)
 end
 
 """
-    check_relation_scalar(relation_type::PMD.RelationType)
+    check_relation_scalar(relation_type::PSRI.PMD.RelationType)
 
     Returns an error message if relation_type is not a scalar
 """
-function check_relation_scalar(relation_type::PMD.RelationType)
+function check_relation_scalar(relation_type::PSRI.PMD.RelationType)
     if is_vector_relation(relation_type)
         error("Relation of type $relation_type is of type vector, not the expected scalar.")
     end
@@ -440,18 +343,18 @@ function check_relation_scalar(relation_type::PMD.RelationType)
 end
 
 """
-    check_relation_vector(relation_type::PMD.RelationType)
+    check_relation_vector(relation_type::PSRI.PMD.RelationType)
 
     Returns an error message if relation_type is not a vector
 """
-function check_relation_vector(relation_type::PMD.RelationType)
+function check_relation_vector(relation_type::PSRI.PMD.RelationType)
     if !is_vector_relation(relation_type)
         error("Relation of type $relation_type is of type scalar, not the expected vector.")
     end
     return nothing
 end
 
-function get_reverse_map(
+function PSRI.get_reverse_map(
     data::Data,
     source::String,
     target::String,
@@ -488,21 +391,21 @@ function get_reverse_map(
     return out_vec
 end
 
-function get_reverse_map(
-    data::AbstractData,
+function PSRI.get_reverse_map(
+    data::Data,
     lst_from::String,
     lst_to::String;
     allow_empty::Bool = true,
-    original_relation_type::PMD.RelationType = PMD.RELATION_1_TO_1, # type of the direct relation
+    original_relation_type::PSRI.PMD.RelationType = PSRI.PMD.RELATION_1_TO_1, # type of the direct relation
 )
-    n_to = max_elements(data, lst_to)
+    n_to = PSRI.max_elements(data, lst_to)
     if n_to == 0
         # TODO warn no field
         return zeros(Int32, 0)
     end
     out = zeros(Int32, n_to)
     if is_vector_relation(original_relation_type)
-        vector_map = get_vector_map(
+        vector_map = PSRI.get_vector_map(
             data,
             lst_from,
             lst_to;
@@ -521,7 +424,7 @@ function get_reverse_map(
             end
         end
     end
-    map = get_map(
+    map = PSRI.get_map(
         data,
         lst_from,
         lst_to;
@@ -543,8 +446,8 @@ function get_reverse_map(
     return out
 end
 
-function get_reverse_vector_map(
-    data::AbstractData,
+function PSRI.get_reverse_vector_map(
+    data::Data,
     source::String,
     target::String,
     attribute::String;
@@ -570,21 +473,21 @@ function get_reverse_vector_map(
     return out_vec
 end
 
-function get_reverse_vector_map(
-    data::AbstractData,
+function PSRI.get_reverse_vector_map(
+    data::Data,
     lst_from::String,
     lst_to::String;
     allow_empty::Bool = true,
-    original_relation_type::PMD.RelationType = PMD.RELATION_1_TO_N,
+    original_relation_type::PSRI.PMD.RelationType = PSRI.PMD.RELATION_1_TO_N,
 )
-    n_to = max_elements(data, lst_to)
+    n_to = PSRI.max_elements(data, lst_to)
     if n_to == 0
         # TODO warn no field
         return Vector{Int32}[]
     end
     out = Vector{Int32}[zeros(Int32, 0) for _ in 1:n_to]
     if is_vector_relation(original_relation_type)
-        vector_map = get_vector_map(
+        vector_map = PSRI.get_vector_map(
             data,
             lst_from,
             lst_to;
@@ -597,7 +500,7 @@ function get_reverse_vector_map(
             end
         end
     end
-    map = get_map(
+    map = PSRI.get_map(
         data,
         lst_from,
         lst_to;
@@ -614,7 +517,7 @@ function get_reverse_vector_map(
 end
 
 """
-    get_map(
+    PSRI.get_map(
         data::Data, 
         source::String, 
         target::String, 
@@ -632,7 +535,7 @@ Example:
 PSRI.get_map(data, "PSRSerie", "PSRBus", "no1")
 ```
 """
-function get_map(
+function PSRI.get_map(
     data::Data,
     source::String,
     target::String,
@@ -658,13 +561,13 @@ function get_map(
         error("For relation relation_type = '$(relation.type)' use get_vector_map")
     end
 
-    src_size = max_elements(data, source)
+    src_size = PSRI.max_elements(data, source)
 
     if src_size == 0
         return zeros(Int32, 0)
     end
 
-    dst_size = max_elements(data, target)
+    dst_size = PSRI.max_elements(data, target)
 
     if dst_size == 0 # TODO warn no field
         return zeros(Int32, src_size)
@@ -700,16 +603,16 @@ function get_map(
     return out_vec
 end
 
-function get_map(
+function PSRI.get_map(
     data::Data,
     source::String,
     target::String;
     allow_empty::Bool = true,
-    relation_type::PMD.RelationType = PMD.RELATION_1_TO_1, # type of the direct relation
+    relation_type::PSRI.PMD.RelationType = PSRI.PMD.RELATION_1_TO_1, # type of the direct relation
 )
     attribute = _get_relation_attribute(data, source, target, relation_type)
 
-    return get_map(data, source, target, attribute; allow_empty)
+    return PSRI.get_map(data, source, target, attribute; allow_empty)
 end
 
 """
@@ -731,7 +634,7 @@ Example:
 PSRI.get_vector_map(data, "PSRGenerationConstraintData", "PSRThermalPlant", "usinas")
 ```
 """
-function get_vector_map(
+function PSRI.get_vector_map(
     data::Data,
     source::String,
     target::String,
@@ -746,9 +649,9 @@ function get_vector_map(
         error("For relation relation_type = '$relation_type' use get_map")
     end
 
-    src_size = max_elements(data, source)
+    src_size = PSRI.max_elements(data, source)
 
-    target_size = max_elements(data, target)
+    target_size = PSRI.max_elements(data, target)
 
     if src_size == 0
         @warn "No '$source' elements in this study"
@@ -773,12 +676,12 @@ function get_vector_map(
     return out_vec
 end
 
-function get_vector_map(
+function PSRI.get_vector_map(
     data::Data,
     lst_from::String,
     lst_to::String;
     allow_empty::Bool = true,
-    relation_type::PMD.RelationType = PMD.RELATION_1_TO_N,
+    relation_type::PSRI.PMD.RelationType = PSRI.PMD.RELATION_1_TO_N,
 )
     if !is_vector_relation(relation_type)
         error("For relation relation_type = $relation_type use get_map")
@@ -788,11 +691,11 @@ function get_vector_map(
 
     # @assert TYPE == PSR_RELATIONSHIP_1TO1 # TODO I think we don't need that in this interface
     raw = _raw(data)
-    n_from = max_elements(data, lst_from)
+    n_from = PSRI.max_elements(data, lst_from)
     if n_from == 0
         return Vector{Int32}[]
     end
-    n_to = max_elements(data, lst_to)
+    n_to = PSRI.max_elements(data, lst_to)
     if n_to == 0
         # TODO warn no field
         return Vector{Int32}[Int32[] for _ in 1:n_from]
@@ -826,12 +729,12 @@ function get_vector_map(
     return out
 end
 
-function get_related(
+function PSRI.get_related(
     data::Data,
     source::String,
     target::String,
     source_index::Integer;
-    relation_type::PMD.RelationType = PMD.RELATION_1_TO_1,
+    relation_type::PSRI.PMD.RelationType = PSRI.PMD.RELATION_1_TO_1,
 )
     check_relation_scalar(relation_type)
     validate_relation(data, source, target, relation_type)
@@ -859,12 +762,12 @@ function get_related(
     return 0 # for type stability
 end
 
-function get_vector_related(
+function PSRI.get_vector_related(
     data::Data,
     source::String,
     target::String,
     source_index::Integer,
-    relation_type::PMD.RelationType = PMD.RELATION_1_TO_N,
+    relation_type::PSRI.PMD.RelationType = PSRI.PMD.RELATION_1_TO_N,
 )
     check_relation_vector(relation_type)
     validate_relation(data, source, target, relation_type)

@@ -1,7 +1,7 @@
 """
     OpenInterface <: AbstractStudyInterface
 """
-struct OpenInterface <: AbstractStudyInterface end
+struct OpenInterface <: PSRI.AbstractStudyInterface end
 
 mutable struct VectorCache{T}
     dim1_str::String
@@ -92,18 +92,18 @@ function _generate_reference_id(data_index::DataIndex)
     return data_index.max_id + 1
 end
 
-Base.@kwdef mutable struct Data{T} <: AbstractData
+Base.@kwdef mutable struct Data{T} <: PSRI.AbstractData
     raw::T
-    stage_type::StageType
+    stage_type::PSRI.StageType
 
     data_path::String
 
-    duration_mode::BlockDurationMode = FIXED_DURATION
+    duration_mode::PSRI.BlockDurationMode = PSRI.FIXED_DURATION
     number_blocks::Int = 1
 
     # for variable duration and for hour block map
-    variable_duration::Union{Nothing, OpenBinary.Reader} = nothing
-    hour_to_block::Union{Nothing, OpenBinary.Reader} = nothing
+    variable_duration::Union{Nothing, PSRI.OpenBinary.Reader} = nothing
+    hour_to_block::Union{Nothing, PSRI.OpenBinary.Reader} = nothing
 
     first_year::Int
     first_stage::Int #maybe week or month, day...
@@ -148,13 +148,13 @@ Base.@kwdef mutable struct Data{T} <: AbstractData
     data_index::DataIndex = DataIndex()
 
     # Model Templates 
-    model_template::PMD.ModelTemplate = PMD.ModelTemplate()
+    model_template::PSRI.PMD.ModelTemplate = PSRI.PMD.ModelTemplate()
 
     # Relations
-    relation_mapper::PMD.RelationMapper
+    relation_mapper::PSRI.PMD.RelationMapper
 
-    # ReaderMapper
-    mapper::Union{ReaderMapper, Nothing} = nothing
+    # PSRI.ReaderMapper
+    mapper::Union{PSRI.ReaderMapper, Nothing} = nothing
 end
 
 _raw(data::Data) = data.raw
@@ -187,7 +187,7 @@ function _simple_date(str::String)
 end
 
 function _date_from_stage(data::Data, t::Int)
-    return _date_from_stage(t, data.stage_type, data.first_date)
+    return PSRI._date_from_stage(t, data.stage_type, data.first_date)
 end
 function _findfirst_date(date::Dates.Date, vec::Vector) # TODO type this vecto whe raw is stabilized
     # vec is assumed sorted
@@ -223,11 +223,11 @@ function _merge_psr_transformer_and_psr_serie!(data::Data)
     return nothing
 end
 
-function load_study(
+function PSRI.load_study(
     ::OpenInterface;
     data_path = "",
     pmd_files = String[],
-    path_pmds = PMD._PMDS_BASE_PATH,
+    path_pmds = PSRI.PMD._PMDS_BASE_PATH,
     rectify_json_data::Bool = false,
     log_file::Union{AbstractString, Nothing} = nothing,
     verbose = true,
@@ -235,7 +235,7 @@ function load_study(
     validate_attributes::Bool = true,
     _netplan_database::Bool = false,
     model_template_path::Union{String, Nothing} = nothing,
-    relations_defaults_path = PMD._DEFAULT_RELATIONS_PATH,
+    relations_defaults_path = PSRI.PMD._DEFAULT_RELATIONS_PATH,
     #merge collections
     add_transformers_to_series::Bool = true,
     #json api 
@@ -257,30 +257,30 @@ function load_study(
         log_file = Base.open(log_file, "w")
     end
 
-    model_template = PMD.ModelTemplate()
+    model_template = PSRI.PMD.ModelTemplate()
 
     if isnothing(model_template_path)
         if _netplan_database
-            PMD.load_model_template!(
-                joinpath(JSON_METADATA_PATH, "modeltemplates.netplan.json"),
+            PSRI.PMD.load_model_template!(
+                joinpath(PSRI.JSON_METADATA_PATH, "modeltemplates.netplan.json"),
                 model_template,
             )
         else
-            PMD.load_model_template!(
-                joinpath(JSON_METADATA_PATH, "modeltemplates.sddp.json"),
+            PSRI.PMD.load_model_template!(
+                joinpath(PSRI.JSON_METADATA_PATH, "modeltemplates.sddp.json"),
                 model_template,
             )
         end
     else
-        PMD.load_model_template!(model_template_path, model_template)
+        PSRI.PMD.load_model_template!(model_template_path, model_template)
     end
 
-    relation_mapper = PMD.RelationMapper()
+    relation_mapper = PSRI.PMD.RelationMapper()
 
-    PMD.load_relations_struct!(relations_defaults_path, relation_mapper)
+    PSRI.PMD.load_relations_struct!(relations_defaults_path, relation_mapper)
 
     data_struct, model_files_added =
-        PMD.load_model(path_pmds, pmd_files, model_template, relation_mapper)
+        PSRI.PMD.load_model(path_pmds, pmd_files, model_template, relation_mapper)
 
     if isempty(model_files_added)
         error("No Model definition (.pmd) file found")
@@ -295,10 +295,10 @@ function load_study(
     study_data = raw_data[study_collection][begin]
 
     if study_collection == "PSRStudy"
-        stage_type = StageType(study_data["Tipo_Etapa"])
+        stage_type = PSRI.StageType(study_data["Tipo_Etapa"])
         first_year = study_data["Ano_inicial"]
         first_stage = study_data["Etapa_inicial"]
-        first_date = if stage_type == STAGE_MONTH
+        first_date = if stage_type == PSRI.STAGE_MONTH
             Dates.Date(first_year, 1, 1) + Dates.Month(first_stage - 1)
         else
             Dates.Date(first_year, 1, 1) + Dates.Week(first_stage - 1)
@@ -311,22 +311,22 @@ function load_study(
         @assert number_blocks == study_data["NumberBlocks"]
 
         if haskey(study_data, "HourlyData") && study_data["HourlyData"]["BMAP"] in [1, 2]
-            duration_mode = HOUR_BLOCK_MAP
+            duration_mode = PSRI.HOUR_BLOCK_MAP
         elseif (
             haskey(study_data, "DurationModel") &&
             haskey(study_data["DurationModel"], "Duracao($number_blocks)")
         )
-            duration_mode = VARIABLE_DURATION
+            duration_mode = PSRI.VARIABLE_DURATION
         else
-            duration_mode = FIXED_DURATION
+            duration_mode = PSRI.FIXED_DURATION
         end
     else
-        stage_type = STAGE_WEEK
+        stage_type = PSRI.STAGE_WEEK
         first_year = 2023
         first_stage = 1
         first_date = Dates.Date(2023, 1, 1)
         number_blocks = 1
-        duration_mode = FIXED_DURATION
+        duration_mode = PSRI.FIXED_DURATION
     end
 
     data = Data(;
@@ -356,9 +356,9 @@ function load_study(
         _merge_psr_transformer_and_psr_serie!(data)
     end
 
-    if duration_mode == VARIABLE_DURATION
+    if duration_mode == PSRI.VARIABLE_DURATION
         _variable_duration_to_file!(data)
-    elseif duration_mode == HOUR_BLOCK_MAP
+    elseif duration_mode == PSRI.HOUR_BLOCK_MAP
         _hour_block_map_to_file!(data)
     end
 
@@ -454,19 +454,19 @@ function dump_json_struct(path::String, data::Data)
     end
 end
 
-function PMD.dump_model_template(path::String, data::Data)
-    PMD.dump_model_template(path, data.model_template)
+function PSRI.PMD.dump_model_template(path::String, data::Data)
+    PSRI.PMD.dump_model_template(path, data.model_template)
 
     return nothing
 end
 
-function PMD.load_model_template!(path::String, data::Data)
-    PMD.load_model_template!(path, data.model_template)
+function PSRI.PMD.load_model_template!(path::String, data::Data)
+    PSRI.PMD.load_model_template!(path, data.model_template)
 
     return nothing
 end
 
-function max_elements(data::Data, collection::String)
+function PSRI.max_elements(data::Data, collection::String)
     raw = _raw(data)
 
     if haskey(raw, collection)
@@ -476,11 +476,11 @@ function max_elements(data::Data, collection::String)
     end
 end
 
-_default_value(::Type{T}) where {T <: Number} = zero(T)
-_default_value(::Type{String}) = ""
-_default_value(::Type{Dates.Date}) = Dates.Date(1900, 1, 1)
+PSRI._default_value(::Type{T}) where {T <: Number} = zero(T)
+PSRI._default_value(::Type{String}) = ""
+PSRI._default_value(::Type{Dates.Date}) = Dates.Date(1900, 1, 1)
 
-function get_attribute_dim(attribute_struct::Attribute)
+function PSRI.get_attribute_dim(attribute_struct::Attribute)
     return attribute_struct.dim
 end
 
@@ -510,24 +510,24 @@ function _get_attribute_key(
     end
 end
 
-function get_parm(
+function PSRI.get_parm(
     data::Data,
     collection::String,
     attribute::String,
     index::Integer,
     ::Type{T};
-    default::T = _default_value(T),
+    default::T = PSRI._default_value(T),
     dim1::Union{Integer, Nothing} = nothing,
     dim2::Union{Integer, Nothing} = nothing,
     validate::Bool = true,
 )::T where {T}
     # Basic checks
     if validate
-        attribute_struct = get_attribute_struct(data, collection, attribute)
+        attribute_struct = PSRI.get_attribute_struct(data, collection, attribute)
         _check_dim(attribute_struct, collection, attribute, dim1, dim2)
-        _check_type(attribute_struct, T, collection, attribute)
-        _check_parm(attribute_struct, collection, attribute)
-        dim = get_attribute_dim(attribute_struct)
+        PSRI._check_type(attribute_struct, T, collection, attribute)
+        PSRI._check_parm(attribute_struct, collection, attribute)
+        dim = PSRI.get_attribute_dim(attribute_struct)
     else
         if dim2 !== nothing && dim2 > 0
             dim = 2
@@ -555,18 +555,18 @@ function get_parm(
     end
 end
 
-function get_parm_1d(
+function PSRI.get_parm_1d(
     data::Data,
     collection::String,
     attribute::String,
     index::Integer,
     ::Type{T};
-    default::T = _default_value(T),
+    default::T = PSRI._default_value(T),
     validate::Bool = true,
 )::Vector{T} where {T}
     if validate
-        attribute_struct = get_attribute_struct(data, collection, attribute)
-        dim = get_attribute_dim(attribute_struct)
+        attribute_struct = PSRI.get_attribute_struct(data, collection, attribute)
+        dim = PSRI.get_attribute_dim(attribute_struct)
         if dim != 1
             if dim == 0
                 error(
@@ -584,12 +584,12 @@ function get_parm_1d(
                 )
             end
         end
-        _check_type(attribute_struct, T, collection, attribute)
-        _check_parm(attribute_struct, collection, attribute)
+        PSRI._check_type(attribute_struct, T, collection, attribute)
+        PSRI._check_parm(attribute_struct, collection, attribute)
         _check_element_range(data, collection, index)
     end
 
-    dim1 = get_attribute_dim1(data, collection, attribute, index)
+    dim1 = PSRI.get_attribute_dim1(data, collection, attribute, index)
 
     element = _get_element(data, collection, index)
 
@@ -608,18 +608,18 @@ function get_parm_1d(
     return out
 end
 
-function get_parm_2d(
+function PSRI.get_parm_2d(
     data::Data,
     collection::String,
     attribute::String,
     index::Integer,
     ::Type{T};
-    default::T = _default_value(T),
+    default::T = PSRI._default_value(T),
     validate::Bool = true,
 )::Matrix{T} where {T}
     if validate
-        attribute_struct = get_attribute_struct(data, collection, attribute)
-        dim = get_attribute_dim(attribute_struct)
+        attribute_struct = PSRI.get_attribute_struct(data, collection, attribute)
+        dim = PSRI.get_attribute_dim(attribute_struct)
         if dim != 2
             if dim == 0
                 error(
@@ -637,13 +637,13 @@ function get_parm_2d(
                 )
             end
         end
-        _check_type(attribute_struct, T, collection, attribute)
-        _check_parm(attribute_struct, collection, attribute)
+        PSRI._check_type(attribute_struct, T, collection, attribute)
+        PSRI._check_parm(attribute_struct, collection, attribute)
         _check_element_range(data, collection, index)
     end
 
-    dim1 = get_attribute_dim1(data, collection, attribute, index)
-    dim2 = get_attribute_dim2(data, collection, attribute, index)
+    dim1 = PSRI.get_attribute_dim1(data, collection, attribute, index)
+    dim2 = PSRI.get_attribute_dim2(data, collection, attribute, index)
 
     element = _get_element(data, collection, index)
 
@@ -698,9 +698,9 @@ function _get_attribute_axis_dim(
     lower_bound::Int = 1,
     upper_bound::Int = 100,
 )
-    attribute_struct = get_attribute_struct(data, collection, attribute)
+    attribute_struct = PSRI.get_attribute_struct(data, collection, attribute)
 
-    dim = get_attribute_dim(attribute_struct)
+    dim = PSRI.get_attribute_dim(attribute_struct)
 
     if dim == 0
         error("Attribute '$attribute' from collection '$collection' has no dimensions")
@@ -720,7 +720,7 @@ function _get_attribute_axis_dim(
     )
 end
 
-function get_attribute_dim1(
+function PSRI.get_attribute_dim1(
     data::Data,
     collection::String,
     attribute::String,
@@ -729,7 +729,7 @@ function get_attribute_dim1(
     return _get_attribute_axis_dim(data, collection, attribute, 1, index)
 end
 
-function get_attribute_dim2(
+function PSRI.get_attribute_dim2(
     data::Data,
     collection::String,
     attribute::String,
@@ -738,31 +738,31 @@ function get_attribute_dim2(
     return _get_attribute_axis_dim(data, collection, attribute, 2, index)
 end
 
-function description(::Data)
+function PSRI.description(::Data)
     return ""
 end
 
-function total_stages(data::Data)
+function PSRI.total_stages(data::Data)
     return _raw(data)["PSRStudy"][1]["NumeroEtapas"]
 end
 
-function total_scenarios(data::Data)
+function PSRI.total_scenarios(data::Data)
     # _raw(data)["PSRStudy"][1]["Series_Forward"]
     return _raw(data)["PSRStudy"][1]["NumberSimulations"]
 end
 
-function total_openings(data::Data)
+function PSRI.total_openings(data::Data)
     return _raw(data)["PSRStudy"][1]["NumberOpenings"]
 end
 
-function total_blocks(data::Data)
+function PSRI.total_blocks(data::Data)
     return _raw(data)["PSRStudy"][1]["NumberBlocks"]
 end
 
-function total_stages_per_year(data::Data)
-    if data.stage_type == STAGE_MONTH
+function PSRI.total_stages_per_year(data::Data)
+    if data.stage_type == PSRI.STAGE_MONTH
         return 12
-    elseif data.stage_type == STAGE_WEEK
+    elseif data.stage_type == PSRI.STAGE_WEEK
         return 52
     else
         error("Stage type '$(data.stage_type)' is not currently supported")
@@ -771,8 +771,8 @@ end
 
 # TODO CEsp: many time does nto have the second dim
 
-function get_nonempty_vector(data::Data, collection::String, attribute::String)
-    n = max_elements(data, collection)
+function PSRI.get_nonempty_vector(data::Data, collection::String, attribute::String)
+    n = PSRI.max_elements(data, collection)
 
     if n == 0
         return Bool[]
@@ -780,9 +780,9 @@ function get_nonempty_vector(data::Data, collection::String, attribute::String)
 
     out = zeros(Bool, n)
 
-    attr_data = get_attribute_struct(data, collection, attribute)
+    attr_data = PSRI.get_attribute_struct(data, collection, attribute)
 
-    _check_vector(attr_data, collection, attribute)
+    PSRI._check_vector(attr_data, collection, attribute)
 
     dim = attr_data.dim
     key = _get_attribute_key(attribute, dim)
@@ -799,7 +799,7 @@ function get_nonempty_vector(data::Data, collection::String, attribute::String)
     return out
 end
 
-function get_vector(
+function PSRI.get_vector(
     data::Data,
     collection::String,
     attribute::String,
@@ -807,19 +807,19 @@ function get_vector(
     ::Type{T};
     dim1::Union{Integer, Nothing} = nothing,
     dim2::Union{Integer, Nothing} = nothing,
-    default::T = _default_value(T),
+    default::T = PSRI._default_value(T),
     validate::Bool = true,
 ) where {T}
-    attribute_struct = get_attribute_struct(data, collection, attribute)
+    attribute_struct = PSRI.get_attribute_struct(data, collection, attribute)
 
     if validate
         _check_dim(attribute_struct, collection, attribute, dim1, dim2)
-        _check_type(attribute_struct, T, collection, attribute)
-        _check_vector(attribute_struct, collection, attribute)
+        PSRI._check_type(attribute_struct, T, collection, attribute)
+        PSRI._check_vector(attribute_struct, collection, attribute)
     end
     _check_element_range(data, collection, index)
 
-    dim = get_attribute_dim(attribute_struct)
+    dim = PSRI.get_attribute_dim(attribute_struct)
     key = _get_attribute_key(attribute, dim, 1 => dim1, 2 => dim2)
 
     element = _get_element(data, collection, index)
@@ -831,18 +831,18 @@ function get_vector(
     end
 end
 
-function get_vector_1d(
+function PSRI.get_vector_1d(
     data::Data,
     collection::String,
     attribute::String,
     index::Integer,
     ::Type{T};
-    default::T = _default_value(T),
+    default::T = PSRI._default_value(T),
     validate::Bool = true,
 ) where {T}
     if validate
-        attribute_struct = get_attribute_struct(data, collection, attribute)
-        dim = get_attribute_dim(attribute_struct)
+        attribute_struct = PSRI.get_attribute_struct(data, collection, attribute)
+        dim = PSRI.get_attribute_dim(attribute_struct)
         if dim != 1
             if dim == 0
                 error(
@@ -860,12 +860,12 @@ function get_vector_1d(
                 )
             end
         end
-        _check_type(attribute_struct, T, collection, attribute)
-        _check_vector(attribute_struct, collection, attribute)
+        PSRI._check_type(attribute_struct, T, collection, attribute)
+        PSRI._check_vector(attribute_struct, collection, attribute)
         _check_element_range(data, collection, index)
     end
 
-    dim1 = get_attribute_dim1(data, collection, attribute, index)
+    dim1 = PSRI.get_attribute_dim1(data, collection, attribute, index)
 
     element = _get_element(data, collection, index)
 
@@ -884,18 +884,18 @@ function get_vector_1d(
     return out
 end
 
-function get_vector_2d(
+function PSRI.get_vector_2d(
     data::Data,
     collection::String,
     attribute::String,
     index::Integer,
     ::Type{T};
-    default::T = _default_value(T),
+    default::T = PSRI._default_value(T),
     validate::Bool = true,
 ) where {T}
     if validate
-        attribute_struct = get_attribute_struct(data, collection, attribute)
-        dim = get_attribute_dim(attribute_struct)
+        attribute_struct = PSRI.get_attribute_struct(data, collection, attribute)
+        dim = PSRI.get_attribute_dim(attribute_struct)
         if dim != 2
             if dim == 0
                 error(
@@ -913,13 +913,13 @@ function get_vector_2d(
                 )
             end
         end
-        _check_type(attribute_struct, T, collection, attribute)
-        _check_vector(attribute_struct, collection, attribute)
+        PSRI._check_type(attribute_struct, T, collection, attribute)
+        PSRI._check_vector(attribute_struct, collection, attribute)
     end
     _check_element_range(data, collection, index)
 
-    dim1 = get_attribute_dim1(data, collection, attribute, index)
-    dim2 = get_attribute_dim2(data, collection, attribute, index)
+    dim1 = PSRI.get_attribute_dim1(data, collection, attribute, index)
+    dim2 = PSRI.get_attribute_dim2(data, collection, attribute, index)
 
     element = _get_element(data, collection, index)
 
@@ -940,15 +940,15 @@ end
 
 const _GET_DICT = Dict{String, Any}()
 
-function configuration_parameter(data::Data, parameter::String, default::Integer)
-    return configuration_parameter(data, parameter, Int32(default))
+function PSRI.configuration_parameter(data::Data, parameter::String, default::Integer)
+    return PSRI.configuration_parameter(data, parameter, Int32(default))
 end
 
-function configuration_parameter(
+function PSRI.configuration_parameter(
     data::Data,
     parameter::String,
     default::T,
-) where {T <: MainTypes}
+) where {T <: PSRI.MainTypes}
     if haskey(data.extra_config, parameter)
         return _cast(T, data.extra_config[parameter])
     end
@@ -966,11 +966,11 @@ function configuration_parameter(
     return _cast(T, get(study_data, parameter, default))
 end
 
-function configuration_parameter(
+function PSRI.configuration_parameter(
     data::Data,
     parameter::String,
     default::Vector{T},
-) where {T <: MainTypes}
+) where {T <: PSRI.MainTypes}
     if haskey(data.extra_config, parameter)
         return _cast.(T, data.extra_config[parameter])
     end
@@ -989,25 +989,25 @@ function configuration_parameter(
 end
 
 """
-    _cast(::Type{T}, val, default::T = _default_value(T))
+    _cast(::Type{T}, val, default::T = PSRI._default_value(T))
 
 Converts `val` to type `T`, if possible.
 """
-_cast(::Type{T}, val::T, default::T = _default_value(T)) where {T} = val
-_cast(::Type{String}, val::String, default::String = _default_value(String)) = val
-_cast(::Type{Int32}, val::Integer, default::Int32 = _default_value(Int32)) = Int32(val)
-_cast(::Type{Float64}, val::Real, default::Float64 = _default_value(Float64)) = val
-_cast(::Type{T}, val::Nothing, default::T = _default_value(T)) where {T} = default
+_cast(::Type{T}, val::T, default::T = PSRI._default_value(T)) where {T} = val
+_cast(::Type{String}, val::String, default::String = PSRI._default_value(String)) = val
+_cast(::Type{Int32}, val::Integer, default::Int32 = PSRI._default_value(Int32)) = Int32(val)
+_cast(::Type{Float64}, val::Real, default::Float64 = PSRI._default_value(Float64)) = val
+_cast(::Type{T}, val::Nothing, default::T = PSRI._default_value(T)) where {T} = default
 
 function _cast(
     ::Type{Dates.Date},
     val::Dates.Date,
-    default::Dates.Date = _default_value(Dates.Date),
+    default::Dates.Date = PSRI._default_value(Dates.Date),
 )
     return val
 end
 
-function _cast(::Type{T}, val::String, default::T = _default_value(T)) where {T}
+function _cast(::Type{T}, val::String, default::T = PSRI._default_value(T)) where {T}
     return parse(T, val)
 end
 
@@ -1020,14 +1020,14 @@ function _cast(
 end
 
 """
-    _cast_vector(::Type{T}, vector, default::T = _default_value(T))
+    _cast_vector(::Type{T}, vector, default::T = PSRI._default_value(T))
 
 Converts `vector` to vector of type `T`, if possible.
 """
 function _cast_vector(
     ::Type{T},
     vector::Vector{<:Any},
-    default::T = _default_value(T),
+    default::T = PSRI._default_value(T),
 ) where {T}
     out = Vector{T}(undef, length(vector))
 
@@ -1041,7 +1041,7 @@ end
 function _cast_vector(
     ::Type{T},
     vector::Vector{T},
-    default::T = _default_value(T),
+    default::T = PSRI._default_value(T),
 ) where {T}
     return deepcopy(vector)
 end
