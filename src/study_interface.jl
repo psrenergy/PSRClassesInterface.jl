@@ -1068,8 +1068,6 @@ julia> PSRI.link_series_to_file(
 """
 function link_series_to_file end
 
-function link_series_to_files end
-
 """
     write_data(data::Data, path::String)
 

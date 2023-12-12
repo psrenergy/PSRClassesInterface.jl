@@ -80,7 +80,7 @@ function link_series_to_file(
         data.raw["GrafScenarios"] = Vector{Dict{String, Any}}()
     end
 
-    if get_attribute_type(data, collection, agent_attribute) != String
+    if _get_attribute_type(data, collection, agent_attribute) != String
         error("Attribute '$agent_attribute' can only be an Attribute of type String")
     end
 

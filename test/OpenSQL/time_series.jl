@@ -167,7 +167,7 @@ function test_time_series_2()
 
     PSRI.close(iow)
 
-    PSRI.link_series_to_files(
+    PSRI.link_series_to_file(
         db,
         "Plant";
         generation = "generation",

@@ -200,7 +200,7 @@ function PSRI.link_series_to_file(
     return nothing
 end
 
-function PSRI.link_series_to_files(
+function PSRI.link_series_to_file(
     db::OpenSQL.DB,
     collection::String;
     kwargs...,

@@ -46,6 +46,15 @@ const SQLInterface = OpenSQL.SQLInterface
 include("tables/interface.jl")
 
 # modification API
-include("modification_api.jl")
+# include("modification_api.jl")
+
+# To be moved into OpenStudy
+include("openstudy_utils.jl")
+include("openstudy_create.jl")
+include("openstudy_read.jl")
+include("openstudy_update.jl")
+include("openstudy_delete.jl")
+include("openstudy_validation.jl")
+
 
 end
