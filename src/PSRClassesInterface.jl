@@ -24,6 +24,8 @@ const DataStruct = PMD.DataStruct
 # simple and generic interface
 include("study_interface.jl")
 include("reader_writer_interface.jl")
+
+# Tables.jl API
 include("tables/interface.jl")
 
 # utilities
@@ -38,12 +40,5 @@ const OpenInterface = OpenStudy.OpenInterface
 
 include("OpenSQL/OpenSQL.jl")
 const SQLInterface = OpenSQL.SQLInterface
-
-# Tables.jl API
-
-# modification API
-# include("modification_api.jl")
-
-# To be moved into OpenStudy
 
 end
