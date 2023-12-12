@@ -1068,6 +1068,8 @@ julia> PSRI.link_series_to_file(
 """
 function link_series_to_file end
 
+function link_series_to_files end
+
 """
     write_data(data::Data, path::String)
 
@@ -1273,6 +1275,8 @@ the element `target_index` from collection `target` in the scalar relation
 of type `relation_type`.
 """
 function set_related! end
+
+function delete_relation! end
 
 """
     get_vector_related(
