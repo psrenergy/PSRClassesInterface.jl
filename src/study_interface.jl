@@ -35,6 +35,15 @@ data = PSRI.load_study(
 """
 function load_study end
 
+function initialize_study(args...; kws...)
+    @warn """
+        `initialize_study` is deprecated and will be removed in a future release.
+        Use `load_study` instead.
+    """
+
+    return load_study(args...; kws...)
+end
+
 """
     PSRI.get_vector(
         data::AbstractData,
@@ -370,6 +379,8 @@ PSRI.get_map(data, "PSRGenerator", "PSRBus")
 """
 function get_reverse_vector_map end
 
+function _default_value end
+
 """
     get_parm(
         data::AbstractData,
@@ -538,6 +549,11 @@ function get_parms_1d(
     return out
 end
 
+function _check_type end
+
+function _check_parm end
+function _check_vector end
+
 function _check_type_attribute(
     data::AbstractData,
     collection::String,
@@ -696,6 +712,10 @@ PSRI.go_to_dimension(data, "block", 1)
 ```
 """
 function go_to_dimension end
+
+function go_to_scenario end
+
+function go_to_block end
 
 """
     update_vectors!(data::AbstractData)
@@ -1133,18 +1153,6 @@ function get_attribute_struct(data::AbstractData, collection::String, attribute:
     return get_attribute_struct(get_data_struct(data), collection, attribute)
 end
 
-function get_attribute_struct(data::DataStruct, collection::String, attribute::String)
-    collection_struct = data[collection]
-
-    attribute, _ = _trim_multidimensional_attribute(attribute)
-
-    if !haskey(collection_struct, attribute)
-        error("No information for attribute '$attribute' found in collection '$collection'")
-    end
-
-    return collection_struct[attribute]::Attribute
-end
-
 """
     get_attributes(data::AbstractData, collection::String)
 
@@ -1152,10 +1160,6 @@ Return `Vector{String}` of valid attributes from `collection`.
 """
 function get_attributes(data::AbstractData, collection::String)
     return get_attributes(get_data_struct(data), collection)
-end
-
-function get_attributes(data::DataStruct, collection::String)
-    return sort!(collect(keys(data[collection])))
 end
 
 """
@@ -1202,9 +1206,13 @@ function get_collections(data::AbstractData)
     return get_collections(get_data_struct(data))
 end
 
-function get_collections(data::DataStruct)
-    return sort(collect(keys(data)))
-end
+"""
+    PSRI.has_relations(data::Data, collection::String)
+    PSRI.has_relations(data::Data, collection::String, index::Integer)
+
+    Returns true if collection 'collection' has any defined relation
+"""
+function has_relations end
 
 """
     get_relations(data::AbstractData, collection::String)
@@ -1273,6 +1281,12 @@ the element `target_index` from collection `target` in the scalar relation
 of type `relation_type`.
 """
 function set_related! end
+
+function set_related_by_code! end
+
+function delete_relation! end
+
+function delete_vector_relation! end
 
 """
     get_vector_related(

@@ -115,7 +115,7 @@ for col in collections
             if verbose
                 println("Relation: ($col)-($target) of type $(relation.type)")
             end
-            if PSRI.is_vector_relation(relation.type)
+            if PSRI.OpenStudy.is_vector_relation(relation.type)
                 parm_json =
                     PSRI.get_vector_map(data, col, target; relation_type = relation.type)[json_to_bin]
                 parm_bin = PSRI.get_vector_map(

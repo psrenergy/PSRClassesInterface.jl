@@ -715,7 +715,7 @@ function read_json_3()
 
     @test PSRI.get_vector_map(data, "PSRInterconnectionSumData", "PSRInterconnection") ==
           Vector{Int32}[[1]]
-    attr1 = PSRI._get_relation_attribute(
+    attr1 = PSRI.OpenStudy._get_relation_attribute(
         data,
         "PSRInterconnectionSumData",
         "PSRInterconnection",
@@ -731,7 +731,7 @@ function read_json_3()
 
     @test PSRI.get_vector_map(data, "PSRGenerationConstraintData", "PSRThermalPlant") ==
           Vector{Int32}[[1, 3]]
-    attr2 = PSRI._get_relation_attribute(
+    attr2 = PSRI.OpenStudy._get_relation_attribute(
         data,
         "PSRGenerationConstraintData",
         "PSRThermalPlant",
@@ -747,7 +747,7 @@ function read_json_3()
 
     @test PSRI.get_vector_map(data, "PSRGenerationConstraintData", "PSRHydroPlant") ==
           Vector{Int32}[[2]]
-    attr3 = PSRI._get_relation_attribute(
+    attr3 = PSRI.OpenStudy._get_relation_attribute(
         data,
         "PSRGenerationConstraintData",
         "PSRHydroPlant",
@@ -763,7 +763,7 @@ function read_json_3()
 
     @test PSRI.get_vector_map(data, "PSRGenerationConstraintData", "PSRGndPlant") ==
           Vector{Int32}[[]]
-    attr4 = PSRI._get_relation_attribute(
+    attr4 = PSRI.OpenStudy._get_relation_attribute(
         data,
         "PSRGenerationConstraintData",
         "PSRGndPlant",
@@ -774,7 +774,7 @@ function read_json_3()
 
     @test PSRI.get_vector_map(data, "PSRGenerationConstraintData", "PSRBattery") ==
           Vector{Int32}[[]]
-    attr5 = PSRI._get_relation_attribute(
+    attr5 = PSRI.OpenStudy._get_relation_attribute(
         data,
         "PSRGenerationConstraintData",
         "PSRBattery",
@@ -852,7 +852,7 @@ function read_json_3()
         "PSRHydroPlant";
         original_relation_type = PSRI.PMD.RELATION_1_TO_1,
     ) == Vector{Int32}[[1], []]
-    attr = PSRI._get_relation_attribute(
+    attr = PSRI.OpenStudy._get_relation_attribute(
         data,
         "PSRMaintenanceData",
         "PSRHydroPlant",

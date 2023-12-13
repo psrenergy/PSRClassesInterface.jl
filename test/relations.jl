@@ -26,7 +26,13 @@ function test_relations1() # tests _get_target_index_from_relation
         )
 
         target_index =
-            PSRI._get_target_indices_from_relation(data, "PSRSerie", 1, "PSRBus", "no1")
+            PSRI.OpenStudy._get_target_indices_from_relation(
+                data,
+                "PSRSerie",
+                1,
+                "PSRBus",
+                "no1",
+            )
 
         @test target_index == [index1]
     end
@@ -58,7 +64,7 @@ function test_relations2() # tests _get_sources_indices_from_relations
             relation_type = PSRI.PMD.RELATION_TO,
         )
 
-        source_indices = PSRI._get_sources_indices_from_relations(
+        source_indices = PSRI.OpenStudy._get_sources_indices_from_relations(
             data,
             "PSRSerie",
             "PSRBus",
@@ -155,13 +161,13 @@ end
 function test_relations4()
     @test_throws ErrorException(
         "Relation of type $(PSRI.PMD.RELATION_1_TO_N) is of type vector, not the expected scalar.",
-    ) PSRI.check_relation_scalar(PSRI.PMD.RELATION_1_TO_N)
+    ) PSRI.OpenStudy.check_relation_scalar(PSRI.PMD.RELATION_1_TO_N)
     @test_throws ErrorException(
         "Relation of type $(PSRI.PMD.RELATION_BACKED) is of type vector, not the expected scalar.",
-    ) PSRI.check_relation_scalar(PSRI.PMD.RELATION_BACKED)
+    ) PSRI.OpenStudy.check_relation_scalar(PSRI.PMD.RELATION_BACKED)
     @test_throws ErrorException(
         "Relation of type $(PSRI.PMD.RELATION_1_TO_1) is of type scalar, not the expected vector.",
-    ) PSRI.check_relation_vector(PSRI.PMD.RELATION_1_TO_1)
+    ) PSRI.OpenStudy.check_relation_vector(PSRI.PMD.RELATION_1_TO_1)
 end
 
 function test_relations5()

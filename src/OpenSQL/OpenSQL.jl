@@ -1,5 +1,8 @@
 module OpenSQL
 
+import PSRClassesInterface
+const PSRI = PSRClassesInterface
+
 using SQLite
 using DBInterface
 using Tables
@@ -9,9 +12,9 @@ using DataFrames
 const DB = SQLite.DB
 
 """
-SQLInterface
+SQLInterface <: PSRI.AbstractStudyInterface
 """
-struct SQLInterface end
+struct SQLInterface <: PSRI.AbstractStudyInterface end
 
 include("utils.jl")
 include("create.jl")
@@ -19,5 +22,6 @@ include("read.jl")
 include("update.jl")
 include("delete.jl")
 include("validate.jl")
+include("sql_interface.jl")
 
 end # module OpenSQL
