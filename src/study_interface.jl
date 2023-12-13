@@ -1153,18 +1153,6 @@ function get_attribute_struct(data::AbstractData, collection::String, attribute:
     return get_attribute_struct(get_data_struct(data), collection, attribute)
 end
 
-function get_attribute_struct(data::DataStruct, collection::String, attribute::String)
-    collection_struct = data[collection]
-
-    attribute, _ = _trim_multidimensional_attribute(attribute)
-
-    if !haskey(collection_struct, attribute)
-        error("No information for attribute '$attribute' found in collection '$collection'")
-    end
-
-    return collection_struct[attribute]::Attribute
-end
-
 """
     get_attributes(data::AbstractData, collection::String)
 
@@ -1172,10 +1160,6 @@ Return `Vector{String}` of valid attributes from `collection`.
 """
 function get_attributes(data::AbstractData, collection::String)
     return get_attributes(get_data_struct(data), collection)
-end
-
-function get_attributes(data::DataStruct, collection::String)
-    return sort!(collect(keys(data[collection])))
 end
 
 """
@@ -1220,10 +1204,6 @@ Return `Vector{String}` of valid collections (depends on loaded pmd files).
 """
 function get_collections(data::AbstractData)
     return get_collections(get_data_struct(data))
-end
-
-function get_collections(data::DataStruct)
-    return sort(collect(keys(data)))
 end
 
 """

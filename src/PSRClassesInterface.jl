@@ -17,9 +17,6 @@ const PSRCLASSES_DEFAULTS_CTIME = [ctime(PSRCLASSES_DEFAULTS_PATH)]
 const PSRCLASSES_DEFAULTS = JSON.parsefile(PSRCLASSES_DEFAULTS_PATH)
 
 # submodules
-include("PMD/PMD.jl")
-const Attribute = PMD.Attribute
-const DataStruct = PMD.DataStruct
 
 # simple and generic interface
 include("study_interface.jl")
@@ -34,6 +31,10 @@ include("time_series_utils.jl")
 include("utils.jl")
 
 # main interface
+include("PMD/PMD.jl")
+const Attribute = PMD.Attribute
+const DataStruct = PMD.DataStruct
+
 include("OpenBinary/OpenBinary.jl")
 include("OpenStudy/OpenStudy.jl")
 const OpenInterface = OpenStudy.OpenInterface
