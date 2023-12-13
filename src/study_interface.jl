@@ -35,6 +35,15 @@ data = PSRI.load_study(
 """
 function load_study end
 
+function initialize_study(args...; kws...)
+    @warn """
+        `initialize_study` is deprecated and will be removed in a future release.
+        Use `load_study` instead.
+    """
+
+    return load_study(args...; kws...)
+end
+
 """
     PSRI.get_vector(
         data::AbstractData,
@@ -1217,6 +1226,12 @@ function get_collections(data::DataStruct)
     return sort(collect(keys(data)))
 end
 
+"""
+    PSRI.has_relations(data::Data, collection::String)
+    PSRI.has_relations(data::Data, collection::String, index::Integer)
+
+    Returns true if collection 'collection' has any defined relation
+"""
 function has_relations end
 
 """

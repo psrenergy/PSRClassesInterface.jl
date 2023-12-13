@@ -6,17 +6,13 @@ const JSON = PSRI.JSON
 const Dates = PSRI.Dates
 const Attribute = PSRI.PMD.Attribute
 
-include("study_openinterface.jl")
-include("duration_utils.jl")
-include("relations.jl")
-include("validate_relations.jl")
-include("graf_utils.jl")
-include("vector_map.jl")
+include("structs.jl")
 include("create.jl")
 include("update.jl")
 include("validate.jl")
 include("read.jl")
 include("utils.jl")
 include("delete.jl")
+include("study_interface.jl")
 
 end

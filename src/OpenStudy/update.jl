@@ -8,198 +8,136 @@ function _insert_element!(data::Data, collection::String, element::Any)
     return length(elements)
 end
 
-function PSRI.set_parm!(
-    data::Data,
+function _set_index!(
+    data_index::DataIndex,
+    reference_id::Integer,
     collection::String,
-    attribute::String,
-    index::Int,
-    value::T;
-    validate::Bool = true,
-) where {T <: PSRI.MainTypes}
-    if validate
-        PSRI._check_type_attribute(data, collection, attribute, T)
-    end
-
-    element = _get_element(data, collection, index)
-
-    element[attribute] = value
-
-    return nothing
-end
-
-function PSRI.set_vector!(
-    data::Data,
-    collection::String,
-    attribute::String,
-    index::Int,
-    buffer::Vector{T};
-    validate::Bool = true,
-) where {T <: PSRI.MainTypes}
-    if validate
-        PSRI._check_type_attribute(data, collection, attribute, T)
-    end
-    element = _get_element(data, collection, index)
-    vector = element[attribute]::Vector
-
-    if length(buffer) != length(vector)
-        error(
-            """
-            Vector length change from $(length(vector)) to $(length(buffer)) is not allowed.
-            Use `PSRI.set_series!` to modity the length of the currect vector and all vector associated witht the same index.
-            """,
-        )
-    end
-
-    for i in eachindex(vector)
-        vector[i] = buffer[i]
-    end
-
-    return nothing
-end
-
-function PSRI.set_series!(
-    data::Data,
-    collection::String,
-    indexing_attribute::String,
-    index::Int,
-    buffer::Dict{String, Vector},
+    index::Integer,
 )
-    series = PSRI.SeriesTable(buffer)
+    if haskey(data_index.index, reference_id)
+        previous_collection, _ = _get_index(data_index, reference_id)
 
-    return PSRI.set_series!(data, collection, indexing_attribute, index, series)
+        @warn """
+        Replacing reference_id = '$reference_id' from '$previous_collection' to '$collection'
+        """
+    else
+        data_index.max_id = max(data_index.max_id, reference_id)
+    end
+
+    data_index.index[reference_id] = (collection, index)
+
+    return nothing
 end
 
-function PSRI.set_series!(
-    data::Data,
-    collection::String,
-    indexing_attribute::String,
-    index::Int,
-    series::PSRI.SeriesTable;
-    check_type::Bool = true,
-)
-    attributes = _get_indexed_attributes(data, collection, index, indexing_attribute)
+function _merge_psr_transformer_and_psr_serie!(data::Data)
+    raw = _raw(data)
 
-    valid = true
-
-    if length(series) != length(attributes)
-        valid = false
-    end
-
-    for attribute in attributes
-        if !haskey(series, attribute)
-            valid = false
-            break
-        end
-    end
-
-    if !valid
-        missing_attrs = setdiff(attributes, keys(series))
-
-        for attribute in missing_attrs
-            @error "Missing attribute '$(attribute)'"
-        end
-
-        invalid_attrs = setdiff(keys(series), attributes)
-
-        for attribute in invalid_attrs
-            @error "Invalid attribute '$(attribute)'"
-        end
-
-        error("Invalid attributes for series indexed by $(indexing_attribute)")
-    end
-
-    new_length = nothing
-
-    for vector in values(series)
-        if isnothing(new_length)
-            new_length = length(vector)
-        end
-
-        if length(vector) != new_length
-            error("All vectors must be of the same length in a series")
-        end
-    end
-
-    element = _get_element(data, collection, index)
-
-    # validate types
-    if check_type
-        for attribute in keys(series)
-            attribute_struct =
-                PSRI.get_attribute_struct(data, collection, String(attribute))
-            PSRI._check_type(
-                attribute_struct,
-                eltype(series[attribute]),
-                collection,
-                String(attribute),
-            )
-        end
-    end
-
-    for attribute in keys(series)
-        # protect user's data
-        element[String(attribute)] = deepcopy(series[attribute])
+    if haskey(raw, "PSRSerie") && haskey(raw, "PSRTransformer")
+        append!(raw["PSRSerie"], raw["PSRTransformer"])
+        delete!(raw, "PSRTransformer")
+    elseif haskey(raw, "PSRTransformer")
+        raw["PSRSerie"] = raw["PSRTransformer"]
+        delete!(raw, "PSRTransformer")
     end
 
     return nothing
 end
 
-function PSRI.set_vector_related!(
-    data::Data,
-    source::String,
-    target::String,
-    source_index::Integer,
-    target_indices::Vector{T},
-    relation_type::PSRI.PMD.RelationType = PSRI.PMD.RELATION_1_TO_N,
-) where {T <: Integer}
-    check_relation_vector(relation_type)
-    validate_relation(data, source, target, relation_type)
-    source_element = _get_element(data, source, source_index)
-    relation_field = _get_relation_attribute(data, source, target, relation_type)
+# Vector map
 
-    source_element[relation_field] = Int[]
-    for target_index in target_indices
-        target_element = _get_element(data, target, target_index)
-        push!(source_element[relation_field], target_element["reference_id"])
+function _update_dates!(data::Data, collection, date_ref::Vector{Int32}, index::String)
+    current = data.controller_date
+    for (idx, el) in enumerate(collection)
+        date_ref[idx] = _findfirst_date(current, el[index])
     end
-
     return nothing
 end
 
-function PSRI.set_related!(
+function _update_vector!(
     data::Data,
-    source::String,
-    target::String,
-    source_index::Integer,
-    target_index::Integer;
-    relation_type::PSRI.PMD.RelationType = PSRI.PMD.RELATION_1_TO_1,
-)
-    check_relation_scalar(relation_type)
-    validate_relation(data, source, target, relation_type)
-    relation_field = _get_relation_attribute(data, source, target, relation_type)
-    source_element = _get_element(data, source, source_index)
-    target_element = _get_element(data, target, target_index)
-
-    source_element[relation_field] = target_element["reference_id"]
-
+    collection,
+    date_ref::Vector{Int32},
+    cache::VectorCache{T},
+    attr::String,
+) where {T}
+    if !isempty(cache.dim1_str)
+        cache.dim1 = data.controller_dim[cache.dim1_str]
+        if !isempty(cache.dim2_str)
+            cache.dim2 = data.controller_dim[cache.dim2_str]
+        end
+    end
+    cache.stage = data.controller_stage
+    query_name = _build_name(attr, cache)
+    for (idx, el) in enumerate(collection)
+        val = el[query_name][date_ref[idx]]
+        if val === nothing
+            cache.vector[idx] = cache.default
+        else
+            cache.vector[idx] = val
+        end
+    end
     return nothing
 end
 
-function PSRI.set_related_by_code!(
-    data::Data,
-    source::String,
-    target::String,
-    source_index::Integer,
-    target_code::Integer;
-    relation_type::PSRI.PMD.RelationType = PSRI.PMD.RELATION_1_TO_1,
-)
-    target_index = _get_index_by_code(data, target, target_code)
-    return PSRI.set_related!(
-        data,
-        source,
-        target,
-        source_index,
-        target_index;
-        relation_type = relation_type,
+function _add_get_dim_val(data, axis)
+    if !isnothing(axis) && !isempty(axis)
+        if !haskey(data.controller_dim, axis)
+            data.controller_dim[axis] = 1
+
+            return 1
+        else
+            return data.controller_dim[axis]
+        end
+    else
+        return 0
+    end
+end
+
+function _update_all_dates!(data::Data)
+    raw = _raw(data)
+    # update reference vectors
+    if data.controller_stage_changed
+        for (col_name, dict) in data.map_cache_data_idx
+            collection = raw[col_name]
+            for (index, vec) in dict
+                _update_dates!(data, collection, vec, index)
+            end
+        end
+    end
+    data.controller_stage_changed = false
+    return nothing
+end
+
+function _update_all_vectors!(data::Data, map_cache)
+    raw = _raw(data)
+    for (col_name, dict) in map_cache
+        collection = raw[col_name]
+        col_dates = data.map_cache_data_idx[col_name]
+        for (attr, vec_cache) in dict
+            if _need_update(data, vec_cache)
+                date_ref = col_dates[vec_cache.index_str]
+                _update_vector!(data, collection, date_ref, vec_cache, attr)
+            end
+        end
+    end
+    return nothing
+end
+
+function _update_graf_vectors!(data::Data)
+    return PSRI.goto(
+        data.mapper,
+        data.controller_stage,
+        data.controller_scenario,
+        data.controller_block,
+    )
+end
+
+function _update_graf_vectors!(data::Data, filter::String)
+    return PSRI.goto(
+        data.mapper,
+        filter,
+        data.controller_stage,
+        data.controller_scenario,
+        data.controller_block,
     )
 end
