@@ -5,7 +5,11 @@ function PSRI.create_study(
     kwargs...,
 )
     db = OpenSQL.create_empty_db(path_db, path_schema)
-    OpenSQL.create_element!(db, "Configuration"; kwargs...)
+    if haskey(kwargs, :id)
+        OpenSQL.create_element!(db, "Configuration"; kwargs...)
+    else
+        OpenSQL.create_element!(db, "Configuration"; id = 1, kwargs...)
+    end
     return db
 end
 

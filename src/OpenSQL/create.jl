@@ -9,8 +9,8 @@ function create_parameters!(
     cols = join(keys(parameters), ", ")
     vals = join(values(parameters), "', '")
 
-    for column in columns
-        _validate_column_name(column)
+    for (column, value) in parameters
+        check_value_type(db, table, string(column), value)
     end
 
     DBInterface.execute(db, "INSERT INTO $table ($cols) VALUES ('$vals')")
@@ -30,7 +30,7 @@ function create_vector!(
         """)
     end
     table_name = _vector_table_name(table, vector_name)
-    sanity_check(db, table_name, vector_name)
+    sanity_check(db, table_name, vector_name, values)
     num_values = length(values)
     ids = fill(id, num_values)
     idx = collect(1:num_values)
@@ -71,7 +71,11 @@ function create_element!(
     # antes de começar a salvar esse cara.
     create_parameters!(db, table, dict_parameters)
 
-    id = _get_id(db, table, dict_parameters[:label])
+    id = if haskey(dict_parameters, :id)
+        dict_parameters[:id]
+    else
+        _get_id(db, table, dict_parameters[:label])
+    end
 
     create_vectors!(db, table, id, dict_vectors)
 

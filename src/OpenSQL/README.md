@@ -30,6 +30,19 @@ CREATE TABLE ThermalPlant(
 );
 ```
 
+#### Configuration collection
+
+Every case must have a `Configuration`, which will store information from the case. 
+The column `label` is not mandatory for a `Configuration` collection.
+
+```sql
+CREATE TABLE Configuration (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    value1 REAL NOT NULL DEFAULT 100,
+    enum1 TEXT NOT NULL DEFAULT 'A' CHECK(enum1 IN ('A', 'B', 'C'))
+);
+```
+
 
 ### Non-vector Attributes
 

@@ -1,6 +1,6 @@
 CREATE TABLE Configuration (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT UNIQUE
+    val1 INTEGER
 );
 
 CREATE TABLE Plant (

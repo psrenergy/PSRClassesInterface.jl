@@ -29,6 +29,36 @@ function create_case_1()
         label = "Plant 2",
     )
 
+    @test_throws ErrorException(
+        "Value 20 is not of type Union{Float32, Float64} for column capacity in table Plant.",
+    ) PSRI.set_parm!(
+        db,
+        "Plant",
+        "capacity",
+        "Plant 2",
+        20,
+    )
+
+    @test_throws ErrorException(
+        "Value 10 is not of type Union{Float32, Float64} for column capacity in table Plant.",
+    ) PSRI.create_element!(
+        db,
+        "Plant";
+        label = "Plant 3",
+        capacity = 10,
+    )
+
+    @test_throws ErrorException(
+        "Value wrong is not of type Union{Float32, Float64} for column capacity in table Plant.",
+    ) PSRI.create_element!(
+        db,
+        "Plant";
+        label = "Plant 3",
+        capacity = "wrong",
+    )
+
+    @test PSRI.get_parms(db, "Plant", "label") == ["Plant 1", "Plant 2"]
+
     @test PSRI.get_parm(db, "Plant", "label", "Plant 1") == "Plant 1"
     @test PSRI.get_parm(db, "Plant", "capacity", "Plant 1") == 50.0
     @test PSRI.get_parm(db, "Plant", "label", "Plant 2") == "Plant 2"
@@ -73,6 +103,16 @@ function create_case_1()
         "some_value",
         "R2",
     ) == [4.0, 5.0, 6.0]
+
+    @test_throws ErrorException(
+        "Value $([20,21,22]) is not of type Union{Float32, Float64} for column some_value in table Resource_vector_some_value.",
+    ) PSRI.set_parm!(
+        db,
+        "Resource",
+        "some_value",
+        "R2",
+        [20, 21, 22],
+    )
 
     PSRI.set_vector!(
         db,

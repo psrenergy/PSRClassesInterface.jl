@@ -53,40 +53,6 @@ function table_exist_in_db(db::SQLite.DB, table::String)
     return table in tbls
 end
 
-function check_if_column_exists(db::SQLite.DB, table::String, column::String)
-    if !column_exist_in_table(db, table, column)
-        # TODO we could make a suggestion on the closest string and give an error like
-        # Did you mean xxxx?
-        error("column $column does not exist in table $table.")
-    end
-    return nothing
-end
-
-function check_if_table_exists(db::SQLite.DB, table::String)
-    if !table_exist_in_db(db, table)
-        # TODO we could make a suggestion on the closest string and give an error like
-        # Did you mean xxxx?
-        error("table $table does not exist in database.")
-    end
-    return nothing
-end
-
-function sanity_check(db::SQLite.DB, table::String, column::String)
-    # TODO We could make an option to disable sanity checks globally.
-    check_if_table_exists(db, table)
-    check_if_column_exists(db, table, column)
-    return nothing
-end
-
-function sanity_check(db::SQLite.DB, table::String, columns::Vector{String})
-    # TODO We could make an option to disable sanity checks globally.
-    check_if_table_exists(db, table)
-    for column in columns
-        check_if_column_exists(db, table, column)
-    end
-    return nothing
-end
-
 function id_exist_in_table(db::SQLite.DB, table::String, id::Integer)
     sanity_check(db, table, "id")
     query = "SELECT COUNT(id) FROM $table WHERE id = '$id'"
@@ -145,6 +111,20 @@ end
 
 get_vector_attribute_name(table::String) = split(table, "_vector_")[end]
 get_collections_from_relation_table(table::String) = split(table, "_relation_")
+
+function _column_valid_types(db::SQLite.DB, table::String, column::String)
+    column_index = findfirst(x -> x == column, column_names(db, table))
+    raw_type = SQLite.columns(db, table).type[column_index]
+    if raw_type == "INTEGER"
+        return Union{Int32, Int64}
+    elseif raw_type == "REAL"
+        return Union{Float32, Float64}
+    elseif raw_type == "TEXT"
+        return String
+    else
+        error("type \"$raw_type\" not supported.")
+    end
+end
 
 _timeseries_table_name(table::String) = table * "_timeseries"
 _vector_table_name(table::String, column::String) = table * "_vector_" * column

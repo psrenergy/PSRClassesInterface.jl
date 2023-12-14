@@ -51,7 +51,7 @@ function _validate_table(db::SQLite.DB, table::String)
     if !("id" in attributes)
         error("Table $table does not have an \"id\" column.")
     end
-    if !("label" in attributes)
+    if !("label" in attributes) && table != "Configuration"
         error("Table $table does not have a \"label\" column.")
     end
     for attribute in attributes
@@ -127,6 +127,9 @@ end
 
 function validate_database(db::SQLite.DB)
     tables = table_names(db)
+    if "Configuration" ∉ tables
+        error("Database does not have a \"Configuration\" table.")
+    end
     for table in tables
         if table == "sqlite_sequence"
             continue
@@ -149,4 +152,69 @@ function validate_database(db::SQLite.DB)
                 """)
         end
     end
+end
+
+function check_value_type(
+    db::SQLite.DB,
+    table::String,
+    column::String,
+    values::V,
+) where {V <: AbstractVector}
+    valid_types = _column_valid_types(db, table, column)
+    if !(eltype(values) <: valid_types)
+        error(
+            "Value $values is not of type $(valid_types) for column $column in table $table.",
+        )
+    end
+end
+
+function check_value_type(db::SQLite.DB, table::String, column::String, value)
+    valid_types = _column_valid_types(db, table, column)
+    if !isa(value, valid_types)
+        error(
+            "Value $value is not of type $(valid_types) for column $column in table $table.",
+        )
+    end
+end
+
+function check_if_column_exists(db::SQLite.DB, table::String, column::String)
+    if !column_exist_in_table(db, table, column)
+        # TODO we could make a suggestion on the closest string and give an error like
+        # Did you mean xxxx?
+        error("column $column does not exist in table $table.")
+    end
+    return nothing
+end
+
+function check_if_table_exists(db::SQLite.DB, table::String)
+    if !table_exist_in_db(db, table)
+        # TODO we could make a suggestion on the closest string and give an error like
+        # Did you mean xxxx?
+        error("table $table does not exist in database.")
+    end
+    return nothing
+end
+
+function sanity_check(db::SQLite.DB, table::String, column::String, value)
+    # TODO We could make an option to disable sanity checks globally.
+    check_if_table_exists(db, table)
+    check_if_column_exists(db, table, column)
+    check_value_type(db, table, column, value)
+    return nothing
+end
+
+function sanity_check(db::SQLite.DB, table::String, column::String)
+    # TODO We could make an option to disable sanity checks globally.
+    check_if_table_exists(db, table)
+    check_if_column_exists(db, table, column)
+    return nothing
+end
+
+function sanity_check(db::SQLite.DB, table::String, columns::Vector{String})
+    # TODO We could make an option to disable sanity checks globally.
+    check_if_table_exists(db, table)
+    for column in columns
+        check_if_column_exists(db, table, column)
+    end
+    return nothing
 end

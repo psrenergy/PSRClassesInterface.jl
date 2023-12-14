@@ -5,7 +5,7 @@ function update!(
     id::Integer,
     val,
 )
-    sanity_check(db, table, column)
+    sanity_check(db, table, column, val)
     DBInterface.execute(db, "UPDATE $table SET $column = '$val' WHERE id = '$id'")
     return nothing
 end
@@ -16,7 +16,7 @@ function update!(
     column::String,
     val,
 )
-    sanity_check(db, table, column)
+    sanity_check(db, table, column, val)
     DBInterface.execute(db, "UPDATE $table SET $column = '$val'")
     return nothing
 end
@@ -36,6 +36,9 @@ function update!(
 
     current_vector = read_vector(db, table, column, id)
     current_length = length(current_vector)
+
+    table_name = _vector_table_name(table, column)
+    sanity_check(db, table_name, column, vals)
 
     for idx in 1:current_length
         # TODO - Bodin deve ter uma forma melhor de fazer esse delete, acho que no final
