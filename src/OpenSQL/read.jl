@@ -13,11 +13,11 @@ function read_parameter(
     table::String,
     column::String,
 )
-    if !column_exist_in_table(db, table, column) && is_vector_parameter(db, table, column)
+    if !column_exist_in_table(table, column) && is_vector_parameter(table, column)
         error("column $column is a vector parameter, use `read_vector` instead.")
     end
 
-    sanity_check(db, table, column)
+    sanity_check(table, column)
 
     query = "SELECT $column FROM $table"
     df = DBInterface.execute(db, query) |> DataFrame
@@ -32,11 +32,11 @@ function read_parameter(
     column::String,
     id::Integer,
 )
-    if !column_exist_in_table(db, table, column) && is_vector_parameter(db, table, column)
+    if !column_exist_in_table(table, column) && is_vector_parameter(table, column)
         error("column $column is a vector parameter, use `read_vector` instead.")
     end
 
-    sanity_check(db, table, column)
+    sanity_check(table, column)
 
     query = "SELECT $column FROM $table WHERE id = '$id'"
     df = DBInterface.execute(db, query) |> DataFrame
@@ -54,7 +54,7 @@ function read_vector(
     vector_name::String,
 )
     table_name = _vector_table_name(table, vector_name)
-    sanity_check(db, table_name, vector_name)
+    sanity_check(table_name, vector_name)
     ids_in_table = read_parameter(db, table, "id")
 
     results = []
@@ -72,7 +72,7 @@ function read_vector(
     id::Integer,
 )
     table_name = _vector_table_name(table, vector_name)
-    sanity_check(db, table_name, vector_name)
+    sanity_check(table_name, vector_name)
 
     query = "SELECT $vector_name FROM $table_name WHERE id = '$id' ORDER BY idx"
     df = DBInterface.execute(db, query) |> DataFrame
@@ -82,7 +82,7 @@ function read_vector(
 end
 
 function number_of_rows(db::SQLite.DB, table::String, column::String)
-    sanity_check(db, table, column)
+    sanity_check(table, column)
     query = "SELECT COUNT($column) FROM $table"
     df = DBInterface.execute(db, query) |> DataFrame
     return df[!, 1][1]
@@ -94,7 +94,7 @@ function read_vector_related(
     id::Integer,
     relation_type::String,
 )
-    sanity_check(db, table, "id")
+    sanity_check(table, "id")
     table_as_source = table * "_relation_"
     table_as_target = "_relation_" * table
 

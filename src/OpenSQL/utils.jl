@@ -21,6 +21,7 @@ function create_empty_db(path_db::String, path_schema::String)
     db = SQLite.DB(path_db)
     execute_statements(db, path_schema)
     validate_database(db)
+    _save_db_tables_and_columns(db)
     return db
 end
 
@@ -30,6 +31,7 @@ function load_db(database_path::String)
     end
     db = SQLite.DB(database_path)
     validate_database(db)
+    _save_db_tables_and_columns(db)
     return db
 end
 
@@ -43,18 +45,8 @@ function table_names(db::SQLite.DB)
     return tbls.name
 end
 
-function column_exist_in_table(db::SQLite.DB, table::String, column::String)
-    cols = column_names(db, table)
-    return column in cols
-end
-
-function table_exist_in_db(db::SQLite.DB, table::String)
-    tbls = table_names(db)
-    return table in tbls
-end
-
 function id_exist_in_table(db::SQLite.DB, table::String, id::Integer)
-    sanity_check(db, table, "id")
+    sanity_check(table, "id")
     query = "SELECT COUNT(id) FROM $table WHERE id = '$id'"
     df = DBInterface.execute(db, query) |> DataFrame
     if df[!, 1][1] == 0
@@ -63,8 +55,8 @@ function id_exist_in_table(db::SQLite.DB, table::String, id::Integer)
     return nothing
 end
 
-function is_vector_parameter(db::SQLite.DB, table::String, column::String)
-    return table_exist_in_db(db, _vector_table_name(table, column))
+function is_vector_parameter(table::String, column::String)
+    return table_exist_in_db(_vector_table_name(table, column))
 end
 
 function are_related(
@@ -74,8 +66,8 @@ function are_related(
     table_1_id::Integer,
     table_2_id::Integer,
 )
-    sanity_check(db, table_1, "id")
-    sanity_check(db, table_2, "id")
+    sanity_check(table_1, "id")
+    sanity_check(table_2, "id")
     id_exist_in_table(db, table_1, table_1_id)
     id_exist_in_table(db, table_2, table_2_id)
 
@@ -92,13 +84,13 @@ end
 
 function has_time_series(db::SQLite.DB, table::String)
     time_series_table = _timeseries_table_name(table)
-    return table_exist_in_db(db, time_series_table)
+    return table_exist_in_db(time_series_table)
 end
 
 function has_time_series(db::SQLite.DB, table::String, column::String)
-    sanity_check(db, table, "id")
+    sanity_check(table, "id")
     time_series_table = _timeseries_table_name(table)
-    if table_exist_in_db(db, time_series_table)
+    if table_exist_in_db(time_series_table)
         if column in column_names(db, time_series_table)
             return true
         else
@@ -111,20 +103,6 @@ end
 
 get_vector_attribute_name(table::String) = split(table, "_vector_")[end]
 get_collections_from_relation_table(table::String) = split(table, "_relation_")
-
-function _column_valid_types(db::SQLite.DB, table::String, column::String)
-    column_index = findfirst(x -> x == column, column_names(db, table))
-    raw_type = SQLite.columns(db, table).type[column_index]
-    if raw_type == "INTEGER"
-        return Union{Int32, Int64}
-    elseif raw_type == "REAL"
-        return Union{Float32, Float64}
-    elseif raw_type == "TEXT"
-        return String
-    else
-        error("type \"$raw_type\" not supported.")
-    end
-end
 
 _timeseries_table_name(table::String) = table * "_timeseries"
 _vector_table_name(table::String, column::String) = table * "_vector_" * column

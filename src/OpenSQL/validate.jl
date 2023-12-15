@@ -127,7 +127,7 @@ end
 
 function validate_database(db::SQLite.DB)
     tables = table_names(db)
-    if "Configuration" ∉ tables
+    if !("Configuration" in tables)
         error("Database does not have a \"Configuration\" table.")
     end
     for table in tables
@@ -154,31 +154,40 @@ function validate_database(db::SQLite.DB)
     end
 end
 
-function check_value_type(
-    db::SQLite.DB,
-    table::String,
-    column::String,
-    values::V,
-) where {V <: AbstractVector}
-    valid_types = _column_valid_types(db, table, column)
-    if !(eltype(values) <: valid_types)
-        error(
-            "Value $values is not of type $(valid_types) for column $column in table $table.",
-        )
+# Dictionary storing tables and columns of the current db loaded
+# in the load_db function
+const DB_TABLES_AND_COLUMNS = Dict{String, Vector{String}}()
+# Constant to enable or disable sanity checks
+const SANITY_CHECKS_ENABLED = [true]
+
+function _save_db_tables_and_columns(db::SQLite.DB)
+    tables = table_names(db)
+    for table in tables
+        DB_TABLES_AND_COLUMNS[table] = column_names(db, table)
     end
+    return nothing
 end
 
-function check_value_type(db::SQLite.DB, table::String, column::String, value)
-    valid_types = _column_valid_types(db, table, column)
-    if !isa(value, valid_types)
-        error(
-            "Value $value is not of type $(valid_types) for column $column in table $table.",
-        )
-    end
+function _enable_sanity_checks(val::Bool)
+    SANITY_CHECKS_ENABLED[1] = val
+    return val
 end
 
-function check_if_column_exists(db::SQLite.DB, table::String, column::String)
-    if !column_exist_in_table(db, table, column)
+function _sanity_check_enabled()
+    return SANITY_CHECKS_ENABLED[1]
+end
+
+function column_exist_in_table(table::String, column::String)
+    cols = DB_TABLES_AND_COLUMNS[table]
+    return column in cols
+end
+
+function table_exist_in_db(table::String)
+    return haskey(DB_TABLES_AND_COLUMNS, table)
+end
+
+function check_if_column_exists(table::String, column::String)
+    if !column_exist_in_table(table, column)
         # TODO we could make a suggestion on the closest string and give an error like
         # Did you mean xxxx?
         error("column $column does not exist in table $table.")
@@ -186,8 +195,8 @@ function check_if_column_exists(db::SQLite.DB, table::String, column::String)
     return nothing
 end
 
-function check_if_table_exists(db::SQLite.DB, table::String)
-    if !table_exist_in_db(db, table)
+function check_if_table_exists(table::String)
+    if !table_exist_in_db(table)
         # TODO we could make a suggestion on the closest string and give an error like
         # Did you mean xxxx?
         error("table $table does not exist in database.")
@@ -195,26 +204,18 @@ function check_if_table_exists(db::SQLite.DB, table::String)
     return nothing
 end
 
-function sanity_check(db::SQLite.DB, table::String, column::String, value)
-    # TODO We could make an option to disable sanity checks globally.
-    check_if_table_exists(db, table)
-    check_if_column_exists(db, table, column)
-    check_value_type(db, table, column, value)
+function sanity_check(table::String, column::String)
+    !_sanity_check_enabled() && return nothing
+    check_if_table_exists(table)
+    check_if_column_exists(table, column)
     return nothing
 end
 
-function sanity_check(db::SQLite.DB, table::String, column::String)
-    # TODO We could make an option to disable sanity checks globally.
-    check_if_table_exists(db, table)
-    check_if_column_exists(db, table, column)
-    return nothing
-end
-
-function sanity_check(db::SQLite.DB, table::String, columns::Vector{String})
-    # TODO We could make an option to disable sanity checks globally.
-    check_if_table_exists(db, table)
+function sanity_check(table::String, columns::Vector{String})
+    !_sanity_check_enabled() && return nothing
+    check_if_table_exists(table)
     for column in columns
-        check_if_column_exists(db, table, column)
+        check_if_column_exists(table, column)
     end
     return nothing
 end

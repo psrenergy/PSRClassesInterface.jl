@@ -3,7 +3,7 @@ function delete!(
     table::String,
     id::Integer,
 )
-    sanity_check(db, table, "id")
+    sanity_check(table, "id")
     id_exist_in_table(db, table, id)
 
     DBInterface.execute(db, "DELETE FROM $table WHERE id = '$id'")
@@ -29,7 +29,7 @@ function delete_relation!(
 
     DBInterface.execute(
         db,
-        "UPDATE $table_1 SET $id_parameter_on_table_1 = '' WHERE id = '$table_1_id'",
+        "UPDATE $table_1 SET $id_parameter_on_table_1 = NULL WHERE id = '$table_1_id'",
     )
 
     return nothing
