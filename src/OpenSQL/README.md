@@ -21,13 +21,26 @@ CREATE TABLE Resource (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT UNIQUE NOT NULL,
     type TEXT NOT NULL DEFAULT "D" CHECK(type IN ('D', 'E', 'F'))
-);
+) STRICT;
 
 CREATE TABLE ThermalPlant(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT UNIQUE NOT NULL,
     capacity REAL NOT NULL DEFAULT 0
-);
+) STRICT;
+```
+
+#### Configuration collection
+
+Every case must have a `Configuration`, which will store information from the case. 
+The column `label` is not mandatory for a `Configuration` collection.
+
+```sql
+CREATE TABLE Configuration (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    value1 REAL NOT NULL DEFAULT 100,
+    enum1 TEXT NOT NULL DEFAULT 'A' CHECK(enum1 IN ('A', 'B', 'C'))
+) STRICT;
 ```
 
 
@@ -41,7 +54,7 @@ CREATE TABLE ThermalPlant(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT UNIQUE NOT NULL,
     capacity REAL NOT NULL
-);
+) STRICT;
 ```
 
 ### Vector Attributes
@@ -62,7 +75,7 @@ CREATE TABLE ThermalPlant_vector_some_value(
     some_value REAL NOT NULL,
     FOREIGN KEY (id) REFERENCES ThermalPlant(id) ON DELETE CASCADE,
     PRIMARY KEY (id, idx)
-);
+) STRICT;
 ```
 
 ### Time Series
@@ -81,7 +94,7 @@ Example:
 CREATE TABLE Plant_timeseries (
     generation TEXT,
     cost TEXT
-);
+) STRICT;
 ```
 
 ### 1 to 1 Relations
@@ -103,7 +116,7 @@ CREATE TABLE Plant (
     FOREIGN KEY(resource_id) REFERENCES Resource(id),
     FOREIGN KEY(plant_turbine_to) REFERENCES Plant(id),
     FOREIGN KEY(plant_spill_to) REFERENCES Plant(id)
-);
+) STRICT;
 ```
 
 ### N to N Relations
@@ -125,5 +138,5 @@ CREATE TABLE Plant_relation_Cost (
     FOREIGN KEY(source_id) REFERENCES Plant(id) ON DELETE CASCADE,
     FOREIGN KEY(target_id) REFERENCES Costs(id) ON DELETE CASCADE,
     PRIMARY KEY (source_id, target_id, relation_type)
-);
+) STRICT;
 ```

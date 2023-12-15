@@ -29,6 +29,15 @@ function create_case_1()
         label = "Plant 2",
     )
 
+    @test_throws PSRI.OpenSQL.SQLite.SQLiteException PSRI.create_element!(
+        db,
+        "Plant";
+        label = "Plant 3",
+        capacity = "wrong",
+    )
+
+    @test PSRI.get_parms(db, "Plant", "label") == ["Plant 1", "Plant 2"]
+
     @test PSRI.get_parm(db, "Plant", "label", "Plant 1") == "Plant 1"
     @test PSRI.get_parm(db, "Plant", "capacity", "Plant 1") == 50.0
     @test PSRI.get_parm(db, "Plant", "label", "Plant 2") == "Plant 2"
@@ -121,7 +130,7 @@ function create_case_1()
         "R1",
     )
 
-    @test PSRI.get_parm(db, "Plant", "resource_id", "Plant 1") == ""
+    @test ismissing(PSRI.get_parm(db, "Plant", "resource_id", "Plant 1"))
 
     @test PSRI.max_elements(db, "Plant") == 2
     @test PSRI.max_elements(db, "Resource") == 2

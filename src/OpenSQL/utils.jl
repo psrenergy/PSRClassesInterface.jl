@@ -21,6 +21,7 @@ function create_empty_db(path_db::String, path_schema::String)
     db = SQLite.DB(path_db)
     execute_statements(db, path_schema)
     validate_database(db)
+    _save_db_tables_and_columns(db)
     return db
 end
 
@@ -30,6 +31,7 @@ function load_db(database_path::String)
     end
     db = SQLite.DB(database_path)
     validate_database(db)
+    _save_db_tables_and_columns(db)
     return db
 end
 
@@ -43,52 +45,8 @@ function table_names(db::SQLite.DB)
     return tbls.name
 end
 
-function column_exist_in_table(db::SQLite.DB, table::String, column::String)
-    cols = column_names(db, table)
-    return column in cols
-end
-
-function table_exist_in_db(db::SQLite.DB, table::String)
-    tbls = table_names(db)
-    return table in tbls
-end
-
-function check_if_column_exists(db::SQLite.DB, table::String, column::String)
-    if !column_exist_in_table(db, table, column)
-        # TODO we could make a suggestion on the closest string and give an error like
-        # Did you mean xxxx?
-        error("column $column does not exist in table $table.")
-    end
-    return nothing
-end
-
-function check_if_table_exists(db::SQLite.DB, table::String)
-    if !table_exist_in_db(db, table)
-        # TODO we could make a suggestion on the closest string and give an error like
-        # Did you mean xxxx?
-        error("table $table does not exist in database.")
-    end
-    return nothing
-end
-
-function sanity_check(db::SQLite.DB, table::String, column::String)
-    # TODO We could make an option to disable sanity checks globally.
-    check_if_table_exists(db, table)
-    check_if_column_exists(db, table, column)
-    return nothing
-end
-
-function sanity_check(db::SQLite.DB, table::String, columns::Vector{String})
-    # TODO We could make an option to disable sanity checks globally.
-    check_if_table_exists(db, table)
-    for column in columns
-        check_if_column_exists(db, table, column)
-    end
-    return nothing
-end
-
 function id_exist_in_table(db::SQLite.DB, table::String, id::Integer)
-    sanity_check(db, table, "id")
+    sanity_check(table, "id")
     query = "SELECT COUNT(id) FROM $table WHERE id = '$id'"
     df = DBInterface.execute(db, query) |> DataFrame
     if df[!, 1][1] == 0
@@ -97,8 +55,8 @@ function id_exist_in_table(db::SQLite.DB, table::String, id::Integer)
     return nothing
 end
 
-function is_vector_parameter(db::SQLite.DB, table::String, column::String)
-    return table_exist_in_db(db, _vector_table_name(table, column))
+function is_vector_parameter(table::String, column::String)
+    return table_exist_in_db(_vector_table_name(table, column))
 end
 
 function are_related(
@@ -108,8 +66,8 @@ function are_related(
     table_1_id::Integer,
     table_2_id::Integer,
 )
-    sanity_check(db, table_1, "id")
-    sanity_check(db, table_2, "id")
+    sanity_check(table_1, "id")
+    sanity_check(table_2, "id")
     id_exist_in_table(db, table_1, table_1_id)
     id_exist_in_table(db, table_2, table_2_id)
 
@@ -126,13 +84,13 @@ end
 
 function has_time_series(db::SQLite.DB, table::String)
     time_series_table = _timeseries_table_name(table)
-    return table_exist_in_db(db, time_series_table)
+    return table_exist_in_db(time_series_table)
 end
 
 function has_time_series(db::SQLite.DB, table::String, column::String)
-    sanity_check(db, table, "id")
+    sanity_check(table, "id")
     time_series_table = _timeseries_table_name(table)
-    if table_exist_in_db(db, time_series_table)
+    if table_exist_in_db(time_series_table)
         if column in column_names(db, time_series_table)
             return true
         else

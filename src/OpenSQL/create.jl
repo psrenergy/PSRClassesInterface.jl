@@ -4,14 +4,10 @@ function create_parameters!(
     parameters,
 )
     columns = string.(keys(parameters))
-    sanity_check(db, table, columns)
+    sanity_check(table, columns)
 
     cols = join(keys(parameters), ", ")
     vals = join(values(parameters), "', '")
-
-    for column in columns
-        _validate_column_name(column)
-    end
 
     DBInterface.execute(db, "INSERT INTO $table ($cols) VALUES ('$vals')")
     return nothing
@@ -30,7 +26,7 @@ function create_vector!(
         """)
     end
     table_name = _vector_table_name(table, vector_name)
-    sanity_check(db, table_name, vector_name)
+    sanity_check(table_name, vector_name)
     num_values = length(values)
     ids = fill(id, num_values)
     idx = collect(1:num_values)
@@ -66,14 +62,12 @@ function create_element!(
         end
     end
 
-    # TODO a gente deveria ter algum esquema de transactions aqui
-    # se um for bem sucedido e o outro não, deveriamos dar rollback para 
-    # antes de começar a salvar esse cara.
     create_parameters!(db, table, dict_parameters)
 
-    id = _get_id(db, table, dict_parameters[:label])
-
-    create_vectors!(db, table, id, dict_vectors)
+    if !isempty(dict_vectors)
+        id = get(dict_parameters, :id, _get_id(db, table, dict_parameters[:label]))
+        create_vectors!(db, table, id, dict_vectors)
+    end
 
     return nothing
 end

@@ -3,14 +3,14 @@ CREATE TABLE Configuration (
     label TEXT UNIQUE,
     value1 REAL NOT NULL DEFAULT 100,
     enum1 TEXT NOT NULL DEFAULT 'A' CHECK(enum1 IN ('A', 'B', 'C'))
-);
+) STRICT;
 
 
 CREATE TABLE Resource (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT UNIQUE,
     type TEXT NOT NULL DEFAULT "D" CHECK(type IN ('D', 'E', 'F'))
-);
+) STRICT;
 
 CREATE TABLE Resource_vector_some_value (
     id INTEGER, 
@@ -18,13 +18,13 @@ CREATE TABLE Resource_vector_some_value (
     some_value REAL NOT NULL,
     FOREIGN KEY(id) REFERENCES Resource(id) ON DELETE CASCADE,
     PRIMARY KEY (id, idx)
-); 
+) STRICT; 
 
 CREATE TABLE Cost (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT UNIQUE,
     value REAL NOT NULL DEFAULT 100
-);
+) STRICT;
 
 CREATE TABLE Plant (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,7 +36,7 @@ CREATE TABLE Plant (
     FOREIGN KEY(resource_id) REFERENCES Resource(id),
     FOREIGN KEY(plant_turbine_to) REFERENCES Plant(id),
     FOREIGN KEY(plant_spill_to) REFERENCES Plant(id)
-);
+) STRICT;
 
 CREATE TABLE Plant_relation_Cost (
     source_id INTEGER,
@@ -45,9 +45,9 @@ CREATE TABLE Plant_relation_Cost (
     FOREIGN KEY(source_id) REFERENCES Plant(id) ON DELETE CASCADE,
     FOREIGN KEY(target_id) REFERENCES Costs(id) ON DELETE CASCADE,
     PRIMARY KEY (source_id, target_id, relation_type)
-);
+) STRICT;
 
 CREATE TABLE Plant_timeseries (
     generation TEXT,
     cost TEXT
-);
+) STRICT;

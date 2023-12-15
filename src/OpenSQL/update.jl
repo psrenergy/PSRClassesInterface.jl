@@ -5,7 +5,7 @@ function update!(
     id::Integer,
     val,
 )
-    sanity_check(db, table, column)
+    sanity_check(table, column)
     DBInterface.execute(db, "UPDATE $table SET $column = '$val' WHERE id = '$id'")
     return nothing
 end
@@ -16,7 +16,7 @@ function update!(
     column::String,
     val,
 )
-    sanity_check(db, table, column)
+    sanity_check(table, column)
     DBInterface.execute(db, "UPDATE $table SET $column = '$val'")
     return nothing
 end
@@ -28,7 +28,7 @@ function update!(
     id::Integer,
     vals::V,
 ) where {V <: AbstractVector}
-    if !is_vector_parameter(db, table, column)
+    if !is_vector_parameter(table, column)
         error("Column $column is not a vector parameter.")
     end
 
@@ -37,6 +37,7 @@ function update!(
     current_vector = read_vector(db, table, column, id)
     current_length = length(current_vector)
 
+    # TODO isso aqui deveria estar numa transaction, se não puder dar update tem que dar erro e voltar o que estava antes
     for idx in 1:current_length
         # TODO - Bodin deve ter uma forma melhor de fazer esse delete, acho que no final
         # seria equivalente a deletar todos os ids

@@ -51,7 +51,7 @@ function _validate_table(db::SQLite.DB, table::String)
     if !("id" in attributes)
         error("Table $table does not have an \"id\" column.")
     end
-    if !("label" in attributes)
+    if !("label" in attributes) && table != "Configuration"
         error("Table $table does not have a \"label\" column.")
     end
     for attribute in attributes
@@ -127,6 +127,9 @@ end
 
 function validate_database(db::SQLite.DB)
     tables = table_names(db)
+    if !("Configuration" in tables)
+        error("Database does not have a \"Configuration\" table.")
+    end
     for table in tables
         if table == "sqlite_sequence"
             continue
@@ -149,4 +152,70 @@ function validate_database(db::SQLite.DB)
                 """)
         end
     end
+end
+
+# Dictionary storing tables and columns of the current db loaded
+# in the load_db function
+const DB_TABLES_AND_COLUMNS = Dict{String, Vector{String}}()
+# Constant to enable or disable sanity checks
+const SANITY_CHECKS_ENABLED = [true]
+
+function _save_db_tables_and_columns(db::SQLite.DB)
+    tables = table_names(db)
+    for table in tables
+        DB_TABLES_AND_COLUMNS[table] = column_names(db, table)
+    end
+    return nothing
+end
+
+function _enable_sanity_checks(val::Bool)
+    SANITY_CHECKS_ENABLED[1] = val
+    return val
+end
+
+function _sanity_check_enabled()
+    return SANITY_CHECKS_ENABLED[1]
+end
+
+function column_exist_in_table(table::String, column::String)
+    cols = DB_TABLES_AND_COLUMNS[table]
+    return column in cols
+end
+
+function table_exist_in_db(table::String)
+    return haskey(DB_TABLES_AND_COLUMNS, table)
+end
+
+function check_if_column_exists(table::String, column::String)
+    if !column_exist_in_table(table, column)
+        # TODO we could make a suggestion on the closest string and give an error like
+        # Did you mean xxxx?
+        error("column $column does not exist in table $table.")
+    end
+    return nothing
+end
+
+function check_if_table_exists(table::String)
+    if !table_exist_in_db(table)
+        # TODO we could make a suggestion on the closest string and give an error like
+        # Did you mean xxxx?
+        error("table $table does not exist in database.")
+    end
+    return nothing
+end
+
+function sanity_check(table::String, column::String)
+    !_sanity_check_enabled() && return nothing
+    check_if_table_exists(table)
+    check_if_column_exists(table, column)
+    return nothing
+end
+
+function sanity_check(table::String, columns::Vector{String})
+    !_sanity_check_enabled() && return nothing
+    check_if_table_exists(table)
+    for column in columns
+        check_if_column_exists(table, column)
+    end
+    return nothing
 end
