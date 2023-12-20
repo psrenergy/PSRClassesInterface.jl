@@ -8,6 +8,7 @@ using DBInterface
 using Tables
 # TODO talvez a gente nem precise dos DataFrames, da pra fazer com o Tables mesmo
 using DataFrames
+using Dates
 
 const DB = SQLite.DB
 
@@ -22,6 +23,7 @@ include("read.jl")
 include("update.jl")
 include("delete.jl")
 include("validate.jl")
+include("migrations.jl")
 include("sql_interface.jl")
 
 end # module OpenSQL
