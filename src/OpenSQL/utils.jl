@@ -8,7 +8,7 @@ function execute_statements(db::SQLite.DB, file::String)
     commands = split(statements, ";")
     for command in commands
         if !isempty(command)
-            SQLite.execute(db, command)
+            DBInterface.execute(db, command)
         end
     end
     return nothing
@@ -23,6 +23,16 @@ function create_empty_db(path_db::String, path_schema::String)
     validate_database(db)
     _save_db_tables_and_columns(db)
     return db
+end
+
+function create_empty_db(path_db::AbstractString)
+    if isfile(path_db)
+        error("file already exists: $path_db")
+    end
+    db = SQLite.DB(path_db)
+    _apply_all_up_migrations(db)
+    validate_database(db)
+    _save_db_tables_and_columns(db)
 end
 
 function load_db(database_path::String)
