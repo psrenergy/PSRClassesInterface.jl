@@ -1,0 +1,7 @@
+CREATE TABLE Configurations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    value TEXT NOT NULL
+);
+
+
