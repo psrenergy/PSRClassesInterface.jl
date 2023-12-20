@@ -114,14 +114,19 @@ function create_migration(name::String)
     migration_folder = joinpath(migrations_folder, name_with_version_and_date)
 
     mkpath(migration_folder)
+    #! format: off
+    # We turn off formatting here because of this discussion
+    # https://github.com/domluna/JuliaFormatter.jl/issues/751
+    # I agree that open do blocks with return are slighly misleading.
     open(joinpath(migration_folder, "up.sql"), "w") do file
         println(file, "-- $name")
-        print(file, "PRAGMA user_version = $new_version")
+        println(file, "PRAGMA user_version = $new_version;")
     end
     open(joinpath(migration_folder, "down.sql"), "w") do file
         println(file, "-- $name")
-        print(file, "PRAGMA user_version = $old_version")
+        println(file, "PRAGMA user_version = $old_version;")
     end
+    #! format: on
     return migration_folder
 end
 
