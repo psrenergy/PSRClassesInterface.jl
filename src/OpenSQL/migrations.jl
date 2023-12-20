@@ -75,22 +75,6 @@ function db_is_empty(db::SQLite.DB)
     return length(tbls) == 0
 end
 
-function execute_statements(db::SQLite.DB, file::String)
-    if !isfile(file)
-        error("file not found: $file")
-    end
-    statements = open(joinpath(file), "r") do io
-        read(io, String)
-    end
-    commands = split(statements, ";")
-    for command in commands
-        if !isempty(command)
-            SQLite.execute(db, command)
-        end
-    end
-    return nothing
-end
-
 function parse_name_version_date(migration::String)
     date_string = migration[1:17]
     date = DateTime(date_string, MIGRATION_DATE_FORMAT)
@@ -206,7 +190,7 @@ function _apply_migration!(
         error("direction not recognized: $direction. The only directions allowed are :up and :down.")
     end
 
-    @info("Applying migration $(migration.name) in direction $direction")
+    @debug("Applying migration $(migration.name) v$(migration.version) in direction $direction")
 
     sql_file = joinpath(migration.path, "$(string(direction)).sql")
     return execute_statements(db, sql_file)

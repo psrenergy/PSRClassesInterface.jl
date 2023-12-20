@@ -33,6 +33,7 @@ function create_empty_db(path_db::AbstractString)
     _apply_all_up_migrations(db)
     validate_database(db)
     _save_db_tables_and_columns(db)
+    return db
 end
 
 function load_db(database_path::String)
