@@ -116,11 +116,11 @@ function create_migration(name::String)
     mkpath(migration_folder)
     open(joinpath(migration_folder, "up.sql"), "w") do file
         println(file, "-- $name")
-        return print(file, "PRAGMA user_version = $new_version")
+        print(file, "PRAGMA user_version = $new_version")
     end
     open(joinpath(migration_folder, "down.sql"), "w") do file
         println(file, "-- $name")
-        return print(file, "PRAGMA user_version = $old_version")
+        print(file, "PRAGMA user_version = $old_version")
     end
     return migration_folder
 end
