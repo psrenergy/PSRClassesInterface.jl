@@ -6,7 +6,6 @@ using Test
 
 const PSRI = PSRClassesInterface
 
-
 PSRI.OpenSQL.set_migrations_folder(joinpath(@__DIR__, "migrations"))
 
 function test_invalid_migrations()

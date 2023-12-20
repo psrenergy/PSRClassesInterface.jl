@@ -87,7 +87,7 @@ end
 """
     create_migration(name::String)
 
-Creates a new migration in the migrations folder with the current date, the correct version and the name 
+Creates a new migration in the migrations folder with the current date, the correct version and the name
 given in this function
 """
 function create_migration(name::String)
@@ -97,7 +97,9 @@ function create_migration(name::String)
     migration_index = findfirst(migration -> migration.name == name, existing_migrations)
 
     if migration_index !== nothing
-        error("migration already exists in folder: $(existing_migrations[migration_index].path)")
+        error(
+            "migration already exists in folder: $(existing_migrations[migration_index].path)",
+        )
     end
 
     old_version = 0
@@ -107,17 +109,18 @@ function create_migration(name::String)
         new_version = old_version + 1
     end
 
-    name_with_version_and_date = Dates.format(now(), MIGRATION_DATE_FORMAT) * "_v$(new_version)_" * name
+    name_with_version_and_date =
+        Dates.format(now(), MIGRATION_DATE_FORMAT) * "_v$(new_version)_" * name
     migration_folder = joinpath(migrations_folder, name_with_version_and_date)
 
     mkpath(migration_folder)
     open(joinpath(migration_folder, "up.sql"), "w") do file
         println(file, "-- $name")
-        print(file, "PRAGMA user_version = $new_version")
+        return print(file, "PRAGMA user_version = $new_version")
     end
     open(joinpath(migration_folder, "down.sql"), "w") do file
         println(file, "-- $name")
-        print(file, "PRAGMA user_version = $old_version")
+        return print(file, "PRAGMA user_version = $old_version")
     end
     return migration_folder
 end
@@ -127,7 +130,7 @@ function _apply_migrations!(
     migrations::Vector{Migration},
     starting_point::Int,
     ending_point::Int,
-    direction::Symbol
+    direction::Symbol,
 )
     if direction == :down && starting_point < ending_point
         error("when going down, the starting migration must be after the ending migration")
@@ -151,9 +154,9 @@ end
 
 function apply_migration!(db::SQLite.DB, name::String, direction::Symbol)
     migrations = get_sorted_migrations()
-    
+
     migration_index = findfirst(migration -> migration.name == name, migrations)
-    
+
     if migration_index === nothing
         error("migration not found: $name")
     end
@@ -184,13 +187,17 @@ end
 function _apply_migration!(
     db::SQLite.DB,
     migration::Migration,
-    direction::Symbol
+    direction::Symbol,
 )
     if !(direction in [:up, :down])
-        error("direction not recognized: $direction. The only directions allowed are :up and :down.")
+        error(
+            "direction not recognized: $direction. The only directions allowed are :up and :down.",
+        )
     end
 
-    @debug("Applying migration $(migration.name) v$(migration.version) in direction $direction")
+    @debug(
+        "Applying migration $(migration.name) v$(migration.version) in direction $direction"
+    )
 
     sql_file = joinpath(migration.path, "$(string(direction)).sql")
     return execute_statements(db, sql_file)
@@ -212,7 +219,7 @@ function apply_migrations!(db::SQLite.DB, from::String, to::String, direction::S
     if ending_point === nothing
         error("ending migration not found: $to")
     end
-    
+
     _apply_migrations!(db, migrations, starting_point, ending_point, direction)
 
     return db
@@ -234,7 +241,7 @@ function apply_migrations!(db::SQLite.DB, from::Int, to::Int, direction::Symbol)
     if ending_point === nothing
         error("ending migration not found: $to")
     end
-    
+
     _apply_migrations!(db, migrations, starting_point, ending_point, direction)
 
     return db
@@ -289,7 +296,9 @@ function test_migrations()
         expected_user_version += 1
         user_version = get_user_version(db)
         if expected_user_version != user_version
-            error("The user version is not correct. Expected $user_version, got $expected_user_version")
+            error(
+                "The user version is not correct. Expected $user_version, got $expected_user_version",
+            )
         end
     end
 
@@ -299,7 +308,9 @@ function test_migrations()
         expected_user_version -= 1
         user_version = get_user_version(db)
         if expected_user_version != user_version
-            error("The user version is not correct. Expected $user_version, got $expected_user_version")
+            error(
+                "The user version is not correct. Expected $user_version, got $expected_user_version",
+            )
         end
     end
 
