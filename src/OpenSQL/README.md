@@ -140,3 +140,20 @@ CREATE TABLE Plant_relation_Cost (
     PRIMARY KEY (source_id, target_id, relation_type)
 ) STRICT;
 ```
+
+## Migrations
+
+Migrations are an important part of the `OpenSQL` framework. They are used to update the database schema to a new version without the need to delete the database and create a new one from scratch. Migrations are defined by two separate `.sql` files that are stored in the `migrations` directory of the model. The first file is the `up` migration and it is used to update the database schema to a new version. The second file is the `down` migration and it is used to revert the changes made by the `up` migration. Migrations are stored in directories in the model and they have a specific naming convention. The name of the migration file should be the `yyyy_mm_dd_HHMMSS_v(version)_(name)`.
+
+### Creating a migration
+
+It is advised to create new migrations using the functions from `OpenSQL`. First you need to make sure that the migrations directory is registered 
+by the function `OpenSQL.set_migrations_folder` and after that you can create a new migration using the function `OpenSQL.create_migration`. This function will create a new migration file with the name and version specified by the user. The migration file will contain a template for the migration.
+
+### Running migrations
+
+To run migrations you need to use the function `OpenSQL.apply_migrations!`. There are various versions of this function, each one tailored to make something easier for the user.
+
+### Testing migrations
+
+It is very important to test if the migrations of a certain model are working as expected, so the user can be sure that the database schema is updated correctly. To test migrations you need to use the function `OpenSQL.test_migrations()`. It is highly advised that each model has one of these functions in their test suite to make sure that the migrations are working as expected.

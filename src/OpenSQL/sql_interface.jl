@@ -9,6 +9,16 @@ function PSRI.create_study(
     return db
 end
 
+function PSRI.create_study(
+    ::SQLInterface,
+    path_db::AbstractString;
+    kwargs...,
+)
+    db = OpenSQL.create_empty_db(path_db)
+    OpenSQL.create_element!(db, "Configuration"; kwargs...)
+    return db
+end
+
 PSRI.load_study(::SQLInterface, data_path::String) = OpenSQL.load_db(data_path)
 
 # Read
