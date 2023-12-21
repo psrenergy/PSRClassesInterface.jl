@@ -38,7 +38,7 @@ function _validate_time_series_attribute_value(value::String)
     if !_is_valid_time_series_attribute_value(value)
         error(
             """Invalid time series file name: $value. \nThe valid time series attribute name format is: \n
-          - name_of_aTTribute123\n
+          - name_of_attribute123\n
           - name_of_attribute.extension\n
           OBS: It must be the name of the file, not the path.
           """,
@@ -51,9 +51,9 @@ function _validate_table(db::SQLite.DB, table::String)
     if !("id" in attributes)
         error("Table $table does not have an \"id\" column.")
     end
-    if !("label" in attributes) && table != "Configuration"
-        error("Table $table does not have a \"label\" column.")
-    end
+    # if !("label" in attributes) && table != "Configuration"
+    #     error("Table $table does not have a \"label\" column.")
+    # end
     for attribute in attributes
         _validate_column_name(table, attribute)
     end
