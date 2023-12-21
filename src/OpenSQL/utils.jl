@@ -2,16 +2,32 @@ function execute_statements(db::SQLite.DB, file::String)
     if !isfile(file)
         error("file not found: $file")
     end
-    statements = open(joinpath(file), "r") do io
-        return read(io, String)
+    #! format: off
+    # We turn off formatting here because of this discussion
+    # https://github.com/domluna/JuliaFormatter.jl/issues/751
+    # I agree that open do blocks with return are slighly misleading.
+    raw_statements = open(joinpath(file), "r") do io
+        read(io, String)
     end
-    commands = split(statements, ";")
-    for command in commands
-        if !isempty(command)
-            DBInterface.execute(db, command)
+    #! format: on
+    statements = split(raw_statements, ";")
+    for statement in statements
+        trated_statement = treat_sql_statement(statement)
+        if !isempty(trated_statement)
+            try
+                DBInterface.execute(db, trated_statement)
+            catch e
+                @show trated_statement
+                @error "Error executing command: $trated_statement" exception = e
+            end
         end
     end
     return nothing
+end
+
+function treat_sql_statement(statement::AbstractString)
+    stripped_statement = strip(statement)
+    return stripped_statement
 end
 
 function create_empty_db(path_db::String, path_schema::String)
