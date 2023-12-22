@@ -1,15 +1,12 @@
-const MIGRATION_DATE_FORMAT = "yyyy_mm_dd_HHMMSS"
 const MIGRATIONS_FOLDER = Ref{String}("")
 
 struct Migration
-    date::DateTime
     version::Int
-    name::String
     path::String
 end
 
-Base.isless(m1::Migration, m2::Migration) = m1.date < m2.date && m1.version < m2.version
-Base.isequal(m1::Migration, m2::Migration) = m1.version == m2.version && m1.name == m2.name
+Base.isless(m1::Migration, m2::Migration) = m1.version < m2.version
+Base.isequal(m1::Migration, m2::Migration) = m1.version == m2.version
 
 function set_migrations_folder(migrations_folder::String)
     if !isdir(migrations_folder)
@@ -36,9 +33,9 @@ function get_sorted_migrations()
     end
 
     for migration_sub_folder in migrations_sub_folders
-        name, version, date = parse_name_version_date(migration_sub_folder)
+        version = parse_version(migration_sub_folder)
         path = joinpath(migrations_folder, migration_sub_folder)
-        push!(sorted_migrations, Migration(date, version, name, path))
+        push!(sorted_migrations, Migration(version, path))
     end
 
     sort!(sorted_migrations)
@@ -64,9 +61,6 @@ function get_last_user_version()
     versions = migration_versions(migrations)
     return versions[end]
 end
-function migration_names(migrations::Vector{Migration})
-    return map(migration -> migration.name, migrations)
-end
 function migration_versions(migrations::Vector{Migration})
     return map(migration -> migration.version, migrations)
 end
@@ -75,26 +69,23 @@ function db_is_empty(db::SQLite.DB)
     return length(tbls) == 0
 end
 
-function parse_name_version_date(migration::String)
-    date_string = migration[1:17]
-    date = DateTime(date_string, MIGRATION_DATE_FORMAT)
-    version_and_name_string = migration[19:end]
-    version = parse(Int, split(version_and_name_string, "_")[1][2:end])
-    name = join(split(version_and_name_string, "_")[2:end], "_")
-    return name, version, date
+function parse_version(migration::String)
+    version = parse(Int, migration)
+    return version
 end
 
 """
-    create_migration(name::String)
+    create_migration(version::Int)
 
 Creates a new migration in the migrations folder with the current date, the correct version and the name
 given in this function
 """
-function create_migration(name::String)
+function create_migration(version::Int)
     migrations_folder = get_migrations_folder()
     existing_migrations = get_sorted_migrations()
 
-    migration_index = findfirst(migration -> migration.name == name, existing_migrations)
+    migration_index =
+        findfirst(migration -> migration.version == version, existing_migrations)
 
     if migration_index !== nothing
         error(
@@ -109,9 +100,8 @@ function create_migration(name::String)
         new_version = old_version + 1
     end
 
-    name_with_version_and_date =
-        Dates.format(now(), MIGRATION_DATE_FORMAT) * "_v$(new_version)_" * name
-    migration_folder = joinpath(migrations_folder, name_with_version_and_date)
+    new_migration = "$(new_version)"
+    migration_folder = joinpath(migrations_folder, new_migration)
 
     mkpath(migration_folder)
     #! format: off
@@ -157,22 +147,6 @@ function _apply_migrations!(
     return db
 end
 
-function apply_migration!(db::SQLite.DB, name::String, direction::Symbol)
-    migrations = get_sorted_migrations()
-
-    migration_index = findfirst(migration -> migration.name == name, migrations)
-
-    if migration_index === nothing
-        error("migration not found: $name")
-    end
-
-    migration = migrations[migration_index]
-
-    _apply_migration!(db, migration, direction)
-
-    return db
-end
-
 function apply_migration!(db::SQLite.DB, version::Int, direction::Symbol)
     migrations = get_sorted_migrations()
 
@@ -201,38 +175,16 @@ function _apply_migration!(
     end
 
     @debug(
-        "Applying migration $(migration.name) v$(migration.version) in direction $direction"
+        "Applying migration $(migration.version) in direction $direction"
     )
 
     sql_file = joinpath(migration.path, "$(string(direction)).sql")
     return execute_statements(db, sql_file)
 end
 
-function apply_migrations!(db::SQLite.DB, from::String, to::String, direction::Symbol)
-    if from == to
-        error("Starting at $from and ending at $to is not a valid migration range.")
-    end
-
-    migrations = get_sorted_migrations()
-    names = migration_names(migrations)
-    starting_point = findfirst(isequal(from), names)
-    ending_point = findfirst(isequal(to), names)
-
-    if starting_point === nothing
-        error("starting migration not found: $from")
-    end
-    if ending_point === nothing
-        error("ending migration not found: $to")
-    end
-
-    _apply_migrations!(db, migrations, starting_point, ending_point, direction)
-
-    return db
-end
-
 function apply_migrations!(db::SQLite.DB, from::Int, to::Int, direction::Symbol)
     if from == to
-        error("starting at v$from and ending at v$to is not a valid migration range.")
+        error("starting at $from and ending at $to is not a valid migration range.")
     end
 
     migrations = get_sorted_migrations()
@@ -297,7 +249,7 @@ function test_migrations()
     db = SQLite.DB()
     expected_user_version = 0
     for migration in migrations
-        apply_migration!(db, migration.name, :up)
+        apply_migration!(db, migration.version, :up)
         expected_user_version += 1
         user_version = get_user_version(db)
         if expected_user_version != user_version
@@ -309,7 +261,7 @@ function test_migrations()
 
     expected_user_version = get_last_user_version()
     for migration in reverse(migrations)
-        apply_migration!(db, migration.name, :down)
+        apply_migration!(db, migration.version, :down)
         expected_user_version -= 1
         user_version = get_user_version(db)
         if expected_user_version != user_version

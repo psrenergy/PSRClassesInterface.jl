@@ -38,7 +38,7 @@ function _validate_time_series_attribute_value(value::String)
     if !_is_valid_time_series_attribute_value(value)
         error(
             """Invalid time series file name: $value. \nThe valid time series attribute name format is: \n
-          - name_of_aTTribute123\n
+          - name_of_attribute123\n
           - name_of_attribute.extension\n
           OBS: It must be the name of the file, not the path.
           """,
@@ -50,9 +50,6 @@ function _validate_table(db::SQLite.DB, table::String)
     attributes = column_names(db, table)
     if !("id" in attributes)
         error("Table $table does not have an \"id\" column.")
-    end
-    if !("label" in attributes) && table != "Configuration"
-        error("Table $table does not have a \"label\" column.")
     end
     for attribute in attributes
         _validate_column_name(table, attribute)
@@ -158,7 +155,7 @@ end
 # in the load_db function
 const DB_TABLES_AND_COLUMNS = Dict{String, Vector{String}}()
 # Constant to enable or disable sanity checks
-const SANITY_CHECKS_ENABLED = [true]
+const SANITY_CHECKS_ENABLED = Ref{Bool}(true)
 
 function _save_db_tables_and_columns(db::SQLite.DB)
     tables = table_names(db)
@@ -169,12 +166,12 @@ function _save_db_tables_and_columns(db::SQLite.DB)
 end
 
 function _enable_sanity_checks(val::Bool)
-    SANITY_CHECKS_ENABLED[1] = val
+    SANITY_CHECKS_ENABLED[] = val
     return val
 end
 
 function _sanity_check_enabled()
-    return SANITY_CHECKS_ENABLED[1]
+    return SANITY_CHECKS_ENABLED[]
 end
 
 function column_exist_in_table(table::String, column::String)
