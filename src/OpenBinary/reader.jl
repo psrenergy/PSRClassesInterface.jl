@@ -217,7 +217,8 @@ function PSRI.open(
 
         read!(ioh, agent_name_buffer)
 
-        agent_name = strip(Encodings.decode(agent_name_buffer, Encodings.ISO_LATIN_1()))
+        agent_name = strip(string(Char.(agent_name_buffer)))
+        # agent_name = strip(Encodings.decode(agent_name_buffer, Encodings.ISO_LATIN_1()))
 
         push!(agent_names, agent_name)
     end
