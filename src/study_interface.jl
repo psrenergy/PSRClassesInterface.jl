@@ -610,6 +610,21 @@ end
 function _check_parm end
 function _check_vector end
 
+function _check_element_range(data::AbstractData, collection::String, index::Integer)
+    n = max_elements(data, collection)
+
+    if n == 0
+        error("Collection '$collection' is empty")
+    end
+
+    if !(1 <= index <= n)
+        error("Index '$index' is out of bounds '[1, $n]' for collection '$collection'")
+    end
+
+    return nothing
+end
+
+
 function _check_type_attribute(
     data::AbstractData,
     collection::String,

@@ -313,7 +313,7 @@ function PSRI.get_parm(
             dim = 0
         end
     end
-    _check_element_range(data, collection, index)
+    PSRI._check_element_range(data, collection, index)
 
     # This is assumed to be a mutable dictionary
     element = _get_element(data, collection, index)
@@ -362,7 +362,7 @@ function PSRI.get_parm_1d(
         end
         PSRI._check_type(attribute_struct, T, collection, attribute)
         PSRI._check_parm(attribute_struct, collection, attribute)
-        _check_element_range(data, collection, index)
+        PSRI._check_element_range(data, collection, index)
     end
 
     dim1 = PSRI.get_attribute_dim1(data, collection, attribute, index)
@@ -415,7 +415,7 @@ function PSRI.get_parm_2d(
         end
         PSRI._check_type(attribute_struct, T, collection, attribute)
         PSRI._check_parm(attribute_struct, collection, attribute)
-        _check_element_range(data, collection, index)
+        PSRI._check_element_range(data, collection, index)
     end
 
     dim1 = PSRI.get_attribute_dim1(data, collection, attribute, index)
@@ -484,7 +484,7 @@ function PSRI.get_vector(
         PSRI._check_type(attribute_struct, T, collection, attribute)
         PSRI._check_vector(attribute_struct, collection, attribute)
     end
-    _check_element_range(data, collection, index)
+    PSRI._check_element_range(data, collection, index)
 
     dim = PSRI.get_attribute_dim(attribute_struct)
     key = _get_attribute_key(attribute, dim, 1 => dim1, 2 => dim2)
@@ -529,7 +529,7 @@ function PSRI.get_vector_1d(
         end
         PSRI._check_type(attribute_struct, T, collection, attribute)
         PSRI._check_vector(attribute_struct, collection, attribute)
-        _check_element_range(data, collection, index)
+        PSRI._check_element_range(data, collection, index)
     end
 
     dim1 = PSRI.get_attribute_dim1(data, collection, attribute, index)
@@ -583,7 +583,7 @@ function PSRI.get_vector_2d(
         PSRI._check_type(attribute_struct, T, collection, attribute)
         PSRI._check_vector(attribute_struct, collection, attribute)
     end
-    _check_element_range(data, collection, index)
+    PSRI._check_element_range(data, collection, index)
 
     dim1 = PSRI.get_attribute_dim1(data, collection, attribute, index)
     dim2 = PSRI.get_attribute_dim2(data, collection, attribute, index)
