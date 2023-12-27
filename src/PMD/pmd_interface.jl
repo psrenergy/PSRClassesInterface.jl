@@ -17,3 +17,7 @@ end
 function PSRI.get_collections(data::DataStruct)
     return sort(collect(keys(data)))
 end
+
+function PSRI.is_vector_relation(relation::PSRI.PMD.RelationType)
+    return relation == PSRI.PMD.RELATION_1_TO_N || relation == PSRI.PMD.RELATION_BACKED
+end

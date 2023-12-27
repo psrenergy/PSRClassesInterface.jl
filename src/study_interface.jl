@@ -1286,6 +1286,13 @@ end
 function has_relations end
 
 """
+    is_vector_relation(relation::PSRI.PMD.RelationType)
+
+Returns true is `relation` is a vector relation.
+"""
+function is_vector_relation end
+
+"""
     get_relations(data::AbstractData, collection::String)
 
 Returns a `Tuple{String, Vector{PMD.Relation}}` with relating `collection`

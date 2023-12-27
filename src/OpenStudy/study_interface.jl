@@ -805,7 +805,7 @@ function PSRI.get_reverse_map(
 
     relation_type = _get_relation_type(data, source, target, attribute)
 
-    if is_vector_relation(relation_type)
+    if PSRI.is_vector_relation(relation_type)
         error("For relation relation_type = '$relation_type' use get_reverse_vector_map")
     end
 
@@ -844,7 +844,7 @@ function PSRI.get_reverse_map(
         return zeros(Int32, 0)
     end
     out = zeros(Int32, n_to)
-    if is_vector_relation(original_relation_type)
+    if PSRI.is_vector_relation(original_relation_type)
         vector_map = PSRI.get_vector_map(
             data,
             lst_from,
@@ -926,7 +926,7 @@ function PSRI.get_reverse_vector_map(
         return Vector{Int32}[]
     end
     out = Vector{Int32}[zeros(Int32, 0) for _ in 1:n_to]
-    if is_vector_relation(original_relation_type)
+    if PSRI.is_vector_relation(original_relation_type)
         vector_map = PSRI.get_vector_map(
             data,
             lst_from,
@@ -978,7 +978,7 @@ function PSRI.get_map(
 
     validate_relation(data, source, target, relation.type)
 
-    if is_vector_relation(relation.type)
+    if PSRI.is_vector_relation(relation.type)
         error("For relation relation_type = '$(relation.type)' use get_vector_map")
     end
 
@@ -1047,7 +1047,7 @@ function PSRI.get_vector_map(
 
     relation_type = _get_relation_type(data, source, target, attribute)
 
-    if !is_vector_relation(relation_type)
+    if !PSRI.is_vector_relation(relation_type)
         error("For relation relation_type = '$relation_type' use get_map")
     end
 
@@ -1085,7 +1085,7 @@ function PSRI.get_vector_map(
     allow_empty::Bool = true,
     relation_type::PSRI.PMD.RelationType = PSRI.PMD.RELATION_1_TO_N,
 )
-    if !is_vector_relation(relation_type)
+    if !PSRI.is_vector_relation(relation_type)
         error("For relation relation_type = $relation_type use get_map")
     end
 

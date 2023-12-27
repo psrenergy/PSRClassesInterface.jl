@@ -248,7 +248,7 @@ end
     Returns an error message if relation_type is not a scalar
 """
 function check_relation_scalar(relation_type::PSRI.PMD.RelationType)
-    if is_vector_relation(relation_type)
+    if PSRI.is_vector_relation(relation_type)
         error("Relation of type $relation_type is of type vector, not the expected scalar.")
     end
     return nothing
@@ -260,7 +260,7 @@ end
     Returns an error message if relation_type is not a vector
 """
 function check_relation_vector(relation_type::PSRI.PMD.RelationType)
-    if !is_vector_relation(relation_type)
+    if !PSRI.is_vector_relation(relation_type)
         error("Relation of type $relation_type is of type scalar, not the expected vector.")
     end
     return nothing
