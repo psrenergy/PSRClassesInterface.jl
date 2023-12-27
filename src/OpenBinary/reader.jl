@@ -290,7 +290,7 @@ function PSRI.open(
     if use_header
         if length(header) > total_agents
             error(
-                "Header does not match with expected. Header length = $(length(header)), number ofo agents is $(total_agents)",
+                "Header does not match with expected. Header length = $(length(header)), number of agents is $(total_agents)",
             )
         end
 
@@ -305,6 +305,8 @@ function PSRI.open(
                 push!(indices, index)
             end
         end
+
+        agent_names = agent_names[indices]
 
         if !allow_empty && isempty(indices)
             if isempty(header)
