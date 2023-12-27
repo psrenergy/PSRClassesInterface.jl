@@ -624,7 +624,6 @@ function _check_element_range(data::AbstractData, collection::String, index::Int
     return nothing
 end
 
-
 function _check_type_attribute(
     data::AbstractData,
     collection::String,
