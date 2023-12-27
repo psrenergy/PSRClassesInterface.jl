@@ -300,7 +300,7 @@ function PSRI.get_parm(
     # Basic checks
     if validate
         attribute_struct = PSRI.get_attribute_struct(data, collection, attribute)
-        _check_dim(attribute_struct, collection, attribute, dim1, dim2)
+        PSRI._check_dim(attribute_struct, collection, attribute, dim1, dim2)
         PSRI._check_type(attribute_struct, T, collection, attribute)
         PSRI._check_parm(attribute_struct, collection, attribute)
         dim = PSRI.get_attribute_dim(attribute_struct)
@@ -480,7 +480,7 @@ function PSRI.get_vector(
     attribute_struct = PSRI.get_attribute_struct(data, collection, attribute)
 
     if validate
-        _check_dim(attribute_struct, collection, attribute, dim1, dim2)
+        PSRI._check_dim(attribute_struct, collection, attribute, dim1, dim2)
         PSRI._check_type(attribute_struct, T, collection, attribute)
         PSRI._check_vector(attribute_struct, collection, attribute)
     end
@@ -1262,7 +1262,7 @@ function PSRI.mapped_vector(
         PSRI._check_type(attribute_struct, T, collection, attribute)
         PSRI._check_vector(attribute_struct, collection, attribute)
     end
-    _check_dim(attribute_struct, collection, attribute, dim1, dim2)
+    PSRI._check_dim(attribute_struct, collection, attribute, dim1, dim2)
 
     dim = PSRI.get_attribute_dim(attribute_struct)
 
