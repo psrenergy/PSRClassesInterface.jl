@@ -81,6 +81,7 @@ function PSRI.open(
     initial_stage::Dates.Date = Dates.Date(1900, 1, 1),
     verbose_header::Bool = false,
     single_binary::Bool = false,
+    agents_decoder::Union{Encodings.Encoding, Nothing} = nothing
 )
     # TODO: support 'is_hourly' and 'stage_type'
     if !isnothing(is_hourly) || !isnothing(stage_type)
@@ -217,7 +218,11 @@ function PSRI.open(
 
         read!(ioh, agent_name_buffer)
 
-        agent_name = strip(Encodings.decode(agent_name_buffer, Encodings.ISO_LATIN_1()))
+        agent_name = if agents_decoder === nothing
+            strip(join(Char.(agent_name_buffer)))
+        else
+            strip(Encodings.decode(agent_name_buffer, agents_decoder))
+        end
 
         push!(agent_names, agent_name)
     end
