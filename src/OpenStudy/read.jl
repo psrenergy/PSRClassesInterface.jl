@@ -45,7 +45,7 @@ form of a `Dict{String, <:MainTypes}`. It performs basic checks for bounds and
 existence of `index` and `collection` according to `data`.
 """
 function _get_element(data::Data, collection::String, index::Integer)
-    _check_element_range(data, collection, index)
+    PSRI._check_element_range(data, collection, index)
 
     elements = _get_elements(data, collection)
 
@@ -140,7 +140,7 @@ function _get_attribute_axis_dim(
         error("Attribute '$attribute' from collection '$collection' has no dimensions")
     end
 
-    _check_element_range(data, collection, index)
+    PSRI._check_element_range(data, collection, index)
 
     element = _get_element(data, collection, index)
 

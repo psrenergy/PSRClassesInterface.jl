@@ -300,7 +300,7 @@ function PSRI.get_parm(
     # Basic checks
     if validate
         attribute_struct = PSRI.get_attribute_struct(data, collection, attribute)
-        _check_dim(attribute_struct, collection, attribute, dim1, dim2)
+        PSRI._check_dim(attribute_struct, collection, attribute, dim1, dim2)
         PSRI._check_type(attribute_struct, T, collection, attribute)
         PSRI._check_parm(attribute_struct, collection, attribute)
         dim = PSRI.get_attribute_dim(attribute_struct)
@@ -313,7 +313,7 @@ function PSRI.get_parm(
             dim = 0
         end
     end
-    _check_element_range(data, collection, index)
+    PSRI._check_element_range(data, collection, index)
 
     # This is assumed to be a mutable dictionary
     element = _get_element(data, collection, index)
@@ -362,7 +362,7 @@ function PSRI.get_parm_1d(
         end
         PSRI._check_type(attribute_struct, T, collection, attribute)
         PSRI._check_parm(attribute_struct, collection, attribute)
-        _check_element_range(data, collection, index)
+        PSRI._check_element_range(data, collection, index)
     end
 
     dim1 = PSRI.get_attribute_dim1(data, collection, attribute, index)
@@ -415,7 +415,7 @@ function PSRI.get_parm_2d(
         end
         PSRI._check_type(attribute_struct, T, collection, attribute)
         PSRI._check_parm(attribute_struct, collection, attribute)
-        _check_element_range(data, collection, index)
+        PSRI._check_element_range(data, collection, index)
     end
 
     dim1 = PSRI.get_attribute_dim1(data, collection, attribute, index)
@@ -480,11 +480,11 @@ function PSRI.get_vector(
     attribute_struct = PSRI.get_attribute_struct(data, collection, attribute)
 
     if validate
-        _check_dim(attribute_struct, collection, attribute, dim1, dim2)
+        PSRI._check_dim(attribute_struct, collection, attribute, dim1, dim2)
         PSRI._check_type(attribute_struct, T, collection, attribute)
         PSRI._check_vector(attribute_struct, collection, attribute)
     end
-    _check_element_range(data, collection, index)
+    PSRI._check_element_range(data, collection, index)
 
     dim = PSRI.get_attribute_dim(attribute_struct)
     key = _get_attribute_key(attribute, dim, 1 => dim1, 2 => dim2)
@@ -529,7 +529,7 @@ function PSRI.get_vector_1d(
         end
         PSRI._check_type(attribute_struct, T, collection, attribute)
         PSRI._check_vector(attribute_struct, collection, attribute)
-        _check_element_range(data, collection, index)
+        PSRI._check_element_range(data, collection, index)
     end
 
     dim1 = PSRI.get_attribute_dim1(data, collection, attribute, index)
@@ -583,7 +583,7 @@ function PSRI.get_vector_2d(
         PSRI._check_type(attribute_struct, T, collection, attribute)
         PSRI._check_vector(attribute_struct, collection, attribute)
     end
-    _check_element_range(data, collection, index)
+    PSRI._check_element_range(data, collection, index)
 
     dim1 = PSRI.get_attribute_dim1(data, collection, attribute, index)
     dim2 = PSRI.get_attribute_dim2(data, collection, attribute, index)
@@ -805,7 +805,7 @@ function PSRI.get_reverse_map(
 
     relation_type = _get_relation_type(data, source, target, attribute)
 
-    if is_vector_relation(relation_type)
+    if PSRI.is_vector_relation(relation_type)
         error("For relation relation_type = '$relation_type' use get_reverse_vector_map")
     end
 
@@ -844,7 +844,7 @@ function PSRI.get_reverse_map(
         return zeros(Int32, 0)
     end
     out = zeros(Int32, n_to)
-    if is_vector_relation(original_relation_type)
+    if PSRI.is_vector_relation(original_relation_type)
         vector_map = PSRI.get_vector_map(
             data,
             lst_from,
@@ -926,7 +926,7 @@ function PSRI.get_reverse_vector_map(
         return Vector{Int32}[]
     end
     out = Vector{Int32}[zeros(Int32, 0) for _ in 1:n_to]
-    if is_vector_relation(original_relation_type)
+    if PSRI.is_vector_relation(original_relation_type)
         vector_map = PSRI.get_vector_map(
             data,
             lst_from,
@@ -978,7 +978,7 @@ function PSRI.get_map(
 
     validate_relation(data, source, target, relation.type)
 
-    if is_vector_relation(relation.type)
+    if PSRI.is_vector_relation(relation.type)
         error("For relation relation_type = '$(relation.type)' use get_vector_map")
     end
 
@@ -1047,7 +1047,7 @@ function PSRI.get_vector_map(
 
     relation_type = _get_relation_type(data, source, target, attribute)
 
-    if !is_vector_relation(relation_type)
+    if !PSRI.is_vector_relation(relation_type)
         error("For relation relation_type = '$relation_type' use get_map")
     end
 
@@ -1085,7 +1085,7 @@ function PSRI.get_vector_map(
     allow_empty::Bool = true,
     relation_type::PSRI.PMD.RelationType = PSRI.PMD.RELATION_1_TO_N,
 )
-    if !is_vector_relation(relation_type)
+    if !PSRI.is_vector_relation(relation_type)
         error("For relation relation_type = $relation_type use get_map")
     end
 
@@ -1262,7 +1262,7 @@ function PSRI.mapped_vector(
         PSRI._check_type(attribute_struct, T, collection, attribute)
         PSRI._check_vector(attribute_struct, collection, attribute)
     end
-    _check_dim(attribute_struct, collection, attribute, dim1, dim2)
+    PSRI._check_dim(attribute_struct, collection, attribute, dim1, dim2)
 
     dim = PSRI.get_attribute_dim(attribute_struct)
 

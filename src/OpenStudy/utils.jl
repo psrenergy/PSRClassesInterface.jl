@@ -514,16 +514,7 @@ function _add_filter(data, filter, collection, attr, ::Type{Dates.Date})
     return nothing
 end
 
-# Relations
-
-"""
-    is_vector_relation(relation::PSRI.PMD.RelationType)
-
-Returns true is `relation` is a vector relation.
-"""
-function is_vector_relation(relation::PSRI.PMD.RelationType)
-    return relation == PSRI.PMD.RELATION_1_TO_N || relation == PSRI.PMD.RELATION_BACKED
-end
+# Relation
 
 """
     _has_relation_attribute(relations::Dict{String, PSRI.PMD.Relation}, relation_attribute::String)

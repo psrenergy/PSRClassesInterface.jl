@@ -17,7 +17,7 @@ struct Attribute
 end
 ```
 """
-struct Attribute
+struct Attribute <: PSRI.AbstractAttribute
     name::String
     is_vector::Bool
     type::DataType
