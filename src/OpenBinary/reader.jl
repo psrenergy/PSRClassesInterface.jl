@@ -301,6 +301,8 @@ function PSRI.open(
             end
         end
 
+        agent_names = agent_names[indices]
+
         if !allow_empty && isempty(indices)
             if isempty(header)
                 error(
