@@ -19,7 +19,7 @@ function read_parameter(
 
     sanity_check(table, column)
 
-    query = "SELECT $column FROM $table"
+    query = "SELECT $column FROM $table ORDER BY rowid"
     df = DBInterface.execute(db, query) |> DataFrame
     # TODO it can have missing values, we should decide what to do with this.
     results = df[!, 1]
@@ -108,7 +108,7 @@ function read_vector_related(
 
     for relation_table in table_relations_source
         _, target = split(relation_table, "_relation_")
-        query = "SELECT target_id FROM $relation_table WHERE source_id = '$id' AND relation_type = '$relation_type'"
+        query = "SELECT target_id FROM $relation_table WHERE source_id = '$id' AND relation_type = '$relation_type' ORDER BY rowid"
         df = DBInterface.execute(db, query) |> DataFrame
         if !isempty(df)
             push!(related, read_parameter(db, String(target), "label", df[!, 1][1]))
@@ -117,7 +117,7 @@ function read_vector_related(
 
     for relation_table in table_relations_target
         _, source = split(relation_table, "_relation_")
-        query = "SELECT source_id FROM $relation_table WHERE target_id = '$id' AND relation_type = '$relation_type'"
+        query = "SELECT source_id FROM $relation_table WHERE target_id = '$id' AND relation_type = '$relation_type' ORDER BY rowid"
         df = DBInterface.execute(db, query) |> DataFrame
         if !isempty(df)
             push!(related, read_parameter(db, String(source), "label", df[!, 1][1]))
