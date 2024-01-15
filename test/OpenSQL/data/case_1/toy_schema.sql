@@ -1,3 +1,6 @@
+PRAGMA user_version = 1;
+PRAGMA foreign_keys = ON;
+
 CREATE TABLE Configuration (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT UNIQUE,
