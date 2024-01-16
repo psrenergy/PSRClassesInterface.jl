@@ -127,6 +127,8 @@ function validate_database(db::SQLite.DB)
     if !("Configuration" in tables)
         error("Database does not have a \"Configuration\" table.")
     end
+    _validate_database_pragmas(db)
+    _set_default_pragmas!(db)
     for table in tables
         if table == "sqlite_sequence"
             continue
@@ -156,6 +158,36 @@ end
 const DB_TABLES_AND_COLUMNS = Dict{String, Vector{String}}()
 # Constant to enable or disable sanity checks
 const SANITY_CHECKS_ENABLED = Ref{Bool}(true)
+
+function _set_default_pragmas!(db::SQLite.DB)
+    _set_foreign_keys_on!(db)
+    return nothing
+end
+
+function _set_foreign_keys_on!(db::SQLite.DB)
+    # https://www.sqlite.org/foreignkeys.html#fk_enable
+    # Foreign keys are enabled per connection, they are not something 
+    # that can be stored in the database itself like user_version.
+    # This is needed to ensure that the foreign keys are enabled
+    # behaviours like cascade delete and update are enabled.
+    DBInterface.execute(db, "PRAGMA foreign_keys = ON;")
+    return nothing
+end
+
+function _validate_database_pragmas(db::SQLite.DB)
+    _validate_user_version(db)
+    return nothing
+end
+
+function _validate_user_version(db::SQLite.DB)
+    df = DBInterface.execute(db, "PRAGMA user_version;") |> DataFrame
+    if df[!, 1][1] == 0
+        error(
+            "User version not defined or set to zero in the database. Please add 'PRAGMA user_version = \"your version\";' to your .sql file.",
+        )
+    end
+    return nothing
+end
 
 function _save_db_tables_and_columns(db::SQLite.DB)
     tables = table_names(db)

@@ -62,6 +62,7 @@ end
         @time include("OpenSQL/create_case.jl")
         @time include("OpenSQL/time_series.jl")
         @time include("OpenSQL/test_utils.jl")
+        @time include("OpenSQL/test_pragmas.jl")
         @time include(
             "OpenSQL/migrations_tests/test_chaining_migrations/test_chaining_migrations.jl",
         )
