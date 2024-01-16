@@ -12,9 +12,9 @@ function test_valid_pragmas_database()
     DBInterface.execute(db,
         """
         PRAGMA user_version = 2;
-        """
+        """,
     )
-    
+
     PSRI.OpenSQL._validate_database_pragmas(db)
     return nothing
 end

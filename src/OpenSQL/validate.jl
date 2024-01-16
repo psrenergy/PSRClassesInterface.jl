@@ -170,7 +170,7 @@ function _set_foreign_keys_on!(db::SQLite.DB)
     # that can be stored in the database itself like user_version.
     # This is needed to ensure that the foreign keys are enabled
     # behaviours like cascade delete and update are enabled.
-    DBInterface.execute(db,"PRAGMA foreign_keys = ON;")
+    DBInterface.execute(db, "PRAGMA foreign_keys = ON;")
     return nothing
 end
 
@@ -180,9 +180,11 @@ function _validate_database_pragmas(db::SQLite.DB)
 end
 
 function _validate_user_version(db::SQLite.DB)
-    df = DBInterface.execute(db,"PRAGMA user_version;") |> DataFrame
-    if df[!,1][1] == 0
-        error("User version not defined or set to zero in the database. Please add 'PRAGMA user_version = \"your version\";' to your .sql file.")
+    df = DBInterface.execute(db, "PRAGMA user_version;") |> DataFrame
+    if df[!, 1][1] == 0
+        error(
+            "User version not defined or set to zero in the database. Please add 'PRAGMA user_version = \"your version\";' to your .sql file.",
+        )
     end
     return nothing
 end
