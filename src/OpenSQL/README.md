@@ -143,7 +143,17 @@ CREATE TABLE Plant_relation_Cost (
 
 ## Migrations
 
-Migrations are an important part of the `OpenSQL` framework. They are used to update the database schema to a new version without the need to delete the database and create a new one from scratch. Migrations are defined by two separate `.sql` files that are stored in the `migrations` directory of the model. The first file is the `up` migration and it is used to update the database schema to a new version. The second file is the `down` migration and it is used to revert the changes made by the `up` migration. Migrations are stored in directories in the model and they have a specific naming convention. The name of the migration file should be the `yyyy_mm_dd_HHMMSS_v(version)_(name)`.
+Migrations are an important part of the `OpenSQL` framework. They are used to update the database schema to a new version without the need to delete the database and create a new one from scratch. Migrations are defined by two separate `.sql` files that are stored in the `migrations` directory of the model. The first file is the `up` migration and it is used to update the database schema to a new version. The second file is the `down` migration and it is used to revert the changes made by the `up` migration. Migrations are stored in directories in the model and they have a specific naming convention. The name of the migration folder should be the number of the version (e.g. `/migrations/1/`).
+
+```md
+database/migrations
+├── 1
+│   ├── up.sql
+│   └── down.sql
+└── 2
+    ├── up.sql
+    └── down.sql
+```
 
 ### Creating a migration
 
