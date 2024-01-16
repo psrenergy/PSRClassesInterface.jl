@@ -46,7 +46,7 @@ CREATE TABLE Plant_relation_Cost (
     target_id INTEGER,
     relation_type TEXT,
     FOREIGN KEY(source_id) REFERENCES Plant(id) ON DELETE CASCADE,
-    FOREIGN KEY(target_id) REFERENCES Costs(id) ON DELETE CASCADE,
+    FOREIGN KEY(target_id) REFERENCES Cost(id) ON DELETE CASCADE,
     PRIMARY KEY (source_id, target_id, relation_type)
 ) STRICT;
 

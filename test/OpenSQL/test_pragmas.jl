@@ -9,13 +9,6 @@ const PSRI = PSRClassesInterface
 function test_valid_pragmas_database()
     db = SQLite.DB()
 
-    DBInterface.execute(
-        db,
-        """
-        PRAGMA foreign_keys = ON;
-        """
-    )
-
     DBInterface.execute(db,
         """
         PRAGMA user_version = 2;
@@ -26,28 +19,8 @@ function test_valid_pragmas_database()
     return nothing
 end
 
-function test_no_foreign_key_database()
-    db = SQLite.DB()
-
-    DBInterface.execute(db,
-        """
-        PRAGMA user_version = 3;
-        """
-    )
-    
-    @test_throws ErrorException PSRI.OpenSQL._validate_database_pragmas(db)
-    return nothing
-end
-
 function test_no_user_version_database()
     db = SQLite.DB()
-
-    DBInterface.execute(
-        db,
-        """
-        PRAGMA foreign_keys = ON;
-        """
-    )
 
     @test_throws ErrorException PSRI.OpenSQL._validate_database_pragmas(db)
     return nothing
