@@ -6,7 +6,7 @@ const PSRI = PSRClassesInterface
 using SQLite
 using DBInterface
 using Tables
-# TODO talvez a gente nem precise dos DataFrames, da pra fazer com o Tables mesmo
+using OrderedCollections
 using DataFrames
 using Dates
 
@@ -18,6 +18,7 @@ SQLInterface <: PSRI.AbstractStudyInterface
 struct SQLInterface <: PSRI.AbstractStudyInterface end
 
 include("utils.jl")
+include("collections.jl")
 include("create.jl")
 include("read.jl")
 include("update.jl")

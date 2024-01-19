@@ -28,7 +28,7 @@ PSRI.get_vector(
     attribute::String,
     element_label::String,
 ) =
-    OpenSQL.read_vector(
+    OpenSQL.read_vectorial_parameter(
         db,
         collection,
         attribute,
@@ -36,7 +36,7 @@ PSRI.get_vector(
     )
 
 PSRI.get_vectors(db::OpenSQL.DB, collection::String, attribute::String) =
-    OpenSQL.read_vector(db, collection, attribute)
+    OpenSQL.read_vectorial_parameter(db, collection, attribute)
 
 PSRI.max_elements(db::OpenSQL.DB, collection::String) =
     length(PSRI.get_parms(db, collection, "id"))
@@ -47,7 +47,7 @@ PSRI.get_parm(
     attribute::String,
     element_label::String,
 ) =
-    OpenSQL.read_parameter(
+    OpenSQL.read_scalar_parameter(
         db,
         collection,
         attribute,
@@ -55,7 +55,7 @@ PSRI.get_parm(
     )
 
 PSRI.get_parms(db::OpenSQL.DB, collection::String, attribute::String) =
-    OpenSQL.read_parameter(db, collection, attribute)
+    OpenSQL.read_scalar_parameter(db, collection, attribute)
 
 function PSRI.get_attributes(db::OpenSQL.DB, collection::String)
     columns = OpenSQL.column_names(db, collection)
@@ -84,14 +84,14 @@ function PSRI.get_related(
     source_label::String,
     relation_type::String,
 )
-    id = OpenSQL.read_related(
+    id = OpenSQL.read_scalar_relationship(
         db,
         source,
         target,
         OpenSQL._get_id(db, source, source_label),
         relation_type,
     )
-    return OpenSQL.read_parameter(db, target, "label", id)
+    return OpenSQL.read_scalar_parameter(db, target, "label", id)
 end
 
 PSRI.get_vector_related(
@@ -119,7 +119,7 @@ PSRI.set_parm!(
     attribute::String,
     element_label::String,
     value,
-) = OpenSQL.update!(
+) = OpenSQL.update_scalar_attribute!(
     db,
     collection,
     attribute,
@@ -133,7 +133,7 @@ PSRI.set_vector!(
     attribute::String,
     element_label::String,
     values::AbstractVector,
-) = OpenSQL.update!(
+) = OpenSQL.update_vectorial_attribute!(
     db,
     collection,
     attribute,
@@ -179,13 +179,7 @@ PSRI.delete_relation!(
     target::String,
     source_label::String,
     target_label::String,
-) = OpenSQL.delete_relation!(
-    db,
-    source,
-    target,
-    OpenSQL._get_id(db, source, source_label),
-    OpenSQL._get_id(db, target, target_label),
-)
+) = error("Not implemented in OpenSQL.")
 
 # Graf files
 PSRI.has_graf_file(db::OpenSQL.DB, collection::String, attribute::String) =
@@ -205,7 +199,8 @@ function PSRI.link_series_to_file(
     if OpenSQL.number_of_rows(db, time_series_table, attribute) == 0
         OpenSQL.create_parameters!(db, time_series_table, Dict(attribute => file_path))
     else
-        OpenSQL.update!(db, time_series_table, attribute, file_path)
+        error()
+        # OpenSQL.update_scalar_attribute!(db, time_series_table, attribute, file_path)
     end
     return nothing
 end

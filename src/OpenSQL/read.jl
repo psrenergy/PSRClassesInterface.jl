@@ -1,4 +1,41 @@
-function _get_id(db::SQLite.DB, table::String, label::String)
+const READ_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
+    ScalarParameter => "read_scalar_parameter",
+    ScalarRelationship => "read_scalar_relationship",
+    VectorialParameter => "read_vectorial_parameter",
+    VectorialRelationship => "read_vectorial_relationship",
+)
+
+function _throw_if_not_scalar_parameter(
+    collection::String,
+    attribute::String,
+)
+    sanity_check(collection, attribute)
+
+    if !_is_scalar_parameter(collection, attribute)
+        correct_composity_type = _attribute_composite_type(collection, attribute)
+        string_of_composite_types = _string_for_composite_types(correct_composity_type)
+        correct_method_to_use = READ_METHODS_BY_CLASS_OF_ATTRIBUTE[correct_composity_type]
+        error("Attribute $attribute is not a scalar parameter. It is a $string_of_composite_types. Try using $correct_method_to_use instead.")
+    end
+    return nothing
+end
+
+function _throw_if_not_vectorial_parameter(
+    collection::String,
+    attribute::String,
+)
+    sanity_check(collection, attribute)
+
+    if !_is_vectorial_parameter(collection, attribute)
+        correct_composity_type = _attribute_composite_type(collection, attribute)
+        string_of_composite_types = _string_for_composite_types(correct_composity_type)
+        correct_method_to_use = READ_METHODS_BY_CLASS_OF_ATTRIBUTE[correct_composity_type]
+        error("Attribute $attribute is not a vectorial parameter. It is a $string_of_composite_types. Try using $correct_method_to_use instead.")
+    end
+    return nothing
+end
+
+function _get_id(db::SQLite.DB, table::String, label::String)::Integer
     query = "SELECT id FROM $table WHERE label = '$label'"
     df = DBInterface.execute(db, query) |> DataFrame
     if isempty(df)
@@ -8,78 +45,100 @@ function _get_id(db::SQLite.DB, table::String, label::String)
     return result
 end
 
-function read_parameter(
+function read_scalar_parameter(
     db::SQLite.DB,
-    table::String,
-    column::String,
+    collection::String,
+    attribute::String,
 )
-    if !column_exist_in_table(table, column) && is_vector_parameter(table, column)
-        error("column $column is a vector parameter, use `read_vector` instead.")
-    end
+    _throw_if_not_scalar_parameter(collection, attribute)
 
-    sanity_check(table, column)
+    table = _get_collection_scalar_attribute_tables(db, collection)
 
-    query = "SELECT $column FROM $table ORDER BY rowid"
+    query = "SELECT $attribute FROM $table ORDER BY rowid"
     df = DBInterface.execute(db, query) |> DataFrame
     # TODO it can have missing values, we should decide what to do with this.
     results = df[!, 1]
     return results
 end
 
-function read_parameter(
+function read_scalar_parameter(
     db::SQLite.DB,
-    table::String,
-    column::String,
+    collection::String,
+    attribute::String,
     id::Integer,
 )
-    if !column_exist_in_table(table, column) && is_vector_parameter(table, column)
-        error("column $column is a vector parameter, use `read_vector` instead.")
-    end
-
-    sanity_check(table, column)
-
-    query = "SELECT $column FROM $table WHERE id = '$id'"
+    _throw_if_not_scalar_parameter(collection, attribute)
+    query = "SELECT $attribute FROM $collection WHERE id = '$id'"
     df = DBInterface.execute(db, query) |> DataFrame
     # This could be a missing value
     if isempty(df)
-        error("id \"$id\" does not exist in table \"$table\".")
+        error("id \"$id\" does not exist in table \"$collection\".")
     end
     result = df[!, 1][1]
     return result
 end
 
-function read_vector(
+function read_vectorial_parameter(
     db::SQLite.DB,
-    table::String,
-    vector_name::String,
+    collection::String,
+    attribute::String,
 )
-    table_name = _vector_table_name(table, vector_name)
-    sanity_check(table_name, vector_name)
-    ids_in_table = read_parameter(db, table, "id")
+    _throw_if_not_vectorial_parameter(collection, attribute)
+    table_name = _table_where_attribute_is_located(collection, attribute)
+    ids_in_table = read_scalar_parameter(db, collection, "id")
 
     results = []
     for id in ids_in_table
-        push!(results, read_vector(db, table, vector_name, id))
+        push!(results, _query_vector(db, table_name, attribute, id))
     end
 
     return results
 end
 
-function read_vector(
+function read_vectorial_parameter(
     db::SQLite.DB,
-    table::String,
-    vector_name::String,
+    collection::String,
+    attribute::String,
     id::Integer,
 )
-    table_name = _vector_table_name(table, vector_name)
-    sanity_check(table_name, vector_name)
+    _throw_if_not_vectorial_parameter(collection, attribute)
+    table_name = _table_where_attribute_is_located(collection, attribute)
+    result = _query_vector(db, table_name, attribute, id)
 
-    query = "SELECT $vector_name FROM $table_name WHERE id = '$id' ORDER BY idx"
+    return result
+end
+
+function _query_vector(
+    db::SQLite.DB,
+    table_name::String,
+    attribute::String,
+    id::Integer,
+)
+    query = "SELECT $attribute FROM $table_name WHERE id = '$id' ORDER BY idx"
     df = DBInterface.execute(db, query) |> DataFrame
     # This could be a missing value
     result = df[!, 1]
     return result
 end
+
+function read_scalar_relationship(
+    db::SQLite.DB,
+    collection_from::String,
+    collection_to::String,
+    collection_from_id::Integer,
+    relation_type::String,
+)
+    attribute_on_collection_1 = lowercase(collection_to) * "_" * relation_type
+
+    query = "SELECT $attribute_on_collection_1 FROM $collection_from WHERE id = '$collection_from_id'"
+    df = DBInterface.execute(db, query) |> DataFrame
+    if isempty(df)
+        error("id \"$collection_from_id\" does not exist in table \"$collection_from\".")
+    end
+    result = df[!, 1][1]
+    return result
+end
+
 
 function number_of_rows(db::SQLite.DB, table::String, column::String)
     sanity_check(table, column)
@@ -125,22 +184,4 @@ function read_vector_related(
     end
 
     return related
-end
-
-function read_related(
-    db::SQLite.DB,
-    table_1::String,
-    table_2::String,
-    table_1_id::Integer,
-    relation_type::String,
-)
-    id_parameter_on_table_1 = lowercase(table_2) * "_" * relation_type
-
-    query = "SELECT $id_parameter_on_table_1 FROM $table_1 WHERE id = '$table_1_id'"
-    df = DBInterface.execute(db, query) |> DataFrame
-    if isempty(df)
-        error("id \"$table_1_id\" does not exist in table \"$table_1\".")
-    end
-    result = df[!, 1][1]
-    return result
 end

@@ -122,14 +122,6 @@ function create_case_1()
         "id",
     ) == "R1"
 
-    PSRI.delete_relation!(
-        db,
-        "Plant",
-        "Resource",
-        "Plant 1",
-        "R1",
-    )
-
     @test ismissing(PSRI.get_parm(db, "Plant", "resource_id", "Plant 1"))
 
     @test PSRI.max_elements(db, "Plant") == 2

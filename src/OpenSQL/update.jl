@@ -1,40 +1,29 @@
-function update!(
+function update_scalar_attribute!(
     db::SQLite.DB,
-    table::String,
-    column::String,
+    collection::String,
+    attribute::String,
     id::Integer,
     val,
 )
-    sanity_check(table, column)
-    DBInterface.execute(db, "UPDATE $table SET $column = '$val' WHERE id = '$id'")
+    sanity_check(collection, attribute)
+    DBInterface.execute(db, "UPDATE $collection SET $attribute = '$val' WHERE id = '$id'")
     return nothing
 end
 
-function update!(
+function update_vectorial_attribute!(
     db::SQLite.DB,
-    table::String,
-    column::String,
-    val,
-)
-    sanity_check(table, column)
-    DBInterface.execute(db, "UPDATE $table SET $column = '$val'")
-    return nothing
-end
-
-function update!(
-    db::SQLite.DB,
-    table::String,
-    column::String,
+    collection::String,
+    attribute::String,
     id::Integer,
     vals::V,
 ) where {V <: AbstractVector}
-    if !is_vector_parameter(table, column)
-        error("Column $column is not a vector parameter.")
+    if !_is_vectorial_parameter(collection, attribute)
+        error("Attribute $attribute is not a vectorial parameter.")
     end
 
-    vector_table = _vector_table_name(table, column)
+    table_name = _table_where_attribute_is_located(collection, attribute)
 
-    current_vector = read_vector(db, table, column, id)
+    current_vector = read_vectorial_parameter(db, collection, attribute, id)
     current_length = length(current_vector)
 
     # TODO isso aqui deveria estar numa transaction, se não puder dar update tem que dar erro e voltar o que estava antes
@@ -43,11 +32,11 @@ function update!(
         # seria equivalente a deletar todos os ids
         DBInterface.execute(
             db,
-            "DELETE FROM $vector_table WHERE id = '$id' AND idx = $idx",
+            "DELETE FROM $table_name WHERE id = '$id' AND idx = $idx",
         )
     end
 
-    create_vector!(db, table, id, column, vals)
+    _create_vectors!(db, collection, id, Dict(Symbol(attribute) => vals))
 
     return nothing
 end

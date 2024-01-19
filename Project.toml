@@ -1,6 +1,6 @@
 name = "PSRClassesInterface"
 uuid = "1eab49e5-27d8-4905-b9f6-327b6ea666c4"
-version = "0.13.2"
+version = "0.14.0"
 
 [deps]
 DBInterface = "a10d1c49-ce27-4219-8d33-6db1a4562965"
@@ -8,20 +8,21 @@ DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 Dates = "ade2ca70-3891-5945-98fb-dc099432e06a"
 Encodings = "8275c4fe-57c3-4fbf-b39c-271e6148849a"
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
+OrderedCollections = "bac558e1-5e72-5ebc-8fee-abe8a469f55d"
 SQLite = "0aa819cd-b072-5ff4-a722-6bc24af294d9"
 Tables = "bd369af6-aec1-5ad0-b16a-f7cc5008161c"
 
 [compat]
+CSV = "0.10.11"
+DBInterface = "2.5.0"
+DataFrames = "1.6.1"
 Dates = "1.6.7"
 Encodings = "0.1.1"
 JSON = "0.21"
-Tables = "1.10"
-julia = "1.6"
-DBInterface = "2.5.0"
 SQLite = "1.6.0"
-DataFrames = "1.6.1"
+Tables = "1.10"
 Test = "1.6.7"
-CSV = "0.10.11"
+julia = "1.6"
 
 [extras]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"

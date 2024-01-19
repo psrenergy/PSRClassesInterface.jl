@@ -21,14 +21,6 @@ _is_valid_table_vector_name(table::String) =
 _is_valid_table_timeseries_name(table::String) =
     !isnothing(match(r"^(?:[A-Z][a-z]*)+_timeseries", table))
 
-_is_valid_table_relation_name(table::String) =
-    !isnothing(
-        match(
-            r"^(?:[A-Z][a-z]*)+_relation_(?:[A-Z][a-z]*)+$",
-            table,
-        ),
-    )
-
 _is_valid_time_series_attribute_value(value::String) =
     !isnothing(
         match(r"^[a-zA-Z][a-zA-Z0-9]*(?:_{1}[a-zA-Z0-9]+)*(?:\.[a-z]+){0,1}$", value),
@@ -74,32 +66,6 @@ function _validate_vector_table(db::SQLite.DB, table::String)
     if !("idx" in attributes)
         error("Table $table does not have an \"idx\" column.")
     end
-    if !(get_vector_attribute_name(table) in attributes)
-        error("Table $table does not have a column with the name of the vector attribute.")
-    end
-    if setdiff(attributes, ["id", "idx", get_vector_attribute_name(table)]) != []
-        error(
-            "Table $table should only have the following columns: \"id\", \"idx\", \"$(get_vector_attribute_name(table))\".",
-        )
-    end
-end
-
-function _validate_relation_table(db::SQLite.DB, table::String)
-    attributes = column_names(db, table)
-    if !("source_id" in attributes)
-        error("Table $table does not have a \"source_id\" column.")
-    end
-    if !("target_id" in attributes)
-        error("Table $table does not have a \"target_id\" column.")
-    end
-    if !("relation_type" in attributes)
-        error("Table $table does not have a \"relation_type\" column.")
-    end
-    if setdiff(attributes, ["relation_type", "source_id", "target_id"]) != []
-        error(
-            "Table $table should only have the following columns: \"relation_type\", \"source_id\", \"target_id\".",
-        )
-    end
 end
 
 function _validate_column_name(column::String)
@@ -122,7 +88,7 @@ function _validate_column_name(table::String, column::String)
     end
 end
 
-function validate_database(db::SQLite.DB)
+function _validate_database(db::SQLite.DB)
     tables = table_names(db)
     if !("Configuration" in tables)
         error("Database does not have a \"Configuration\" table.")
@@ -139,23 +105,18 @@ function validate_database(db::SQLite.DB)
             _validate_timeseries_table(db, table)
         elseif _is_valid_table_vector_name(table)
             _validate_vector_table(db, table)
-        elseif _is_valid_table_relation_name(table)
-            _validate_relation_table(db, table)
         else
             error("""
-                Invalid table name: $table.\nValid table name formats are: \n
-                - Collections: NameOfCollection\n
-                - Vector attributes: NameOfCollection_vector_name_of_attribute\n
-                - Time series: NameOfCollection_timeseries\n
-                - Relations: NameOfCollection_relation_NameOfOtherCollection
+                Invalid table name: $table.
+                Valid table name formats are:
+                - Collections: NameOfCollection
+                - Vector attributes: NameOfCollection_vector_group_id
+                - Time series: NameOfCollection_timeseries
                 """)
         end
     end
 end
 
-# Dictionary storing tables and columns of the current db loaded
-# in the load_db function
-const DB_TABLES_AND_COLUMNS = Dict{String, Vector{String}}()
 # Constant to enable or disable sanity checks
 const SANITY_CHECKS_ENABLED = Ref{Bool}(true)
 
@@ -189,14 +150,6 @@ function _validate_user_version(db::SQLite.DB)
     return nothing
 end
 
-function _save_db_tables_and_columns(db::SQLite.DB)
-    tables = table_names(db)
-    for table in tables
-        DB_TABLES_AND_COLUMNS[table] = column_names(db, table)
-    end
-    return nothing
-end
-
 function _enable_sanity_checks(val::Bool)
     SANITY_CHECKS_ENABLED[] = val
     return val
@@ -206,45 +159,24 @@ function _sanity_check_enabled()
     return SANITY_CHECKS_ENABLED[]
 end
 
-function column_exist_in_table(table::String, column::String)
-    cols = DB_TABLES_AND_COLUMNS[table]
-    return column in cols
-end
-
-function table_exist_in_db(table::String)
-    return haskey(DB_TABLES_AND_COLUMNS, table)
-end
-
-function check_if_column_exists(table::String, column::String)
-    if !column_exist_in_table(table, column)
-        # TODO we could make a suggestion on the closest string and give an error like
-        # Did you mean xxxx?
-        error("column $column does not exist in table $table.")
-    end
-    return nothing
-end
-
-function check_if_table_exists(table::String)
-    if !table_exist_in_db(table)
-        # TODO we could make a suggestion on the closest string and give an error like
-        # Did you mean xxxx?
-        error("table $table does not exist in database.")
-    end
-    return nothing
-end
-
-function sanity_check(table::String, column::String)
+function sanity_check(collection::String)
     !_sanity_check_enabled() && return nothing
-    check_if_table_exists(table)
-    check_if_column_exists(table, column)
+    _collection_exists(collection)
     return nothing
 end
 
-function sanity_check(table::String, columns::Vector{String})
+function sanity_check(collection::String, attribute::String)
     !_sanity_check_enabled() && return nothing
-    check_if_table_exists(table)
-    for column in columns
-        check_if_column_exists(table, column)
+    _collection_exists(collection)
+    _attribute_exists(collection, attribute)
+    return nothing
+end
+
+function sanity_check(collection::String, attributes::Vector{String})
+    !_sanity_check_enabled() && return nothing
+    _collection_exists(collection)
+    for attribute in attributes
+        _attribute_exists(collection, attribute)
     end
     return nothing
 end

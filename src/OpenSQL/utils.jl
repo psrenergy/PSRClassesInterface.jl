@@ -1,3 +1,8 @@
+"""
+    execute_statements(db::SQLite.DB, file::String)
+
+Execute all statements in a .sql file against a database.
+"""
 function execute_statements(db::SQLite.DB, file::String)
     if !isfile(file)
         error("file not found: $file")
@@ -12,7 +17,7 @@ function execute_statements(db::SQLite.DB, file::String)
     #! format: on
     statements = split(raw_statements, ";")
     for statement in statements
-        trated_statement = treat_sql_statement(statement)
+        trated_statement = _treat_sql_statement(statement)
         if !isempty(trated_statement)
             try
                 DBInterface.execute(db, trated_statement)
@@ -25,30 +30,46 @@ function execute_statements(db::SQLite.DB, file::String)
     return nothing
 end
 
-function treat_sql_statement(statement::AbstractString)
+function _treat_sql_statement(statement::AbstractString)
     stripped_statement = strip(statement)
     return stripped_statement
 end
 
-function create_empty_db(path_db::String, path_schema::String)
-    if isfile(path_db)
-        error("file already exists: $path_db")
+"""
+    create_empty_db(database_path::String, path_schema::String)
+    create_empty_db(database_path::String)
+
+This function comes in two flavours:
+
+    create_empty_db(database_path::String, path_schema::String)
+
+Creates a new database with the schema given in `path_schema`.
+
+    create_empty_db(database_path::String)
+
+Creates a new database by applying upwards all migrations in the migrations folder See more in [TODO ref to migrations.].
+"""
+function create_empty_db end
+
+function create_empty_db(database_path::String, path_schema::String)
+    if isfile(database_path)
+        error("file already exists: $database_path")
     end
-    db = SQLite.DB(path_db)
+    db = _open_db_connection(database_path)
     execute_statements(db, path_schema)
-    validate_database(db)
-    _save_db_tables_and_columns(db)
+    _validate_database(db)
+    _save_collections_database_map(db)
     return db
 end
 
-function create_empty_db(path_db::AbstractString)
-    if isfile(path_db)
-        error("file already exists: $path_db")
+function create_empty_db(database_path::AbstractString)
+    if isfile(database_path)
+        error("file already exists: $database_path")
     end
-    db = SQLite.DB(path_db)
+    db = _open_db_connection(database_path)
     _apply_all_up_migrations(db)
-    validate_database(db)
-    _save_db_tables_and_columns(db)
+    _validate_database(db)
+    _save_collections_database_map(db)
     return db
 end
 
@@ -56,9 +77,14 @@ function load_db(database_path::String)
     if !isfile(database_path)
         error("file not found: $database_path")
     end
+    db = _open_db_connection(database_path)
+    _validate_database(db)
+    _save_collections_database_map(db)
+    return db
+end
+
+function _open_db_connection(database_path::String)
     db = SQLite.DB(database_path)
-    validate_database(db)
-    _save_db_tables_and_columns(db)
     return db
 end
 
@@ -80,33 +106,6 @@ function id_exist_in_table(db::SQLite.DB, table::String, id::Integer)
         error("id \"$id\" does not exist in table \"$table\".")
     end
     return nothing
-end
-
-function is_vector_parameter(table::String, column::String)
-    return table_exist_in_db(_vector_table_name(table, column))
-end
-
-function are_related(
-    db::SQLite.DB,
-    table_1::String,
-    table_2::String,
-    table_1_id::Integer,
-    table_2_id::Integer,
-)
-    sanity_check(table_1, "id")
-    sanity_check(table_2, "id")
-    id_exist_in_table(db, table_1, table_1_id)
-    id_exist_in_table(db, table_2, table_2_id)
-
-    columns = column_names(db, table_1)
-    possible_relations = filter(x -> startswith(x, lowercase(table_2)), columns)
-
-    for relation in possible_relations
-        if read_parameter(db, table_1, relation, table_1_id) == table_2_id
-            return true
-        end
-    end
-    return false
 end
 
 function has_time_series(db::SQLite.DB, table::String)
@@ -136,3 +135,8 @@ _vector_table_name(table::String, column::String) = table * "_vector_" * column
 _relation_table_name(table_1::String, table_2::String) = table_1 * "_relation_" * table_2
 
 close(db::SQLite.DB) = DBInterface.close!(db)
+function _force_gc()
+    GC.gc()
+    GC.gc()
+    return nothing
+end
