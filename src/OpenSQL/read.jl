@@ -5,36 +5,6 @@ const READ_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
     VectorialRelationship => "read_vectorial_relationship",
 )
 
-function _throw_if_not_scalar_parameter(
-    collection::String,
-    attribute::String,
-)
-    sanity_check(collection, attribute)
-
-    if !_is_scalar_parameter(collection, attribute)
-        correct_composity_type = _attribute_composite_type(collection, attribute)
-        string_of_composite_types = _string_for_composite_types(correct_composity_type)
-        correct_method_to_use = READ_METHODS_BY_CLASS_OF_ATTRIBUTE[correct_composity_type]
-        error("Attribute $attribute is not a scalar parameter. It is a $string_of_composite_types. Try using $correct_method_to_use instead.")
-    end
-    return nothing
-end
-
-function _throw_if_not_vectorial_parameter(
-    collection::String,
-    attribute::String,
-)
-    sanity_check(collection, attribute)
-
-    if !_is_vectorial_parameter(collection, attribute)
-        correct_composity_type = _attribute_composite_type(collection, attribute)
-        string_of_composite_types = _string_for_composite_types(correct_composity_type)
-        correct_method_to_use = READ_METHODS_BY_CLASS_OF_ATTRIBUTE[correct_composity_type]
-        error("Attribute $attribute is not a vectorial parameter. It is a $string_of_composite_types. Try using $correct_method_to_use instead.")
-    end
-    return nothing
-end
-
 function _get_id(db::SQLite.DB, table::String, label::String)::Integer
     query = "SELECT id FROM $table WHERE label = '$label'"
     df = DBInterface.execute(db, query) |> DataFrame
@@ -50,7 +20,7 @@ function read_scalar_parameter(
     collection::String,
     attribute::String,
 )
-    _throw_if_not_scalar_parameter(collection, attribute)
+    _throw_if_attribute_is_not_scalar_parameter(collection, attribute)
 
     table = _get_collection_scalar_attribute_tables(db, collection)
 
@@ -67,7 +37,7 @@ function read_scalar_parameter(
     attribute::String,
     id::Integer,
 )
-    _throw_if_not_scalar_parameter(collection, attribute)
+    _throw_if_attribute_is_not_scalar_parameter(collection, attribute)
     query = "SELECT $attribute FROM $collection WHERE id = '$id'"
     df = DBInterface.execute(db, query) |> DataFrame
     # This could be a missing value
@@ -83,7 +53,7 @@ function read_vectorial_parameter(
     collection::String,
     attribute::String,
 )
-    _throw_if_not_vectorial_parameter(collection, attribute)
+    _throw_if_attribute_is_not_vectorial_parameter(collection, attribute)
     table_name = _table_where_attribute_is_located(collection, attribute)
     ids_in_table = read_scalar_parameter(db, collection, "id")
 
@@ -101,7 +71,7 @@ function read_vectorial_parameter(
     attribute::String,
     id::Integer,
 )
-    _throw_if_not_vectorial_parameter(collection, attribute)
+    _throw_if_attribute_is_not_vectorial_parameter(collection, attribute)
     table_name = _table_where_attribute_is_located(collection, attribute)
     result = _query_vector(db, table_name, attribute, id)
 
@@ -125,12 +95,28 @@ function read_scalar_relationship(
     db::SQLite.DB,
     collection_from::String,
     collection_to::String,
+    relation_type::String,
+)
+    attribute_on_collection_from = lowercase(collection_to) * "_" * relation_type
+    _throw_if_attribute_is_not_scalar_relationship(collection_from, attribute_on_collection_from)
+
+    query = "SELECT $attribute_on_collection_from FROM $collection_from ORDER BY rowid"
+    df = DBInterface.execute(db, query) |> DataFrame
+    results = df[!, 1]
+    return results
+end
+
+function read_scalar_relationship(
+    db::SQLite.DB,
+    collection_from::String,
+    collection_to::String,
     collection_from_id::Integer,
     relation_type::String,
 )
-    attribute_on_collection_1 = lowercase(collection_to) * "_" * relation_type
+    attribute_on_collection_from = lowercase(collection_to) * "_" * relation_type
+    _throw_if_attribute_is_not_scalar_relationship(collection, attribute)
 
-    query = "SELECT $attribute_on_collection_1 FROM $collection_from WHERE id = '$collection_from_id'"
+    query = "SELECT $attribute_on_collection_from FROM $collection_from WHERE id = '$collection_from_id'"
     df = DBInterface.execute(db, query) |> DataFrame
     if isempty(df)
         error("id \"$collection_from_id\" does not exist in table \"$collection_from\".")
@@ -147,41 +133,23 @@ function number_of_rows(db::SQLite.DB, table::String, column::String)
     return df[!, 1][1]
 end
 
-function read_vector_related(
+function read_vectorial_relationship(
     db::SQLite.DB,
-    table::String,
-    id::Integer,
+    collection_from::String,
+    collection_to::String,
+    id_collection_from::Integer,
     relation_type::String,
 )
-    sanity_check(table, "id")
-    table_as_source = table * "_relation_"
-    table_as_target = "_relation_" * table
+    attribute_on_collection_from = lowercase(collection_to) * "_" * relation_type
+    _throw_if_attribute_is_not_vectorial_relationship(collection_from, attribute_on_collection_from)
 
-    tables = table_names(db)
+    table_name = _table_where_attribute_is_located(collection_from, attribute_on_collection_from)
 
-    table_relations_source = tables[findall(x -> startswith(x, table_as_source), tables)]
-
-    table_relations_target = tables[findall(x -> endswith(x, table_as_target), tables)]
-
-    related = []
-
-    for relation_table in table_relations_source
-        _, target = split(relation_table, "_relation_")
-        query = "SELECT target_id FROM $relation_table WHERE source_id = '$id' AND relation_type = '$relation_type' ORDER BY rowid"
-        df = DBInterface.execute(db, query) |> DataFrame
-        if !isempty(df)
-            push!(related, read_parameter(db, String(target), "label", df[!, 1][1]))
-        end
+    query = "SELECT $attribute_on_collection_from FROM $table_name WHERE id = '$id_collection_from' ORDER BY rowid"
+    df = DBInterface.execute(db, query) |> DataFrame
+    if isempty(df)
+        error("id \"$collection_from_id\" does not exist in table \"$collection_from\".")
     end
-
-    for relation_table in table_relations_target
-        _, source = split(relation_table, "_relation_")
-        query = "SELECT source_id FROM $relation_table WHERE target_id = '$id' AND relation_type = '$relation_type' ORDER BY rowid"
-        df = DBInterface.execute(db, query) |> DataFrame
-        if !isempty(df)
-            push!(related, read_parameter(db, String(source), "label", df[!, 1][1]))
-        end
-    end
-
-    return related
+    result = df[!, 1]
+    return result
 end

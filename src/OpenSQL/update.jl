@@ -1,4 +1,39 @@
-function update_scalar_attribute!(
+const UPDATE_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
+    ScalarParameter => "update_scalar_parameters!",
+    ScalarRelationship => "set_scalar_relationship!",
+    VectorialParameter => "update_vectorial_parameters!",
+    VectorialRelationship => "set_vectorial_relationship!",
+)
+
+function update_scalar_parameters!(
+    db::SQLite.DB, 
+    collection::String, 
+    label::String;
+    kwargs...
+)
+    for (attribute, val) in kwargs
+        attribute_name = string(attribute)
+        if isa(val, AbstractVector)
+            error("Cannot update scalar parameter $attribute_name with a vector.")
+        end
+        update_scalar_parameter!(db, collection, attribute_name, label, val)
+    end
+    return nothing
+end
+
+function update_scalar_parameter!(
+    db::SQLite.DB,
+    collection::String,
+    attribute::String,
+    label::String,
+    val,
+)
+    id = _get_id(db, collection, label)
+    update_scalar_parameter!(db, collection, attribute, id, val)
+    return nothing
+end
+
+function update_scalar_parameter!(
     db::SQLite.DB,
     collection::String,
     attribute::String,
@@ -6,6 +41,7 @@ function update_scalar_attribute!(
     val,
 )
     sanity_check(collection, attribute)
+    _throw_if_attribute_is_not_scalar_parameter(collection, attribute, :update)
     DBInterface.execute(db, "UPDATE $collection SET $attribute = '$val' WHERE id = '$id'")
     return nothing
 end
@@ -41,34 +77,62 @@ function update_vectorial_attribute!(
     return nothing
 end
 
-function set_related!(
-    db::DBInterface.Connection,
-    table1::String,
-    table2::String,
-    id_1::Integer,
-    id_2::Integer,
+function set_scalar_relationship!(
+    db::SQLite.DB,
+    collection_from::String,
+    collection_to::String,
+    label_collection_from::String,
+    label_collection_to::String,
     relation_type::String,
 )
-    id_parameter_on_table_1 = lowercase(table2) * "_" * relation_type
-    SQLite.execute(
+    id_collection_from = _get_id(db, collection_from, label_collection_from)
+    id_collection_to = _get_id(db, collection_to, label_collection_to)
+    set_scalar_relationship!(
         db,
-        "UPDATE $table1 SET $id_parameter_on_table_1 = '$id_2' WHERE id = '$id_1'",
+        collection_from,
+        collection_to,
+        id_collection_from,
+        id_collection_to,
+        relation_type,
     )
     return nothing
 end
 
-function set_vector_related!(
+function set_scalar_relationship!(
     db::DBInterface.Connection,
-    table1::String,
-    table2::String,
-    id_1::Integer,
-    id_2::Integer,
+    collection_from::String,
+    collection_to::String,
+    id_collection_from::Integer,
+    id_collection_to::Integer,
     relation_type::String,
 )
-    relation_table = _relation_table_name(table1, table2)
+    if collection_from == collection_to && id_collection_from == id_collection_to
+        error("Cannot set a relationship between the same element.")
+    end
+    _throw_if_scalar_relationship_does_not_exist(collection_from, collection_to, relation_type)
+    attribute_name = lowercase(collection_to) * "_" * relation_type
+    table_name = _table_where_attribute_is_located(collection_from, attribute_name)
     SQLite.execute(
         db,
-        "INSERT INTO $relation_table (source_id, target_id, relation_type) VALUES ('$id_1', '$id_2', '$relation_type')",
+        "UPDATE $table_name SET $attribute_name = '$id_collection_to' WHERE id = '$id_collection_from'",
+    )
+    return nothing
+end
+
+function set_vectorial_relationship!(
+    db::DBInterface.Connection,
+    collection_from::String,
+    collection_to::String,
+    id_collection_from::Integer,
+    id_collection_to::Integer,
+    relation_type::String,
+)
+    _throw_if_vectorial_relationship_does_not_exist(collection_from, collection_to, relation_type)
+    attribute_name = lowercase(collection_to) * "_" * relation_type
+    table_name = _table_where_attribute_is_located(collection_from, attribute_name)
+    SQLite.execute(
+        db,
+        "UPDATE $table_name SET $attribute_name = '$id_collection_to' WHERE id = '$id_collection_from'",
     )
     return nothing
 end

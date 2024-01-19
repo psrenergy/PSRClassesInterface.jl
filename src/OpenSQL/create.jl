@@ -25,7 +25,7 @@ function _create_vector_group!(
 )
     vectors_group_table_name = _vectors_group_table_name(collection, group)
     sanity_check(collection, vector_attributes)
-    assert_group_vectors_have_the_same_size(collection, group_vectorial_attributes)
+    _all_vector_of_group_must_have_same_size!(group_vectorial_attributes, vector_attributes, group)
     df = DataFrame(group_vectorial_attributes)
     num_values = size(df, 1)
     ids = fill(id, num_values)
@@ -88,14 +88,49 @@ function create_element!(
 )
     try 
         _create_element!(db, collection; kwargs...)
-    catch ex
-        @error("Error creating element in collection $collection")
-        rethrow(ex)
+    catch e
+        @error """
+               Error creating element in collection $collection
+               error message: $(e.msg)
+               """
+        rethrow(e)
     end
     return nothing
 end
 
-function assert_group_vectors_have_the_same_size(collection::String, group_vectorial_attributes)
-    # TODO
+function _all_vector_of_group_must_have_same_size!(
+    group_vectorial_attributes,
+    vector_attributes::Vector{String},
+    group_name::String
+)
+    vector_attributes = Symbol.(vector_attributes)
+    if isempty(group_vectorial_attributes)
+        return nothing
+    end
+    dict_of_lengths = Dict{String, Int}()
+    for (k, v) in group_vectorial_attributes
+        dict_of_lengths[string(k)] = length(v)
+    end
+    unique_lengths = unique(values(dict_of_lengths))
+    if length(unique_lengths) > 1
+        error(
+            "All vectors of group $group_name must have the same length. These are the current lengths: $(_show_sizes_of_vectors_in_string(dict_of_lengths)) "
+        )
+    end
+    length_first_vector = unique_lengths[1]
+    # fill missing vectors with missing values
+    for vector_attribute in vector_attributes
+        if !haskey(group_vectorial_attributes, vector_attribute)
+            group_vectorial_attributes[vector_attribute] = fill(missing, length_first_vector)
+        end
+    end
     return nothing
+end
+
+function _show_sizes_of_vectors_in_string(dict_of_lengths::Dict{String, Int})
+    string_sizes = ""
+    for (k, v) in dict_of_lengths
+        string_sizes *= "\n - $k: $v"
+    end
+    return string_sizes
 end

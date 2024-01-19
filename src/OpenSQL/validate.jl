@@ -61,10 +61,10 @@ end
 function _validate_vector_table(db::SQLite.DB, table::String)
     attributes = column_names(db, table)
     if !("id" in attributes)
-        error("Table $table does not have an \"id\" column.")
+        error("Table $table is a vector table and does not have an \"id\" column.")
     end
     if !("idx" in attributes)
-        error("Table $table does not have an \"idx\" column.")
+        error("Table $table is a vector table and does not have an \"idx\" column.")
     end
 end
 
@@ -117,6 +117,119 @@ function _validate_database(db::SQLite.DB)
     end
 end
 
+function _get_correct_method_to_use(correct_composite_type::Type, action::Symbol)
+    if action == :read
+        return READ_METHODS_BY_CLASS_OF_ATTRIBUTE[correct_composite_type]
+    elseif action == :update
+        return UPDATE_METHODS_BY_CLASS_OF_ATTRIBUTE[correct_composite_type]
+    else
+        error()
+    end
+end
+
+function _throw_if_attribute_is_not_scalar_parameter(
+    collection::String,
+    attribute::String,
+    action::Symbol,
+)
+    sanity_check(collection, attribute)
+
+    if !_is_scalar_parameter(collection, attribute)
+        correct_composity_type = _attribute_composite_type(collection, attribute)
+        string_of_composite_types = _string_for_composite_types(correct_composity_type)
+        correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
+        error("Attribute $attribute is not a scalar parameter. It is a $string_of_composite_types. Try using $correct_method_to_use instead.")
+    end
+    return nothing
+end
+
+function _throw_if_attribute_is_not_vectorial_parameter(
+    collection::String,
+    attribute::String,
+    action::Symbol,
+)
+    sanity_check(collection, attribute)
+
+    if !_is_vectorial_parameter(collection, attribute)
+        correct_composity_type = _attribute_composite_type(collection, attribute)
+        string_of_composite_types = _string_for_composite_types(correct_composity_type)
+        correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
+        error("Attribute $attribute is not a vectorial parameter. It is a $string_of_composite_types. Try using $correct_method_to_use instead.")
+    end
+    return nothing
+end
+
+function _throw_if_attribute_is_not_scalar_relationship(
+    collection::String, 
+    attribute::String,
+    action::Symbol,
+)
+    sanity_check(collection, attribute)
+
+    if !_is_scalar_relationship(collection, attribute)
+        correct_composity_type = _attribute_composite_type(collection, attribute)
+        string_of_composite_types = _string_for_composite_types(correct_composity_type)
+        correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
+        error("Attribute $attribute is not a scalar relationship. It is a $string_of_composite_types. Try using $correct_method_to_use instead.")
+    end
+    return nothing
+end
+
+function _throw_if_attribute_is_not_vectorial_relationship(
+    collection::String, 
+    attribute::String,
+    action::Symbol,
+)
+    sanity_check(collection, attribute)
+
+    if !_is_vectorial_relationship(collection, attribute)
+        correct_composity_type = _attribute_composite_type(collection, attribute)
+        string_of_composite_types = _string_for_composite_types(correct_composity_type)
+        correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
+        error("Attribute $attribute is not a vectorial relationship. It is a $string_of_composite_types. Try using $correct_method_to_use instead.")
+    end
+    return nothing
+end
+
+function _throw_if_scalar_relationship_does_not_exist(
+    collection_from::String,
+    collection_to::String,
+    relation_type::String
+)
+    if !_scalar_relation_exists(collection_from, collection_to, relation_type)
+        error(
+            "Scalar relationship `$relation_type` between $collection_from and $collection_to does not exist. \n" * 
+            "This is the list of scalar relationships that exist: " *
+            "$(_show_existing_relation_types(_list_of_scalar_relation_types(collection_from, collection_to)))"
+        )
+    end
+end
+
+function _throw_if_vectorial_relationship_does_not_exist(
+    collection_from::String,
+    collection_to::String,
+    relation_type::String
+)
+    if !_vectorial_relation_exists(collection_from, collection_to, relation_type)
+        error(
+            "Vectorial relationship `$relation_type` between $collection_from and $collection_to does not exist. \n" * 
+            "This is the list of scalar relationships that exist: " *
+            "$(_show_existing_relation_types(_list_of_vectorial_relation_types(collection_from, collection_to)))"
+        )
+    end
+end
+
+function _show_existing_relation_types(possible_relation_types::Vector{String})
+    string_relation_types = ""
+    for relation_type in possible_relation_types
+        string_relation_types *= "\n - $relation_type"
+    end
+    if string_relation_types == ""
+        string_relation_types = "\n**no relations exist between the collections**"
+    end
+    return string_relation_types
+end
+
 # Constant to enable or disable sanity checks
 const SANITY_CHECKS_ENABLED = Ref{Bool}(true)
 
@@ -167,16 +280,24 @@ end
 
 function sanity_check(collection::String, attribute::String)
     !_sanity_check_enabled() && return nothing
-    _collection_exists(collection)
-    _attribute_exists(collection, attribute)
+    if !_collection_exists(collection)
+        error("Collection $collection does not exist.")
+    end
+    if !_attribute_exists(collection, attribute)
+        error("Attribute $attribute does not exist in collection $collection.")
+    end
     return nothing
 end
 
 function sanity_check(collection::String, attributes::Vector{String})
     !_sanity_check_enabled() && return nothing
-    _collection_exists(collection)
+    if !_collection_exists(collection)
+        error("Collection $collection does not exist.")
+    end
     for attribute in attributes
-        _attribute_exists(collection, attribute)
+        if !_attribute_exists(collection, attribute)
+            error("Attribute $attribute does not exist in collection $collection.")
+        end
     end
     return nothing
 end

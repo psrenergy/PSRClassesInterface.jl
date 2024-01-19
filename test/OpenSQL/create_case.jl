@@ -122,7 +122,7 @@ function create_case_1()
         "id",
     ) == "R1"
 
-    @test ismissing(PSRI.get_parm(db, "Plant", "resource_id", "Plant 1"))
+    @test_throws ErrorException PSRI.get_parm(db, "Plant", "resource_id", "Plant 1")
 
     @test PSRI.max_elements(db, "Plant") == 2
     @test PSRI.max_elements(db, "Resource") == 2
@@ -140,19 +140,10 @@ function create_case_1()
     @test PSRI.max_elements(db, "Plant") == 1
     @test PSRI.max_elements(db, "Resource") == 1
 
-    @test PSRI.get_attributes(db, "Resource") == ["id", "label", "type", "some_value"]
+    @test PSRI.get_attributes(db, "Resource") == ["id", "label", "type", "some_value", "some_val_of_size_k_1", "some_val_of_size_k_2"]
 
     @test PSRI.get_attributes(db, "Plant") ==
-          [
-        "id",
-        "label",
-        "capacity",
-        "resource_id",
-        "plant_turbine_to",
-        "plant_spill_to",
-        "generation",
-        "cost",
-    ]
+        ["id", "label", "capacity", "plant_spill_to", "plant_turbine_to", "resource_id", "some_factor", "cost_id", "generation", "cost"]
 
     PSRI.OpenSQL.close(db)
 
@@ -206,16 +197,7 @@ function create_case_relations()
         "Cost",
         "Plant 1",
         "Cost 1",
-        "sometype",
-    )
-
-    PSRI.set_vector_related!(
-        db,
-        "Plant",
-        "Cost",
-        "Plant 1",
-        "Cost 2",
-        "sometype2",
+        "id",
     )
 
     PSRI.set_vector_related!(
@@ -224,22 +206,15 @@ function create_case_relations()
         "Cost",
         "Plant 2",
         "Cost 1",
-        "sometype",
+        "id",
     )
 
     @test PSRI.get_vector_related(
         db,
         "Plant",
         "Plant 1",
-        "sometype",
+        "id",
     ) == ["Cost 1"]
-
-    @test PSRI.get_vector_related(
-        db,
-        "Plant",
-        "Plant 1",
-        "sometype2",
-    ) == ["Cost 2"]
 
     @test PSRI.get_vector_related(
         db,

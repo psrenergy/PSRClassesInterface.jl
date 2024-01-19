@@ -57,25 +57,26 @@ PSRI.get_parm(
 PSRI.get_parms(db::OpenSQL.DB, collection::String, attribute::String) =
     OpenSQL.read_scalar_parameter(db, collection, attribute)
 
-function PSRI.get_attributes(db::OpenSQL.DB, collection::String)
-    columns = OpenSQL.column_names(db, collection)
-
-    tables = OpenSQL.table_names(db)
-    vector_attributes = Vector{String}()
-    for table in tables
-        if startswith(table, collection * "_vector_")
-            push!(vector_attributes, OpenSQL.get_vector_attribute_name(table))
-        end
-    end
-    if OpenSQL.has_time_series(db, collection)
-        time_series_table = OpenSQL._timeseries_table_name(collection)
-        time_series_attributes = OpenSQL.column_names(db, time_series_table)
-        return vcat(columns, vector_attributes, time_series_attributes)
-    end
-    return vcat(columns, vector_attributes)
+function PSRI.get_attributes(::OpenSQL.DB, collection::String)
+    return _get_attribute_names(collection)
 end
 
 PSRI.get_collections(db::OpenSQL.DB) = return OpenSQL.table_names(db)
+
+function PSRI.get_map(
+    db::OpenSQL.DB,
+    source::String,
+    target::String,
+    relation_type::String,
+)
+    ids = read_scalar_relationship(
+        db,
+        source,
+        target,
+        relation_type,
+    )
+    return ids
+end
 
 function PSRI.get_related(
     db::OpenSQL.DB,
@@ -97,11 +98,13 @@ end
 PSRI.get_vector_related(
     db::OpenSQL.DB,
     source::String,
+    target::String,
     source_label::String,
-    relation_type::String,
-) = OpenSQL.read_vector_related(
+    relation_type::String
+) = OpenSQL.read_vectorial_relationship(
     db,
     source,
+    target,
     OpenSQL._get_id(db, source, source_label),
     relation_type,
 )
@@ -148,7 +151,7 @@ PSRI.set_related!(
     source_label::String,
     target_label::String,
     relation_type::String,
-) = OpenSQL.set_related!(
+) = OpenSQL.set_scalar_relationship!(
     db,
     source,
     target,
@@ -164,7 +167,7 @@ PSRI.set_vector_related!(
     source_label::String,
     target_label::String,
     relation_type::String,
-) = OpenSQL.set_vector_related!(
+) = OpenSQL.set_vectorial_relationship!(
     db,
     source,
     target,

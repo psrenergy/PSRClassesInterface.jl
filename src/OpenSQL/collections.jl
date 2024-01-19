@@ -7,6 +7,7 @@ abstract type Attribute end
 
 abstract type ScalarAttribute <: Attribute end
 abstract type VectorialAttribute <: Attribute end
+abstract type ReferenceToFileAttribute <: Attribute end
 
 # TODO remove {T}
 mutable struct ScalarParameter{T} <: ScalarAttribute
@@ -20,6 +21,7 @@ mutable struct ScalarRelationship <: ScalarAttribute
     name::String
     parent_collection::String
     relation_collection::String
+    relation_type::String
     table_where_is_located::String
 end
 
@@ -41,10 +43,11 @@ mutable struct VectorialRelationship <: VectorialAttribute
     group::String
     parent_collection::String
     relation_collection::String
+    relation_type::String
     table_where_is_located::String
 end
 
-mutable struct TimeSeriesIds <: ScalarAttribute
+mutable struct TimeSeriesIds <: ReferenceToFileAttribute
     name::String
     table_where_is_located::String
 end
@@ -56,19 +59,25 @@ This struct stores the definition of a collection
 """
 mutable struct Collection
     name::String
-    scalar_parameters::Vector{ScalarParameter}
-    scalar_relationships::Vector{ScalarRelationship}
-    vectorial_parameters::Vector{VectorialParameter}
-    vectorial_relationships::Vector{VectorialRelationship}
-    time_series::Vector{TimeSeriesIds}
+    # The key of every ordered dict is the name of the attribute
+    scalar_parameters::OrderedDict{String, ScalarParameter}
+    scalar_relationships::OrderedDict{String, ScalarRelationship}
+    vectorial_parameters::OrderedDict{String, VectorialParameter}
+    vectorial_relationships::OrderedDict{String, VectorialRelationship}
+    time_series::OrderedDict{String, TimeSeriesIds}
 end
+
+# TODO we should do some Base.getfield to make accessing attributes easier
+# TODO references cannot have the non-null contraint. If they have we can create some sorts of weird behaviours.
+# TODO vectors should have id, and order instead of id and idx
+# TODO add information about not null constraints and default values
+# TODO make a way in which relationships can only be created via update interface.
 
 # Dictionary storing the collections map for the database
 const COLLECTION_DATABASE_MAP = OrderedDict{String, Collection}()
 
 function _save_collections_database_map(db::SQLite.DB)
     _create_collections_database_map!(COLLECTION_DATABASE_MAP, db)
-    _no_circular_references(COLLECTION_DATABASE_MAP)
     return nothing
 end
 
@@ -88,6 +97,61 @@ function _attribute_exists(collection_name::String, attribute_name::String)
     return false
 end
 
+function _scalar_relation_exists(collection_from::String, collection_to::String, relation_type::String)
+    collection = COLLECTION_DATABASE_MAP[collection_from]
+    for (_, scalar_relationship) in collection.scalar_relationships
+        if scalar_relationship.relation_collection == collection_to && scalar_relationship.relation_type == relation_type
+            return true
+        end
+    end
+    return false
+end
+
+function _vector_relation_exists(collection_from::String, collection_to::String, relation_type::String)
+    collection = COLLECTION_DATABASE_MAP[collection_from]
+    for (_, vector_relationship) in collection.vectorial_relationships
+        if vector_relationship.relation_collection == collection_to && vector_relationship.relation_type == relation_type
+            return true
+        end
+    end
+    return false
+end
+
+function _list_of_scalar_relation_types(collection_from::String, collection_to::String)
+    collection = COLLECTION_DATABASE_MAP[collection_from]
+    relation_types = Set{String}()
+    for (_, scalar_relationship) in collection.scalar_relationships
+        if scalar_relationship.relation_collection == collection_to
+            push!(relation_types, scalar_relationship.relation_type)
+        end
+    end
+    return collect(relation_types)
+end
+
+function _list_of_vector_relation_types(collection_from::String, collection_to::String)
+    collection = COLLECTION_DATABASE_MAP[collection_from]
+    relation_types = Set{String}()
+    for (_, vector_relationship) in collection.vectorial_relationships
+        if vector_relationship.relation_collection == collection_to
+            push!(relation_types, vector_relationship.relation_type)
+        end
+    end
+    return collect(relation_types)
+end
+
+function _get_attribute_names(collection_name::String)
+    collection = COLLECTION_DATABASE_MAP[collection_name]
+    attribute_names = Vector{String}(undef, 0)
+    for field in fieldnames(Collection)
+        attributes = getfield(collection, field)
+        if !isa(attributes, OrderedDict{String, <:Attribute})
+            continue
+        end
+        push!(attribute_names, keys(attributes)...)
+    end
+    return attribute_names
+end
+
 function _field_of_attribute(collection_name::String, attribute_name::String)
     if _is_scalar_parameter(collection_name, attribute_name)
         return :scalar_parameters
@@ -105,11 +169,8 @@ end
 function _table_where_attribute_is_located(collection_name::String, attribute_name::String)
     field_name = _field_of_attribute(collection_name, attribute_name)
     collection = COLLECTION_DATABASE_MAP[collection_name]
-    for attribute in getfield(collection, field_name)
-        if attribute.name == attribute_name
-            return attribute.table_where_is_located
-        end
-    end
+    attribute = getfield(collection, field_name)[attribute_name]
+    return attribute.table_where_is_located
 end
 
 function _attribute_composite_type(collection_name::String, attribute_name::String)
@@ -142,63 +203,43 @@ end
 
 function _is_scalar_parameter(collection_name::String, attribute_name::String)
     collection = COLLECTION_DATABASE_MAP[collection_name]
-    for attribute in collection.scalar_parameters
-        if attribute.name == attribute_name
-            return true
-        end
-    end
-    return false
+    return haskey(collection.scalar_parameters, attribute_name)
 end
 
 function _is_scalar_relationship(collection_name::String, attribute_name::String)
     collection = COLLECTION_DATABASE_MAP[collection_name]
-    for attribute in collection.scalar_relationships
-        if attribute.name == attribute_name
-            return true
-        end
-    end
-    return false
+    return haskey(collection.scalar_relationships, attribute_name)
 end
 
 function _is_vectorial_parameter(collection_name::String, attribute_name::String)
     collection = COLLECTION_DATABASE_MAP[collection_name]
-    for attribute in collection.vectorial_parameters
-        if attribute.name == attribute_name
-            return true
-        end
-    end
-    return false
+    return haskey(collection.vectorial_parameters, attribute_name)
 end
 
 function _is_vectorial_relationship(collection_name::String, attribute_name::String)
     collection = COLLECTION_DATABASE_MAP[collection_name]
-    for attribute in collection.vectorial_relationships
-        if attribute.name == attribute_name
-            return true
-        end
-    end
-    return false
+    return haskey(collection.vectorial_relationships, attribute_name)
 end
 
 function _map_of_groups_to_vector_attributes(collection_name::String)
     collection = COLLECTION_DATABASE_MAP[collection_name]
     groups = Set{String}()
-    for attribute in collection.vectorial_parameters
+    for (_, attribute) in collection.vectorial_parameters
         push!(groups, attribute.group)
     end
-    for attribute in collection.vectorial_relationships
+    for (_, attribute) in collection.vectorial_relationships
         push!(groups, attribute.group)
     end
 
     map_of_groups_to_vector_attributes = Dict{String, Vector{String}}()
     for group in groups
         map_of_groups_to_vector_attributes[group] = Vector{String}(undef, 0)
-        for attribute in collection.vectorial_parameters
+        for (_, attribute) in collection.vectorial_parameters
             if attribute.group == group
                 push!(map_of_groups_to_vector_attributes[group], attribute.name)
             end
         end
-        for attribute in collection.vectorial_relationships
+        for (_, attribute) in collection.vectorial_relationships
             if attribute.group == group
                 push!(map_of_groups_to_vector_attributes[group], attribute.name)
             end
@@ -217,7 +258,7 @@ function _is_collection_name(name::String)
     return !occursin("_", name)
 end
 
-function _is_collection_tables_name(name::String, collection_name::String)
+function _is_collection_vectorial_table_name(name::String, collection_name::String)
     return occursin("$(collection_name)_vector_", name)
 end
 
@@ -242,11 +283,20 @@ function _get_collection_vectorial_attributes_tables(db::SQLite.DB, collection_n
     vectorial_parameters_tables = Vector{String}(undef, 0)
     for table in tables
         table_name = table.name
-        if _is_collection_tables_name(table_name, collection_name)
+        if _is_collection_vectorial_table_name(table_name, collection_name)
             push!(vectorial_parameters_tables, table_name)
         end
     end
     return vectorial_parameters_tables
+end
+
+function _get_relation_type_from_attribute(attribute_name::String)
+    matches = match(r"_(.*)", attribute_name)
+    return string(matches.captures[1])
+end
+
+function _get_collection_time_series_tables(::SQLite.DB, collection_name::String)
+    return string(collection_name, "_timeseries")
 end
 
 function _name_of_vectorial_group(table_name::String)
@@ -274,6 +324,7 @@ function _create_collections_database_map!(database_definition::OrderedDict{Stri
             vectorial_relationships,
             time_series,
         )
+        _validate_collection(collection)
         database_definition[collection_name] = collection
     end
     return database_definition
@@ -323,7 +374,7 @@ function _get_collection_scalar_parameters(db::SQLite.DB, collection_name::Strin
     scalar_attributes_table = _get_collection_scalar_attribute_tables(db, collection_name)
     df_table_infos = table_info(db, scalar_attributes_table)
     df_foreign_keys_list = foreign_keys_list(db, scalar_attributes_table)
-    scalar_parameters = Vector{ScalarParameter}(undef, 0)
+    scalar_parameters = OrderedDict{String, ScalarParameter}()
     for scalar_attribute in eachrow(df_table_infos)
         name = scalar_attribute.name
         if name in df_foreign_keys_list.from
@@ -335,13 +386,15 @@ function _get_collection_scalar_parameters(db::SQLite.DB, collection_name::Strin
         type = _sql_type_to_julia_type(scalar_attribute.type)
         parent_collection = collection_name
         table_where_is_located = scalar_attributes_table
-        scalar_parameter = ScalarParameter(
+        if haskey(scalar_parameters, name)
+            error("Duplicated scalar parameter $name in collection $collection_name")
+        end
+        scalar_parameters[name] = ScalarParameter(
             name, 
             type, 
             parent_collection, 
             table_where_is_located
         )
-        push!(scalar_parameters, scalar_parameter)
     end
     return scalar_parameters
 end
@@ -349,27 +402,31 @@ end
 function _get_collection_scalar_relationships(db::SQLite.DB, collection_name::String)
     scalar_attributes_table = _get_collection_scalar_attribute_tables(db, collection_name)
     df_foreign_keys_list = foreign_keys_list(db, scalar_attributes_table)
-    scalar_relationships = Vector{ScalarRelationship}(undef, 0)
+    scalar_relationships = OrderedDict{String, ScalarRelationship}()
     for foreign_key in eachrow(df_foreign_keys_list)
         _warn_if_foreign_keys_does_not_cascade(collection_name, foreign_key)
         name = foreign_key.from
+        relation_type = _get_relation_type_from_attribute(name)
         parent_collection = collection_name
         relation_collection = foreign_key.table
         table_where_is_located = scalar_attributes_table
-        scalar_relationship = ScalarRelationship(
+        if haskey(scalar_relationships, name)
+            error("Duplicated scalar relationship $name in collection $collection_name")
+        end
+        scalar_relationships[name] = ScalarRelationship(
             name, 
             parent_collection, 
             relation_collection,
+            relation_type,
             table_where_is_located
         )
-        push!(scalar_relationships, scalar_relationship)
     end
     return scalar_relationships
 end
 
 function _get_collection_vectorial_parameters(db::SQLite.DB, collection_name::String)
     vectorial_attributes_tables = _get_collection_vectorial_attributes_tables(db, collection_name)
-    vectorial_parameters = Vector{VectorialParameter}(undef, 0)
+    vectorial_parameters = OrderedDict{String, VectorialParameter}()
     parent_collection = collection_name
 
     for table_name in vectorial_attributes_tables
@@ -391,15 +448,15 @@ function _get_collection_vectorial_parameters(db::SQLite.DB, collection_name::St
                 continue
             end
             type = _sql_type_to_julia_type(vectorial_attribute.type)
-            push!(
-                vectorial_parameters, 
-                VectorialParameter(
-                    name, 
-                    type, 
-                    group, 
-                    parent_collection, 
-                    table_where_is_located
-                )
+            if haskey(vectorial_parameters, name)
+                error("Duplicated vectorial parameter $name in collection $collection_name")
+            end
+            vectorial_parameters[name] = VectorialParameter(
+                name, 
+                type, 
+                group, 
+                parent_collection, 
+                table_where_is_located
             )
         end
     end
@@ -408,7 +465,7 @@ end
 
 function _get_collection_vectorial_relationships(db::SQLite.DB, collection_name::String)
     vectorial_attributes_tables = _get_collection_vectorial_attributes_tables(db, collection_name)
-    vectorial_relationships = Vector{VectorialRelationship}(undef, 0)
+    vectorial_relationships = OrderedDict{String, VectorialRelationship}()
     parent_collection = collection_name
     for table_name in vectorial_attributes_tables
         group = _name_of_vectorial_group(table_name)
@@ -421,17 +478,16 @@ function _get_collection_vectorial_relationships(db::SQLite.DB, collection_name:
                 # This is obligatory for every vector table.
                 continue
             end
+            relation_type = _get_relation_type_from_attribute(name)
             relation_collection = foreign_key.table
             table_where_is_located = table_name
-            push!(
-                vectorial_relationships, 
-                VectorialRelationship(
-                    name,
-                    group,
-                    parent_collection,
-                    relation_collection,
-                    table_where_is_located
-                )
+            vectorial_relationships[name] = VectorialRelationship(
+                name,
+                group,
+                parent_collection,
+                relation_collection,
+                relation_type,
+                table_where_is_located
             )
         end
     end
@@ -439,8 +495,14 @@ function _get_collection_vectorial_relationships(db::SQLite.DB, collection_name:
 end
 
 function _get_collection_time_series(db::SQLite.DB, collection_name::String)
-    # TODO
-    time_series = Vector{TimeSeriesIds}(undef, 0)
+    time_series_table = _get_collection_time_series_tables(db, collection_name)
+    time_series = OrderedDict{String, TimeSeriesIds}()
+    df_table_infos = table_info(db, time_series_table)
+    for time_series_id in eachrow(df_table_infos)
+        name = time_series_id.name
+        table_where_is_located = time_series_table
+        time_series[name] = TimeSeriesIds(name, table_where_is_located)
+    end
     return time_series
 end
 
@@ -458,8 +520,12 @@ end
 function _no_duplicated_attributes(collection::Collection)
     num_errors = 0
     list_of_attributes = Vector{String}(undef, 0)
-    for field in fieldnames(collection)
-        for attribute in getfield(collection, field)
+    for field in fieldnames(Collection)
+        attributes = getfield(collection, field)
+        if !isa(attributes, Vector{<:Attribute})
+            continue
+        end
+        for attribute in attributes
             if attribute.name in list_of_attributes
                 @error("Duplicated attribute $(attribute.name) in collection $(collection.name)")
                 num_errors += 1
@@ -475,24 +541,19 @@ function _all_scalar_parameters_are_in_same_table(collection::Collection)
     num_errors = 0
     scalar_parameters = collection.scalar_parameters
     scalar_relationships = collection.scalar_relationships
-    table_where_first_islocated = scalar_parameters[1].table_where_is_located
-    for scalar_parameter in scalar_parameters
+    first_scalar_parameter = first(scalar_parameters).second
+    table_where_first_islocated = first_scalar_parameter.table_where_is_located
+    for (_, scalar_parameter) in scalar_parameters
         if scalar_parameter.table_where_is_located != table_where_first_islocated
             @error("Scalar parameter $(scalar_parameter.name) in collection $(collection.name) is not in the same table as the other scalar parameters.")
             num_errors += 1
         end
     end
-    for scalar_relationship in scalar_relationships
+    for (_, scalar_relationship) in scalar_relationships
         if scalar_relationship.table_where_is_located != table_where_first_islocated
             @error("Scalar relationship $(scalar_relationship.name) in collection $(collection.name) is not in the same table as the other scalar parameters.")
             num_errors += 1
         end
     end
     return num_errors
-end
-
-function _no_circular_references(map_of_collections::OrderedDict{String, Collection})
-    # TODO
-    # Build a directed graph of relations and check for cycles
-    return nothing
 end

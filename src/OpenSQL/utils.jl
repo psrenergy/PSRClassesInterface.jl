@@ -22,8 +22,11 @@ function execute_statements(db::SQLite.DB, file::String)
             try
                 DBInterface.execute(db, trated_statement)
             catch e
-                @show trated_statement
-                @error "Error executing command: $trated_statement" exception = e
+                @error """
+                        Error executing command: $trated_statement
+                        error message: $(e.msg)
+                        """
+                rethrow(e)
             end
         end
     end
@@ -51,25 +54,31 @@ Creates a new database by applying upwards all migrations in the migrations fold
 """
 function create_empty_db end
 
-function create_empty_db(database_path::String, path_schema::String)
-    if isfile(database_path)
-        error("file already exists: $database_path")
-    end
+function create_empty_db(database_path::String, path_schema::String; force::Bool = false)
+    _throw_if_file_exists(database_path, force)
     db = _open_db_connection(database_path)
-    execute_statements(db, path_schema)
-    _validate_database(db)
-    _save_collections_database_map(db)
+    try 
+        execute_statements(db, path_schema)
+        _validate_database(db)
+        _save_collections_database_map(db)
+    catch e
+        close!(db)
+        rethrow(e)
+    end
     return db
 end
 
-function create_empty_db(database_path::AbstractString)
-    if isfile(database_path)
-        error("file already exists: $database_path")
-    end
+function create_empty_db(database_path::AbstractString; force::Bool = false)
+    _throw_if_file_exists(database_path, force)
     db = _open_db_connection(database_path)
-    _apply_all_up_migrations(db)
-    _validate_database(db)
-    _save_collections_database_map(db)
+    try 
+        _apply_all_up_migrations(db)
+        _validate_database(db)
+        _save_collections_database_map(db)
+    catch e
+        close!(db)
+        rethrow(e)
+    end
     return db
 end
 
@@ -78,9 +87,25 @@ function load_db(database_path::String)
         error("file not found: $database_path")
     end
     db = _open_db_connection(database_path)
-    _validate_database(db)
-    _save_collections_database_map(db)
+    try 
+        _validate_database(db)
+        _save_collections_database_map(db)
+    catch e
+        close!(db)
+        rethrow(e)
+    end
     return db
+end
+
+function _throw_if_file_exists(file::String, force::Bool)
+    if isfile(file)
+        if force
+            rm(file)
+        else
+            error("file already exists: $file")
+        end
+    end
+    return nothing
 end
 
 function _open_db_connection(database_path::String)
@@ -127,14 +152,10 @@ function has_time_series(db::SQLite.DB, table::String, column::String)
     end
 end
 
-get_vector_attribute_name(table::String) = split(table, "_vector_")[end]
-get_collections_from_relation_table(table::String) = split(table, "_relation_")
-
 _timeseries_table_name(table::String) = table * "_timeseries"
-_vector_table_name(table::String, column::String) = table * "_vector_" * column
 _relation_table_name(table_1::String, table_2::String) = table_1 * "_relation_" * table_2
 
-close(db::SQLite.DB) = DBInterface.close!(db)
+close!(db::SQLite.DB) = DBInterface.close!(db)
 function _force_gc()
     GC.gc()
     GC.gc()

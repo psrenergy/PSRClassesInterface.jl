@@ -1,15 +1,13 @@
 module InvalidMigrations
 
-using PSRClassesInterface
+using PSRClassesInterface.OpenSQL
 using SQLite
 using Test
 
-const PSRI = PSRClassesInterface
-
-PSRI.OpenSQL.set_migrations_folder(joinpath(@__DIR__, "migrations"))
+OpenSQL.set_migrations_folder(joinpath(@__DIR__, "migrations"))
 
 function test_invalid_migrations()
-    @test_throws ErrorException PSRI.OpenSQL.test_migrations()
+    @test_throws ErrorException OpenSQL.test_migrations()
     return nothing
 end
 

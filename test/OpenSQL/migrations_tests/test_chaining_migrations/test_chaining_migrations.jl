@@ -1,30 +1,28 @@
 module ChainingMigrations
 
-using PSRClassesInterface
+using PSRClassesInterface.OpenSQL
 using SQLite
 using Test
 
-const PSRI = PSRClassesInterface
-
-PSRI.OpenSQL.set_migrations_folder(joinpath(@__DIR__, "migrations"))
+OpenSQL.set_migrations_folder(joinpath(@__DIR__, "migrations"))
 
 function test_chaining_migrations()
-    @test PSRI.OpenSQL.test_migrations()
+    @test OpenSQL.test_migrations()
     return nothing
 end
 
 function test_applying_migrations_from_a_certain_point()
     db = SQLite.DB()
-    PSRI.OpenSQL.apply_migrations!(db, 1, 3, :up)
-    PSRI.OpenSQL.apply_migrations!(db, 3, 1, :down)
-    @test PSRI.OpenSQL.db_is_empty(db)
+    OpenSQL.apply_migrations!(db, 1, 3, :up)
+    OpenSQL.apply_migrations!(db, 3, 1, :down)
+    @test OpenSQL.db_is_empty(db)
     db = SQLite.DB()
-    PSRI.OpenSQL.apply_migrations!(db, 1, 2, :up)
+    OpenSQL.apply_migrations!(db, 1, 2, :up)
     db = SQLite.DB()
-    PSRI.OpenSQL.apply_migrations!(db, 1, 3, :up)
-    PSRI.OpenSQL.apply_migrations!(db, 3, 2, :down)
-    PSRI.OpenSQL.apply_migration!(db, 1, :down)
-    @test PSRI.OpenSQL.db_is_empty(db)
+    OpenSQL.apply_migrations!(db, 1, 3, :up)
+    OpenSQL.apply_migrations!(db, 3, 2, :down)
+    OpenSQL.apply_migration!(db, 1, :down)
+    @test OpenSQL.db_is_empty(db)
     return nothing
 end
 

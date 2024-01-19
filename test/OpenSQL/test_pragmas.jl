@@ -1,10 +1,8 @@
 module TestPragmas
 
-using PSRClassesInterface
+using PSRClassesInterface.OpenSQL
 using SQLite
 using Test
-
-const PSRI = PSRClassesInterface
 
 function test_valid_pragmas_database()
     db = SQLite.DB()
@@ -15,21 +13,21 @@ function test_valid_pragmas_database()
         """,
     )
 
-    PSRI.OpenSQL._validate_database_pragmas(db)
+    OpenSQL._validate_database_pragmas(db)
     return nothing
 end
 
 function test_no_user_version_database()
     db = SQLite.DB()
 
-    @test_throws ErrorException PSRI.OpenSQL._validate_database_pragmas(db)
+    @test_throws ErrorException OpenSQL._validate_database_pragmas(db)
     return nothing
 end
 
 function test_no_necessary_pragma()
     db = SQLite.DB()
 
-    @test_throws ErrorException PSRI.OpenSQL._validate_database_pragmas(db)
+    @test_throws ErrorException OpenSQL._validate_database_pragmas(db)
     return nothing
 end
 
