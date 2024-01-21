@@ -1,3 +1,10 @@
+const CREATE_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
+    ScalarParameter => "create_element!",
+    ScalarRelationship => "set_scalar_relationship!",
+    VectorialParameter => "create_element!",
+    VectorialRelationship => "set_vectorial_relationship!",
+)
+
 function _create_scalar_attributes!(
     db::SQLite.DB,
     collection::String,
@@ -25,12 +32,16 @@ function _create_vector_group!(
 )
     vectors_group_table_name = _vectors_group_table_name(collection, group)
     sanity_check(collection, vector_attributes)
-    _all_vector_of_group_must_have_same_size!(group_vectorial_attributes, vector_attributes, group)
+    _all_vector_of_group_must_have_same_size!(
+        group_vectorial_attributes, 
+        vector_attributes, 
+        vectors_group_table_name
+    )
     df = DataFrame(group_vectorial_attributes)
     num_values = size(df, 1)
     ids = fill(id, num_values)
-    idx = collect(1:num_values)
-    DataFrames.insertcols!(df, :id => ids, :idx => idx)
+    vector_index = collect(1:num_values)
+    DataFrames.insertcols!(df, :id => ids, :vector_index => vector_index)
     SQLite.load!(df, db, vectors_group_table_name)
     return nothing
 end
@@ -65,11 +76,15 @@ function _create_element!(
 
     for (key, value) in kwargs
         if isa(value, AbstractVector)
+            _throw_if_attribute_is_not_vectorial_parameter(collection, string(key), :create)
             dict_vectorial_attributes[key] = value
         else
+            _throw_if_attribute_is_not_scalar_parameter(collection, string(key), :create)
             dict_scalar_attributes[key] = value
         end
     end
+
+    _convert_date_to_string!(dict_scalar_attributes, dict_vectorial_attributes)
 
     _create_scalar_attributes!(db, collection, dict_scalar_attributes)
 
@@ -101,7 +116,7 @@ end
 function _all_vector_of_group_must_have_same_size!(
     group_vectorial_attributes,
     vector_attributes::Vector{String},
-    group_name::String
+    table_name::String
 )
     vector_attributes = Symbol.(vector_attributes)
     if isempty(group_vectorial_attributes)
@@ -114,7 +129,7 @@ function _all_vector_of_group_must_have_same_size!(
     unique_lengths = unique(values(dict_of_lengths))
     if length(unique_lengths) > 1
         error(
-            "All vectors of group $group_name must have the same length. These are the current lengths: $(_show_sizes_of_vectors_in_string(dict_of_lengths)) "
+            "All vectors of table $table_name must have the same length. These are the current lengths: $(_show_sizes_of_vectors_in_string(dict_of_lengths)) "
         )
     end
     length_first_vector = unique_lengths[1]
@@ -133,4 +148,21 @@ function _show_sizes_of_vectors_in_string(dict_of_lengths::Dict{String, Int})
         string_sizes *= "\n - $k: $v"
     end
     return string_sizes
+end
+
+function _convert_date_to_string!(
+    dict_scalar_attributes::AbstractDict,
+    dict_vectorial_attributes::AbstractDict,
+)
+    for (key, value) in dict_scalar_attributes
+        if isa(value, TimeType) || startswith(string(key), "date")
+            dict_scalar_attributes[key] = string(DateTime(value))
+        end
+    end
+    for (key, value) in dict_vectorial_attributes
+        if eltype(value) <: TimeType || startswith(string(key), "date")
+            dict_vectorial_attributes[key] = string.(DateTime.(value))
+        end
+    end
+    return nothing
 end

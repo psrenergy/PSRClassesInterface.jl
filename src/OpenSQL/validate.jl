@@ -19,7 +19,7 @@ _is_valid_table_vector_name(table::String) =
     )
 
 _is_valid_table_timeseries_name(table::String) =
-    !isnothing(match(r"^(?:[A-Z][a-z]*)+_timeseries", table))
+    !isnothing(match(r"^(?:[A-Z][a-z]*)+_timeseriesfiles", table))
 
 _is_valid_time_series_attribute_value(value::String) =
     !isnothing(
@@ -63,8 +63,8 @@ function _validate_vector_table(db::SQLite.DB, table::String)
     if !("id" in attributes)
         error("Table $table is a vector table and does not have an \"id\" column.")
     end
-    if !("idx" in attributes)
-        error("Table $table is a vector table and does not have an \"idx\" column.")
+    if !("vector_index" in attributes)
+        error("Table $table is a vector table and does not have an \"vector_index\" column.")
     end
 end
 
@@ -122,6 +122,8 @@ function _get_correct_method_to_use(correct_composite_type::Type, action::Symbol
         return READ_METHODS_BY_CLASS_OF_ATTRIBUTE[correct_composite_type]
     elseif action == :update
         return UPDATE_METHODS_BY_CLASS_OF_ATTRIBUTE[correct_composite_type]
+    elseif action == :create
+        return CREATE_METHODS_BY_CLASS_OF_ATTRIBUTE[correct_composite_type]
     else
         error()
     end
@@ -138,7 +140,7 @@ function _throw_if_attribute_is_not_scalar_parameter(
         correct_composity_type = _attribute_composite_type(collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error("Attribute $attribute is not a scalar parameter. It is a $string_of_composite_types. Try using $correct_method_to_use instead.")
+        error("Attribute $attribute is not a scalar parameter. It is a $string_of_composite_types. Use $correct_method_to_use instead.")
     end
     return nothing
 end
@@ -154,7 +156,7 @@ function _throw_if_attribute_is_not_vectorial_parameter(
         correct_composity_type = _attribute_composite_type(collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error("Attribute $attribute is not a vectorial parameter. It is a $string_of_composite_types. Try using $correct_method_to_use instead.")
+        error("Attribute $attribute is not a vectorial parameter. It is a $string_of_composite_types. Use $correct_method_to_use instead.")
     end
     return nothing
 end
@@ -170,7 +172,7 @@ function _throw_if_attribute_is_not_scalar_relationship(
         correct_composity_type = _attribute_composite_type(collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error("Attribute $attribute is not a scalar relationship. It is a $string_of_composite_types. Try using $correct_method_to_use instead.")
+        error("Attribute $attribute is not a scalar relationship. It is a $string_of_composite_types. Use $correct_method_to_use instead.")
     end
     return nothing
 end
@@ -186,7 +188,7 @@ function _throw_if_attribute_is_not_vectorial_relationship(
         correct_composity_type = _attribute_composite_type(collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error("Attribute $attribute is not a vectorial relationship. It is a $string_of_composite_types. Try using $correct_method_to_use instead.")
+        error("Attribute $attribute is not a vectorial relationship. It is a $string_of_composite_types. Use $correct_method_to_use instead.")
     end
     return nothing
 end

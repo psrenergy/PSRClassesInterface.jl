@@ -11,7 +11,7 @@ CREATE TABLE Plant (
     label TEXT UNIQUE
 ) STRICT;
 
-CREATE TABLE Plant_timeseries (
+CREATE TABLE Plant_timeseriesfiles (
     generation TEXT,
     cost TEXT
 ) STRICT;

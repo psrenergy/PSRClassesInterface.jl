@@ -17,9 +17,9 @@ CREATE TABLE Resource (
 
 CREATE TABLE Resource_vector_other_group1 (
     id INTEGER, 
-    idx INTEGER NOT NULL,
+    vector_index INTEGER NOT NULL,
     some_vector1 REAL NOT NULL,
     some_vector2 REAL NOT NULL,
     FOREIGN KEY(id) REFERENCES Resource(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    PRIMARY KEY (id, idx)
+    PRIMARY KEY (id, vector_index)
 ) STRICT; 

@@ -28,9 +28,9 @@ function test_invalid_database_with_invalid_collection_name()
     return nothing
 end
 
-function test_invalid_database_vector_table_without_id_idx()
-    path_schema = joinpath(@__DIR__, "test_invalid_database_vector_table_without_id_idx.sql")
-    db_path = joinpath(@__DIR__, "test_invalid_database_vector_table_without_id_idx.sqlite")
+function test_invalid_database_vector_table_without_vector_index()
+    path_schema = joinpath(@__DIR__, "test_invalid_database_vector_table_without_vector_index.sql")
+    db_path = joinpath(@__DIR__, "test_invalid_database_vector_table_without_vector_index.sqlite")
     @test_throws ErrorException OpenSQL.create_empty_db(db_path, path_schema; force = true)
     rm(db_path)
     return nothing
@@ -55,8 +55,11 @@ function test_valid_database()
 end
 
 function test_invalid_foreign_key_has_not_null_constraint()
-    #TODO 
-    @test_broken false
+    path_schema = joinpath(@__DIR__, "test_invalid_foreign_key_has_not_null_constraint.sql")
+    db_path = joinpath(@__DIR__, "test_invalid_foreign_key_has_not_null_constraint.sqlite")
+    @test_throws ErrorException OpenSQL.create_empty_db(db_path, path_schema; force = true)
+    @test true
+    rm(db_path)
     return nothing
 end
 

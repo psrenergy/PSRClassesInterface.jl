@@ -245,7 +245,7 @@ function test_migrations()
     end
 
     # Go to the first migration and apply every 
-    # migration in order.
+    # migration in vector_index.
     db = SQLite.DB()
     expected_user_version = 0
     for migration in migrations

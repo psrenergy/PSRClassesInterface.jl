@@ -17,19 +17,19 @@ CREATE TABLE Resource (
 
 CREATE TABLE Resource_vector_some_group (
     id INTEGER, 
-    idx INTEGER NOT NULL,
+    vector_index INTEGER NOT NULL,
     some_value REAL NOT NULL,
     FOREIGN KEY(id) REFERENCES Resource(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    PRIMARY KEY (id, idx)
+    PRIMARY KEY (id, vector_index)
 ) STRICT; 
 
 CREATE TABLE Resource_vector_group_of_values1 (
     id INTEGER, 
-    idx INTEGER NOT NULL,
+    vector_index INTEGER NOT NULL,
     some_val_of_size_k_1 REAL NOT NULL,
     some_val_of_size_k_2 REAL NOT NULL,
     FOREIGN KEY(id) REFERENCES Resource(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    PRIMARY KEY (id, idx)
+    PRIMARY KEY (id, vector_index)
 ) STRICT;
 
 CREATE TABLE Cost (
@@ -52,15 +52,15 @@ CREATE TABLE Plant (
 
 CREATE TABLE Plant_vector_cost_relationship (
     id INTEGER,
-    idx INTEGER NOT NULL,
+    vector_index INTEGER NOT NULL,
     some_factor REAL NOT NULL,
     cost_id INTEGER,
     FOREIGN KEY(id) REFERENCES Plant(id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY(cost_id) REFERENCES Cost(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    PRIMARY KEY (id, idx)
+    PRIMARY KEY (id, vector_index)
 ) STRICT;
 
-CREATE TABLE Plant_timeseries (
+CREATE TABLE Plant_timeseriesfiles (
     generation TEXT,
     cost TEXT
 ) STRICT;

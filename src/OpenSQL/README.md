@@ -64,24 +64,24 @@ CREATE TABLE ThermalPlant(
 <p style="text-align: center;"> COLLECTION_vector_ATTRIBUTE</p>
 
 - Note that after **_vector_** the name of the attribute should follow the same rule as non-vector attributes.
-- The Table must contain a Column named `id` and another named `idx`.
-- There must be a Column named after the attribute name, which will store the value of the attribute for the specified element `id` and index `idx`.
+- The Table must contain a Column named `id` and another named `vector_index`.
+- There must be a Column named after the attribute name, which will store the value of the attribute for the specified element `id` and index `vector_index`.
 
 Example:
 ```sql
 CREATE TABLE ThermalPlant_vector_some_value(
     id INTEGER,
-    idx INTEGER NOT NULL,
+    vector_index INTEGER NOT NULL,
     some_value REAL NOT NULL,
     FOREIGN KEY (id) REFERENCES ThermalPlant(id) ON DELETE CASCADE,
-    PRIMARY KEY (id, idx)
+    PRIMARY KEY (id, vector_index)
 ) STRICT;
 ```
 
 ### Time Series
 
 - All Time Series for the elements from a Collection should be stored in a Table
-- The Table name should be the same as the name of the Collection followed by `_timeseries`, as presented below
+- The Table name should be the same as the name of the Collection followed by `_timeseriesfiles`, as presented below
 
 <p style="text-align: center"> COLLECTION_vector_ATTRIBUTE</p>
 

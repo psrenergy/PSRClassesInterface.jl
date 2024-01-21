@@ -9,37 +9,41 @@ abstract type ScalarAttribute <: Attribute end
 abstract type VectorialAttribute <: Attribute end
 abstract type ReferenceToFileAttribute <: Attribute end
 
-# TODO remove {T}
 mutable struct ScalarParameter{T} <: ScalarAttribute
     name::String
     type::Type{T}
+    default_value::Union{Missing, T}
+    not_null::Bool
     parent_collection::String
     table_where_is_located::String
 end
 
-mutable struct ScalarRelationship <: ScalarAttribute
+mutable struct ScalarRelationship{T} <: ScalarAttribute
     name::String
+    type::Type{T}
+    default_value::Union{Missing, T}
+    not_null::Bool
     parent_collection::String
     relation_collection::String
     relation_type::String
     table_where_is_located::String
 end
 
-# TODO remove {T}
 mutable struct VectorialParameter{T} <: VectorialAttribute
     name::String
     type::Type{T}
-    # Some vectors must have the same size per definition. 
-    # These vectors should be grouped together.
+    default_value::Union{Missing, T}
+    not_null::Bool
     group::String
     parent_collection::String
     table_where_is_located::String
 end
 
-mutable struct VectorialRelationship <: VectorialAttribute
+mutable struct VectorialRelationship{T} <: VectorialAttribute
     name::String
-    # Some vectors must have the same size per definition. 
-    # These vectors should be grouped together.
+    type::Type{T}
+    default_value::Union{Missing, T}
+    not_null::Bool
     group::String
     parent_collection::String
     relation_collection::String
@@ -47,7 +51,7 @@ mutable struct VectorialRelationship <: VectorialAttribute
     table_where_is_located::String
 end
 
-mutable struct TimeSeriesIds <: ReferenceToFileAttribute
+mutable struct TimeSeriesFile <: ReferenceToFileAttribute
     name::String
     table_where_is_located::String
 end
@@ -64,14 +68,11 @@ mutable struct Collection
     scalar_relationships::OrderedDict{String, ScalarRelationship}
     vectorial_parameters::OrderedDict{String, VectorialParameter}
     vectorial_relationships::OrderedDict{String, VectorialRelationship}
-    time_series::OrderedDict{String, TimeSeriesIds}
+    time_series::OrderedDict{String, TimeSeriesFile}
 end
 
 # TODO we should do some Base.getfield to make accessing attributes easier
-# TODO references cannot have the non-null contraint. If they have we can create some sorts of weird behaviours.
-# TODO vectors should have id, and order instead of id and idx
-# TODO add information about not null constraints and default values
-# TODO make a way in which relationships can only be created via update interface.
+# TODO remember to write md about date_ parameters
 
 # Dictionary storing the collections map for the database
 const COLLECTION_DATABASE_MAP = OrderedDict{String, Collection}()
@@ -296,7 +297,7 @@ function _get_relation_type_from_attribute(attribute_name::String)
 end
 
 function _get_collection_time_series_tables(::SQLite.DB, collection_name::String)
-    return string(collection_name, "_timeseries")
+    return string(collection_name, "_timeseriesfiles")
 end
 
 function _name_of_vectorial_group(table_name::String)
@@ -342,17 +343,46 @@ function foreign_keys_list(db::SQLite.DB, table_name::String)
     return df
 end
 
-function _sql_type_to_julia_type(sql_type::String)
+function _sql_type_to_julia_type(attribute_name::String, sql_type::String)
     if sql_type == "INTEGER"
         return Int
     elseif sql_type == "REAL"
         return Float64
     elseif sql_type == "TEXT"
-        return String
+        if startswith(attribute_name, "date_")
+            return DateTime
+        else
+            return String
+        end
     elseif sql_type == "BLOB"
         return Vector{UInt8}
     else
         error("Unknown SQL type: $sql_type")
+    end
+end
+
+function _try_cast_as_datetime(date::String)
+    treated_date = replace(date, "\"" => "")
+    return DateTime(treated_date)
+end
+
+function _get_default_value(
+    ::Type{T}, 
+    default_value::Union{Missing, String}
+) where T
+    try 
+        if ismissing(default_value)
+            return default_value # missing
+        elseif T <: Number
+            return parse(T, default_value)
+        elseif T <: DateTime
+            return _try_cast_as_datetime(default_value)
+        else
+            return default_value
+        end
+    catch e
+        @error("Could not parse default value \"$default_value\" to type $T")
+        rethrow(e)
     end
 end
 
@@ -383,7 +413,9 @@ function _get_collection_scalar_parameters(db::SQLite.DB, collection_name::Strin
             # not a ScalarParameter.
             continue
         end
-        type = _sql_type_to_julia_type(scalar_attribute.type)
+        type = _sql_type_to_julia_type(name, scalar_attribute.type)
+        not_null = Bool(scalar_attribute.notnull)
+        default_value = _get_default_value(type, scalar_attribute.dflt_value)
         parent_collection = collection_name
         table_where_is_located = scalar_attributes_table
         if haskey(scalar_parameters, name)
@@ -391,8 +423,10 @@ function _get_collection_scalar_parameters(db::SQLite.DB, collection_name::Strin
         end
         scalar_parameters[name] = ScalarParameter(
             name, 
-            type, 
-            parent_collection, 
+            type,
+            default_value,
+            not_null,
+            parent_collection,
             table_where_is_located
         )
     end
@@ -402,10 +436,24 @@ end
 function _get_collection_scalar_relationships(db::SQLite.DB, collection_name::String)
     scalar_attributes_table = _get_collection_scalar_attribute_tables(db, collection_name)
     df_foreign_keys_list = foreign_keys_list(db, scalar_attributes_table)
+    df_table_infos = table_info(db, scalar_attributes_table)
     scalar_relationships = OrderedDict{String, ScalarRelationship}()
     for foreign_key in eachrow(df_foreign_keys_list)
         _warn_if_foreign_keys_does_not_cascade(collection_name, foreign_key)
         name = foreign_key.from
+        # This is not the optimal way of doing
+        # this query but it is fast enough.
+        default_value = nothing
+        not_null = nothing
+        type = nothing
+        for scalar_attribute in eachrow(df_table_infos)
+            if scalar_attribute.name == name
+                type = _sql_type_to_julia_type(name, scalar_attribute.type)
+                default_value = _get_default_value(type, scalar_attribute.dflt_value)
+                not_null = Bool(scalar_attribute.notnull)
+                break
+            end
+        end
         relation_type = _get_relation_type_from_attribute(name)
         parent_collection = collection_name
         relation_collection = foreign_key.table
@@ -414,8 +462,11 @@ function _get_collection_scalar_relationships(db::SQLite.DB, collection_name::St
             error("Duplicated scalar relationship $name in collection $collection_name")
         end
         scalar_relationships[name] = ScalarRelationship(
-            name, 
-            parent_collection, 
+            name,
+            type,
+            default_value,
+            not_null,
+            parent_collection,
             relation_collection,
             relation_type,
             table_where_is_located
@@ -436,7 +487,7 @@ function _get_collection_vectorial_parameters(db::SQLite.DB, collection_name::St
         df_foreign_keys_list = foreign_keys_list(db, table_name)
         for vectorial_attribute in eachrow(df_table_infos)
             name = vectorial_attribute.name
-            if name == "id" || name == "idx"
+            if name == "id" || name == "vector_index"
                 # These are obligatory for every vector table
                 # and have no point in being stored in the database definition.
                 continue
@@ -447,13 +498,17 @@ function _get_collection_vectorial_parameters(db::SQLite.DB, collection_name::St
                 # not a VectorialParameter.
                 continue
             end
-            type = _sql_type_to_julia_type(vectorial_attribute.type)
+            type = _sql_type_to_julia_type(name, vectorial_attribute.type)
+            default_value = _get_default_value(type, vectorial_attribute.dflt_value)
+            not_null = Bool(vectorial_attribute.notnull)
             if haskey(vectorial_parameters, name)
                 error("Duplicated vectorial parameter $name in collection $collection_name")
             end
             vectorial_parameters[name] = VectorialParameter(
                 name, 
                 type, 
+                default_value,
+                not_null,
                 group, 
                 parent_collection, 
                 table_where_is_located
@@ -470,6 +525,7 @@ function _get_collection_vectorial_relationships(db::SQLite.DB, collection_name:
     for table_name in vectorial_attributes_tables
         group = _name_of_vectorial_group(table_name)
         table_where_is_located = table_name
+        df_table_infos = table_info(db, table_name)
         df_foreign_keys_list = foreign_keys_list(db, table_name)
         for foreign_key in eachrow(df_foreign_keys_list)
             _warn_if_foreign_keys_does_not_cascade(collection_name, foreign_key)
@@ -478,11 +534,27 @@ function _get_collection_vectorial_relationships(db::SQLite.DB, collection_name:
                 # This is obligatory for every vector table.
                 continue
             end
+            # This is not the optimal way of doing
+            # this query but it is fast enough.
+            default_value = nothing
+            not_null = nothing
+            type = nothing
+            for scalar_attribute in eachrow(df_table_infos)
+                if scalar_attribute.name == name
+                    type = _sql_type_to_julia_type(name, scalar_attribute.type)
+                    default_value = _get_default_value(type, scalar_attribute.dflt_value)
+                    not_null = Bool(scalar_attribute.notnull)
+                    break
+                end
+            end
             relation_type = _get_relation_type_from_attribute(name)
             relation_collection = foreign_key.table
             table_where_is_located = table_name
             vectorial_relationships[name] = VectorialRelationship(
                 name,
+                type,
+                default_value,
+                not_null,
                 group,
                 parent_collection,
                 relation_collection,
@@ -496,12 +568,12 @@ end
 
 function _get_collection_time_series(db::SQLite.DB, collection_name::String)
     time_series_table = _get_collection_time_series_tables(db, collection_name)
-    time_series = OrderedDict{String, TimeSeriesIds}()
+    time_series = OrderedDict{String, TimeSeriesFile}()
     df_table_infos = table_info(db, time_series_table)
     for time_series_id in eachrow(df_table_infos)
         name = time_series_id.name
         table_where_is_located = time_series_table
-        time_series[name] = TimeSeriesIds(name, table_where_is_located)
+        time_series[name] = TimeSeriesFile(name, table_where_is_located)
     end
     return time_series
 end
@@ -511,6 +583,8 @@ function _validate_collection(collection::Collection)
     num_errors = 0
     num_errors += _no_duplicated_attributes(collection)
     num_errors += _all_scalar_parameters_are_in_same_table(collection)
+    num_errors += _relationships_do_not_have_null_constraints(collection)
+    num_errors += _relationships_do_not_have_default_values(collection)
     if num_errors > 0
         error("Collection $(collection.name) has $num_errors definition errors.")
     end
@@ -552,6 +626,44 @@ function _all_scalar_parameters_are_in_same_table(collection::Collection)
     for (_, scalar_relationship) in scalar_relationships
         if scalar_relationship.table_where_is_located != table_where_first_islocated
             @error("Scalar relationship $(scalar_relationship.name) in collection $(collection.name) is not in the same table as the other scalar parameters.")
+            num_errors += 1
+        end
+    end
+    return num_errors
+end
+
+function _relationships_do_not_have_null_constraints(collection::Collection)
+    num_errors = 0
+    scalar_relationships = collection.scalar_relationships
+    vectorial_relationships = collection.vectorial_relationships
+    for (_, scalar_relationship) in scalar_relationships
+        if scalar_relationship.not_null
+            @error("Scalar relationship $(scalar_relationship.name) in collection $(collection.name) has a not null constraint. This is not allowed.")
+            num_errors += 1
+        end
+    end
+    for (_, vectorial_relationship) in vectorial_relationships
+        if vectorial_relationship.not_null
+            @error("Vectorial relationship $(vectorial_relationship.name) in collection $(collection.name) has a not null constraint. This is not allowed.")
+            num_errors += 1
+        end
+    end
+    return num_errors
+end
+
+function _relationships_do_not_have_default_values(collection::Collection)
+    num_errors = 0
+    scalar_relationships = collection.scalar_relationships
+    vectorial_relationships = collection.vectorial_relationships
+    for (_, scalar_relationship) in scalar_relationships
+        if !ismissing(scalar_relationship.default_value)
+            @error("Scalar relationship $(scalar_relationship.name) in collection $(collection.name) has a default value.")
+            num_errors += 1
+        end
+    end
+    for (_, vectorial_relationship) in vectorial_relationships
+        if !ismissing(vectorial_relationship.default_value)
+            @error("Vectorial relationship $(vectorial_relationship.name) in collection $(collection.name) has a default value.")
             num_errors += 1
         end
     end

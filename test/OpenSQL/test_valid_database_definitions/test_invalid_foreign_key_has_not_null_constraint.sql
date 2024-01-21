@@ -8,16 +8,12 @@ CREATE TABLE Configuration (
     enum1 TEXT NOT NULL DEFAULT 'A' CHECK(enum1 IN ('A', 'B', 'C'))
 ) STRICT;
 
-CREATE TABLE Resource (
+CREATE TABLE Plant (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT UNIQUE,
-    type TEXT NOT NULL DEFAULT "D" CHECK(type IN ('D', 'E', 'F'))
-) STRICT;
-
-CREATE TABLE Resource_vector_some_group (
-    id INTEGER, 
-    vector_index INTEGER NOT NULL,
-    type REAL NOT NULL,
-    FOREIGN KEY(id) REFERENCES Resource(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    PRIMARY KEY (id, vector_index)
+    capacity REAL NOT NULL DEFAULT 0,
+    plant_turbine_to INTEGER NOT NULL,
+    plant_spill_to INTEGER,
+    FOREIGN KEY(plant_turbine_to) REFERENCES Plant(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY(plant_spill_to) REFERENCES Plant(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) STRICT;

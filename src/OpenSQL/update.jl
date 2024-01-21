@@ -142,7 +142,7 @@ function set_related_time_series!(
     table::String;
     kwargs...,
 )
-    table_name = table * "_timeseries"
+    table_name = table * "_timeseriesfiles"
     dict_time_series = Dict()
     for (key, value) in kwargs
         @assert isa(value, String)
