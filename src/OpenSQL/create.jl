@@ -1,10 +1,3 @@
-const CREATE_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
-    ScalarParameter => "create_element! with (; name_of_scalae_parameter = value)",
-    ScalarRelationship => "set_scalar_relationship!",
-    VectorialParameter => "create_element! with (; name_of_vectorial_parameter = [values])",
-    VectorialRelationship => "set_vectorial_relationship!",
-)
-
 function _create_scalar_attributes!(
     db::SQLite.DB,
     collection::String,
@@ -12,6 +5,8 @@ function _create_scalar_attributes!(
 )
     attributes = string.(keys(scalar_attributes))
     sanity_check(collection, attributes)
+
+    _replace_scalar_relationship_labels_with_id!(db, collection, scalar_attributes)
 
     table = _get_collection_scalar_attribute_tables(db, collection)
 
@@ -32,6 +27,7 @@ function _create_vector_group!(
 )
     vectors_group_table_name = _vectors_group_table_name(collection, group)
     sanity_check(collection, vector_attributes)
+    _replace_vectorial_relationship_labels_with_ids!(db, collection, group_vectorial_attributes)
     _all_vector_of_group_must_have_same_size!(
         group_vectorial_attributes, 
         vector_attributes, 
@@ -76,14 +72,18 @@ function _create_element!(
 
     for (key, value) in kwargs
         if isa(value, AbstractVector)
-            _throw_if_attribute_is_not_vectorial_parameter(collection, string(key), :create)
+            _throw_if_not_vectorial_attribute(collection, string(key))
+            if isempty(value)
+                error("Cannot create the attribute $key with an empty vector.")
+            end
             dict_vectorial_attributes[key] = value
         else
-            _throw_if_attribute_is_not_scalar_parameter(collection, string(key), :create)
+            _throw_if_not_scalar_attribute(collection, string(key))
             dict_scalar_attributes[key] = value
         end
     end
 
+    _validate_attribute_types_on_creation!(collection, dict_scalar_attributes, dict_vectorial_attributes)
     _convert_date_to_string!(dict_scalar_attributes, dict_vectorial_attributes)
 
     _create_scalar_attributes!(db, collection, dict_scalar_attributes)
@@ -150,6 +150,19 @@ function _show_sizes_of_vectors_in_string(dict_of_lengths::Dict{String, Int})
     return string_sizes
 end
 
+function _get_label_or_id(
+    collection::String, 
+    dict_scalar_attributes
+)
+    if haskey(dict_scalar_attributes, :label)
+        return dict_scalar_attributes[:label]
+    elseif haskey(dict_scalar_attributes, :id)
+        return dict_scalar_attributes[:id]
+    else
+        error("No label or id was provided for collection $collection.")
+    end
+end
+
 function _convert_date_to_string!(
     dict_scalar_attributes::AbstractDict,
     dict_vectorial_attributes::AbstractDict,
@@ -168,5 +181,49 @@ function _convert_date_to_string!(
             dict_vectorial_attributes[key] = string.(dates)
         end
     end
+    return nothing
+end
+
+function _replace_scalar_relationship_labels_with_id!(
+    db::SQLite.DB, 
+    collection::String, 
+    scalar_attributes
+)
+    for (key, value) in scalar_attributes
+        if _is_scalar_relationship(collection, string(key))
+            scalar_relationship = _get_scalar_relationship(collection, string(key))
+            collection_to = scalar_relationship.relation_collection
+            scalar_attributes[key] = _get_id(db, collection_to, value)
+        end
+    end
+    return nothing
+end
+
+function _replace_vectorial_relationship_labels_with_ids!(
+    db::SQLite.DB, 
+    collection::String, 
+    vectorial_attributes
+)
+    for (key, value) in vectorial_attributes
+        if _is_vectorial_relationship(collection, string(key))
+            vectorial_relationship = _get_vectorial_relationship(collection, string(key))
+            collection_to = vectorial_relationship.relation_collection
+            vec_of_ids = zeros(Int, length(value))
+            for i in eachindex(value)
+                vec_of_ids[i] = _get_id(db, collection_to, value[i])
+            end
+            vectorial_attributes[key] = vec_of_ids
+        end
+    end
+    return nothing
+end
+
+function _validate_attribute_types_on_creation!(
+    collection::String,
+    dict_scalar_attributes::AbstractDict,
+    dict_vectorial_attributes::AbstractDict,
+)
+    label_or_id = _get_label_or_id(collection, dict_scalar_attributes)
+    _validate_attribute_types!(collection, label_or_id, dict_scalar_attributes, dict_vectorial_attributes)
     return nothing
 end

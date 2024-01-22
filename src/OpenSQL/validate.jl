@@ -122,8 +122,6 @@ function _get_correct_method_to_use(correct_composite_type::Type, action::Symbol
         return READ_METHODS_BY_CLASS_OF_ATTRIBUTE[correct_composite_type]
     elseif action == :update
         return UPDATE_METHODS_BY_CLASS_OF_ATTRIBUTE[correct_composite_type]
-    elseif action == :create
-        return CREATE_METHODS_BY_CLASS_OF_ATTRIBUTE[correct_composite_type]
     else
         error()
     end
@@ -193,30 +191,42 @@ function _throw_if_attribute_is_not_vectorial_relationship(
     return nothing
 end
 
-function _throw_if_scalar_relationship_does_not_exist(
-    collection_from::String,
-    collection_to::String,
-    relation_type::String
+function _throw_if_not_scalar_attribute(
+    collection::String, 
+    attribute::String,
 )
-    if !_scalar_relation_exists(collection_from, collection_to, relation_type)
-        error(
-            "Scalar relationship `$relation_type` between $collection_from and $collection_to does not exist. \n" * 
-            "This is the list of scalar relationships that exist: " *
-            "$(_show_existing_relation_types(_list_of_scalar_relation_types(collection_from, collection_to)))"
-        )
+    sanity_check(collection, attribute)
+
+    if _is_vectorial_parameter(collection, attribute) || _is_vectorial_relationship(collection, attribute)
+       error("Attribute $attribute is not a scalar attribute. You must input a vector for this attribute.")
     end
+
+    return nothing
 end
 
-function _throw_if_vectorial_relationship_does_not_exist(
+function _throw_if_not_vectorial_attribute(
+    collection::String, 
+    attribute::String,
+)
+    sanity_check(collection, attribute)
+
+    if _is_scalar_parameter(collection, attribute) || _is_scalar_relationship(collection, attribute)
+       error("Attribute $attribute is not a vector attribute. You must input a scalar for this attribute.")
+    end
+
+    return nothing
+end
+
+function _throw_if_relationship_does_not_exist(
     collection_from::String,
     collection_to::String,
     relation_type::String
 )
-    if !_vectorial_relation_exists(collection_from, collection_to, relation_type)
+    if !_scalar_relation_exists(collection_from, collection_to, relation_type) && !_vectorial_relation_exists(collection_from, collection_to, relation_type)
         error(
-            "Vectorial relationship `$relation_type` between $collection_from and $collection_to does not exist. \n" * 
-            "This is the list of scalar relationships that exist: " *
-            "$(_show_existing_relation_types(_list_of_vectorial_relation_types(collection_from, collection_to)))"
+            "Relationship `$relation_type` between $collection_from and $collection_to does not exist. \n" * 
+            "This is the list of relationships that exist: " *
+            "$(_show_existing_relation_types(_list_of_relation_types(collection_from, collection_to)))"
         )
     end
 end
@@ -230,6 +240,43 @@ function _show_existing_relation_types(possible_relation_types::Vector{String})
         string_relation_types = "\n**no relations exist between the collections**"
     end
     return string_relation_types
+end
+
+function _validate_attribute_types!(
+    collection::String,
+    label_or_id::Union{Integer, String},
+    dict_scalar_attributes,
+    dict_vectorial_attributes,
+)
+    for (key, value) in dict_scalar_attributes
+        attribute = _get_attribute(collection, string(key))
+        if isa(attribute, ScalarRelationship)
+            if !isa(value, String)
+                error(
+                    "The value of the attribute \"$key\" in element \"$label_or_id\" of collection \"$(collection)\" is not of type String. User inputed $(typeof(value)): $value."
+                )
+            end
+        elseif !isa(value, attribute.type)
+            error(
+                "The value of the attribute \"$key\" in element \"$label_or_id\" of collection \"$(collection)\" is not of type $(attribute.type). User inputed $(typeof(value)): $value."
+            )
+        end
+    end
+    for (key, value) in dict_vectorial_attributes
+        attribute = _get_attribute(collection, string(key))
+        if isa(attribute, VectorialRelationship) 
+            if !isa(value, Vector{String})
+                error(
+                    "The value of the attribute \"$key\" in element \"$label_or_id\" of collection \"$(collection)\" is not of type Vector{String}. User inputed $(typeof(value)): $value."
+                )
+            end
+        elseif !isa(value, Vector{attribute.type})
+            error(
+                "The value of the attribute \"$key\" in element \"$label_or_id\" of collection \"$(collection)\" is not of type Vector{$(attribute.type)}. User inputed $(typeof(value)): $value."
+            )
+        end
+    end
+    return nothing
 end
 
 # Constant to enable or disable sanity checks

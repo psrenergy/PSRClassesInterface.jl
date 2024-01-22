@@ -1,24 +1,24 @@
 const UPDATE_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
     ScalarParameter => "update_scalar_parameters!",
-    ScalarRelationship => "set_scalar_relationship!",
-    VectorialParameter => "update_vectorial_parameters!",
-    VectorialRelationship => "set_vectorial_relationship!",
+    ScalarRelationship => "set_relationship!",
+    VectorialParameter => "update_vectorial_attributes!",
+    VectorialRelationship => "set_relationship!",
 )
 
-function update_scalar_parameters!(
+function _update_scalar_attributes!(
     db::SQLite.DB, 
     collection::String, 
-    label::String;
-    kwargs...
+    label::String,
+    dict_scalar_attributes::AbstractDict,
 )
-    for (attribute, val) in kwargs
+    for (attribute, val) in dict_scalar_attributes
         attribute_name = string(attribute)
-        update_scalar_parameter!(db, collection, attribute_name, label, val)
+        _update_scalar_attributes!(db, collection, attribute_name, label, val)
     end
     return nothing
 end
 
-function update_scalar_parameter!(
+function _update_scalar_attributes!(
     db::SQLite.DB,
     collection::String,
     attribute::String,
@@ -26,11 +26,11 @@ function update_scalar_parameter!(
     val,
 )
     id = _get_id(db, collection, label)
-    update_scalar_parameter!(db, collection, attribute, id, val)
+    _update_scalar_attributes!(db, collection, attribute, id, val)
     return nothing
 end
 
-function update_scalar_parameter!(
+function _update_scalar_attributes!(
     db::SQLite.DB,
     collection::String,
     attribute::String,
@@ -38,76 +38,12 @@ function update_scalar_parameter!(
     val,
 )
     sanity_check(collection, attribute)
-    _throw_if_attribute_is_not_scalar_parameter(collection, attribute, :update)
     table_name = _table_where_attribute_is_located(collection, attribute)
     DBInterface.execute(db, "UPDATE $table_name SET $attribute = '$val' WHERE id = '$id'")
     return nothing
 end
 
-function update_vectorial_parameters!(
-    db::SQLite.DB,
-    collection::String,
-    label::String;
-    kwargs...
-)
-    for (attribute, val) in kwargs
-        attribute_name = string(attribute)
-        if !isa(val, AbstractVector)
-            error("Cannot update vectorial parameter $attribute_name with a non vector value $val.")
-        end
-        update_vectorial_parameter!(db, collection, attribute_name, label, val)
-    end
-    return nothing
-end
-
-function update_vectorial_parameter!(
-    db::SQLite.DB,
-    collection::String,
-    attribute::String,
-    label::String,
-    vals::V,
-) where {V <: AbstractVector}
-    id = _get_id(db, collection, label)
-    update_vectorial_parameter!(db, collection, attribute, id, vals)
-    return nothing
-end
-
-function update_vectorial_parameter!(
-    db::SQLite.DB,
-    collection::String,
-    attribute::String,
-    id::Integer,
-    vals::V,
-) where {V <: AbstractVector}
-    sanity_check(collection, attribute)
-    _throw_if_attribute_is_not_vectorial_parameter(collection, attribute, :update)
-
-    table_name = _table_where_attribute_is_located(collection, attribute)
-
-    current_vector = read_vectorial_parameter(db, collection, attribute, id)
-    current_length = length(current_vector)
-    new_length = length(vals)
-    error()
-    if current_length != new_length
-        error(
-            "Cannot update vectorial parameter $attribute with a vector of length $new_length. " * 
-            "The current length is $current_length. This can be done not by updating the vector " *
-            "but by deleting the element and creating a new one with the desired vector length. " *
-            "Use the functions read_element, delete_element! and create_element! for this purpose.",
-        )
-    end
-
-    for i in 1:current_length
-        DBInterface.execute(
-            db,
-            "UPDATE $table_name SET $attribute = '$(vals[i])' WHERE id = '$id' AND vector_index = '$i'",
-        )
-    end
-
-    return nothing
-end
-
-function set_scalar_relationship!(
+function set_relationship!(
     db::SQLite.DB,
     collection_from::String,
     collection_to::String,
@@ -117,7 +53,8 @@ function set_scalar_relationship!(
 )
     id_collection_from = _get_id(db, collection_from, label_collection_from)
     id_collection_to = _get_id(db, collection_to, label_collection_to)
-    set_scalar_relationship!(
+    _throw_if_relationship_does_not_exist(collection_from, collection_to, relation_type)
+    set_relationship!(
         db,
         collection_from,
         collection_to,
@@ -128,7 +65,7 @@ function set_scalar_relationship!(
     return nothing
 end
 
-function set_scalar_relationship!(
+function set_relationship!(
     db::SQLite.DB,
     collection_from::String,
     collection_to::String,
@@ -139,7 +76,6 @@ function set_scalar_relationship!(
     if collection_from == collection_to && id_collection_from == id_collection_to
         error("Cannot set a relationship between the same element.")
     end
-    _throw_if_scalar_relationship_does_not_exist(collection_from, collection_to, relation_type)
     attribute_name = lowercase(collection_to) * "_" * relation_type
     table_name = _table_where_attribute_is_located(collection_from, attribute_name)
     SQLite.execute(
@@ -149,44 +85,111 @@ function set_scalar_relationship!(
     return nothing
 end
 
-function set_vectorial_relationship!(
+function _update_element!(
     db::SQLite.DB,
-    collection_from::String,
-    collection_to::String,
-    label_collection_from::String,
-    label_collection_to::String,
-    relation_type::String,
+    collection::String,
+    label::String;
+    kwargs...
 )
-    id_collection_from = _get_id(db, collection_from, label_collection_from)
-    id_collection_to = _get_id(db, collection_to, label_collection_to)
-    set_vectorial_relationship!(
-        db,
-        collection_from,
-        collection_to,
-        id_collection_from,
-        id_collection_to,
-        relation_type,
-    )
-    return nothing
+    sanity_check(collection)
+    @assert !isempty(kwargs)
+    dict_scalar_attributes = Dict()
+    dict_vectorial_attributes = Dict()
+
+    for (key, value) in kwargs
+        if isa(value, AbstractVector)
+            _throw_if_not_vectorial_attribute(collection, string(key))
+            if isempty(value)
+                error("Cannot update the attribute $key with an empty vector.")
+            end
+            dict_vectorial_attributes[key] = value
+        else
+            _throw_if_not_scalar_attribute(collection, string(key))
+            dict_scalar_attributes[key] = value
+        end
+    end
+
+    _validate_attribute_types!(collection, label, dict_scalar_attributes, dict_vectorial_attributes)
+    _convert_date_to_string!(dict_scalar_attributes, dict_vectorial_attributes)
+
+    if isempty(dict_vectorial_attributes)
+        _update_scalar_attributes!(db, collection, label, dict_scalar_attributes)
+    else
+        # Read the element
+        # modify the vectorial attributes
+        # create a check point
+        # delete the element
+        # create new the element
+        # Roll back if not succedded
+        error()
+    end
 end
 
-function set_vectorial_relationship!(
-    db::SQLite.DB,
-    collection_from::String,
-    collection_to::String,
-    id_collection_from::Integer,
-    id_collection_to::Integer,
-    relation_type::String,
-)
-    _throw_if_vectorial_relationship_does_not_exist(collection_from, collection_to, relation_type)
-    attribute_name = lowercase(collection_to) * "_" * relation_type
-    table_name = _table_where_attribute_is_located(collection_from, attribute_name)
-    # To set vectorial relationships we do an "UPSERT" (update or insert) operation.
-    error()
-    SQLite.execute(
-        db,
-        "UPDATE $table_name SET $attribute_name = '$id_collection_to' WHERE id = '$id_collection_from'",
+"""
+    update_element!(
+        db::SQLite.DB,
+        collection::String,
+        label::String;
+        kwargs...
     )
+"""
+function update_element!(
+    db::SQLite.DB,
+    collection::String,
+    label::String;
+    kwargs...
+)
+    try 
+        _update_element!(db, collection, label; kwargs...)
+    catch e
+        @error """
+            Error updating element $label in collection $collection
+            """
+        rethrow(e)
+    end
+end
+
+"""
+    update_vectorial_attributes!(
+        db::SQLite.DB,
+        collection::String,
+        label::String;
+        kwargs...
+    )
+
+We msust point out that this function deletes the previous vectorial attributes and creates new ones.
+
+"""
+function update_vectorial_attributes!(
+    db::SQLite.DB,
+    collection::String,
+    label::String;
+    kwargs...
+)
+    sanity_check(collection)
+    @assert !isempty(kwargs)
+    dict_vectorial_attributes = Dict()
+
+    for (key, value) in kwargs
+        if isa(value, AbstractVector)
+            _throw_if_not_vectorial_attribute(collection, string(key))
+            if isempty(value)
+                error("Cannot update the attribute $key with an empty vector.")
+            end
+            dict_vectorial_attributes[key] = value
+        else
+            error("The value of the attribute \"$key\" is not a vector.")
+        end
+    end
+
+    _convert_date_to_string!(Dict(), dict_vectorial_attributes)
+
+    _delete_vectorial_attributes!(db, collection, label, string.(keys(dict_vectorial_attributes)))
+
+    if !isempty(dict_vectorial_attributes)
+        id = _get_id(db, collection, label)
+        _create_vectors!(db, collection, id, dict_vectorial_attributes)
+    end
     return nothing
 end
 
