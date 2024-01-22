@@ -1,7 +1,7 @@
 const CREATE_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
-    ScalarParameter => "create_element!",
+    ScalarParameter => "create_element! with (; name_of_scalae_parameter = value)",
     ScalarRelationship => "set_scalar_relationship!",
-    VectorialParameter => "create_element!",
+    VectorialParameter => "create_element! with (; name_of_vectorial_parameter = [values])",
     VectorialRelationship => "set_vectorial_relationship!",
 )
 
@@ -161,7 +161,11 @@ function _convert_date_to_string!(
     end
     for (key, value) in dict_vectorial_attributes
         if eltype(value) <: TimeType || startswith(string(key), "date")
-            dict_vectorial_attributes[key] = string.(DateTime.(value))
+            dates = DateTime.(value)
+            if !issorted(dates)
+                error("Vector of dates $(string(key)) must be sorted.")
+            end
+            dict_vectorial_attributes[key] = string.(dates)
         end
     end
     return nothing

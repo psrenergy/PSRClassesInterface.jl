@@ -20,7 +20,7 @@ function read_scalar_parameter(
     collection::String,
     attribute::String,
 )
-    _throw_if_attribute_is_not_scalar_parameter(collection, attribute)
+    _throw_if_attribute_is_not_scalar_parameter(collection, attribute, :read)
 
     table = _get_collection_scalar_attribute_tables(db, collection)
 
@@ -37,7 +37,7 @@ function read_scalar_parameter(
     attribute::String,
     id::Integer,
 )
-    _throw_if_attribute_is_not_scalar_parameter(collection, attribute)
+    _throw_if_attribute_is_not_scalar_parameter(collection, attribute, :read)
     query = "SELECT $attribute FROM $collection WHERE id = '$id'"
     df = DBInterface.execute(db, query) |> DataFrame
     # This could be a missing value
@@ -71,7 +71,7 @@ function read_vectorial_parameter(
     attribute::String,
     id::Integer,
 )
-    _throw_if_attribute_is_not_vectorial_parameter(collection, attribute)
+    _throw_if_attribute_is_not_vectorial_parameter(collection, attribute, :read)
     table_name = _table_where_attribute_is_located(collection, attribute)
     result = _query_vector(db, table_name, attribute, id)
 
@@ -84,7 +84,7 @@ function _query_vector(
     attribute::String,
     id::Integer,
 )
-    query = "SELECT $attribute FROM $table_name WHERE id = '$id' ORDER BY idx"
+    query = "SELECT $attribute FROM $table_name WHERE id = '$id' ORDER BY vector_index"
     df = DBInterface.execute(db, query) |> DataFrame
     # This could be a missing value
     result = df[!, 1]

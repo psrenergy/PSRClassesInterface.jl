@@ -73,6 +73,7 @@ end
 
 # TODO we should do some Base.getfield to make accessing attributes easier
 # TODO remember to write md about date_ parameters
+# TODO We should rename sanity checks to something better such as _throw_if_collection_does_not_exist
 
 # Dictionary storing the collections map for the database
 const COLLECTION_DATABASE_MAP = OrderedDict{String, Collection}()
@@ -108,7 +109,7 @@ function _scalar_relation_exists(collection_from::String, collection_to::String,
     return false
 end
 
-function _vector_relation_exists(collection_from::String, collection_to::String, relation_type::String)
+function _vectorial_relation_exists(collection_from::String, collection_to::String, relation_type::String)
     collection = COLLECTION_DATABASE_MAP[collection_from]
     for (_, vector_relationship) in collection.vectorial_relationships
         if vector_relationship.relation_collection == collection_to && vector_relationship.relation_type == relation_type
