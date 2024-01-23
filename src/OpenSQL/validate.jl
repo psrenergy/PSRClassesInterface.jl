@@ -251,32 +251,72 @@ function _validate_attribute_types!(
     for (key, value) in dict_scalar_attributes
         attribute = _get_attribute(collection, string(key))
         if isa(attribute, ScalarRelationship)
-            if !isa(value, String)
-                error(
-                    "The value of the attribute \"$key\" in element \"$label_or_id\" of collection \"$(collection)\" is not of type String. User inputed $(typeof(value)): $value."
-                )
-            end
-        elseif !isa(value, attribute.type)
-            error(
-                "The value of the attribute \"$key\" in element \"$label_or_id\" of collection \"$(collection)\" is not of type $(attribute.type). User inputed $(typeof(value)): $value."
-            )
+            _validate_scalar_relationship_type(attribute, label_or_id, value)
+        else
+            _validate_scalar_parameter_type(attribute, label_or_id, value)
         end
     end
     for (key, value) in dict_vectorial_attributes
         attribute = _get_attribute(collection, string(key))
         if isa(attribute, VectorialRelationship) 
-            if !isa(value, Vector{String})
-                error(
-                    "The value of the attribute \"$key\" in element \"$label_or_id\" of collection \"$(collection)\" is not of type Vector{String}. User inputed $(typeof(value)): $value."
-                )
-            end
-        elseif !isa(value, Vector{attribute.type})
-            error(
-                "The value of the attribute \"$key\" in element \"$label_or_id\" of collection \"$(collection)\" is not of type Vector{$(attribute.type)}. User inputed $(typeof(value)): $value."
-            )
+            _validate_vectorial_relationship_type(attribute, label_or_id, value)
+        else
+            _validate_vectorial_parameter_type(attribute, label_or_id, value)
         end
     end
     return nothing
+end
+
+function _validate_scalar_parameter_type(
+    attribute::ScalarParameter,
+    label_or_id::Union{Integer, String},
+    value,
+)
+    if !isa(value, attribute.type)
+        error(
+            "The value of the attribute \"$(attribute.name)\" in element \"$label_or_id\" " *
+            "of collection \"$(attribute.parent_collection)\" should be of type $(attribute.type). User inputed $(typeof(value)): $value."
+        )
+    end
+end
+
+function _validate_scalar_relationship_type(
+    attribute::ScalarRelationship,
+    label_or_id::Union{Integer, String},
+    value
+)
+    if !isa(value, String) && !isa(value, Int64)
+        error(
+            "The value of the attribute \"$(attribute.name)\" in element \"$label_or_id\" " *
+            "of collection \"$(attribute.parent_collection)\" should be of type String or Int64. User inputed $(typeof(value)): $value."
+        )
+    end
+end
+
+function _validate_vectorial_parameter_type(
+    attribute::VectorialParameter,
+    label_or_id::Union{Integer, String},
+    values::Vector{<:Any},
+)
+    if !isa(values, Vector{attribute.type})
+        error(
+            "The value of the attribute \"$(attribute.name)\" in element \"$label_or_id\" " *
+            "of collection \"$(attribute.parent_collection)\" should be of type Vector{$(attribute.type)}. User inputed $(typeof(values)): $values."
+        )
+    end
+end
+
+function _validate_vectorial_relationship_type(
+    attribute::VectorialRelationship,
+    label_or_id::Union{Integer, String},
+    values::Vector{<:Any},
+)
+    if !isa(values, Vector{String}) && !isa(values, Vector{Int64})
+        error(
+            "The value of the attribute \"$(attribute.name)\" in element \"$label_or_id\" " *
+            "of collection \"$(attribute.parent_collection)\" should be of type Vector{String} or Vector{Int64}. User inputed $(typeof(values)): $values."
+        )
+    end
 end
 
 # Constant to enable or disable sanity checks

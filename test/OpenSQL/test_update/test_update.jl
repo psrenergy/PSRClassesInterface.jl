@@ -60,7 +60,7 @@ function test_create_vectorial_relationships()
     @test_throws ErrorException OpenSQL.set_vectorial_relationship!(db, "Plant", "Cost", "Plant 2", ["Cost 1", "Cost 2", "Cost 3"], "wrong")
 
     OpenSQL.close!(db)
-    # rm(db_path)
+    rm(db_path)
 end
 
 function test_update_scalar_parameters()
@@ -70,13 +70,17 @@ function test_update_scalar_parameters()
     OpenSQL.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
     OpenSQL.create_element!(db, "Resource"; label = "Resource 1", type = "E")
     OpenSQL.create_element!(db, "Resource"; label = "Resource 2", type = "E")
+    OpenSQL.create_element!(db, "Cost"; label = "Cost 1")
+    OpenSQL.create_element!(db, "Cost"; label = "Cost 2")
 
-    @test_throws ErrorException OpenSQL.update_element!(db, "Resource", "Resource 1"; type = "D", some_value = 1.0)
-    @test_throws ErrorException OpenSQL.update_element!(db, "Resource", "Resource 4"; type = "D", some_value = 1.0)
-    OpenSQL.update_element!(db, "Resource", "Resource 1"; type = "D", some_value_1 = 1.0)
-    OpenSQL.update_element!(db, "Resource", "Resource 1"; type = "D", some_value_1 = 1.0, some_value_2 = 90.0)
-    @test_throws ErrorException OpenSQL.update_element!(db, "Resource", "Resource 1"; type = "D", some_value_1 = 1.0, some_value_2 = "wrong!")
-    @test_throws ErrorException OpenSQL.update_element!(db, "Resource", "Resource 1"; cost_id = 2)
+    OpenSQL.update_scalar_parameter!(db, "Resource", "type", "Resource 1", "D")
+    @test_throws ErrorException OpenSQL.update_scalar_parameter!(db, "Resource", "some_value", "Resource 4", 1.0)
+    @test_throws ErrorException OpenSQL.update_scalar_parameter!(db, "Resource", "invented_attribute", "Resource 4", 1.0)
+    OpenSQL.update_scalar_parameter!(db, "Resource", "some_value_1", "Resource 1", 1.0)
+    OpenSQL.update_scalar_parameter!(db, "Resource", "some_value_1", "Resource 1", 1.0)
+    OpenSQL.update_scalar_parameter!(db, "Resource", "some_value_2", "Resource 1", 99.0)
+    @test_throws ErrorException OpenSQL.update_scalar_parameter!(db, "Resource", "some_value_2", "Resource 1", "wrong!")
+    @test_throws ErrorException OpenSQL.update_scalar_parameter!(db, "Resource", "cost_id", "Resource 1", "something")
     OpenSQL.close!(db)
     rm(db_path)
 end
@@ -89,43 +93,17 @@ function test_update_vectorial_parameters()
     OpenSQL.create_element!(db, "Resource"; label = "Resource 1", type = "E", some_value_1 = [1.0, 2.0, 3.0])
     OpenSQL.create_element!(db, "Resource"; label = "Resource 2", type = "E")
 
-    # OpenSQL.update_vectorial_attributes!(db, "Resource", "Resource 1"; some_value_1 = [4.0, 5.0, 6.0])
-    # OpenSQL.update_vectorial_attributes!(db, "Resource", "Resource 1"; some_value_2 = [0.0, 5.0, 6.0])
-    # @test_throws ErrorException OpenSQL.update_vectorial_attributes!(db, "Resource", "Resource 4"; some_value_1 = [1.0, 2.0, 3.0])
-    # @test_throws ErrorException OpenSQL.update_vectorial_attributes!(db, "Resource", "Resource 1"; some_value_3 = [1.0, 2.0, 3.0])
-    # OpenSQL.update_vectorial_attributes!(db, "Resource", "Resource 1"; some_value_1 = [1.0, 2.0, 3.0], some_value_2 = [90, 80, 70])
-    # @test_throws ErrorException OpenSQL.update_vectorial_attributes!(db, "Resource", "Resource 1"; some_value_2 = [0.0, 5.0, 6.0, 9.0])
-    # @test_throws SQLite.SQLiteException OpenSQL.update_vectorial_attributes!(db, "Resource", "Resource 1"; some_value_2 = [90, 80, "wrong!"])
+    OpenSQL.update_vectorial_parameters!(db, "Resource", "some_value_1", "Resource 1", [4.0, 5.0, 6.0])
+    OpenSQL.update_vectorial_parameters!(db, "Resource", "some_value_2", "Resource 1", [4.0, 5.0, 6.0])
+    @test_throws ErrorException OpenSQL.update_vectorial_parameters!(db, "Resource", "some_value_3", "Resource 1", [4.0, 5.0, 6.0])
+    @test_throws ErrorException OpenSQL.update_vectorial_parameters!(db, "Resource", "some_value_1", "Resource 1", [1, 2, 3])
+    @test_throws ErrorException OpenSQL.update_vectorial_parameters!(db, "Resource", "some_value_1", "Resource 1", [4.0, 5.0, 6.0, 7.0])
     OpenSQL.close!(db)
     rm(db_path)
+end
 
-    # OpenSQL.update_element!(db, "Product", "Sugar"; label = "New Sugar")
-    # OpenSQL.update_element!(db, "Product", "Sugar"; unit = "Kg")
-    # OpenSQL.update_element!(db, "Product", "Sugar"; unit = 30)
-
-    # OpenSQL.update_element!(db, "Process", "Sugar Mill"; factor_output = [0.3, 0.4, 0.6])
-    # # Shoudl error
-    # OpenSQL.update_element!(db, "Process", "Sugar Mill"; factor_output = [0.3, 0.4, 0.6, 0.7])
-    # OpenSQL.update_element!(db, "Process", "Sugar Mill"; 
-    #     factor_output = [0.3, 0.4, 0.6, 0.7], 
-    #     product_output = ["Sugar", "Molasse", "Bagasse", "Bagasse 2"]
-    # )
-    # # should error
-    # OpenSQL.update_element!(db, "Process", "Sugar Mill"; 
-    #     factor_output = [0.3, 0.4, 0.6, 0.7], 
-    #     product_output = ["Sugar", "Molasse", "Bagasse 2"]
-    # )
-
-    # OpenSQL.update_element!(db, "Process", "Sugar Mill"; 
-    #     factor_output = [0.3, 0.4], 
-    #     product_output = ["Sugar", "Molasse"]
-    # )
-    # error("Vectors cannot be update with update_element!. This is the case because ")
-
-    # read 
-    # # ela modifica
-    # deleta
-    # create
+function test_set_relations_to_time_series_files()
+    @test_broken false
 end
 
 function runtests()

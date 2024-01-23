@@ -25,10 +25,8 @@ function test_read_parameters()
     @test OpenSQL.read_vectorial_parameters(db, "Resource", "some_value") == [[1, 2, 3.0], [1, 2, 4.0]]
     @test OpenSQL.read_vectorial_parameters(db, "Plant", "some_factor") == [[1.0], [1.0, 2.0], []]
 
-    OpenSQL.update_element!(db, "Plant", "Plant 1"; capacity = 2.0)
+    OpenSQL.update_scalar_parameter!(db, "Plant", "capacity", "Plant 1", 2.0)
     @test OpenSQL.read_scalar_parameters(db, "Plant", "capacity") == [2.0, 53.0, 54.0]
-    # TODO read an updated vectorial parameter
-
     OpenSQL.delete_element!(db, "Resource", "Resource 1")
     @test OpenSQL.read_scalar_parameters(db, "Resource", "label") == ["Resource 2"]
 
@@ -57,10 +55,11 @@ function test_read_relationships()
 
     @test OpenSQL.read_scalar_relationships(db, "Plant", "Resource", "id") == ["Resource 1", "", ""]
     @test OpenSQL.read_scalar_relationships(db, "Plant", "Plant", "turbine_to") == ["", "", "Plant 2"]
-end
-
-function test_read_all_attributes_at_once()
-
+    @test_throws ErrorException OpenSQL.read_scalar_relationships(db, "Plant", "Cost", "id")
+    @test OpenSQL.read_vectorial_relationships(db, "Plant", "Cost", "id") == [["Cost 1"], ["Cost 1", "Cost 2"], String[]]
+    OpenSQL.set_vectorial_relationship!(db, "Plant", "Cost",  "Plant 1", ["Cost 2"], "id")
+    @test OpenSQL.read_vectorial_relationships(db, "Plant", "Cost", "id") == [["Cost 2"], ["Cost 1", "Cost 2"], String[]]
+    @test_throws ErrorException OpenSQL.read_vectorial_relationships(db, "Plant", "Resource", "id")
 end
 
 function runtests()

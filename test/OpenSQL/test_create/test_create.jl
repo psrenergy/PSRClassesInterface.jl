@@ -49,9 +49,7 @@ function test_create_parameters_and_vectors()
     OpenSQL.create_element!(db, "Plant"; label = "Plant 1", capacity = 50.0, some_factor = [0.1, 0.3])
     OpenSQL.create_element!(db, "Plant"; label = "Plant 2", capacity = 50.0, some_factor = [0.1, 0.3, 0.5])
     @test_throws ErrorException OpenSQL.create_element!(db, "Plant"; label = "Plant 2", capacity = 50.0, some_factor = [])
-    # TODO not sure if this should work or not. Maybe we should issue a warning
-    # if a foreign key is passed as an integer.
-    @test_broken OpenSQL.create_element!(db, "Plant"; label = "Plant 3", resource_id = 1)
+    OpenSQL.create_element!(db, "Plant"; label = "Plant 3", resource_id = 1)
     @test_throws ErrorException OpenSQL.create_element!(db, "Resource"; label = "Resource 1", type = "E", some_value = 1.0)
     OpenSQL.close!(db)
     rm(db_path)
@@ -109,10 +107,18 @@ function test_create_vectors_with_relationships()
     OpenSQL.create_element!(db, "Process";
             label = "Sugar Mill", 
             product_input = ["Sugarcane"], 
-            factor_input = [1.0], 
+            factor_input = [1.0],
             product_output = ["Sugar", "Molasse", "Bagasse"],
             factor_output = [0.3, 0.3, 0.4],
         )
+
+    # OpenSQL.create_element!(db, "Process";
+    #     label = "Sugar Mill 2", 
+    #     product_input = [1, 2], 
+    #     factor_input = [1.0],
+    #     product_output = [1, 2, 3],
+    #     factor_output = [0.3, 0.3, 0.4],
+    # )
 
     @test_throws ErrorException OpenSQL.create_element!(db, "Process";
             label = "Sugar Mill 2", 

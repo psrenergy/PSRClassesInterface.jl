@@ -168,21 +168,34 @@ function _convert_date_to_string!(
     dict_vectorial_attributes::AbstractDict,
 )
     for (key, value) in dict_scalar_attributes
-        if isa(value, TimeType) || startswith(string(key), "date")
-            dict_scalar_attributes[key] = string(DateTime(value))
+        if startswith(string(key), "date")
+            dict_scalar_attributes[key] = _convert_date_to_string(value)
         end
     end
     for (key, value) in dict_vectorial_attributes
-        if eltype(value) <: TimeType || startswith(string(key), "date")
-            dates = DateTime.(value)
-            if !issorted(dates)
-                error("Vector of dates $(string(key)) must be sorted.")
-            end
-            dict_vectorial_attributes[key] = string.(dates)
+        if startswith(string(key), "date")
+            dict_vectorial_attributes[key] = _convert_date_to_string(value)
         end
     end
     return nothing
 end
+
+function _convert_date_to_string(
+    value::TimeType
+)
+    return string(DateTime(value))
+end
+
+function _convert_date_to_string(
+    values::AbstractVector{<:TimeType}
+)
+    dates = DateTime.(values)
+    if !issorted(dates)
+        error("Vector of dates must be sorted.")
+    end
+    return string.(dates)
+end
+_convert_date_to_string(value) = value
 
 function _replace_scalar_relationship_labels_with_id!(
     db::SQLite.DB, 

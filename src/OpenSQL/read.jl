@@ -108,14 +108,11 @@ function read_scalar_relationships(
         collection_to,
         relation_type,
     )
-    names_in_collection_from = read_scalar_parameters(db, collection_to, "label")
-    element_names = fill("", length(map_of_elements))
-    for (i, id) in enumerate(map_of_elements)
-        if !ismissing(id)
-            element_names[i] = names_in_collection_from[id]
-        end
-    end
-    return element_names
+    names_in_collection_to = read_scalar_parameters(db, collection_to, "label")
+    ids_in_collection_to = read_scalar_parameters(db, collection_to, "id")
+    replace_dict = Dict{Any, String}(zip(ids_in_collection_to, names_in_collection_to))
+    push!(replace_dict, missing => "")
+    return replace(map_of_elements, replace_dict...)
 end
 
 function _get_scalar_relationship_map(
@@ -126,8 +123,9 @@ function _get_scalar_relationship_map(
 )
     attribute_on_collection_from = lowercase(collection_to) * "_" * relation_type
     _throw_if_attribute_is_not_scalar_relationship(collection_from, attribute_on_collection_from, :read)
+    attribute = _get_attribute(collection_from, attribute_on_collection_from)
 
-    query = "SELECT $attribute_on_collection_from FROM $collection_from ORDER BY rowid"
+    query = "SELECT $(attribute.name) FROM $(attribute.table_where_is_located) ORDER BY rowid"
     df = DBInterface.execute(db, query) |> DataFrame
     results = df[!, 1]
     num_results = length(results)
@@ -150,23 +148,62 @@ function number_of_rows(db::SQLite.DB, table::String, column::String)
     return df[!, 1][1]
 end
 
-function read_vectorial_relationship(
+function read_vectorial_relationships(
     db::SQLite.DB,
     collection_from::String,
     collection_to::String,
-    id_collection_from::Integer,
+    relation_type::String,
+)
+    map_of_vector_with_indexes = _get_vectorial_relationship_map(
+        db,
+        collection_from,
+        collection_to,
+        relation_type,
+    )
+
+    names_in_collection_to = read_scalar_parameters(db, collection_to, "label")
+    ids_in_collection_to = read_scalar_parameters(db, collection_to, "id")
+    replace_dict = Dict{Any, String}(zip(ids_in_collection_to, names_in_collection_to))
+    push!(replace_dict, missing => "")
+
+    map_with_labels = Vector{Vector{String}}(undef, length(map_of_vector_with_indexes))
+
+    for (i, vector_with_indexes) in enumerate(map_of_vector_with_indexes)
+        map_with_labels[i] = replace(vector_with_indexes, replace_dict...)
+    end
+    
+    return map_with_labels
+end
+
+function _get_vectorial_relationship_map(
+    db::SQLite.DB,
+    collection_from::String,
+    collection_to::String,
     relation_type::String,
 )
     attribute_on_collection_from = lowercase(collection_to) * "_" * relation_type
-    _throw_if_attribute_is_not_vectorial_relationship(collection_from, attribute_on_collection_from)
+    _throw_if_attribute_is_not_vectorial_relationship(collection_from, attribute_on_collection_from, :read)
+    attribute = _get_attribute(collection_from, attribute_on_collection_from)
 
-    table_name = _table_where_attribute_is_located(collection_from, attribute_on_collection_from)
-
-    query = "SELECT $attribute_on_collection_from FROM $table_name WHERE id = '$id_collection_from' ORDER BY rowid"
+    query = "SELECT id, vector_index, $(attribute.name) FROM $(attribute.table_where_is_located) ORDER BY rowid, vector_index"
     df = DBInterface.execute(db, query) |> DataFrame
-    if isempty(df)
-        error("id \"$collection_from_id\" does not exist in table \"$collection_from\".")
+    id = df[!, 1]
+    results = df[!, 3]
+
+    ids_in_collection_from = read_scalar_parameters(db, collection_from, "id")
+    num_ids = length(ids_in_collection_from)
+    map_of_vector_with_indexes = Vector{Vector{Union{Int, Missing}}}(undef, num_ids)
+    for i in 1:num_ids
+        map_of_vector_with_indexes[i] = Vector{Union{Int, Missing}}(undef, 0)
     end
-    result = df[!, 1]
-    return result
+
+    num_rows = size(df, 1)
+    for i in 1:num_rows
+        index_of_id = findfirst(isequal(id[i]), ids_in_collection_from)
+        if index_of_id !== nothing
+            push!(map_of_vector_with_indexes[index_of_id], results[i])
+        end
+    end
+
+    return map_of_vector_with_indexes
 end

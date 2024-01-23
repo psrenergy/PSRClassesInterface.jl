@@ -1,37 +1,27 @@
 const UPDATE_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
-    ScalarParameter => "update_element!",
+    ScalarParameter => "update_scalar_parameter!",
     ScalarRelationship => "set_scalar_relationship!",
-    VectorialParameter => "update_element!",
+    VectorialParameter => "update_vectorial_parameter!",
     VectorialRelationship => "set_vectorial_relationship!",
 )
 
-function _update_scalar_attributes!(
-    db::SQLite.DB, 
-    collection::String, 
-    label::String,
-    dict_scalar_attributes::AbstractDict,
-)
-    for (attribute, val) in dict_scalar_attributes
-        attribute_name = string(attribute)
-        _update_scalar_attributes!(db, collection, attribute_name, label, val)
-    end
-    return nothing
-end
-
-function _update_scalar_attributes!(
+function update_scalar_parameter!(
     db::SQLite.DB,
-    collection::String,
-    attribute::String,
+    collection_name::String,
+    attribute_name::String,
     label::String,
     val,
 )
-    sanity_check(collection, attribute)
-    id = _get_id(db, collection, label)
-    _update_scalar_attributes!(db, collection, attribute, id, val)
+    sanity_check(collection_name, attribute_name)
+    _throw_if_attribute_is_not_scalar_parameter(collection_name, attribute_name, :update)
+    attribute = _get_attribute(collection_name, attribute_name)
+    _validate_scalar_parameter_type(attribute, label, val)
+    id = _get_id(db, collection_name, label)
+    _update_scalar_parameter!(db, collection_name, attribute_name, id, val)
     return nothing
 end
 
-function _update_scalar_attributes!(
+function _update_scalar_parameter!(
     db::SQLite.DB,
     collection_name::String,
     attribute_name::String,
@@ -39,75 +29,66 @@ function _update_scalar_attributes!(
     val,
 )
     attribute = _get_attribute(collection_name, attribute_name)
+    new_value = _convert_date_to_string(val)
     table_name = attribute.table_where_is_located
-    DBInterface.execute(db, "UPDATE $table_name SET $attribute_name = '$val' WHERE id = '$id'")
+    DBInterface.execute(db, "UPDATE $table_name SET $attribute_name = '$new_value' WHERE id = '$id'")
     return nothing
 end
 
-function _update_element!(
+function update_vectorial_parameters!(
     db::SQLite.DB,
-    collection::String,
-    label::String;
-    kwargs...
+    collection_name::String,
+    attribute_name::String,
+    label::String,
+    vals::Vector{<:Any},
 )
-    sanity_check(collection)
-    @assert !isempty(kwargs)
-    dict_scalar_attributes = Dict()
-    dict_vectorial_attributes = Dict()
+    sanity_check(collection_name, attribute_name)
+    _throw_if_attribute_is_not_vectorial_parameter(collection_name, attribute_name, :update)
+    attribute = _get_attribute(collection_name, attribute_name)
+    _validate_vectorial_parameter_type(attribute, label, vals)
+    id = _get_id(db, collection_name, label)
+    _update_vectorial_parameters!(db, collection_name, attribute_name, id, vals)
+end
 
-    for (key, value) in kwargs
-        if isa(value, AbstractVector)
-            _throw_if_not_vectorial_attribute(collection, string(key))
-            if isempty(value)
-                error("Cannot update the attribute $key with an empty vector.")
-            end
-            dict_vectorial_attributes[key] = value
+function _update_vectorial_parameters!(
+    db::SQLite.DB,
+    collection_name::String,
+    attribute_name::String,
+    id::Integer,
+    vals::Vector{<:Any},
+)
+    attribute = _get_attribute(collection_name, attribute_name)
+    group = attribute.group
+    new_vals = _convert_date_to_string(vals)
+    table_name = attribute.table_where_is_located
+    num_new_elements = length(vals)
+    df_num_rows = DBInterface.execute(db, "SELECT $(attribute_name) FROM $table_name WHERE id = '$id'") |> DataFrame
+    num_rows_in_query = size(df_num_rows, 1)
+    if num_rows_in_query != num_new_elements
+        if num_rows_in_query == 0
+            # If there are no rows in the table we can create them
+            _create_vectors!(db, collection_name, id, Dict(Symbol(attribute_name) => vals))
         else
-            _throw_if_not_scalar_attribute(collection, string(key))
-            dict_scalar_attributes[key] = value
+            # If there are rows in the table we must check that the number of rows is the same as the number of new relations
+            error(
+                "There is currently a vector of $num_rows_in_query elements in the group $group. " *
+                "User is trying to set a vector of length $num_new_elements. This is invalid. " *
+                "If you want to change the number of elements in the group you might have to delete " *
+                "the element and create it again with the new vector."
+            )
+        end
+    else
+        # Update the elements
+        for (i, val) in enumerate(new_vals)
+            DBInterface.execute(
+                db,
+                "UPDATE $table_name SET $attribute_name = '$val' WHERE id = '$id' AND vector_index = '$i'",
+            )
         end
     end
-
-    _validate_attribute_types!(collection, label, dict_scalar_attributes, dict_vectorial_attributes)
-    _convert_date_to_string!(dict_scalar_attributes, dict_vectorial_attributes)
-
-    if isempty(dict_vectorial_attributes)
-        _update_scalar_attributes!(db, collection, label, dict_scalar_attributes)
-    else
-        # Read the element
-        # modify the vectorial attributes
-        # create a check point
-        # delete the element
-        # create new the element
-        # Roll back if not succedded
-        error()
-    end
+    return nothing
 end
 
-"""
-    update_element!(
-        db::SQLite.DB,
-        collection::String,
-        label::String;
-        kwargs...
-    )
-"""
-function update_element!(
-    db::SQLite.DB,
-    collection::String,
-    label::String;
-    kwargs...
-)
-    try 
-        _update_element!(db, collection, label; kwargs...)
-    catch e
-        @error """
-            Error updating element \"$label\" in collection \"$collection\"
-            error message: $(e.msg)
-            """
-        rethrow(e)
-    end
-end
 
 # Helper to guide user to correct method
 function set_scalar_relationship!(
@@ -216,8 +197,8 @@ function set_vectorial_relationship!(
         else
             # If there are rows in the table we must check that the number of rows is the same as the number of new relations
             error(
-                "There are currently a vector of $num_rows_in_query elements in the group $group. " * 
-                "User is trying to set a vector of $num_new_relations relations. This is invalid. " * 
+                "There is currently a vector of $num_rows_in_query elements in the group $group. " *
+                "User is trying to set a vector of $num_new_relations relations. This is invalid. " *
                 "If you want to change the number of elements in the group you might have to update " *
                 "the vectors in the group before setting this relation. Another option is to delete " *
                 "the element and create it again with the new vector."
