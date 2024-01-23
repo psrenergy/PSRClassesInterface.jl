@@ -138,7 +138,7 @@ function _throw_if_attribute_is_not_scalar_parameter(
         correct_composity_type = _attribute_composite_type(collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error("Attribute $attribute is not a scalar parameter. It is a $string_of_composite_types. Use $correct_method_to_use instead.")
+        error("Attribute \"$attribute\" is not a scalar parameter. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.")
     end
     return nothing
 end
@@ -154,7 +154,7 @@ function _throw_if_attribute_is_not_vectorial_parameter(
         correct_composity_type = _attribute_composite_type(collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error("Attribute $attribute is not a vectorial parameter. It is a $string_of_composite_types. Use $correct_method_to_use instead.")
+        error("Attribute \"$attribute\" is not a vectorial parameter. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.")
     end
     return nothing
 end
@@ -170,7 +170,7 @@ function _throw_if_attribute_is_not_scalar_relationship(
         correct_composity_type = _attribute_composite_type(collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error("Attribute $attribute is not a scalar relationship. It is a $string_of_composite_types. Use $correct_method_to_use instead.")
+        error("Attribute \"$attribute\" is not a scalar relationship. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.")
     end
     return nothing
 end
@@ -198,7 +198,7 @@ function _throw_if_not_scalar_attribute(
     sanity_check(collection, attribute)
 
     if _is_vectorial_parameter(collection, attribute) || _is_vectorial_relationship(collection, attribute)
-       error("Attribute $attribute is not a scalar attribute. You must input a vector for this attribute.")
+       error("Attribute \"$attribute\" is not a scalar attribute. You must input a vector for this attribute.")
     end
 
     return nothing
@@ -211,7 +211,7 @@ function _throw_if_not_vectorial_attribute(
     sanity_check(collection, attribute)
 
     if _is_scalar_parameter(collection, attribute) || _is_scalar_relationship(collection, attribute)
-       error("Attribute $attribute is not a vector attribute. You must input a scalar for this attribute.")
+       error("Attribute \"$attribute\" is not a vector attribute. You must input a scalar for this attribute.")
     end
 
     return nothing
@@ -323,30 +323,57 @@ end
 
 function sanity_check(collection::String)
     !_sanity_check_enabled() && return nothing
-    _collection_exists(collection)
+    _throw_if_collection_does_not_exist(collection)
     return nothing
 end
 
 function sanity_check(collection::String, attribute::String)
     !_sanity_check_enabled() && return nothing
-    if !_collection_exists(collection)
-        error("Collection $collection does not exist.")
-    end
-    if !_attribute_exists(collection, attribute)
-        error("Attribute $attribute does not exist in collection $collection.")
-    end
+    _throw_if_collection_does_not_exist(collection)
+    _throw_if_attribute_does_not_exist(collection, attribute)
     return nothing
 end
 
 function sanity_check(collection::String, attributes::Vector{String})
     !_sanity_check_enabled() && return nothing
-    if !_collection_exists(collection)
-        error("Collection $collection does not exist.")
-    end
+    _throw_if_collection_does_not_exist(collection)
     for attribute in attributes
-        if !_attribute_exists(collection, attribute)
-            error("Attribute $attribute does not exist in collection $collection.")
-        end
+        _throw_if_attribute_does_not_exist(collection, attribute)
     end
     return nothing
+end
+
+function _throw_if_collection_does_not_exist(collection::String)
+    if !_collection_exists(collection)
+        error(
+            "Collection \"$collection\" does not exist. "* 
+            "This is the list of available collections: " *
+            "$(_string_of_collections())"
+        )
+    end
+end
+
+function _throw_if_attribute_does_not_exist(collection::String, attribute::String)
+    if !_attribute_exists(collection, attribute)
+        error(
+            "Attribute \"$attribute\" does not exist in collection \"$collection\". " *
+            "This is the list of available attributes: $(_string_of_attributes(collection))"
+        )
+    end
+end
+
+function _string_of_collections()
+    string_of_collections = ""
+    for collection in _get_collection_names()
+        string_of_collections *= "\n - $collection"
+    end
+    return string_of_collections
+end
+function _string_of_attributes(collection::String)
+    attributes = _get_attribute_names(collection)
+    string_of_attributes = ""
+    for attribute in attributes
+        string_of_attributes *= "\n - $attribute"
+    end
+    return string_of_attributes
 end

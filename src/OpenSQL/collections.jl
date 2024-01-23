@@ -71,11 +71,12 @@ mutable struct Collection
     time_series::OrderedDict{String, TimeSeriesFile}
 end
 
-# TODO we should do some Base.getfield to make accessing attributes easier
 # TODO remember to write md about date_ parameters
 # TODO We should rename sanity checks to something better such as _throw_if_collection_does_not_exist
 
 # Dictionary storing the collections map for the database
+# TODO if we have multiple databases we should have a dictionary of dictionaries
+# two models working with the same dependency would not work.
 const COLLECTION_DATABASE_MAP = OrderedDict{String, Collection}()
 
 function _save_collections_database_map(db::SQLite.DB)
@@ -146,6 +147,10 @@ function _get_attribute_names(collection_name::String)
         push!(attribute_names, keys(attributes)...)
     end
     return attribute_names
+end
+
+function _get_collection_names()
+    return keys(COLLECTION_DATABASE_MAP)
 end
 
 function _get_attribute(collection_name::String, attribute_name::String)::Attribute

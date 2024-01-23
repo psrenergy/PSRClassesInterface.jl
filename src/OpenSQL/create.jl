@@ -190,7 +190,7 @@ function _replace_scalar_relationship_labels_with_id!(
     scalar_attributes
 )
     for (key, value) in scalar_attributes
-        if _is_scalar_relationship(collection, string(key))
+        if _is_scalar_relationship(collection, string(key)) && isa(value, String)
             scalar_relationship = _get_scalar_relationship(collection, string(key))
             collection_to = scalar_relationship.relation_collection
             scalar_attributes[key] = _get_id(db, collection_to, value)
@@ -205,7 +205,7 @@ function _replace_vectorial_relationship_labels_with_ids!(
     vectorial_attributes
 )
     for (key, value) in vectorial_attributes
-        if _is_vectorial_relationship(collection, string(key))
+        if _is_vectorial_relationship(collection, string(key)) && isa(value, Vector{String})
             vectorial_relationship = _get_vectorial_relationship(collection, string(key))
             collection_to = vectorial_relationship.relation_collection
             vec_of_ids = zeros(Int, length(value))

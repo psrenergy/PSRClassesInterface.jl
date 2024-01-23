@@ -6,27 +6,13 @@ using Test
 
 function test_valid_pragmas_database()
     db = SQLite.DB()
-
-    DBInterface.execute(db,
-        """
-        PRAGMA user_version = 2;
-        """,
-    )
-
+    DBInterface.execute(db, "PRAGMA user_version = 2;")
     OpenSQL._validate_database_pragmas(db)
     return nothing
 end
 
 function test_no_user_version_database()
     db = SQLite.DB()
-
-    @test_throws ErrorException OpenSQL._validate_database_pragmas(db)
-    return nothing
-end
-
-function test_no_necessary_pragma()
-    db = SQLite.DB()
-
     @test_throws ErrorException OpenSQL._validate_database_pragmas(db)
     return nothing
 end
