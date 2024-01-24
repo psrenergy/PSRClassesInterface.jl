@@ -57,7 +57,7 @@ function create_empty_db end
 function create_empty_db(database_path::String, path_schema::String; force::Bool = false)
     _throw_if_file_exists(database_path, force)
     db = _open_db_connection(database_path)
-    try 
+    try
         execute_statements(db, path_schema)
         _validate_database(db)
         _save_collections_database_map(db)
@@ -71,7 +71,7 @@ end
 function create_empty_db(database_path::AbstractString; force::Bool = false)
     _throw_if_file_exists(database_path, force)
     db = _open_db_connection(database_path)
-    try 
+    try
         _apply_all_up_migrations(db)
         _validate_database(db)
         _save_collections_database_map(db)
@@ -87,7 +87,7 @@ function load_db(database_path::String)
         error("file not found: $database_path")
     end
     db = _open_db_connection(database_path)
-    try 
+    try
         _validate_database(db)
         _save_collections_database_map(db)
     catch e

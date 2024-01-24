@@ -114,7 +114,7 @@ PSRI.get_vector_related(
     source::String,
     target::String,
     source_label::String,
-    relation_type::String
+    relation_type::String,
 ) = OpenSQL.read_vectorial_relationship(
     db,
     source,

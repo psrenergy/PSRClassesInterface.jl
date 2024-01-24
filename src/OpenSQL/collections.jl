@@ -101,20 +101,30 @@ function _attribute_exists(collection_name::String, attribute_name::String)
     return false
 end
 
-function _scalar_relation_exists(collection_from::String, collection_to::String, relation_type::String)
+function _scalar_relation_exists(
+    collection_from::String,
+    collection_to::String,
+    relation_type::String,
+)
     collection = COLLECTION_DATABASE_MAP[collection_from]
     for (_, scalar_relationship) in collection.scalar_relationships
-        if scalar_relationship.relation_collection == collection_to && scalar_relationship.relation_type == relation_type
+        if scalar_relationship.relation_collection == collection_to &&
+           scalar_relationship.relation_type == relation_type
             return true
         end
     end
     return false
 end
 
-function _vectorial_relation_exists(collection_from::String, collection_to::String, relation_type::String)
+function _vectorial_relation_exists(
+    collection_from::String,
+    collection_to::String,
+    relation_type::String,
+)
     collection = COLLECTION_DATABASE_MAP[collection_from]
     for (_, vector_relationship) in collection.vectorial_relationships
-        if vector_relationship.relation_collection == collection_to && vector_relationship.relation_type == relation_type
+        if vector_relationship.relation_collection == collection_to &&
+           vector_relationship.relation_type == relation_type
             return true
         end
     end
@@ -337,13 +347,17 @@ function _create_collections_database_map(db::SQLite.DB)
     database_definition = OrderedDict{String, Collection}()
     return _create_collections_database_map!(database_definition, db)
 end
-function _create_collections_database_map!(database_definition::OrderedDict{String, Collection}, db::SQLite.DB)
+function _create_collections_database_map!(
+    database_definition::OrderedDict{String, Collection},
+    db::SQLite.DB,
+)
     collection_names = _get_collection_names(db)
     for collection_name in collection_names
         scalar_parameters = _create_collection_scalar_parameters(db, collection_name)
         scalar_relationships = _create_collection_scalar_relationships(db, collection_name)
         vectorial_parameters = _create_collection_vectorial_parameters(db, collection_name)
-        vectorial_relationships = _create_collection_vectorial_relationships(db, collection_name)
+        vectorial_relationships =
+            _create_collection_vectorial_relationships(db, collection_name)
         time_series = _get_collection_time_series(db, collection_name)
         collection = Collection(
             collection_name,
@@ -395,10 +409,10 @@ function _try_cast_as_datetime(date::String)
 end
 
 function _get_default_value(
-    ::Type{T}, 
-    default_value::Union{Missing, String}
-) where T
-    try 
+    ::Type{T},
+    default_value::Union{Missing, String},
+) where {T}
+    try
         if ismissing(default_value)
             return default_value # missing
         elseif T <: Number
@@ -414,7 +428,10 @@ function _get_default_value(
     end
 end
 
-function _warn_if_foreign_keys_does_not_cascade(collection_name::String, foreign_key::DataFrameRow)
+function _warn_if_foreign_keys_does_not_cascade(
+    collection_name::String,
+    foreign_key::DataFrameRow,
+)
     foreign_key_name = foreign_key.from
     on_update = foreign_key.on_update
     on_delete = foreign_key.on_delete
@@ -450,12 +467,12 @@ function _create_collection_scalar_parameters(db::SQLite.DB, collection_name::St
             error("Duplicated scalar parameter $name in collection $collection_name")
         end
         scalar_parameters[name] = ScalarParameter(
-            name, 
+            name,
             type,
             default_value,
             not_null,
             parent_collection,
-            table_where_is_located
+            table_where_is_located,
         )
     end
     return scalar_parameters
@@ -497,14 +514,15 @@ function _create_collection_scalar_relationships(db::SQLite.DB, collection_name:
             parent_collection,
             relation_collection,
             relation_type,
-            table_where_is_located
+            table_where_is_located,
         )
     end
     return scalar_relationships
 end
 
 function _create_collection_vectorial_parameters(db::SQLite.DB, collection_name::String)
-    vectorial_attributes_tables = _get_collection_vectorial_attributes_tables(db, collection_name)
+    vectorial_attributes_tables =
+        _get_collection_vectorial_attributes_tables(db, collection_name)
     vectorial_parameters = OrderedDict{String, VectorialParameter}()
     parent_collection = collection_name
 
@@ -533,13 +551,13 @@ function _create_collection_vectorial_parameters(db::SQLite.DB, collection_name:
                 error("Duplicated vectorial parameter $name in collection $collection_name")
             end
             vectorial_parameters[name] = VectorialParameter(
-                name, 
-                type, 
+                name,
+                type,
                 default_value,
                 not_null,
-                group, 
-                parent_collection, 
-                table_where_is_located
+                group,
+                parent_collection,
+                table_where_is_located,
             )
         end
     end
@@ -547,7 +565,8 @@ function _create_collection_vectorial_parameters(db::SQLite.DB, collection_name:
 end
 
 function _create_collection_vectorial_relationships(db::SQLite.DB, collection_name::String)
-    vectorial_attributes_tables = _get_collection_vectorial_attributes_tables(db, collection_name)
+    vectorial_attributes_tables =
+        _get_collection_vectorial_attributes_tables(db, collection_name)
     vectorial_relationships = OrderedDict{String, VectorialRelationship}()
     parent_collection = collection_name
     for table_name in vectorial_attributes_tables
@@ -587,7 +606,7 @@ function _create_collection_vectorial_relationships(db::SQLite.DB, collection_na
                 parent_collection,
                 relation_collection,
                 relation_type,
-                table_where_is_located
+                table_where_is_located,
             )
         end
     end
@@ -629,7 +648,9 @@ function _no_duplicated_attributes(collection::Collection)
         end
         for attribute in attributes
             if attribute.name in list_of_attributes
-                @error("Duplicated attribute $(attribute.name) in collection $(collection.name)")
+                @error(
+                    "Duplicated attribute $(attribute.name) in collection $(collection.name)"
+                )
                 num_errors += 1
             else
                 push!(list_of_attributes, attribute.name)
@@ -647,13 +668,17 @@ function _all_scalar_parameters_are_in_same_table(collection::Collection)
     table_where_first_islocated = first_scalar_parameter.table_where_is_located
     for (_, scalar_parameter) in scalar_parameters
         if scalar_parameter.table_where_is_located != table_where_first_islocated
-            @error("Scalar parameter $(scalar_parameter.name) in collection $(collection.name) is not in the same table as the other scalar parameters.")
+            @error(
+                "Scalar parameter $(scalar_parameter.name) in collection $(collection.name) is not in the same table as the other scalar parameters."
+            )
             num_errors += 1
         end
     end
     for (_, scalar_relationship) in scalar_relationships
         if scalar_relationship.table_where_is_located != table_where_first_islocated
-            @error("Scalar relationship $(scalar_relationship.name) in collection $(collection.name) is not in the same table as the other scalar parameters.")
+            @error(
+                "Scalar relationship $(scalar_relationship.name) in collection $(collection.name) is not in the same table as the other scalar parameters."
+            )
             num_errors += 1
         end
     end
@@ -666,13 +691,17 @@ function _relationships_do_not_have_null_constraints(collection::Collection)
     vectorial_relationships = collection.vectorial_relationships
     for (_, scalar_relationship) in scalar_relationships
         if scalar_relationship.not_null
-            @error("Scalar relationship $(scalar_relationship.name) in collection $(collection.name) has a not null constraint. This is not allowed.")
+            @error(
+                "Scalar relationship $(scalar_relationship.name) in collection $(collection.name) has a not null constraint. This is not allowed."
+            )
             num_errors += 1
         end
     end
     for (_, vectorial_relationship) in vectorial_relationships
         if vectorial_relationship.not_null
-            @error("Vectorial relationship $(vectorial_relationship.name) in collection $(collection.name) has a not null constraint. This is not allowed.")
+            @error(
+                "Vectorial relationship $(vectorial_relationship.name) in collection $(collection.name) has a not null constraint. This is not allowed."
+            )
             num_errors += 1
         end
     end
@@ -685,13 +714,17 @@ function _relationships_do_not_have_default_values(collection::Collection)
     vectorial_relationships = collection.vectorial_relationships
     for (_, scalar_relationship) in scalar_relationships
         if !ismissing(scalar_relationship.default_value)
-            @error("Scalar relationship $(scalar_relationship.name) in collection $(collection.name) has a default value.")
+            @error(
+                "Scalar relationship $(scalar_relationship.name) in collection $(collection.name) has a default value."
+            )
             num_errors += 1
         end
     end
     for (_, vectorial_relationship) in vectorial_relationships
         if !ismissing(vectorial_relationship.default_value)
-            @error("Vectorial relationship $(vectorial_relationship.name) in collection $(collection.name) has a default value.")
+            @error(
+                "Vectorial relationship $(vectorial_relationship.name) in collection $(collection.name) has a default value."
+            )
             num_errors += 1
         end
     end

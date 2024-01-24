@@ -66,7 +66,9 @@ function _validate_vector_table(db::SQLite.DB, table::String)
         error("Table $table is a vector table and does not have an \"id\" column.")
     end
     if !("vector_index" in attributes)
-        error("Table $table is a vector table and does not have an \"vector_index\" column.")
+        error(
+            "Table $table is a vector table and does not have an \"vector_index\" column.",
+        )
     end
 end
 
@@ -122,13 +124,13 @@ end
 function _get_correct_method_to_use(correct_composite_type::Type, action::Symbol)
     if action == :read
         for (key, value) in READ_METHODS_BY_CLASS_OF_ATTRIBUTE
-            if correct_composite_type <: key 
+            if correct_composite_type <: key
                 return value
             end
         end
     elseif action == :update
         for (key, value) in UPDATE_METHODS_BY_CLASS_OF_ATTRIBUTE
-            if correct_composite_type <: key 
+            if correct_composite_type <: key
                 return value
             end
         end
@@ -148,7 +150,9 @@ function _throw_if_attribute_is_not_scalar_parameter(
         correct_composity_type = _attribute_composite_type(collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error("Attribute \"$attribute\" is not a scalar parameter. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.")
+        error(
+            "Attribute \"$attribute\" is not a scalar parameter. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.",
+        )
     end
     return nothing
 end
@@ -164,13 +168,15 @@ function _throw_if_attribute_is_not_vectorial_parameter(
         correct_composity_type = _attribute_composite_type(collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error("Attribute \"$attribute\" is not a vectorial parameter. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.")
+        error(
+            "Attribute \"$attribute\" is not a vectorial parameter. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.",
+        )
     end
     return nothing
 end
 
 function _throw_if_attribute_is_not_scalar_relationship(
-    collection::String, 
+    collection::String,
     attribute::String,
     action::Symbol,
 )
@@ -180,13 +186,15 @@ function _throw_if_attribute_is_not_scalar_relationship(
         correct_composity_type = _attribute_composite_type(collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error("Attribute \"$attribute\" is not a scalar relationship. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.")
+        error(
+            "Attribute \"$attribute\" is not a scalar relationship. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.",
+        )
     end
     return nothing
 end
 
 function _throw_if_attribute_is_not_vectorial_relationship(
-    collection::String, 
+    collection::String,
     attribute::String,
     action::Symbol,
 )
@@ -196,13 +204,15 @@ function _throw_if_attribute_is_not_vectorial_relationship(
         correct_composity_type = _attribute_composite_type(collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error("Attribute \"$attribute\" is not a vectorial relationship. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.")
+        error(
+            "Attribute \"$attribute\" is not a vectorial relationship. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.",
+        )
     end
     return nothing
 end
 
 function _throw_if_attribute_is_not_time_series_file(
-    collection::String, 
+    collection::String,
     attribute::String,
     action::Symbol,
 )
@@ -212,32 +222,40 @@ function _throw_if_attribute_is_not_time_series_file(
         correct_composity_type = _attribute_composite_type(collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error("Attribute \"$attribute\" is not a time series file. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.")
+        error(
+            "Attribute \"$attribute\" is not a time series file. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.",
+        )
     end
     return nothing
 end
 
 function _throw_if_not_scalar_attribute(
-    collection::String, 
+    collection::String,
     attribute::String,
 )
     sanity_check(collection, attribute)
 
-    if _is_vectorial_parameter(collection, attribute) || _is_vectorial_relationship(collection, attribute)
-       error("Attribute \"$attribute\" is not a scalar attribute. You must input a vector for this attribute.")
+    if _is_vectorial_parameter(collection, attribute) ||
+       _is_vectorial_relationship(collection, attribute)
+        error(
+            "Attribute \"$attribute\" is not a scalar attribute. You must input a vector for this attribute.",
+        )
     end
 
     return nothing
 end
 
 function _throw_if_not_vectorial_attribute(
-    collection::String, 
+    collection::String,
     attribute::String,
 )
     sanity_check(collection, attribute)
 
-    if _is_scalar_parameter(collection, attribute) || _is_scalar_relationship(collection, attribute)
-       error("Attribute \"$attribute\" is not a vector attribute. You must input a scalar for this attribute.")
+    if _is_scalar_parameter(collection, attribute) ||
+       _is_scalar_relationship(collection, attribute)
+        error(
+            "Attribute \"$attribute\" is not a vector attribute. You must input a scalar for this attribute.",
+        )
     end
 
     return nothing
@@ -246,13 +264,14 @@ end
 function _throw_if_relationship_does_not_exist(
     collection_from::String,
     collection_to::String,
-    relation_type::String
+    relation_type::String,
 )
-    if !_scalar_relation_exists(collection_from, collection_to, relation_type) && !_vectorial_relation_exists(collection_from, collection_to, relation_type)
+    if !_scalar_relation_exists(collection_from, collection_to, relation_type) &&
+       !_vectorial_relation_exists(collection_from, collection_to, relation_type)
         error(
-            "Relationship `$relation_type` between $collection_from and $collection_to does not exist. \n" * 
+            "Relationship `$relation_type` between $collection_from and $collection_to does not exist. \n" *
             "This is the list of relationships that exist: " *
-            "$(_show_existing_relation_types(_list_of_relation_types(collection_from, collection_to)))"
+            "$(_show_existing_relation_types(_list_of_relation_types(collection_from, collection_to)))",
         )
     end
 end
@@ -264,7 +283,7 @@ function _throw_if_is_time_series_file(
     if _is_time_series_file(collection, attribute)
         error(
             "Attribute \"$attribute\" is a time series file. " *
-            "You must use the function `set_time_series_file!` to create it."
+            "You must use the function `set_time_series_file!` to create it.",
         )
     end
     return nothing
@@ -297,7 +316,7 @@ function _validate_attribute_types!(
     end
     for (key, value) in dict_vectorial_attributes
         attribute = _get_attribute(collection, string(key))
-        if isa(attribute, VectorialRelationship) 
+        if isa(attribute, VectorialRelationship)
             _validate_vectorial_relationship_type(attribute, label_or_id, value)
         else
             _validate_vectorial_parameter_type(attribute, label_or_id, value)
@@ -314,7 +333,7 @@ function _validate_scalar_parameter_type(
     if !isa(value, attribute.type)
         error(
             "The value of the attribute \"$(attribute.name)\" in element \"$label_or_id\" " *
-            "of collection \"$(attribute.parent_collection)\" should be of type $(attribute.type). User inputed $(typeof(value)): $value."
+            "of collection \"$(attribute.parent_collection)\" should be of type $(attribute.type). User inputed $(typeof(value)): $value.",
         )
     end
 end
@@ -322,12 +341,12 @@ end
 function _validate_scalar_relationship_type(
     attribute::ScalarRelationship,
     label_or_id::Union{Integer, String},
-    value
+    value,
 )
     if !isa(value, String) && !isa(value, Int64)
         error(
             "The value of the attribute \"$(attribute.name)\" in element \"$label_or_id\" " *
-            "of collection \"$(attribute.parent_collection)\" should be of type String or Int64. User inputed $(typeof(value)): $value."
+            "of collection \"$(attribute.parent_collection)\" should be of type String or Int64. User inputed $(typeof(value)): $value.",
         )
     end
 end
@@ -340,7 +359,7 @@ function _validate_vectorial_parameter_type(
     if !isa(values, Vector{attribute.type})
         error(
             "The value of the attribute \"$(attribute.name)\" in element \"$label_or_id\" " *
-            "of collection \"$(attribute.parent_collection)\" should be of type Vector{$(attribute.type)}. User inputed $(typeof(values)): $values."
+            "of collection \"$(attribute.parent_collection)\" should be of type Vector{$(attribute.type)}. User inputed $(typeof(values)): $values.",
         )
     end
 end
@@ -353,7 +372,7 @@ function _validate_vectorial_relationship_type(
     if !isa(values, Vector{String}) && !isa(values, Vector{Int64})
         error(
             "The value of the attribute \"$(attribute.name)\" in element \"$label_or_id\" " *
-            "of collection \"$(attribute.parent_collection)\" should be of type Vector{String} or Vector{Int64}. User inputed $(typeof(values)): $values."
+            "of collection \"$(attribute.parent_collection)\" should be of type Vector{String} or Vector{Int64}. User inputed $(typeof(values)): $values.",
         )
     end
 end
@@ -425,9 +444,9 @@ end
 function _throw_if_collection_does_not_exist(collection::String)
     if !_collection_exists(collection)
         error(
-            "Collection \"$collection\" does not exist. "* 
+            "Collection \"$collection\" does not exist. " *
             "This is the list of available collections: " *
-            "$(_string_of_collections())"
+            "$(_string_of_collections())",
         )
     end
 end
@@ -436,7 +455,7 @@ function _throw_if_attribute_does_not_exist(collection::String, attribute::Strin
     if !_attribute_exists(collection, attribute)
         error(
             "Attribute \"$attribute\" does not exist in collection \"$collection\". " *
-            "This is the list of available attributes: $(_string_of_attributes(collection))"
+            "This is the list of available attributes: $(_string_of_attributes(collection))",
         )
     end
 end

@@ -153,7 +153,11 @@ function _get_scalar_relationship_map(
     relation_type::String,
 )
     attribute_on_collection_from = lowercase(collection_to) * "_" * relation_type
-    _throw_if_attribute_is_not_scalar_relationship(collection_from, attribute_on_collection_from, :read)
+    _throw_if_attribute_is_not_scalar_relationship(
+        collection_from,
+        attribute_on_collection_from,
+        :read,
+    )
     attribute = _get_attribute(collection_from, attribute_on_collection_from)
 
     query = "SELECT $(attribute.name) FROM $(attribute.table_where_is_located) ORDER BY rowid"
@@ -202,7 +206,7 @@ function read_vectorial_relationships(
     for (i, vector_with_indexes) in enumerate(map_of_vector_with_indexes)
         map_with_labels[i] = replace(vector_with_indexes, replace_dict...)
     end
-    
+
     return map_with_labels
 end
 
@@ -231,7 +235,11 @@ function _get_vectorial_relationship_map(
     relation_type::String,
 )
     attribute_on_collection_from = lowercase(collection_to) * "_" * relation_type
-    _throw_if_attribute_is_not_vectorial_relationship(collection_from, attribute_on_collection_from, :read)
+    _throw_if_attribute_is_not_vectorial_relationship(
+        collection_from,
+        attribute_on_collection_from,
+        :read,
+    )
     attribute = _get_attribute(collection_from, attribute_on_collection_from)
 
     query = "SELECT id, vector_index, $(attribute.name) FROM $(attribute.table_where_is_located) ORDER BY rowid, vector_index"
@@ -269,7 +277,9 @@ function read_time_series_file(
     query = "SELECT $(attribute.name) FROM $table ORDER BY rowid"
     df = DBInterface.execute(db, query) |> DataFrame
     if size(df, 1) > 1
-        error("Table $table has more than one row. As a time series file, it should have only one row.")
+        error(
+            "Table $table has more than one row. As a time series file, it should have only one row.",
+        )
     end
     results = df[!, 1][1]
     return results

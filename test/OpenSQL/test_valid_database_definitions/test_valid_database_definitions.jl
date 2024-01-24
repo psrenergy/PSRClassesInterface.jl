@@ -5,7 +5,8 @@ using SQLite
 using Test
 
 function test_invalid_database_without_configuration_table()
-    path_schema = joinpath(@__DIR__, "test_invalid_database_without_configuration_table.sql")
+    path_schema =
+        joinpath(@__DIR__, "test_invalid_database_without_configuration_table.sql")
     db_path = joinpath(@__DIR__, "test_invalid_database_without_configuration_table.sqlite")
     @test_throws ErrorException OpenSQL.create_empty_db(db_path, path_schema; force = true)
     rm(db_path)
@@ -21,16 +22,20 @@ function test_invalid_database_with_duplicated_attributes()
 end
 
 function test_invalid_database_with_invalid_collection_name()
-    path_schema = joinpath(@__DIR__, "test_invalid_database_with_invalid_collection_name.sql")
-    db_path = joinpath(@__DIR__, "test_invalid_database_with_invalid_collection_name.sqlite")
+    path_schema =
+        joinpath(@__DIR__, "test_invalid_database_with_invalid_collection_name.sql")
+    db_path =
+        joinpath(@__DIR__, "test_invalid_database_with_invalid_collection_name.sqlite")
     @test_throws ErrorException OpenSQL.create_empty_db(db_path, path_schema; force = true)
     rm(db_path)
     return nothing
 end
 
 function test_invalid_database_vector_table_without_vector_index()
-    path_schema = joinpath(@__DIR__, "test_invalid_database_vector_table_without_vector_index.sql")
-    db_path = joinpath(@__DIR__, "test_invalid_database_vector_table_without_vector_index.sqlite")
+    path_schema =
+        joinpath(@__DIR__, "test_invalid_database_vector_table_without_vector_index.sql")
+    db_path =
+        joinpath(@__DIR__, "test_invalid_database_vector_table_without_vector_index.sqlite")
     @test_throws ErrorException OpenSQL.create_empty_db(db_path, path_schema; force = true)
     rm(db_path)
     return nothing
@@ -39,7 +44,11 @@ end
 function test_invalid_duplicated_collection_definition()
     path_schema = joinpath(@__DIR__, "test_invalid_duplicated_collection_definition.sql")
     db_path = joinpath(@__DIR__, "test_invalid_duplicated_collection_definition.sqlite")
-    @test_throws SQLite.SQLiteException OpenSQL.create_empty_db(db_path, path_schema; force = true)
+    @test_throws SQLite.SQLiteException OpenSQL.create_empty_db(
+        db_path,
+        path_schema;
+        force = true,
+    )
     rm(db_path)
     return nothing
 end

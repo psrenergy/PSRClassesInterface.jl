@@ -149,10 +149,28 @@ function test_create_case_1()
     @test PSRI.max_elements(db, "Plant") == 1
     @test PSRI.max_elements(db, "Resource") == 1
 
-    @test PSRI.get_attributes(db, "Resource") == ["id", "label", "type", "some_value", "some_val_of_size_k_1", "some_val_of_size_k_2"]
+    @test PSRI.get_attributes(db, "Resource") == [
+        "id",
+        "label",
+        "type",
+        "some_value",
+        "some_val_of_size_k_1",
+        "some_val_of_size_k_2",
+    ]
 
     @test PSRI.get_attributes(db, "Plant") ==
-        ["id", "label", "capacity", "plant_spill_to", "plant_turbine_to", "resource_id", "some_factor", "cost_id", "generation", "cost"]
+          [
+        "id",
+        "label",
+        "capacity",
+        "plant_spill_to",
+        "plant_turbine_to",
+        "resource_id",
+        "some_factor",
+        "cost_id",
+        "generation",
+        "cost",
+    ]
 
     PSRI.OpenSQL.close(db)
 
@@ -238,7 +256,6 @@ function test_create_case_relation()
 
     return rm(joinpath(case_path, "case1.sqlite"))
 end
-
 
 function runtests()
     for name in names(@__MODULE__; all = true)

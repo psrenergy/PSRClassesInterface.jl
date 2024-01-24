@@ -27,11 +27,15 @@ function _create_vector_group!(
 )
     vectors_group_table_name = _vectors_group_table_name(collection, group)
     sanity_check(collection, vector_attributes)
-    _replace_vectorial_relationship_labels_with_ids!(db, collection, group_vectorial_attributes)
+    _replace_vectorial_relationship_labels_with_ids!(
+        db,
+        collection,
+        group_vectorial_attributes,
+    )
     _all_vector_of_group_must_have_same_size!(
-        group_vectorial_attributes, 
-        vector_attributes, 
-        vectors_group_table_name
+        group_vectorial_attributes,
+        vector_attributes,
+        vectors_group_table_name,
     )
     df = DataFrame(group_vectorial_attributes)
     num_values = size(df, 1)
@@ -42,20 +46,33 @@ function _create_vector_group!(
     return nothing
 end
 
-function _create_vectors!(db::SQLite.DB, collection::String, id::Integer, dict_vectorial_attributes)
+function _create_vectors!(
+    db::SQLite.DB,
+    collection::String,
+    id::Integer,
+    dict_vectorial_attributes,
+)
     # separate vectors by groups
     map_of_groups_to_vector_attributes = _map_of_groups_to_vector_attributes(collection)
     for (group, vector_attributes) in map_of_groups_to_vector_attributes
         group_vectorial_attributes = Dict()
         for vector_attribute in Symbol.(vector_attributes)
             if haskey(dict_vectorial_attributes, vector_attribute)
-                group_vectorial_attributes[vector_attribute] = dict_vectorial_attributes[vector_attribute]
+                group_vectorial_attributes[vector_attribute] =
+                    dict_vectorial_attributes[vector_attribute]
             end
         end
         if isempty(group_vectorial_attributes)
             continue
         end
-        _create_vector_group!(db, collection, group, id, vector_attributes, group_vectorial_attributes)
+        _create_vector_group!(
+            db,
+            collection,
+            group,
+            id,
+            vector_attributes,
+            group_vectorial_attributes,
+        )
     end
     return nothing
 end
@@ -84,13 +101,21 @@ function _create_element!(
         end
     end
 
-    _validate_attribute_types_on_creation!(collection, dict_scalar_attributes, dict_vectorial_attributes)
+    _validate_attribute_types_on_creation!(
+        collection,
+        dict_scalar_attributes,
+        dict_vectorial_attributes,
+    )
     _convert_date_to_string!(dict_scalar_attributes, dict_vectorial_attributes)
 
     _create_scalar_attributes!(db, collection, dict_scalar_attributes)
 
     if !isempty(dict_vectorial_attributes)
-        id = get(dict_scalar_attributes, :id, _get_id(db, collection, dict_scalar_attributes[:label]))
+        id = get(
+            dict_scalar_attributes,
+            :id,
+            _get_id(db, collection, dict_scalar_attributes[:label]),
+        )
         _create_vectors!(db, collection, id, dict_vectorial_attributes)
     end
 
@@ -102,7 +127,7 @@ function create_element!(
     collection::String;
     kwargs...,
 )
-    try 
+    try
         _create_element!(db, collection; kwargs...)
     catch e
         @error """
@@ -117,7 +142,7 @@ end
 function _all_vector_of_group_must_have_same_size!(
     group_vectorial_attributes,
     vector_attributes::Vector{String},
-    table_name::String
+    table_name::String,
 )
     vector_attributes = Symbol.(vector_attributes)
     if isempty(group_vectorial_attributes)
@@ -130,14 +155,15 @@ function _all_vector_of_group_must_have_same_size!(
     unique_lengths = unique(values(dict_of_lengths))
     if length(unique_lengths) > 1
         error(
-            "All vectors of table $table_name must have the same length. These are the current lengths: $(_show_sizes_of_vectors_in_string(dict_of_lengths)) "
+            "All vectors of table $table_name must have the same length. These are the current lengths: $(_show_sizes_of_vectors_in_string(dict_of_lengths)) ",
         )
     end
     length_first_vector = unique_lengths[1]
     # fill missing vectors with missing values
     for vector_attribute in vector_attributes
         if !haskey(group_vectorial_attributes, vector_attribute)
-            group_vectorial_attributes[vector_attribute] = fill(missing, length_first_vector)
+            group_vectorial_attributes[vector_attribute] =
+                fill(missing, length_first_vector)
         end
     end
     return nothing
@@ -152,8 +178,8 @@ function _show_sizes_of_vectors_in_string(dict_of_lengths::Dict{String, Int})
 end
 
 function _get_label_or_id(
-    collection::String, 
-    dict_scalar_attributes
+    collection::String,
+    dict_scalar_attributes,
 )
     if haskey(dict_scalar_attributes, :label)
         return dict_scalar_attributes[:label]
@@ -182,13 +208,13 @@ function _convert_date_to_string!(
 end
 
 function _convert_date_to_string(
-    value::TimeType
+    value::TimeType,
 )
     return string(DateTime(value))
 end
 
 function _convert_date_to_string(
-    values::AbstractVector{<:TimeType}
+    values::AbstractVector{<:TimeType},
 )
     dates = DateTime.(values)
     if !issorted(dates)
@@ -199,9 +225,9 @@ end
 _convert_date_to_string(value) = value
 
 function _replace_scalar_relationship_labels_with_id!(
-    db::SQLite.DB, 
-    collection::String, 
-    scalar_attributes
+    db::SQLite.DB,
+    collection::String,
+    scalar_attributes,
 )
     for (key, value) in scalar_attributes
         if _is_scalar_relationship(collection, string(key)) && isa(value, String)
@@ -214,9 +240,9 @@ function _replace_scalar_relationship_labels_with_id!(
 end
 
 function _replace_vectorial_relationship_labels_with_ids!(
-    db::SQLite.DB, 
-    collection::String, 
-    vectorial_attributes
+    db::SQLite.DB,
+    collection::String,
+    vectorial_attributes,
 )
     for (key, value) in vectorial_attributes
         if _is_vectorial_relationship(collection, string(key)) && isa(value, Vector{String})
@@ -238,6 +264,11 @@ function _validate_attribute_types_on_creation!(
     dict_vectorial_attributes::AbstractDict,
 )
     label_or_id = _get_label_or_id(collection, dict_scalar_attributes)
-    _validate_attribute_types!(collection, label_or_id, dict_scalar_attributes, dict_vectorial_attributes)
+    _validate_attribute_types!(
+        collection,
+        label_or_id,
+        dict_scalar_attributes,
+        dict_vectorial_attributes,
+    )
     return nothing
 end
