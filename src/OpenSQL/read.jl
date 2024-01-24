@@ -1,8 +1,9 @@
 const READ_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
-    ScalarParameter => "read_scalar_parameter",
-    ScalarRelationship => "read_scalar_relationship",
-    VectorialParameter => "read_vectorial_parameter",
-    VectorialRelationship => "read_vectorial_relationship",
+    ScalarParameter => "read_scalar_parameters",
+    ScalarRelationship => "read_scalar_relationships",
+    VectorialParameter => "read_vectorial_parameters",
+    VectorialRelationship => "read_vectorial_relationships",
+    TimeSeriesFile => "read_time_series_file",
 )
 
 # TODO rename to _get_id_of_element also it should pass a collection_name
@@ -43,25 +44,25 @@ function read_scalar_parameter(
 )
     _throw_if_attribute_is_not_scalar_parameter(collection_name, attribute_name, :read)
 
-    table = _get_collection_scalar_attribute_tables(db, collection)
+    table = _get_collection_scalar_attribute_tables(db, collection_name)
     id = _get_id(db, table, label)
 
-    return _read_scalar_parameter(db, collection, attribute, id)
+    return read_scalar_parameter(db, collection_name, attribute_name, id)
 end
 
-function _read_scalar_parameter(
+function read_scalar_parameter(
     db::SQLite.DB,
     collection_name::String,
     attribute_name::String,
     id::Integer,
 )
-    _throw_if_attribute_is_not_scalar_parameter(collection, attribute, :read)
-    attribute = _get_attribute(collection_name, collection_name)
+    _throw_if_attribute_is_not_scalar_parameter(collection_name, attribute_name, :read)
+    attribute = _get_attribute(collection_name, attribute_name)
     table = attribute.table_where_is_located
 
     query = "SELECT $attribute_name FROM $table WHERE id = '$id'"
     df = DBInterface.execute(db, query) |> DataFrame
-    results = df[!, 1]
+    results = df[!, 1][1]
     return results
 end
 
@@ -80,6 +81,18 @@ function read_vectorial_parameters(
     end
 
     return results
+end
+
+function read_vectorial_parameter(
+    db::SQLite.DB,
+    collection_name::String,
+    attribute_name::String,
+    label::String,
+)
+    _throw_if_attribute_is_not_vectorial_parameter(collection_name, attribute_name, :read)
+    attribute = _get_attribute(collection_name, attribute_name)
+    id = read_scalar_parameter(db, collection_name, "id", label)
+    return _query_vector(db, attribute, id)
 end
 
 function _query_vector(
@@ -113,6 +126,24 @@ function read_scalar_relationships(
     replace_dict = Dict{Any, String}(zip(ids_in_collection_to, names_in_collection_to))
     push!(replace_dict, missing => "")
     return replace(map_of_elements, replace_dict...)
+end
+
+function read_scalar_relationship(
+    db::SQLite.DB,
+    collection_from::String,
+    collection_to::String,
+    collection_from_label::String,
+    relation_type::String,
+)
+    relations = read_scalar_relationships(
+        db,
+        collection_from,
+        collection_to,
+        relation_type,
+    )
+    labels_in_collection_from = read_scalar_parameters(db, collection_from, "label")
+    index_of_label = findfirst(isequal(collection_from_label), labels_in_collection_from)
+    return relations[index_of_label]
 end
 
 function _get_scalar_relationship_map(
@@ -175,6 +206,24 @@ function read_vectorial_relationships(
     return map_with_labels
 end
 
+function read_vectorial_relationship(
+    db::SQLite.DB,
+    collection_from::String,
+    collection_to::String,
+    collection_from_label::String,
+    relation_type::String,
+)
+    relations = read_vectorial_relationships(
+        db,
+        collection_from,
+        collection_to,
+        relation_type,
+    )
+    labels_in_collection_from = read_scalar_parameters(db, collection_from, "label")
+    index_of_label = findfirst(isequal(collection_from_label), labels_in_collection_from)
+    return relations[index_of_label]
+end
+
 function _get_vectorial_relationship_map(
     db::SQLite.DB,
     collection_from::String,
@@ -206,4 +255,22 @@ function _get_vectorial_relationship_map(
     end
 
     return map_of_vector_with_indexes
+end
+
+function read_time_series_file(
+    db::SQLite.DB,
+    collection_name::String,
+    attribute_name::String,
+)
+    _throw_if_attribute_is_not_time_series_file(collection_name, attribute_name, :read)
+    attribute = _get_attribute(collection_name, attribute_name)
+    table = attribute.table_where_is_located
+
+    query = "SELECT $(attribute.name) FROM $table ORDER BY rowid"
+    df = DBInterface.execute(db, query) |> DataFrame
+    if size(df, 1) > 1
+        error("Table $table has more than one row. As a time series file, it should have only one row.")
+    end
+    results = df[!, 1][1]
+    return results
 end

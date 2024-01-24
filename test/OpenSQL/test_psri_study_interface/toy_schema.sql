@@ -53,7 +53,7 @@ CREATE TABLE Plant (
 CREATE TABLE Plant_vector_cost_relationship (
     id INTEGER,
     vector_index INTEGER NOT NULL,
-    some_factor REAL NOT NULL,
+    some_factor REAL,
     cost_id INTEGER,
     FOREIGN KEY(id) REFERENCES Plant(id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY(cost_id) REFERENCES Cost(id) ON DELETE CASCADE ON UPDATE CASCADE,

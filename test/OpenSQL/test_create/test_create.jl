@@ -9,32 +9,15 @@ function test_create_parameters()
     path_schema = joinpath(@__DIR__, "test_create_parameters.sql")
     db_path = joinpath(@__DIR__, "test_create_parameters.sqlite")
     db = OpenSQL.create_empty_db(db_path, path_schema; force = true)
+    @test_throws ErrorException OpenSQL.create_element!(db, "Configuration"; label = "Toy Case", value1 = "wrong")
     OpenSQL.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
+    OpenSQL.create_element!(db, "Resource"; label = "Resource 2")
     OpenSQL.create_element!(db, "Resource"; label = "Resource 1", type = "E")
+    @test_throws ErrorException OpenSQL.create_element!(db, "Resource"; label = "Resource 4", type3 = "E")
+    @test_throws ErrorException OpenSQL.create_element!(db, "Resource"; label = "Resource 5", value1 = "wrong")
     OpenSQL.close!(db)
     rm(db_path)
     @test true
-    return nothing
-end
-
-function test_create_non_existing_parameters()
-    path_schema = joinpath(@__DIR__, "test_create_parameters.sql")
-    db_path = joinpath(@__DIR__, "test_create_parameters.sqlite")
-    db = OpenSQL.create_empty_db(db_path, path_schema; force = true)
-    @test_throws ErrorException OpenSQL.create_element!(db, "Configuration"; label = "Toy Case", value5 = 1.0)
-    @test_throws ErrorException OpenSQL.create_element!(db, "Resource"; label = "Resource 1", type3 = "E")
-    OpenSQL.close!(db)
-    rm(db_path)
-    return nothing
-end
-
-function test_create_parameters_wrong_type()
-    path_schema = joinpath(@__DIR__, "test_create_parameters.sql")
-    db_path = joinpath(@__DIR__, "test_create_parameters.sqlite")
-    db = OpenSQL.create_empty_db(db_path, path_schema; force = true)
-    @test_throws ErrorException OpenSQL.create_element!(db, "Configuration"; label = "Toy Case", value1 = "wrong")
-    OpenSQL.close!(db)
-    rm(db_path)
     return nothing
 end
 
@@ -48,6 +31,7 @@ function test_create_parameters_and_vectors()
     OpenSQL.create_element!(db, "Cost"; label = "Cost 2", value = 20.0)
     OpenSQL.create_element!(db, "Plant"; label = "Plant 1", capacity = 50.0, some_factor = [0.1, 0.3])
     OpenSQL.create_element!(db, "Plant"; label = "Plant 2", capacity = 50.0, some_factor = [0.1, 0.3, 0.5])
+    @test_throws ErrorException OpenSQL.create_element!(db, "Plant"; label = "Plant 3", generation = "some_file.txt")
     @test_throws ErrorException OpenSQL.create_element!(db, "Plant"; label = "Plant 2", capacity = 50.0, some_factor = [])
     OpenSQL.create_element!(db, "Plant"; label = "Plant 3", resource_id = 1)
     @test_throws ErrorException OpenSQL.create_element!(db, "Resource"; label = "Resource 1", type = "E", some_value = 1.0)
@@ -112,14 +96,6 @@ function test_create_vectors_with_relationships()
             factor_output = [0.3, 0.3, 0.4],
         )
 
-    # OpenSQL.create_element!(db, "Process";
-    #     label = "Sugar Mill 2", 
-    #     product_input = [1, 2], 
-    #     factor_input = [1.0],
-    #     product_output = [1, 2, 3],
-    #     factor_output = [0.3, 0.3, 0.4],
-    # )
-
     @test_throws ErrorException OpenSQL.create_element!(db, "Process";
             label = "Sugar Mill 2", 
             product_input = ["Sugar"], 
@@ -143,8 +119,6 @@ function test_create_vectors_with_relationships()
         product_output = ["Sugarcane"],
         factor_output = [1.0],
     )
-
-
 
     OpenSQL.close!(db)
     GC.gc()

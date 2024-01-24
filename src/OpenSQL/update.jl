@@ -3,6 +3,7 @@ const UPDATE_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
     ScalarRelationship => "set_scalar_relationship!",
     VectorialParameter => "update_vectorial_parameter!",
     VectorialRelationship => "set_vectorial_relationship!",
+    TimeSeriesFile => "set_time_series_file!",
 )
 
 function update_scalar_parameter!(
@@ -216,19 +217,31 @@ function set_vectorial_relationship!(
     return nothing
 end
 
-function set_related_time_series!(
-    db::DBInterface.Connection,
-    table::String;
+function set_time_series_file!(
+    db::SQLite.DB,
+    collection_name::String;
     kwargs...,
 )
-    table_name = table * "_timeseriesfiles"
+    sanity_check(collection_name)
+    table_name = collection_name * "_timeseriesfiles"
+    time_series_files = _get_time_series_files(collection_name)
     dict_time_series = Dict()
     for (key, value) in kwargs
-        @assert isa(value, String)
+        if !isa(value, AbstractString)
+            error("As a time_series_file the value of the attribute $key must be a String. User inputed $(typeof(value)): $value.")
+        end
+        _throw_if_attribute_is_not_time_series_file(collection_name, string(key), :update)
         _validate_time_series_attribute_value(value)
-        dict_time_series[key] = [value]
+        dict_time_series[key] = value
     end
-    df = DataFrame(dict_time_series)
-    SQLite.load!(df, db, table_name)
+    SQLite.transaction(db) do
+        # Delete every previous entry and then add it again
+        # it must be done within a transaction so we don't lose
+        # the time series files if something goes wrong
+        cols = join(keys(dict_time_series), ", ")
+        vals = join(values(dict_time_series), "', '")
+        DBInterface.execute(db, "DELETE FROM $table_name")
+        DBInterface.execute(db, "INSERT INTO $table_name ($cols) VALUES ('$vals')")
+    end
     return nothing
 end

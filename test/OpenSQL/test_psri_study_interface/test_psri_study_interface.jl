@@ -1,6 +1,15 @@
-function create_case_1()
-    case_path = joinpath(@__DIR__, "data", "case_1")
+module TestPSRIStudyInterface
+
+using PSRClassesInterface
+using Test
+
+const PSRI = PSRClassesInterface
+
+function test_create_case_1()
+    case_path = @__DIR__
     if isfile(joinpath(case_path, "case1.sqlite"))
+        GC.gc()
+        GC.gc()
         rm(joinpath(case_path, "case1.sqlite"))
     end
 
@@ -29,7 +38,7 @@ function create_case_1()
         label = "Plant 2",
     )
 
-    @test_throws PSRI.OpenSQL.SQLite.SQLiteException PSRI.create_element!(
+    @test_throws ErrorException PSRI.create_element!(
         db,
         "Plant";
         label = "Plant 3",
@@ -150,8 +159,8 @@ function create_case_1()
     return rm(joinpath(case_path, "case1.sqlite"))
 end
 
-function create_case_relations()
-    case_path = joinpath(@__DIR__, "data", "case_1")
+function test_create_case_relation()
+    case_path = @__DIR__
     if isfile(joinpath(case_path, "case1.sqlite"))
         rm(joinpath(case_path, "case1.sqlite"))
     end
@@ -196,7 +205,7 @@ function create_case_relations()
         "Plant",
         "Cost",
         "Plant 1",
-        "Cost 1",
+        ["Cost 1"],
         "id",
     )
 
@@ -205,20 +214,22 @@ function create_case_relations()
         "Plant",
         "Cost",
         "Plant 2",
-        "Cost 1",
+        ["Cost 1"],
         "id",
     )
 
     @test PSRI.get_vector_related(
         db,
         "Plant",
+        "Cost",
         "Plant 1",
         "id",
     ) == ["Cost 1"]
 
-    @test PSRI.get_vector_related(
+    @test_throws ErrorException PSRI.get_vector_related(
         db,
         "Plant",
+        "Cost",
         "Plant 2",
         "sometype",
     ) == ["Cost 1"]
@@ -228,5 +239,17 @@ function create_case_relations()
     return rm(joinpath(case_path, "case1.sqlite"))
 end
 
-create_case_1()
-create_case_relations()
+
+function runtests()
+    for name in names(@__MODULE__; all = true)
+        if startswith("$name", "test_")
+            @testset "$(name)" begin
+                getfield(@__MODULE__, name)()
+            end
+        end
+    end
+end
+
+TestPSRIStudyInterface.runtests()
+
+end

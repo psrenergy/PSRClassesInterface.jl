@@ -78,6 +78,7 @@ function _create_element!(
             end
             dict_vectorial_attributes[key] = value
         else
+            _throw_if_is_time_series_file(collection, string(key))
             _throw_if_not_scalar_attribute(collection, string(key))
             dict_scalar_attributes[key] = value
         end

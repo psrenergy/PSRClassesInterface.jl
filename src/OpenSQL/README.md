@@ -11,38 +11,35 @@ Following PSRI's `OpenStudy` standards, SQL schemas for the `OpenSQL` framework 
 - The Table name should be the same as the name of the Collection.
 - The Table name of a Collection should beging with a capital letter and be in singular form.
 - In case of a Collection with a composite name, the Table name should written in Pascal Case.
-- The Table must contain a primary key named `id` that is an `INTEGER`.
+- The Table must contain a primary key named `id` that is an `INTEGER`. You should use the `AUTOINCREMENT` keyword to automatically generate the `id` for each element.
 
 Examples:
-
 
 ```sql
 CREATE TABLE Resource (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT UNIQUE NOT NULL,
-    type TEXT NOT NULL DEFAULT "D" CHECK(type IN ('D', 'E', 'F'))
+    some_type TEXT
 ) STRICT;
 
 CREATE TABLE ThermalPlant(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT UNIQUE NOT NULL,
-    capacity REAL NOT NULL DEFAULT 0
+    minimum_generation REAL DEFAULT 0
 ) STRICT;
 ```
 
 #### Configuration collection
 
-Every case must have a `Configuration`, which will store information from the case. 
+Every database definition must have a `Configuration`, which will store information from the case. 
 The column `label` is not mandatory for a `Configuration` collection.
 
 ```sql
 CREATE TABLE Configuration (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     value1 REAL NOT NULL DEFAULT 100,
-    enum1 TEXT NOT NULL DEFAULT 'A' CHECK(enum1 IN ('A', 'B', 'C'))
 ) STRICT;
 ```
-
 
 ### Non-vector Attributes
 
@@ -53,29 +50,85 @@ Example:
 CREATE TABLE ThermalPlant(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT UNIQUE NOT NULL,
+    minimum_generation REAL NOT NULL
+    some_example_of_attribute REAL
+) STRICT;
+```
+
+If an attribute name starts with `date` it should be stored as a `TEXT` and indicates a date that will be mapped to a DateTime object.
+
+Example:
+```sql
+CREATE TABLE ThermalPlant(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    label TEXT UNIQUE NOT NULL,
+    minimum_generation REAL NOT NULL,
+    date_of_construction TEXT
+) STRICT;
+```
+
+If an attribute name starts with the name of another collection it should be stored as a `INTEGER` and indicates a relation with another collection. It should never have the `NOT NULL` constraint. All references should always declare the `ON UPDATE CASCADE ON DELETE CASCADE` constraint. In the example below the attribute `gaugingstation_id` indicates that the collection Plant has an `id` relation with the collection GaugingStation and the attribute `plant_spill_to` indicates that the collection Plant has a `spill_to` relation with itself.
+
+Example:
+```sql
+CREATE TABLE Plant(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    label TEXT UNIQUE NOT NULL,
     capacity REAL NOT NULL
+    gaugingstation_id INTEGER,
+    plant_spill_to INTEGER,
+    FOREIGN KEY(gaugingstation_id) REFERENCES GaugingStation(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY(plant_spill_to) REFERENCES Plant(id) ON UPDATE CASCADE ON DELETE CASCADE
 ) STRICT;
 ```
 
 ### Vector Attributes
 
-- In case of a vector attribute, a Table should be created with its name indicating the name of the Collection and the name of the attribute, separated by `_vector_`, as presented below
+- In case of a vector attribute, a table should be created with its name indicating the name of the Collection and the name of a group of the attribute, separated by `_vector_`, as presented below
 
-<p style="text-align: center;"> COLLECTION_vector_ATTRIBUTE</p>
+<p style="text-align: center;"> COLLECTION_vector_GROUP_OF_ATTRIBUTES</p>
 
-- Note that after **_vector_** the name of the attribute should follow the same rule as non-vector attributes.
-- The Table must contain a Column named `id` and another named `vector_index`.
-- There must be a Column named after the attribute name, which will store the value of the attribute for the specified element `id` and index `vector_index`.
+- The table must contain a Column named `id` and another named `vector_index`.
+- There must be a Column named after the attributes names, which will store the value of the attribute for the specified element `id` and index `vector_index`.
+
+These groups are used to store vectors that should have the same size. If two vectors don't necessarily have the same size, they should be stored in different groups.
 
 Example:
 ```sql
-CREATE TABLE ThermalPlant_vector_some_value(
+CREATE TABLE ThermalPlant_vector_some_group(
     id INTEGER,
     vector_index INTEGER NOT NULL,
     some_value REAL NOT NULL,
-    FOREIGN KEY (id) REFERENCES ThermalPlant(id) ON DELETE CASCADE,
+    some_other_value REAL,
+    FOREIGN KEY (id) REFERENCES ThermalPlant(id) ON UPDATE CASCADE ON DELETE CASCADE,
     PRIMARY KEY (id, vector_index)
 ) STRICT;
+```
+
+Example of a small time series
+```sql
+CREATE TABLE ThermalPlant_vector_some_group(
+    id INTEGER,
+    vector_index INTEGER NOT NULL,
+    date_of_modification REAL NOT NULL,
+    capacity REAL,
+    FOREIGN KEY (id) REFERENCES ThermalPlant(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    PRIMARY KEY (id, vector_index)
+) STRICT;
+```
+
+A vectorial relation with another collection should be stored in a table of vector groups and be defined the same way as a vector attribute. To tell that it is a relation with another collection, the name of the relational attribute should be the name of the target collection followed by the relation type defined as `_relaiton_type`, i.e. `gaugingstation_id` indicated that the collection HydroPlant has an `id` relation with the collection GaugingStation. If the name of the attribute was `gaugingstation_one_to_one`, it would indicate that the collection HydroPlant has a relation `one_to_one` with the collection GaugingStation.
+
+```sql
+CREATE TABLE HydroPlant_vector_GaugingStation(
+    id INTEGER,
+    vector_index INTEGER NOT NULL,
+    conversion_factor REAL NOT NULL,
+    gaugingstation_id INTEGER,
+    FOREIGN KEY (gaugingstation_id) REFERENCES GaugingStation(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    PRIMARY KEY (id, vector_index)
+) STRICT;
+
 ```
 
 ### Time Series
@@ -91,53 +144,9 @@ CREATE TABLE ThermalPlant_vector_some_value(
 Example:
 
 ```sql
-CREATE TABLE Plant_timeseries (
+CREATE TABLE Plant_timeseriesfiles (
     generation TEXT,
     cost TEXT
-) STRICT;
-```
-
-### 1 to 1 Relations
-
-- One to One relations (1:1, To, From, etc) should be stored in the Source's Table.
-- The name of the Column storing the Target's element id should have the name of the Target Collection in lowercase and indicate the type of the relation (e.g. `plant_turbine_to`).
-- For the case of a standard 1 to 1 relationship, the name of the Column should be the name of the Target Collection followed by `_id` (e.g. `resource_id`).
-
-Example:
-
-```sql
-CREATE TABLE Plant (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT UNIQUE NOT NULL,
-    capacity REAL NOT NULL DEFAULT 0,
-    resource_id INTEGER,
-    plant_turbine_to INTEGER,
-    plant_spill_to INTEGER,
-    FOREIGN KEY(resource_id) REFERENCES Resource(id),
-    FOREIGN KEY(plant_turbine_to) REFERENCES Plant(id),
-    FOREIGN KEY(plant_spill_to) REFERENCES Plant(id)
-) STRICT;
-```
-
-### N to N Relations
-
-- N to N relations should be stored in a separate Table, named after the Source and Target Collections, separated by `_relation_`, as presented below
-
-<p style="text-align: center"> SOURCE_relation_TARGET</p>
-
-- The Table must contain a Column named `source_id` and another named `target_id`.
-- The Table must contain a Column named `relation_type`
-
-Example:
-
-```sql
-CREATE TABLE Plant_relation_Cost (
-    source_id INTEGER,
-    target_id INTEGER,
-    relation_type TEXT,
-    FOREIGN KEY(source_id) REFERENCES Plant(id) ON DELETE CASCADE,
-    FOREIGN KEY(target_id) REFERENCES Costs(id) ON DELETE CASCADE,
-    PRIMARY KEY (source_id, target_id, relation_type)
 ) STRICT;
 ```
 

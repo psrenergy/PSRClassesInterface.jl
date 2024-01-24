@@ -25,6 +25,6 @@ include("update.jl")
 include("delete.jl")
 include("validate.jl")
 include("migrations.jl")
-include("sql_interface.jl")
+include("psri_study_interface.jl")
 
 end # module OpenSQL

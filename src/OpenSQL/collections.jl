@@ -68,11 +68,10 @@ mutable struct Collection
     scalar_relationships::OrderedDict{String, ScalarRelationship}
     vectorial_parameters::OrderedDict{String, VectorialParameter}
     vectorial_relationships::OrderedDict{String, VectorialRelationship}
-    time_series::OrderedDict{String, TimeSeriesFile}
+    time_series_files::OrderedDict{String, TimeSeriesFile}
 end
 
-# TODO remember to write md about date_ parameters
-# TODO We should rename sanity checks to something better such as _throw_if_collection_does_not_exist
+# TODO write more documentations for all functions
 
 # Dictionary storing the collections map for the database
 # TODO if we have multiple databases we should have a dictionary of dictionaries
@@ -95,6 +94,8 @@ function _attribute_exists(collection_name::String, attribute_name::String)
     elseif _is_vectorial_parameter(collection_name, attribute_name)
         return true
     elseif _is_vectorial_relationship(collection_name, attribute_name)
+        return true
+    elseif _is_time_series_file(collection_name, attribute_name)
         return true
     end
     return false
@@ -163,6 +164,8 @@ function _get_attribute(collection_name::String, attribute_name::String)::Attrib
         return collection.vectorial_parameters[attribute_name]
     elseif _is_vectorial_relationship(collection_name, attribute_name)
         return collection.vectorial_relationships[attribute_name]
+    elseif _is_time_series_file(collection_name, attribute_name)
+        return collection.time_series_files[attribute_name]
     else
         error("Attribute $attribute_name in collection $collection_name does not exist.")
     end
@@ -182,6 +185,15 @@ function _get_vectorial_relationship(
     return COLLECTION_DATABASE_MAP[collection_name].vectorial_relationships[attribute_name]
 end
 
+function _get_time_series_files(collection_name::String)
+    collection = COLLECTION_DATABASE_MAP[collection_name]
+    time_series_files = Vector{String}(undef, 0)
+    for (name, _) in collection.time_series_files
+        push!(time_series_files, name)
+    end
+    return time_series_files
+end
+
 function _table_where_attribute_is_located(collection_name::String, attribute_name::String)
     attribute = _get_attribute(collection_name, attribute_name)
     return attribute.table_where_is_located
@@ -193,28 +205,21 @@ function _type_of_attribute(collection_name::String, attribute_name::String)
 end
 
 function _attribute_composite_type(collection_name::String, attribute_name::String)
-    if _is_scalar_parameter(collection_name, attribute_name)
-        return ScalarParameter
-    elseif _is_scalar_relationship(collection_name, attribute_name)
-        return ScalarRelationship
-    elseif _is_vectorial_parameter(collection_name, attribute_name)
-        return VectorialParameter
-    elseif _is_vectorial_relationship(collection_name, attribute_name)
-        return VectorialRelationship
-    else
-        error("Something went wrong.")
-    end
+    attribute = _get_attribute(collection_name, attribute_name)
+    return typeof(attribute)
 end
 
 function _string_for_composite_types(composite_type::Type)
-    if composite_type == ScalarParameter
+    if composite_type <: ScalarParameter
         return "scalar parameter"
-    elseif composite_type == ScalarRelationship
+    elseif composite_type <: ScalarRelationship
         return "scalar relationship"
-    elseif composite_type == VectorialParameter
+    elseif composite_type <: VectorialParameter
         return "vectorial parameter"
-    elseif composite_type == VectorialRelationship
+    elseif composite_type <: VectorialRelationship
         return "vectorial relationship"
+    elseif composite_type <: TimeSeriesFile
+        return "time series file"
     else
         error("Something went wrong. Unknown composite type: $composite_type")
     end
@@ -238,6 +243,11 @@ end
 function _is_vectorial_relationship(collection_name::String, attribute_name::String)
     collection = COLLECTION_DATABASE_MAP[collection_name]
     return haskey(collection.vectorial_relationships, attribute_name)
+end
+
+function _is_time_series_file(collection_name::String, attribute_name::String)
+    collection = COLLECTION_DATABASE_MAP[collection_name]
+    return haskey(collection.time_series_files, attribute_name)
 end
 
 function _map_of_groups_to_vector_attributes(collection_name::String)

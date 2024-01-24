@@ -102,8 +102,21 @@ function test_update_vectorial_parameters()
     rm(db_path)
 end
 
-function test_set_relations_to_time_series_files()
-    @test_broken false
+function test_create_time_series_files()
+    path_schema = joinpath(@__DIR__, "test_create_time_series_files.sql")
+    db_path = joinpath(@__DIR__, "test_create_time_series_files.sqlite")
+    db = OpenSQL.create_empty_db(db_path, path_schema; force = true)
+    OpenSQL.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
+    OpenSQL.create_element!(db, "Resource"; label = "Resource 1")
+    OpenSQL.set_time_series_file!(db, "Resource"; wind_speed = "some_file.txt")
+    @test_throws ErrorException OpenSQL.set_time_series_file!(db, "Resource"; wind_speed = ["some_file.txt"])
+    @test_throws ErrorException OpenSQL.set_time_series_file!(db, "Resource"; label = "RS")
+    OpenSQL.set_time_series_file!(db, "Resource"; wind_speed = "some_other_file.txt")
+    OpenSQL.set_time_series_file!(db, "Resource"; wind_speed = "speed.txt", wind_direction = "direction.txt")
+    @test_throws ErrorException OpenSQL.set_time_series_file!(db, "Resource"; wind_speed = "C:\\Users\\some_user\\some_file.txt")
+    @test_throws ErrorException OpenSQL.set_time_series_file!(db, "Resource"; wind_speed = "~/some_user/some_file.txt")
+    OpenSQL.close!(db)
+    rm(db_path)
 end
 
 function runtests()

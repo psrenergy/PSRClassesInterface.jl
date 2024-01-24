@@ -52,14 +52,14 @@ CREATE TABLE Plant_vector_cost_relationship (
 ) STRICT;
 
 CREATE TABLE Product (
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT UNIQUE NOT NULL,
     unit TEXT NOT NULL,
     initial_availability REAL DEFAULT 0.0
 ) STRICT;
 
 CREATE TABLE Process (
-    id INTEGER PRIMARY KEY,
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT NOT NULL
 ) STRICT;
 
@@ -79,4 +79,9 @@ CREATE TABLE Process_vector_outputs (
     product_output INTEGER,
     FOREIGN KEY(product_output) REFERENCES Product(id) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY (id, vector_index)
+) STRICT;
+
+CREATE TABLE Plant_timeseriesfiles (
+    generation TEXT,
+    prices TEXT
 ) STRICT;

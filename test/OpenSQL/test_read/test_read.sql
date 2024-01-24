@@ -51,3 +51,7 @@ CREATE TABLE Plant_vector_cost_relationship (
     PRIMARY KEY (id, vector_index)
 ) STRICT;
 
+CREATE TABLE Plant_timeseriesfiles (
+    wind_speed TEXT,
+    wind_direction TEXT
+) STRICT;

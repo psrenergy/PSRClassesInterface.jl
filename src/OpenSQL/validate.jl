@@ -29,11 +29,13 @@ _is_valid_time_series_attribute_value(value::String) =
 function _validate_time_series_attribute_value(value::String)
     if !_is_valid_time_series_attribute_value(value)
         error(
-            """Invalid time series file name: $value. \nThe valid time series attribute name format is: \n
-          - name_of_attribute123\n
-          - name_of_attribute.extension\n
-          OBS: It must be the name of the file, not the path.
-          """,
+            """
+            Invalid time series file name: $value. 
+            The valid time series attribute name format is:
+            - name_of_attribute123
+            - name_of_attribute.extension
+            It must be the name of the file, not the path.
+            """,
         )
     end
 end
@@ -119,9 +121,17 @@ end
 
 function _get_correct_method_to_use(correct_composite_type::Type, action::Symbol)
     if action == :read
-        return READ_METHODS_BY_CLASS_OF_ATTRIBUTE[correct_composite_type]
+        for (key, value) in READ_METHODS_BY_CLASS_OF_ATTRIBUTE
+            if correct_composite_type <: key 
+                return value
+            end
+        end
     elseif action == :update
-        return UPDATE_METHODS_BY_CLASS_OF_ATTRIBUTE[correct_composite_type]
+        for (key, value) in UPDATE_METHODS_BY_CLASS_OF_ATTRIBUTE
+            if correct_composite_type <: key 
+                return value
+            end
+        end
     else
         error()
     end
@@ -186,7 +196,23 @@ function _throw_if_attribute_is_not_vectorial_relationship(
         correct_composity_type = _attribute_composite_type(collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error("Attribute $attribute is not a vectorial relationship. It is a $string_of_composite_types. Use $correct_method_to_use instead.")
+        error("Attribute \"$attribute\" is not a vectorial relationship. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.")
+    end
+    return nothing
+end
+
+function _throw_if_attribute_is_not_time_series_file(
+    collection::String, 
+    attribute::String,
+    action::Symbol,
+)
+    sanity_check(collection, attribute)
+
+    if !_is_time_series_file(collection, attribute)
+        correct_composity_type = _attribute_composite_type(collection, attribute)
+        string_of_composite_types = _string_for_composite_types(correct_composity_type)
+        correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
+        error("Attribute \"$attribute\" is not a time series file. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.")
     end
     return nothing
 end
@@ -229,6 +255,19 @@ function _throw_if_relationship_does_not_exist(
             "$(_show_existing_relation_types(_list_of_relation_types(collection_from, collection_to)))"
         )
     end
+end
+
+function _throw_if_is_time_series_file(
+    collection::String,
+    attribute::String,
+)
+    if _is_time_series_file(collection, attribute)
+        error(
+            "Attribute \"$attribute\" is a time series file. " *
+            "You must use the function `set_time_series_file!` to create it."
+        )
+    end
+    return nothing
 end
 
 function _show_existing_relation_types(possible_relation_types::Vector{String})
