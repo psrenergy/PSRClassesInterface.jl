@@ -74,7 +74,7 @@ Example:
 CREATE TABLE Plant(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT UNIQUE NOT NULL,
-    capacity REAL NOT NULL
+    capacity REAL NOT NULL,
     gaugingstation_id INTEGER,
     plant_spill_to INTEGER,
     FOREIGN KEY(gaugingstation_id) REFERENCES GaugingStation(id) ON UPDATE CASCADE ON DELETE CASCADE,
@@ -117,7 +117,7 @@ CREATE TABLE ThermalPlant_vector_some_group(
 ) STRICT;
 ```
 
-A vectorial relation with another collection should be stored in a table of vector groups and be defined the same way as a vector attribute. To tell that it is a relation with another collection, the name of the relational attribute should be the name of the target collection followed by the relation type defined as `_relaiton_type`, i.e. `gaugingstation_id` indicated that the collection HydroPlant has an `id` relation with the collection GaugingStation. If the name of the attribute was `gaugingstation_one_to_one`, it would indicate that the collection HydroPlant has a relation `one_to_one` with the collection GaugingStation.
+A vectorial relation with another collection should be stored in a table of vector groups and be defined the same way as a vector attribute. To tell that it is a relation with another collection, the name of the relational attribute should be the name of the target collection followed by the relation type defined as `_relation_type`, i.e. `gaugingstation_id` indicated that the collection HydroPlant has an `id` relation with the collection GaugingStation. If the name of the attribute was `gaugingstation_one_to_one`, it would indicate that the collection HydroPlant has a relation `one_to_one` with the collection GaugingStation.
 
 ```sql
 CREATE TABLE HydroPlant_vector_GaugingStation(
