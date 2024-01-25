@@ -40,7 +40,11 @@ function test_delete_element()
     )
     PSRDatabaseSQLite.delete_element!(db, "Plant", "Plant 3")
     PSRDatabaseSQLite.create_element!(db, "Plant"; label = "Plant 3")
-    @test_throws ErrorException PSRDatabaseSQLite.delete_element!(db, "SomeCollection", "Plant 2")
+    @test_throws ErrorException PSRDatabaseSQLite.delete_element!(
+        db,
+        "SomeCollection",
+        "Plant 2",
+    )
     PSRDatabaseSQLite.close!(db)
     return rm(db_path)
 end

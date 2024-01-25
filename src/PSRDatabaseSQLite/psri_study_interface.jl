@@ -15,7 +15,11 @@ function PSRI.create_study(
     db = if !isempty(path_schema)
         PSRDatabaseSQLite.create_empty_db_from_schema(path_db, path_schema; force)
     elseif !isempty(path_migrations_directory)
-        PSRDatabaseSQLite.create_empty_db_from_migrations(path_db, path_migrations_directory; force)
+        PSRDatabaseSQLite.create_empty_db_from_migrations(
+            path_db,
+            path_migrations_directory;
+            force,
+        )
     else
         error(
             "User must provide either a `path_schema` or a `path_migrations_directory` to create a case.",

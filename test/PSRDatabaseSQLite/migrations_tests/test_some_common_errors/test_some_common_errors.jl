@@ -6,7 +6,10 @@ using Test
 
 function test_create_migration_with_existing_name()
     path_migrations_directory = joinpath(@__DIR__, "migrations")
-    @test_throws ErrorException PSRDatabaseSQLite.create_migration(path_migrations_directory, 3)
+    @test_throws ErrorException PSRDatabaseSQLite.create_migration(
+        path_migrations_directory,
+        3,
+    )
     return nothing
 end
 

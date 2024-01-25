@@ -197,7 +197,12 @@ function test_create_vectors_with_relations()
     path_schema = joinpath(@__DIR__, "test_create_vectors_with_relations.sql")
     db_path = joinpath(@__DIR__, "test_create_vectors_with_relations.sqlite")
     db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
-    PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case", some_value = 1.0)
+    PSRDatabaseSQLite.create_element!(
+        db,
+        "Configuration";
+        label = "Toy Case",
+        some_value = 1.0,
+    )
     PSRDatabaseSQLite.create_element!(db, "Product"; label = "Sugar", unit = "Kg")
     PSRDatabaseSQLite.create_element!(db, "Product"; label = "Sugarcane", unit = "ton")
     PSRDatabaseSQLite.create_element!(db, "Product"; label = "Molasse", unit = "ton")

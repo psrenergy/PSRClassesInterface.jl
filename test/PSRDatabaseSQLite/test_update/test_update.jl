@@ -16,12 +16,54 @@ function test_create_scalar_relations()
     PSRDatabaseSQLite.create_element!(db, "Plant"; label = "Plant 3", capacity = 50.0)
 
     # Valid relations
-    PSRDatabaseSQLite.set_scalar_relation!(db, "Plant", "Resource", "Plant 1", "Resource 1", "id")
-    PSRDatabaseSQLite.set_scalar_relation!(db, "Plant", "Resource", "Plant 1", "Resource 2", "id")
-    PSRDatabaseSQLite.set_scalar_relation!(db, "Plant", "Resource", "Plant 2", "Resource 1", "id")
-    PSRDatabaseSQLite.set_scalar_relation!(db, "Plant", "Resource", "Plant 3", "Resource 2", "id")
-    PSRDatabaseSQLite.set_scalar_relation!(db, "Plant", "Plant", "Plant 3", "Plant 1", "turbine_to")
-    PSRDatabaseSQLite.set_scalar_relation!(db, "Plant", "Plant", "Plant 1", "Plant 2", "spill_to")
+    PSRDatabaseSQLite.set_scalar_relation!(
+        db,
+        "Plant",
+        "Resource",
+        "Plant 1",
+        "Resource 1",
+        "id",
+    )
+    PSRDatabaseSQLite.set_scalar_relation!(
+        db,
+        "Plant",
+        "Resource",
+        "Plant 1",
+        "Resource 2",
+        "id",
+    )
+    PSRDatabaseSQLite.set_scalar_relation!(
+        db,
+        "Plant",
+        "Resource",
+        "Plant 2",
+        "Resource 1",
+        "id",
+    )
+    PSRDatabaseSQLite.set_scalar_relation!(
+        db,
+        "Plant",
+        "Resource",
+        "Plant 3",
+        "Resource 2",
+        "id",
+    )
+    PSRDatabaseSQLite.set_scalar_relation!(
+        db,
+        "Plant",
+        "Plant",
+        "Plant 3",
+        "Plant 1",
+        "turbine_to",
+    )
+    PSRDatabaseSQLite.set_scalar_relation!(
+        db,
+        "Plant",
+        "Plant",
+        "Plant 1",
+        "Plant 2",
+        "spill_to",
+    )
 
     # invalid relations
     @test_throws ErrorException PSRDatabaseSQLite.set_scalar_relation!(
@@ -145,7 +187,14 @@ function test_create_vector_relations()
         ["Cost 1", "Cost 2", "Cost 3"],
         "some_relation_type",
     )
-    PSRDatabaseSQLite.set_vector_relation!(db, "Plant", "Cost", "Plant 4", ["Cost 1", "Cost 3"], "id")
+    PSRDatabaseSQLite.set_vector_relation!(
+        db,
+        "Plant",
+        "Cost",
+        "Plant 4",
+        ["Cost 1", "Cost 3"],
+        "id",
+    )
     @test_throws ErrorException PSRDatabaseSQLite.set_vector_relation!(
         db,
         "Plant",
@@ -192,9 +241,27 @@ function test_update_scalar_parameters()
         "Resource 4",
         1.0,
     )
-    PSRDatabaseSQLite.update_scalar_parameter!(db, "Resource", "some_value_1", "Resource 1", 1.0)
-    PSRDatabaseSQLite.update_scalar_parameter!(db, "Resource", "some_value_1", "Resource 1", 1.0)
-    PSRDatabaseSQLite.update_scalar_parameter!(db, "Resource", "some_value_2", "Resource 1", 99.0)
+    PSRDatabaseSQLite.update_scalar_parameter!(
+        db,
+        "Resource",
+        "some_value_1",
+        "Resource 1",
+        1.0,
+    )
+    PSRDatabaseSQLite.update_scalar_parameter!(
+        db,
+        "Resource",
+        "some_value_1",
+        "Resource 1",
+        1.0,
+    )
+    PSRDatabaseSQLite.update_scalar_parameter!(
+        db,
+        "Resource",
+        "some_value_2",
+        "Resource 1",
+        99.0,
+    )
     @test_throws ErrorException PSRDatabaseSQLite.update_scalar_parameter!(
         db,
         "Resource",
@@ -278,8 +345,16 @@ function test_create_time_series_files()
         "Resource";
         wind_speed = ["some_file.txt"],
     )
-    @test_throws ErrorException PSRDatabaseSQLite.set_time_series_file!(db, "Resource"; label = "RS")
-    PSRDatabaseSQLite.set_time_series_file!(db, "Resource"; wind_speed = "some_other_file.txt")
+    @test_throws ErrorException PSRDatabaseSQLite.set_time_series_file!(
+        db,
+        "Resource";
+        label = "RS",
+    )
+    PSRDatabaseSQLite.set_time_series_file!(
+        db,
+        "Resource";
+        wind_speed = "some_other_file.txt",
+    )
     PSRDatabaseSQLite.set_time_series_file!(
         db,
         "Resource";
