@@ -4,10 +4,9 @@ using PSRClassesInterface.OpenSQL
 using SQLite
 using Test
 
-OpenSQL.set_migrations_folder(joinpath(@__DIR__, "migrations"))
-
 function test_invalid_migrations()
-    @test_throws ErrorException OpenSQL.test_migrations()
+    path_migrations_directory = joinpath(@__DIR__, "migrations")
+    @test_throws ErrorException OpenSQL.test_migrations(path_migrations_directory)
     return nothing
 end
 

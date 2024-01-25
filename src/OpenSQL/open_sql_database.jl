@@ -89,15 +89,18 @@ mutable struct OpenSQLDataBase
         if !isempty(path_schema) && !isempty(path_migrations_directory)
             error("User must define wither a `path_schema` or a `path_migrations_directory`. Not both.")
         end
+        if !isempty(path_schema) || !isempty(path_migrations_directory)
+            # Creating a database from a schema or migrations
+            _throw_if_file_exists(database_path, force)
+        end
 
-        _throw_if_file_exists(database_path, force)
         sqlite_db = SQLite.DB(database_path)
 
         collections_map = try 
             if !isempty(path_schema)
                 execute_statements(sqlite_db, path_schema)
             elseif !isempty(path_migrations_directory)
-                _apply_all_up_migrations(sqlite_db)
+                _apply_all_up_migrations(sqlite_db, path_migrations_directory)
             end
             _validate_database(sqlite_db)
             # as this is the last line of the block it is equivalent to 

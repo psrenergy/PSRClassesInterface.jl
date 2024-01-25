@@ -5,7 +5,7 @@ function test_time_series()
     end
 
     db = PSRI.create_study(
-        PSRI.SQLInterface(),
+        PSRI.OpenSQLInterface(),
         joinpath(case_path, "simplecase.sqlite"),
         joinpath(case_path, "simple_schema.sql");
         val1 = 1,

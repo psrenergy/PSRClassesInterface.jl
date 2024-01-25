@@ -7,16 +7,12 @@ const PSRI = PSRClassesInterface
 
 function test_create_case_1()
     case_path = @__DIR__
-    if isfile(joinpath(case_path, "case1.sqlite"))
-        GC.gc()
-        GC.gc()
-        rm(joinpath(case_path, "case1.sqlite"))
-    end
 
     db = PSRI.create_study(
-        PSRI.SQLInterface(),
-        joinpath(case_path, "case1.sqlite"),
-        joinpath(case_path, "toy_schema.sql");
+        PSRI.OpenSQLInterface(),
+        joinpath(case_path, "case1.sqlite");
+        path_schema = joinpath(case_path, "toy_schema.sql"),
+        force = true,
         label = "Toy Case",
         value1 = 1.0,
     )
@@ -136,11 +132,11 @@ function test_create_case_1()
     @test PSRI.max_elements(db, "Plant") == 2
     @test PSRI.max_elements(db, "Resource") == 2
 
-    PSRI.OpenSQL.close(db)
+    PSRI.OpenSQL.close!(db)
 
     db = PSRI.load_study(
-        PSRI.SQLInterface(),
-        joinpath(case_path, "case1.sqlite"),
+        PSRI.OpenSQLInterface(),
+        joinpath(case_path, "case1.sqlite")
     )
 
     PSRI.delete_element!(db, "Plant", "Plant 1")
@@ -154,21 +150,21 @@ function test_create_case_1()
     @test PSRI.get_attributes(db, "Plant") ==
         ["id", "label", "capacity", "plant_spill_to", "plant_turbine_to", "resource_id", "some_factor", "cost_id", "generation", "cost"]
 
-    PSRI.OpenSQL.close(db)
+    PSRI.OpenSQL.close!(db)
 
-    return rm(joinpath(case_path, "case1.sqlite"))
+    rm(joinpath(case_path, "case1.sqlite"))
+
+    return nothing
 end
 
 function test_create_case_relation()
     case_path = @__DIR__
-    if isfile(joinpath(case_path, "case1.sqlite"))
-        rm(joinpath(case_path, "case1.sqlite"))
-    end
 
     db = PSRI.create_study(
-        PSRI.SQLInterface(),
-        joinpath(case_path, "case1.sqlite"),
-        joinpath(case_path, "toy_schema.sql");
+        PSRI.OpenSQLInterface(),
+        joinpath(case_path, "case1.sqlite");
+        path_schema = joinpath(case_path, "toy_schema.sql"),
+        force = true,
         label = "Toy Case",
         value1 = 1.0,
     )
@@ -234,13 +230,16 @@ function test_create_case_relation()
         "sometype",
     ) == ["Cost 1"]
 
-    PSRI.OpenSQL.close(db)
+    PSRI.OpenSQL.close!(db)
 
-    return rm(joinpath(case_path, "case1.sqlite"))
+    rm(joinpath(case_path, "case1.sqlite"))
+    return nothing
 end
 
 
 function runtests()
+    GC.gc()
+    GC.gc()
     for name in names(@__MODULE__; all = true)
         if startswith("$name", "test_")
             @testset "$(name)" begin

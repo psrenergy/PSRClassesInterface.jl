@@ -13,9 +13,9 @@ using Dates
 const DB = SQLite.DB
 
 """
-SQLInterface <: PSRI.AbstractStudyInterface
+OpenSQLInterface <: PSRI.AbstractStudyInterface
 """
-struct SQLInterface <: PSRI.AbstractStudyInterface end
+struct OpenSQLInterface <: PSRI.AbstractStudyInterface end
 
 include("utils.jl")
 include("open_sql_database.jl")

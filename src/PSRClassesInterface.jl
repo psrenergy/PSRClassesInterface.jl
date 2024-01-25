@@ -40,6 +40,6 @@ include("OpenStudy/OpenStudy.jl")
 const OpenInterface = OpenStudy.OpenInterface
 
 include("OpenSQL/OpenSQL.jl")
-const SQLInterface = OpenSQL.SQLInterface
+const OpenSQLInterface = OpenSQL.OpenSQLInterface
 
 end

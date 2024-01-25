@@ -75,9 +75,7 @@ end
 function load_db(database_path::String)
     opensql_db = try 
         OpenSQLDataBase(
-            database_path; 
-            path_migrations_directory = path_migrations_directory, 
-            force = force
+            database_path
         )
     catch e
         rethrow(e)

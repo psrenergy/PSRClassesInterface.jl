@@ -1,5 +1,3 @@
-const MIGRATIONS_FOLDER = Ref{String}("")
-
 struct Migration
     version::Int
     path::String
@@ -8,25 +6,8 @@ end
 Base.isless(m1::Migration, m2::Migration) = m1.version < m2.version
 Base.isequal(m1::Migration, m2::Migration) = m1.version == m2.version
 
-function set_migrations_folder(migrations_folder::String)
-    if !isdir(migrations_folder)
-        error("migrations folder is not a directory: $migrations_folder")
-    end
-    MIGRATIONS_FOLDER[] = migrations_folder
-    return migrations_folder
-end
-
-function get_migrations_folder()
-    migrations_folder = MIGRATIONS_FOLDER[]
-    if !isdir(migrations_folder)
-        error("migrations folder is not a directory: $migrations_folder")
-    end
-    return migrations_folder
-end
-
-function get_sorted_migrations()
-    migrations_folder = get_migrations_folder()
-    migrations_sub_folders = readdir(migrations_folder)
+function get_sorted_migrations(path_migrations_directory::String)
+    migrations_sub_folders = readdir(path_migrations_directory)
     sorted_migrations = Vector{Migration}(undef, 0)
     if isempty(migrations_sub_folders)
         return sorted_migrations
@@ -34,7 +15,7 @@ function get_sorted_migrations()
 
     for migration_sub_folder in migrations_sub_folders
         version = parse_version(migration_sub_folder)
-        path = joinpath(migrations_folder, migration_sub_folder)
+        path = joinpath(path_migrations_directory, migration_sub_folder)
         push!(sorted_migrations, Migration(version, path))
     end
 
@@ -56,8 +37,8 @@ function get_user_version(db::SQLite.DB)
     df = DBInterface.execute(db, "PRAGMA user_version;") |> DataFrame
     return df[1, 1]
 end
-function get_last_user_version()
-    migrations = get_sorted_migrations()
+function get_last_user_version(path_migrations_directory::String)
+    migrations = get_sorted_migrations(path_migrations_directory)
     versions = migration_versions(migrations)
     return versions[end]
 end
@@ -75,14 +56,13 @@ function parse_version(migration::String)
 end
 
 """
-    create_migration(version::Int)
+    create_migration(path_migrations_directory::String, version::Int)
 
 Creates a new migration in the migrations folder with the current date, the correct version and the name
 given in this function
 """
-function create_migration(version::Int)
-    migrations_folder = get_migrations_folder()
-    existing_migrations = get_sorted_migrations()
+function create_migration(path_migrations_directory::String, version::Int)
+    existing_migrations = get_sorted_migrations(path_migrations_directory)
 
     migration_index =
         findfirst(migration -> migration.version == version, existing_migrations)
@@ -101,7 +81,7 @@ function create_migration(version::Int)
     end
 
     new_migration = "$(new_version)"
-    migration_folder = joinpath(migrations_folder, new_migration)
+    migration_folder = joinpath(path_migrations_directory, new_migration)
 
     mkpath(migration_folder)
     #! format: off
@@ -147,8 +127,13 @@ function _apply_migrations!(
     return db
 end
 
-function apply_migration!(db::SQLite.DB, version::Int, direction::Symbol)
-    migrations = get_sorted_migrations()
+function apply_migration!(
+    db::SQLite.DB, 
+    path_migrations_directory::String,
+    version::Int, 
+    direction::Symbol
+)
+    migrations = get_sorted_migrations(path_migrations_directory)
 
     migration_index = findfirst(migration -> migration.version == version, migrations)
 
@@ -182,12 +167,18 @@ function _apply_migration!(
     return execute_statements(db, sql_file)
 end
 
-function apply_migrations!(db::SQLite.DB, from::Int, to::Int, direction::Symbol)
+function apply_migrations!(
+    db::SQLite.DB, 
+    path_migrations_directory::String,
+    from::Int, 
+    to::Int, 
+    direction::Symbol
+)
     if from == to
         error("starting at $from and ending at $to is not a valid migration range.")
     end
 
-    migrations = get_sorted_migrations()
+    migrations = get_sorted_migrations(path_migrations_directory)
     versions = migration_versions(migrations)
     starting_point = findfirst(isequal(from), versions)
     ending_point = findfirst(isequal(to), versions)
@@ -204,8 +195,8 @@ function apply_migrations!(db::SQLite.DB, from::Int, to::Int, direction::Symbol)
     return db
 end
 
-function _apply_all_up_migrations(db::SQLite.DB)
-    migrations = get_sorted_migrations()
+function _apply_all_up_migrations(db::SQLite.DB, path_migrations_directory::String)
+    migrations = get_sorted_migrations(path_migrations_directory)
     for migration in migrations
         _apply_migration!(db, migration, :up)
     end
@@ -232,12 +223,12 @@ function generate_current_schema_file(db::SQLite.DB, file::String)
 end
 
 """
-    test_migrations()
+    test_migrations(path_migrations_directory::String)
 
 fucntion to put in the test suite of the module to verify that the migrations are behaving correctly.
 """
-function test_migrations()
-    migrations = get_sorted_migrations()
+function test_migrations(path_migrations_directory::String)
+    migrations = get_sorted_migrations(path_migrations_directory)
     versions = migration_versions(migrations)
 
     if versions != collect(versions[1]:versions[end])
@@ -249,7 +240,7 @@ function test_migrations()
     db = SQLite.DB()
     expected_user_version = 0
     for migration in migrations
-        apply_migration!(db, migration.version, :up)
+        apply_migration!(db, path_migrations_directory, migration.version, :up)
         expected_user_version += 1
         user_version = get_user_version(db)
         if expected_user_version != user_version
@@ -259,9 +250,9 @@ function test_migrations()
         end
     end
 
-    expected_user_version = get_last_user_version()
+    expected_user_version = get_last_user_version(path_migrations_directory)
     for migration in reverse(migrations)
-        apply_migration!(db, migration.version, :down)
+        apply_migration!(db, path_migrations_directory, migration.version, :down)
         expected_user_version -= 1
         user_version = get_user_version(db)
         if expected_user_version != user_version

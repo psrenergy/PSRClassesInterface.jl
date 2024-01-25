@@ -1,78 +1,84 @@
 function PSRI.create_study(
-    ::SQLInterface,
-    path_db::AbstractString,
-    path_schema::AbstractString;
-    kwargs...,
-)
-    db = OpenSQL.create_empty_db_from_schema(path_db, path_schema)
-    OpenSQL.create_element!(db, "Configuration"; kwargs...)
-    return db
-end
-
-function PSRI.create_study(
-    ::SQLInterface,
+    ::OpenSQLInterface,
     path_db::AbstractString;
+    path_schema::String = "",
+    path_migrations_directory::String = "",
+    force::Bool = false,
     kwargs...,
 )
-    db = OpenSQL.create_empty_db_from_schema(path_db)
-    OpenSQL.create_element!(db, "Configuration"; kwargs...)
-    return db
+    if !isempty(path_schema) && !isempty(path_migrations_directory)
+        error("User must define wither a `path_schema` or a `path_migrations_directory`. Not both.")
+    end
+
+    opensql_db = if !isempty(path_schema)
+        OpenSQL.create_empty_db_from_schema(path_db, path_schema; force)
+    elseif !isempty(path_migrations_directory)
+        OpenSQL.create_empty_db_from_migrations(path_db, path_migrations_directory; force)
+    else
+        error("User must provide either a `path_schema` or a `path_migrations_directory` to create a case.")
+    end
+    
+    OpenSQL.create_element!(opensql_db, "Configuration"; kwargs...)
+    return opensql_db
 end
 
-PSRI.load_study(::SQLInterface, data_path::String) = OpenSQL.load_db(data_path)
+PSRI.load_study(
+    ::OpenSQLInterface, 
+    data_path::String
+) = OpenSQL.load_db(data_path)
 
 # Read
 PSRI.get_vector(
-    db::OpenSQL.DB,
+    opensql_db::OpenSQLDataBase,
     collection::String,
     attribute::String,
     element_label::String,
 ) =
     OpenSQL.read_vector_parameter(
-        db,
+        opensql_db,
         collection,
         attribute,
         element_label,
     )
 
-PSRI.get_vectors(db::OpenSQL.DB, collection::String, attribute::String) =
-    OpenSQL.read_vector_parameters(db, collection, attribute)
+PSRI.get_vectors(opensql_db::OpenSQLDataBase, collection::String, attribute::String) =
+    OpenSQL.read_vector_parameters(opensql_db, collection, attribute)
 
-PSRI.max_elements(db::OpenSQL.DB, collection::String) =
-    length(PSRI.get_parms(db, collection, "id"))
+PSRI.max_elements(opensql_db::OpenSQLDataBase, collection::String) =
+    length(PSRI.get_parms(opensql_db, collection, "id"))
 
 PSRI.get_parm(
-    db::OpenSQL.DB,
+    opensql_db::OpenSQLDataBase,
     collection::String,
     attribute::String,
     element_label::String,
 ) =
     OpenSQL.read_scalar_parameter(
-        db,
+        opensql_db,
         collection,
         attribute,
         element_label,
     )
 
-PSRI.get_parms(db::OpenSQL.DB, collection::String, attribute::String) =
-    OpenSQL.read_scalar_parameters(db, collection, attribute)
+PSRI.get_parms(opensql_db::OpenSQLDataBase, collection::String, attribute::String) =
+    OpenSQL.read_scalar_parameters(opensql_db, collection, attribute)
 
-function PSRI.get_attributes(::OpenSQL.DB, collection::String)
-    return OpenSQL._get_attribute_names(collection)
+function PSRI.get_attributes(opensql_db::OpenSQLDataBase, collection::String)
+    return OpenSQL._get_attribute_names(opensql_db, collection)
 end
 
-function PSRI.get_collections(::OpenSQL.DB)
-    return OpenSQL._get_collection_names()
+function PSRI.get_collections(opensql_db::OpenSQLDataBase)
+    return OpenSQL._get_collection_names(opensql_db)
 end
 
 function PSRI.get_map(
-    db::OpenSQL.DB,
+    opensql_db::OpenSQLDataBase,
     source::String,
     target::String,
     relation_type::String,
 )
     return _get_scalar_relation_map(
-        db,
+        opensql_db,
         source,
         target,
         relation_type,
@@ -80,13 +86,13 @@ function PSRI.get_map(
 end
 
 function PSRI.get_vector_map(
-    db::OpenSQL.DB,
+    opensql_db::OpenSQLDataBase,
     source::String,
     target::String,
     relation_type::String,
 )
     return _get_vector_relation_map(
-        db,
+        opensql_db,
         source,
         target,
         relation_type,
@@ -94,14 +100,14 @@ function PSRI.get_vector_map(
 end
 
 function PSRI.get_related(
-    db::OpenSQL.DB,
+    opensql_db::OpenSQLDataBase,
     source::String,
     target::String,
     source_label::String,
     relation_type::String,
 )
     return OpenSQL.read_scalar_relation(
-        db,
+        opensql_db,
         source,
         target,
         relation_type,
@@ -110,13 +116,13 @@ function PSRI.get_related(
 end
 
 PSRI.get_vector_related(
-    db::OpenSQL.DB,
+    opensql_db::OpenSQLDataBase,
     source::String,
     target::String,
     source_label::String,
     relation_type::String
 ) = OpenSQL.read_vector_relation(
-    db,
+    opensql_db,
     source,
     target,
     source_label,
@@ -124,20 +130,20 @@ PSRI.get_vector_related(
 )
 
 # Modification
-PSRI.create_element!(db::OpenSQL.DB, collection::String; kwargs...) =
-    OpenSQL.create_element!(db, collection; kwargs...)
+PSRI.create_element!(opensql_db::OpenSQLDataBase, collection::String; kwargs...) =
+    OpenSQL.create_element!(opensql_db, collection; kwargs...)
 
-PSRI.delete_element!(db::OpenSQL.DB, collection::String, element_label::String) =
-    OpenSQL.delete_element!(db, collection, element_label)
+PSRI.delete_element!(opensql_db::OpenSQLDataBase, collection::String, element_label::String) =
+    OpenSQL.delete_element!(opensql_db, collection, element_label)
 
 PSRI.set_parm!(
-    db::OpenSQL.DB,
+    opensql_db::OpenSQLDataBase,
     collection::String,
     attribute::String,
     element_label::String,
     value,
 ) = OpenSQL.update_scalar_parameter!(
-    db,
+    opensql_db,
     collection,
     attribute,
     element_label,
@@ -145,13 +151,13 @@ PSRI.set_parm!(
 )
 
 PSRI.set_vector!(
-    db::OpenSQL.DB,
+    opensql_db::OpenSQLDataBase,
     collection::String,
     attribute::String,
     element_label::String,
     values::AbstractVector,
 ) = OpenSQL.update_vector_parameters!(
-    db,
+    opensql_db,
     collection,
     attribute,
     element_label,
@@ -159,30 +165,30 @@ PSRI.set_vector!(
 )
 
 PSRI.set_related!(
-    db::OpenSQL.DB,
+    opensql_db::OpenSQLDataBase,
     source::String,
     target::String,
     source_label::String,
     target_label::String,
     relation_type::String,
 ) = OpenSQL.set_scalar_relation!(
-    db,
+    opensql_db,
     source,
     target,
-    OpenSQL._get_id(db, source, source_label),
-    OpenSQL._get_id(db, target, target_label),
+    OpenSQL._get_id(opensql_db, source, source_label),
+    OpenSQL._get_id(opensql_db, target, target_label),
     relation_type,
 )
 
 PSRI.set_vector_related!(
-    db::OpenSQL.DB,
+    opensql_db::OpenSQLDataBase,
     source::String,
     target::String,
     source_label::String,
     target_labels::Vector{String},
     relation_type::String,
 ) = OpenSQL.set_vector_relation!(
-    db,
+    opensql_db,
     source,
     target,
     source_label,
@@ -191,7 +197,7 @@ PSRI.set_vector_related!(
 )
 
 PSRI.delete_relation!(
-    db::OpenSQL.DB,
+    opensql_db::OpenSQLDataBase,
     source::String,
     target::String,
     source_label::String,
@@ -200,9 +206,9 @@ PSRI.delete_relation!(
 
 # Graf files
 function PSRI.link_series_to_file(
-    db::OpenSQL.DB,
+    opensql_db::OpenSQLDataBase,
     collection::String;
     kwargs...,
 )
-    return OpenSQL.set_time_series_file!(db, collection; kwargs...)
+    return OpenSQL.set_time_series_file!(opensql_db, collection; kwargs...)
 end
