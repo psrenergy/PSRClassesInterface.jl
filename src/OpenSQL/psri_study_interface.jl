@@ -4,7 +4,7 @@ function PSRI.create_study(
     path_schema::AbstractString;
     kwargs...,
 )
-    db = OpenSQL.create_empty_db(path_db, path_schema)
+    db = OpenSQL.create_empty_db_from_schema(path_db, path_schema)
     OpenSQL.create_element!(db, "Configuration"; kwargs...)
     return db
 end
@@ -14,7 +14,7 @@ function PSRI.create_study(
     path_db::AbstractString;
     kwargs...,
 )
-    db = OpenSQL.create_empty_db(path_db)
+    db = OpenSQL.create_empty_db_from_schema(path_db)
     OpenSQL.create_element!(db, "Configuration"; kwargs...)
     return db
 end
@@ -28,7 +28,7 @@ PSRI.get_vector(
     attribute::String,
     element_label::String,
 ) =
-    OpenSQL.read_vectorial_parameter(
+    OpenSQL.read_vector_parameter(
         db,
         collection,
         attribute,
@@ -36,7 +36,7 @@ PSRI.get_vector(
     )
 
 PSRI.get_vectors(db::OpenSQL.DB, collection::String, attribute::String) =
-    OpenSQL.read_vectorial_parameters(db, collection, attribute)
+    OpenSQL.read_vector_parameters(db, collection, attribute)
 
 PSRI.max_elements(db::OpenSQL.DB, collection::String) =
     length(PSRI.get_parms(db, collection, "id"))
@@ -71,7 +71,7 @@ function PSRI.get_map(
     target::String,
     relation_type::String,
 )
-    return _get_scalar_relationship_map(
+    return _get_scalar_relation_map(
         db,
         source,
         target,
@@ -85,7 +85,7 @@ function PSRI.get_vector_map(
     target::String,
     relation_type::String,
 )
-    return _get_vectorial_relationship_map(
+    return _get_vector_relation_map(
         db,
         source,
         target,
@@ -100,12 +100,12 @@ function PSRI.get_related(
     source_label::String,
     relation_type::String,
 )
-    return OpenSQL.read_scalar_relationship(
+    return OpenSQL.read_scalar_relation(
         db,
         source,
         target,
-        source_label,
         relation_type,
+        source_label,
     )
 end
 
@@ -115,7 +115,7 @@ PSRI.get_vector_related(
     target::String,
     source_label::String,
     relation_type::String
-) = OpenSQL.read_vectorial_relationship(
+) = OpenSQL.read_vector_relation(
     db,
     source,
     target,
@@ -150,7 +150,7 @@ PSRI.set_vector!(
     attribute::String,
     element_label::String,
     values::AbstractVector,
-) = OpenSQL.update_vectorial_parameters!(
+) = OpenSQL.update_vector_parameters!(
     db,
     collection,
     attribute,
@@ -165,7 +165,7 @@ PSRI.set_related!(
     source_label::String,
     target_label::String,
     relation_type::String,
-) = OpenSQL.set_scalar_relationship!(
+) = OpenSQL.set_scalar_relation!(
     db,
     source,
     target,
@@ -181,7 +181,7 @@ PSRI.set_vector_related!(
     source_label::String,
     target_labels::Vector{String},
     relation_type::String,
-) = OpenSQL.set_vectorial_relationship!(
+) = OpenSQL.set_vector_relation!(
     db,
     source,
     target,
@@ -199,9 +199,6 @@ PSRI.delete_relation!(
 ) = error("Not implemented in OpenSQL.")
 
 # Graf files
-PSRI.has_graf_file(db::OpenSQL.DB, collection::String, attribute::String) =
-    OpenSQL.has_time_series(db, collection, attribute)
-
 function PSRI.link_series_to_file(
     db::OpenSQL.DB,
     collection::String;

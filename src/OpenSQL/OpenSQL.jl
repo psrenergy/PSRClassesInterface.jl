@@ -18,7 +18,7 @@ SQLInterface <: PSRI.AbstractStudyInterface
 struct SQLInterface <: PSRI.AbstractStudyInterface end
 
 include("utils.jl")
-include("collections.jl")
+include("open_sql_database.jl")
 include("create.jl")
 include("read.jl")
 include("update.jl")

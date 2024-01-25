@@ -7,7 +7,7 @@ using Test
 function test_delete_element()
     path_schema = joinpath(@__DIR__, "test_delete_element.sql")
     db_path = joinpath(@__DIR__, "test_delete_element.sqlite")
-    db = OpenSQL.create_empty_db(db_path, path_schema; force = true)
+    db = OpenSQL.create_empty_db_from_schema(db_path, path_schema; force = true)
     OpenSQL.create_element!(db, "Configuration"; label = "Toy Case")
     OpenSQL.create_element!(db, "Resource"; label = "Resource 1", some_value = [1, 2, 3.0], some_other_value = [1.0, 4.0, 5.0])
     OpenSQL.create_element!(db, "Resource"; label = "Resource 2", some_value = [1, 2, 3.0], some_other_value = [1.0, 4.0, 5.0])

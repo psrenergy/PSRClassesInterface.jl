@@ -38,63 +38,51 @@ function _treat_sql_statement(statement::AbstractString)
     return stripped_statement
 end
 
-"""
-    create_empty_db(database_path::String, path_schema::String)
-    create_empty_db(database_path::String)
-
-This function comes in two flavours:
-
-    create_empty_db(database_path::String, path_schema::String)
-
-Creates a new database with the schema given in `path_schema`.
-
-    create_empty_db(database_path::String)
-
-Creates a new database by applying upwards all migrations in the migrations folder See more in [TODO ref to migrations.].
-"""
-function create_empty_db end
-
-function create_empty_db(database_path::String, path_schema::String; force::Bool = false)
-    _throw_if_file_exists(database_path, force)
-    db = _open_db_connection(database_path)
-    try 
-        execute_statements(db, path_schema)
-        _validate_database(db)
-        _save_collections_database_map(db)
+function create_empty_db_from_schema(
+    database_path::String, 
+    path_schema::String; 
+    force::Bool = false
+)
+    opensql_db = try 
+        OpenSQLDataBase(
+            database_path; 
+            path_schema = path_schema, 
+            force = force
+        )
     catch e
-        close!(db)
         rethrow(e)
     end
-    return db
+    return opensql_db
 end
 
-function create_empty_db(database_path::AbstractString; force::Bool = false)
-    _throw_if_file_exists(database_path, force)
-    db = _open_db_connection(database_path)
-    try 
-        _apply_all_up_migrations(db)
-        _validate_database(db)
-        _save_collections_database_map(db)
+function create_empty_db_from_migrations(
+    database_path::String, 
+    path_migrations_directory::String; 
+    force::Bool = false
+)
+    opensql_db = try 
+        OpenSQLDataBase(
+            database_path; 
+            path_migrations_directory = path_migrations_directory, 
+            force = force
+        )
     catch e
-        close!(db)
         rethrow(e)
     end
-    return db
+    return opensql_db
 end
 
 function load_db(database_path::String)
-    if !isfile(database_path)
-        error("file not found: $database_path")
-    end
-    db = _open_db_connection(database_path)
-    try 
-        _validate_database(db)
-        _save_collections_database_map(db)
+    opensql_db = try 
+        OpenSQLDataBase(
+            database_path; 
+            path_migrations_directory = path_migrations_directory, 
+            force = force
+        )
     catch e
-        close!(db)
         rethrow(e)
     end
-    return db
+    return opensql_db
 end
 
 function _throw_if_file_exists(file::String, force::Bool)
@@ -123,41 +111,5 @@ function table_names(db::SQLite.DB)
     return tbls.name
 end
 
-function id_exist_in_table(db::SQLite.DB, table::String, id::Integer)
-    sanity_check(table, "id")
-    query = "SELECT COUNT(id) FROM $table WHERE id = '$id'"
-    df = DBInterface.execute(db, query) |> DataFrame
-    if df[!, 1][1] == 0
-        error("id \"$id\" does not exist in table \"$table\".")
-    end
-    return nothing
-end
-
-function has_time_series(db::SQLite.DB, table::String)
-    time_series_table = _timeseries_table_name(table)
-    return table_exist_in_db(time_series_table)
-end
-
-function has_time_series(db::SQLite.DB, table::String, column::String)
-    sanity_check(table, "id")
-    time_series_table = _timeseries_table_name(table)
-    if table_exist_in_db(time_series_table)
-        if column in column_names(db, time_series_table)
-            return true
-        else
-            return false
-        end
-    else
-        return false
-    end
-end
-
 _timeseries_table_name(table::String) = table * "_timeseriesfiles"
 _relation_table_name(table_1::String, table_2::String) = table_1 * "_relation_" * table_2
-
-close!(db::SQLite.DB) = DBInterface.close!(db)
-function _force_gc()
-    GC.gc()
-    GC.gc()
-    return nothing
-end

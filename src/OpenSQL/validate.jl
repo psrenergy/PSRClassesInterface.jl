@@ -138,14 +138,15 @@ function _get_correct_method_to_use(correct_composite_type::Type, action::Symbol
 end
 
 function _throw_if_attribute_is_not_scalar_parameter(
+    opensql_db::OpenSQLDataBase,
     collection::String,
     attribute::String,
     action::Symbol,
 )
-    sanity_check(collection, attribute)
+    _throw_if_collection_or_attribute_do_not_exist(opensql_db, collection, attribute)
 
-    if !_is_scalar_parameter(collection, attribute)
-        correct_composity_type = _attribute_composite_type(collection, attribute)
+    if !_is_scalar_parameter(opensql_db, collection, attribute)
+        correct_composity_type = _attribute_composite_type(opensql_db, collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
         error("Attribute \"$attribute\" is not a scalar parameter. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.")
@@ -153,63 +154,67 @@ function _throw_if_attribute_is_not_scalar_parameter(
     return nothing
 end
 
-function _throw_if_attribute_is_not_vectorial_parameter(
+function _throw_if_attribute_is_not_vector_parameter(
+    opensql_db::OpenSQLDataBase,
     collection::String,
     attribute::String,
     action::Symbol,
 )
-    sanity_check(collection, attribute)
+    _throw_if_collection_or_attribute_do_not_exist(opensql_db, collection, attribute)
 
-    if !_is_vectorial_parameter(collection, attribute)
-        correct_composity_type = _attribute_composite_type(collection, attribute)
+    if !_is_vector_parameter(opensql_db, collection, attribute)
+        correct_composity_type = _attribute_composite_type(opensql_db, collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error("Attribute \"$attribute\" is not a vectorial parameter. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.")
+        error("Attribute \"$attribute\" is not a vector parameter. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.")
     end
     return nothing
 end
 
-function _throw_if_attribute_is_not_scalar_relationship(
+function _throw_if_attribute_is_not_scalar_relation(
+    opensql_db::OpenSQLDataBase,
     collection::String, 
     attribute::String,
     action::Symbol,
 )
-    sanity_check(collection, attribute)
+    _throw_if_collection_or_attribute_do_not_exist(opensql_db, collection, attribute)
 
-    if !_is_scalar_relationship(collection, attribute)
-        correct_composity_type = _attribute_composite_type(collection, attribute)
+    if !_is_scalar_relation(opensql_db, collection, attribute)
+        correct_composity_type = _attribute_composite_type(opensql_db, collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error("Attribute \"$attribute\" is not a scalar relationship. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.")
+        error("Attribute \"$attribute\" is not a scalar relation. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.")
     end
     return nothing
 end
 
-function _throw_if_attribute_is_not_vectorial_relationship(
+function _throw_if_attribute_is_not_vector_relation(
+    opensql_db::OpenSQLDataBase,
     collection::String, 
     attribute::String,
     action::Symbol,
 )
-    sanity_check(collection, attribute)
+    _throw_if_collection_or_attribute_do_not_exist(opensql_db, collection, attribute)
 
-    if !_is_vectorial_relationship(collection, attribute)
-        correct_composity_type = _attribute_composite_type(collection, attribute)
+    if !_is_vector_relation(opensql_db, collection, attribute)
+        correct_composity_type = _attribute_composite_type(opensql_db, collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error("Attribute \"$attribute\" is not a vectorial relationship. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.")
+        error("Attribute \"$attribute\" is not a vector relation. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.")
     end
     return nothing
 end
 
 function _throw_if_attribute_is_not_time_series_file(
+    opensql_db::OpenSQLDataBase,
     collection::String, 
     attribute::String,
     action::Symbol,
 )
-    sanity_check(collection, attribute)
+    _throw_if_collection_or_attribute_do_not_exist(opensql_db, collection, attribute)
 
-    if !_is_time_series_file(collection, attribute)
-        correct_composity_type = _attribute_composite_type(collection, attribute)
+    if !_is_time_series_file(opensql_db, collection, attribute)
+        correct_composity_type = _attribute_composite_type(opensql_db, collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
         error("Attribute \"$attribute\" is not a time series file. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.")
@@ -218,50 +223,53 @@ function _throw_if_attribute_is_not_time_series_file(
 end
 
 function _throw_if_not_scalar_attribute(
+    opensql_db::OpenSQLDataBase,
     collection::String, 
     attribute::String,
 )
-    sanity_check(collection, attribute)
+    _throw_if_collection_or_attribute_do_not_exist(opensql_db, collection, attribute)
 
-    if _is_vectorial_parameter(collection, attribute) || _is_vectorial_relationship(collection, attribute)
+    if _is_vector_parameter(opensql_db, collection, attribute) || _is_vector_relation(opensql_db, collection, attribute)
        error("Attribute \"$attribute\" is not a scalar attribute. You must input a vector for this attribute.")
     end
 
     return nothing
 end
 
-function _throw_if_not_vectorial_attribute(
+function _throw_if_not_vector_attribute(
+    opensql_db::OpenSQLDataBase,
     collection::String, 
     attribute::String,
 )
-    sanity_check(collection, attribute)
+    _throw_if_collection_or_attribute_do_not_exist(opensql_db, collection, attribute)
 
-    if _is_scalar_parameter(collection, attribute) || _is_scalar_relationship(collection, attribute)
+    if _is_scalar_parameter(opensql_db, collection, attribute) || _is_scalar_relation(opensql_db, collection, attribute)
        error("Attribute \"$attribute\" is not a vector attribute. You must input a scalar for this attribute.")
     end
 
     return nothing
 end
 
-function _throw_if_relationship_does_not_exist(
+function _throw_if_relation_does_not_exist(
     collection_from::String,
     collection_to::String,
     relation_type::String
 )
-    if !_scalar_relation_exists(collection_from, collection_to, relation_type) && !_vectorial_relation_exists(collection_from, collection_to, relation_type)
+    if !_scalar_relation_exists(collection_from, collection_to, relation_type) && !_vector_relation_exists(collection_from, collection_to, relation_type)
         error(
-            "Relationship `$relation_type` between $collection_from and $collection_to does not exist. \n" * 
-            "This is the list of relationships that exist: " *
+            "relation `$relation_type` between $collection_from and $collection_to does not exist. \n" * 
+            "This is the list of relations that exist: " *
             "$(_show_existing_relation_types(_list_of_relation_types(collection_from, collection_to)))"
         )
     end
 end
 
 function _throw_if_is_time_series_file(
+    opensql_db::OpenSQLDataBase,
     collection::String,
     attribute::String,
 )
-    if _is_time_series_file(collection, attribute)
+    if _is_time_series_file(opensql_db, collection, attribute)
         error(
             "Attribute \"$attribute\" is a time series file. " *
             "You must use the function `set_time_series_file!` to create it."
@@ -282,25 +290,26 @@ function _show_existing_relation_types(possible_relation_types::Vector{String})
 end
 
 function _validate_attribute_types!(
-    collection::String,
+    opensql_db::OpenSQLDataBase,
+    collection_name::String,
     label_or_id::Union{Integer, String},
     dict_scalar_attributes,
-    dict_vectorial_attributes,
+    dict_vector_attributes,
 )
     for (key, value) in dict_scalar_attributes
-        attribute = _get_attribute(collection, string(key))
-        if isa(attribute, ScalarRelationship)
-            _validate_scalar_relationship_type(attribute, label_or_id, value)
+        attribute = _get_attribute(opensql_db, collection_name, string(key))
+        if isa(attribute, ScalarRelation)
+            _validate_scalar_relation_type(attribute, label_or_id, value)
         else
             _validate_scalar_parameter_type(attribute, label_or_id, value)
         end
     end
-    for (key, value) in dict_vectorial_attributes
-        attribute = _get_attribute(collection, string(key))
-        if isa(attribute, VectorialRelationship) 
-            _validate_vectorial_relationship_type(attribute, label_or_id, value)
+    for (key, value) in dict_vector_attributes
+        attribute = _get_attribute(opensql_db, collection_name, string(key))
+        if isa(attribute, VectorRelation) 
+            _validate_vector_relation_type(attribute, label_or_id, value)
         else
-            _validate_vectorial_parameter_type(attribute, label_or_id, value)
+            _validate_vector_parameter_type(attribute, label_or_id, value)
         end
     end
     return nothing
@@ -319,8 +328,8 @@ function _validate_scalar_parameter_type(
     end
 end
 
-function _validate_scalar_relationship_type(
-    attribute::ScalarRelationship,
+function _validate_scalar_relation_type(
+    attribute::ScalarRelation,
     label_or_id::Union{Integer, String},
     value
 )
@@ -332,8 +341,8 @@ function _validate_scalar_relationship_type(
     end
 end
 
-function _validate_vectorial_parameter_type(
-    attribute::VectorialParameter,
+function _validate_vector_parameter_type(
+    attribute::VectorParameter,
     label_or_id::Union{Integer, String},
     values::Vector{<:Any},
 )
@@ -345,8 +354,8 @@ function _validate_vectorial_parameter_type(
     end
 end
 
-function _validate_vectorial_relationship_type(
-    attribute::VectorialRelationship,
+function _validate_vector_relation_type(
+    attribute::VectorRelation,
     label_or_id::Union{Integer, String},
     values::Vector{<:Any},
 )
@@ -357,9 +366,6 @@ function _validate_vectorial_relationship_type(
         )
     end
 end
-
-# Constant to enable or disable sanity checks
-const SANITY_CHECKS_ENABLED = Ref{Bool}(true)
 
 function _set_default_pragmas!(db::SQLite.DB)
     _set_foreign_keys_on!(db)
@@ -391,68 +397,69 @@ function _validate_user_version(db::SQLite.DB)
     return nothing
 end
 
-function _enable_sanity_checks(val::Bool)
-    SANITY_CHECKS_ENABLED[] = val
-    return val
-end
-
-function _sanity_check_enabled()
-    return SANITY_CHECKS_ENABLED[]
-end
-
-function sanity_check(collection::String)
-    !_sanity_check_enabled() && return nothing
-    _throw_if_collection_does_not_exist(collection)
+function _throw_if_collection_or_attribute_do_not_exist(
+    opensql_db::OpenSQLDataBase, 
+    collection_name::String, 
+    attribute_name::String
+)
+    _throw_if_collection_does_not_exist(opensql_db, collection_name)
+    _throw_if_attribute_does_not_exist(opensql_db, collection_name, attribute_name)
     return nothing
 end
 
-function sanity_check(collection::String, attribute::String)
-    !_sanity_check_enabled() && return nothing
-    _throw_if_collection_does_not_exist(collection)
-    _throw_if_attribute_does_not_exist(collection, attribute)
-    return nothing
-end
-
-function sanity_check(collection::String, attributes::Vector{String})
-    !_sanity_check_enabled() && return nothing
-    _throw_if_collection_does_not_exist(collection)
-    for attribute in attributes
-        _throw_if_attribute_does_not_exist(collection, attribute)
+function _throw_if_collection_or_attribute_do_not_exist(
+    opensql_db::OpenSQLDataBase, 
+    collection_name::String, 
+    attribute_names::Vector{String}
+)
+    _throw_if_collection_does_not_exist(opensql_db, collection_name)
+    for attribute_name in attribute_names
+        _throw_if_attribute_does_not_exist(opensql_db, collection_name, attribute_name)
     end
     return nothing
 end
 
-function _throw_if_collection_does_not_exist(collection::String)
-    if !_collection_exists(collection)
+function _throw_if_collection_does_not_exist(
+    opensql_db::OpenSQLDataBase, 
+    collection_name::String,
+)
+    if !_collection_exists(opensql_db, collection_name)
         error(
-            "Collection \"$collection\" does not exist. "* 
+            "Collection \"$collection_name\" does not exist. "* 
             "This is the list of available collections: " *
-            "$(_string_of_collections())"
+            "$(_string_of_collections(opensql_db))"
         )
     end
 end
 
-function _throw_if_attribute_does_not_exist(collection::String, attribute::String)
-    if !_attribute_exists(collection, attribute)
+function _throw_if_attribute_does_not_exist(
+    opensql_db::OpenSQLDataBase, 
+    collection_name::String, 
+    attribute_name::String
+)
+    if !_attribute_exists(opensql_db, collection_name, attribute_name)
         error(
-            "Attribute \"$attribute\" does not exist in collection \"$collection\". " *
-            "This is the list of available attributes: $(_string_of_attributes(collection))"
+            "Attribute \"$attribute_name\" does not exist in collection \"$collection_name\". " *
+            "This is the list of available attributes: $(_string_of_attributes(opensql_db, collection_name))"
         )
     end
 end
 
-function _string_of_collections()
+function _string_of_collections(opensql_db::OpenSQLDataBase)
     string_of_collections = ""
-    for collection in _get_collection_names()
+    for collection in _get_collection_names(opensql_db)
         string_of_collections *= "\n - $collection"
     end
     return string_of_collections
 end
-function _string_of_attributes(collection::String)
-    attributes = _get_attribute_names(collection)
-    string_of_attributes = ""
-    for attribute in attributes
-        string_of_attributes *= "\n - $attribute"
+function _string_of_attributes(
+    opensql_db::OpenSQLDataBase,
+    collection_name::String
+)
+    attribute_names = _get_attribute_names(opensql_db, collection_name)
+    string_of_attributes_names = ""
+    for attribute_name in attribute_names
+        string_of_attributes_names *= "\n - $attribute_name"
     end
-    return string_of_attributes
+    return string_of_attributes_names
 end

@@ -24,7 +24,7 @@ CREATE TABLE Plant (
     FOREIGN KEY(resource_id) REFERENCES Resource(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) STRICT;
 
-CREATE TABLE Plant_vector_cost_relationship (
+CREATE TABLE Plant_vector_cost_relation (
     id INTEGER,
     vector_index INTEGER NOT NULL,
     some_factor REAL NOT NULL,

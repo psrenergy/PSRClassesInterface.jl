@@ -41,7 +41,7 @@ CREATE TABLE Plant (
     FOREIGN KEY(plant_spill_to) REFERENCES Plant(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) STRICT;
 
-CREATE TABLE Plant_vector_cost_relationship (
+CREATE TABLE Plant_vector_cost_relation (
     id INTEGER,
     vector_index INTEGER NOT NULL,
     some_factor REAL NOT NULL,
