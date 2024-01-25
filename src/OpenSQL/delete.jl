@@ -2,7 +2,7 @@
 TODO
 """
 function delete_element!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     label::String,
 )
@@ -13,7 +13,7 @@ function delete_element!(
 end
 
 function _delete_element!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     id::Integer,
 )

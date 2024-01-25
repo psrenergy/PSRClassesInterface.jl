@@ -91,6 +91,26 @@ function test_create_parameters_and_vectors()
     return nothing
 end
 
+function test_create_with_transaction()
+    path_schema = joinpath(@__DIR__, "test_create_parameters_and_vectors.sql")
+    db_path = joinpath(@__DIR__, "test_create_parameters_and_vectors.sqlite")
+    db = OpenSQL.create_empty_db_from_schema(db_path, path_schema; force = true)
+    OpenSQL.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
+    OpenSQL.SQLite.transaction(db.sqlite_db) do
+        for i in 1:10
+            OpenSQL.create_element!(
+                db,
+                "Plant";
+                label = "Plant $i",
+                capacity = 5.0 * i,
+            )
+        end
+    end
+    OpenSQL.close!(db)
+    rm(db_path)
+    @test true
+end
+
 function test_create_vectors_with_different_sizes_in_same_group()
     path_schema =
         joinpath(@__DIR__, "test_create_vectors_with_different_sizes_in_same_group.sql")

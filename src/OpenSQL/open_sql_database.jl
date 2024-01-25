@@ -75,12 +75,12 @@ mutable struct Collection
     time_series_files::OrderedDict{String, TimeSeriesFile}
 end
 
-mutable struct OpenSQLDataBase
+mutable struct OpenSQLDatabase
     sqlite_db::SQLite.DB
     collections_map::OrderedDict{String, Collection}
     path_migrations_directory::String
 
-    function OpenSQLDataBase(
+    function OpenSQLDatabase(
         database_path::String;
         path_migrations_directory::String = "",
         path_schema::String = "",
@@ -124,7 +124,7 @@ mutable struct OpenSQLDataBase
 end
 
 function _is_scalar_parameter(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     attribute_name::String,
 )
@@ -133,7 +133,7 @@ function _is_scalar_parameter(
 end
 
 function _is_vector_parameter(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     attribute_name::String,
 )
@@ -142,7 +142,7 @@ function _is_vector_parameter(
 end
 
 function _is_scalar_relation(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     attribute_name::String,
 )
@@ -151,7 +151,7 @@ function _is_scalar_relation(
 end
 
 function _is_vector_relation(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     attribute_name::String,
 )
@@ -160,7 +160,7 @@ function _is_vector_relation(
 end
 
 function _is_time_series_file(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     attribute_name::String,
 )
@@ -175,12 +175,12 @@ _not_null(attribute::Attribute) = attribute.not_null
 _parent_collection(attribute::Attribute) = attribute.parent_collection
 _table_where_is_located(attribute::Attribute) = attribute.table_where_is_located
 
-function _get_collection(opensql_db::OpenSQLDataBase, collection_name::String)
+function _get_collection(opensql_db::OpenSQLDatabase, collection_name::String)
     return opensql_db.collections_map[collection_name]
 end
 
 function _get_attribute(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     attribute_name::String,
 )
@@ -223,7 +223,7 @@ function _string_for_composite_types(composite_type::Type)
 end
 
 function _attribute_composite_type(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     attribute_name::String,
 )
@@ -231,11 +231,11 @@ function _attribute_composite_type(
     return typeof(attribute)
 end
 
-function _collection_exists(opensql_db::OpenSQLDataBase, collection_name::String)
+function _collection_exists(opensql_db::OpenSQLDatabase, collection_name::String)
     return haskey(opensql_db.collections_map, collection_name)
 end
 function _attribute_exists(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     attribute_name::String,
 )
@@ -247,7 +247,7 @@ function _attribute_exists(
 end
 
 function _map_of_groups_to_vector_attributes(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
 )
     collection = _get_collection(opensql_db, collection_name)
@@ -290,7 +290,7 @@ function _is_collection_vector_table_name(name::String, collection_name::String)
     return occursin("$(collection_name)_vector_", name)
 end
 
-_get_collection_names(opensql_db::OpenSQLDataBase) =
+_get_collection_names(opensql_db::OpenSQLDatabase) =
     _get_collection_names(opensql_db.sqlite_db)
 function _get_collection_names(db::SQLite.DB)
     tables = SQLite.tables(db)
@@ -304,7 +304,7 @@ function _get_collection_names(db::SQLite.DB)
     return collection_names
 end
 
-function _get_attribute_names(opensql_db::OpenSQLDataBase, collection_name::String)
+function _get_attribute_names(opensql_db::OpenSQLDatabase, collection_name::String)
     collection = opensql_db.collections_map[collection_name]
     attribute_names = Vector{String}(undef, 0)
     for field in fieldnames(Collection)
@@ -746,4 +746,4 @@ function _relations_do_not_have_default_values(collection::Collection)
     return num_errors
 end
 
-close!(opensql_db::OpenSQLDataBase) = DBInterface.close!(opensql_db.sqlite_db)
+close!(opensql_db::OpenSQLDatabase) = DBInterface.close!(opensql_db.sqlite_db)

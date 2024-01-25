@@ -44,7 +44,7 @@ function create_empty_db_from_schema(
     force::Bool = false,
 )
     opensql_db = try
-        OpenSQLDataBase(
+        OpenSQLDatabase(
             database_path;
             path_schema = path_schema,
             force = force,
@@ -61,7 +61,7 @@ function create_empty_db_from_migrations(
     force::Bool = false,
 )
     opensql_db = try
-        OpenSQLDataBase(
+        OpenSQLDatabase(
             database_path;
             path_migrations_directory = path_migrations_directory,
             force = force,
@@ -74,7 +74,7 @@ end
 
 function load_db(database_path::String)
     opensql_db = try
-        OpenSQLDataBase(
+        OpenSQLDatabase(
             database_path,
         )
     catch e

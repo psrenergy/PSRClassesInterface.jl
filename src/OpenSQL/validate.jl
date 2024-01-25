@@ -140,7 +140,7 @@ function _get_correct_method_to_use(correct_composite_type::Type, action::Symbol
 end
 
 function _throw_if_attribute_is_not_scalar_parameter(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection::String,
     attribute::String,
     action::Symbol,
@@ -160,7 +160,7 @@ function _throw_if_attribute_is_not_scalar_parameter(
 end
 
 function _throw_if_attribute_is_not_vector_parameter(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection::String,
     attribute::String,
     action::Symbol,
@@ -180,7 +180,7 @@ function _throw_if_attribute_is_not_vector_parameter(
 end
 
 function _throw_if_attribute_is_not_scalar_relation(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection::String,
     attribute::String,
     action::Symbol,
@@ -200,7 +200,7 @@ function _throw_if_attribute_is_not_scalar_relation(
 end
 
 function _throw_if_attribute_is_not_vector_relation(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection::String,
     attribute::String,
     action::Symbol,
@@ -220,7 +220,7 @@ function _throw_if_attribute_is_not_vector_relation(
 end
 
 function _throw_if_attribute_is_not_time_series_file(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection::String,
     attribute::String,
     action::Symbol,
@@ -240,7 +240,7 @@ function _throw_if_attribute_is_not_time_series_file(
 end
 
 function _throw_if_not_scalar_attribute(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection::String,
     attribute::String,
 )
@@ -257,7 +257,7 @@ function _throw_if_not_scalar_attribute(
 end
 
 function _throw_if_not_vector_attribute(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection::String,
     attribute::String,
 )
@@ -289,14 +289,14 @@ function _throw_if_relation_does_not_exist(
 end
 
 function _throw_if_is_time_series_file(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection::String,
     attribute::String,
 )
     if _is_time_series_file(opensql_db, collection, attribute)
         error(
             "Attribute \"$attribute\" is a time series file. " *
-            "You must use the function `set_time_series_file!` to create it.",
+            "You must use the function `set_time_series_file!` to create or update it.",
         )
     end
     return nothing
@@ -314,7 +314,7 @@ function _show_existing_relation_types(possible_relation_types::Vector{String})
 end
 
 function _validate_attribute_types!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     label_or_id::Union{Integer, String},
     dict_scalar_attributes,
@@ -422,7 +422,7 @@ function _validate_user_version(db::SQLite.DB)
 end
 
 function _throw_if_collection_or_attribute_do_not_exist(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     attribute_name::String,
 )
@@ -432,7 +432,7 @@ function _throw_if_collection_or_attribute_do_not_exist(
 end
 
 function _throw_if_collection_or_attribute_do_not_exist(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     attribute_names::Vector{String},
 )
@@ -444,7 +444,7 @@ function _throw_if_collection_or_attribute_do_not_exist(
 end
 
 function _throw_if_collection_does_not_exist(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
 )
     if !_collection_exists(opensql_db, collection_name)
@@ -457,7 +457,7 @@ function _throw_if_collection_does_not_exist(
 end
 
 function _throw_if_attribute_does_not_exist(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     attribute_name::String,
 )
@@ -469,7 +469,7 @@ function _throw_if_attribute_does_not_exist(
     end
 end
 
-function _string_of_collections(opensql_db::OpenSQLDataBase)
+function _string_of_collections(opensql_db::OpenSQLDatabase)
     string_of_collections = ""
     for collection in _get_collection_names(opensql_db)
         string_of_collections *= "\n - $collection"
@@ -477,7 +477,7 @@ function _string_of_collections(opensql_db::OpenSQLDataBase)
     return string_of_collections
 end
 function _string_of_attributes(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
 )
     attribute_names = _get_attribute_names(opensql_db, collection_name)

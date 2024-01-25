@@ -5,7 +5,6 @@ CREATE TABLE Configuration (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT UNIQUE,
     value1 REAL NOT NULL DEFAULT 100,
-    date_initial TEXT,
     enum1 TEXT NOT NULL DEFAULT 'A' CHECK(enum1 IN ('A', 'B', 'C'))
 ) STRICT;
 
@@ -27,8 +26,7 @@ CREATE TABLE Resource_vector_some_group (
 CREATE TABLE Cost (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT UNIQUE,
-    value REAL NOT NULL DEFAULT 100,
-    value_without_default REAL
+    value REAL NOT NULL DEFAULT 100
 ) STRICT;
 
 CREATE TABLE Plant (
@@ -47,14 +45,8 @@ CREATE TABLE Plant_vector_cost_relation (
     id INTEGER,
     vector_index INTEGER NOT NULL,
     some_factor REAL NOT NULL,
-    date_some_date TEXT,
     cost_id INTEGER,
     FOREIGN KEY(id) REFERENCES Plant(id) ON DELETE CASCADE ON UPDATE CASCADE,
     FOREIGN KEY(cost_id) REFERENCES Cost(id) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY (id, vector_index)
-) STRICT;
-
-CREATE TABLE Plant_timeseriesfiles (
-    wind_speed TEXT,
-    wind_direction TEXT
 ) STRICT;

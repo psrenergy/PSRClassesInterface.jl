@@ -8,7 +8,7 @@ const READ_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
 
 # TODO rename to _get_id_of_element also it should pass a collection_name
 function _get_id(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     label::String,
 )::Integer
@@ -25,9 +25,10 @@ end
 TODO
 """
 function read_scalar_parameters(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
-    attribute_name::String,
+    attribute_name::String;
+    default::Union{Nothing, Any} = nothing,
 )
     _throw_if_attribute_is_not_scalar_parameter(
         opensql_db,
@@ -42,14 +43,16 @@ function read_scalar_parameters(
     query = "SELECT $attribute_name FROM $table ORDER BY rowid"
     df = DBInterface.execute(opensql_db.sqlite_db, query) |> DataFrame
     results = df[!, 1]
+    results = _treat_query_result(results, attribute, default)
     return results
 end
 
 function read_scalar_parameter(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     attribute_name::String,
-    label::String,
+    label::String;
+    default::Union{Nothing, Any} = nothing,
 )
     _throw_if_attribute_is_not_scalar_parameter(
         opensql_db,
@@ -62,14 +65,15 @@ function read_scalar_parameter(
     table = _table_where_is_located(attribute)
     id = _get_id(opensql_db, table, label)
 
-    return read_scalar_parameter(opensql_db, collection_name, attribute_name, id)
+    return read_scalar_parameter(opensql_db, collection_name, attribute_name, id; default)
 end
 
 function read_scalar_parameter(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     attribute_name::String,
-    id::Integer,
+    id::Integer;
+    default::Union{Nothing, Any} = nothing,
 )
     _throw_if_attribute_is_not_scalar_parameter(
         opensql_db,
@@ -82,14 +86,16 @@ function read_scalar_parameter(
 
     query = "SELECT $attribute_name FROM $table WHERE id = '$id'"
     df = DBInterface.execute(opensql_db.sqlite_db, query) |> DataFrame
-    results = df[!, 1][1]
-    return results
+    results = df[!, 1]
+    results = _treat_query_result(results, attribute, default)
+    return results[1]
 end
 
 function read_vector_parameters(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
-    attribute_name::String,
+    attribute_name::String;
+    default::Union{Nothing, Any} = nothing,
 )
     _throw_if_attribute_is_not_vector_parameter(
         opensql_db,
@@ -102,17 +108,18 @@ function read_vector_parameters(
 
     results = []
     for id in ids_in_table
-        push!(results, _query_vector(opensql_db, attribute, id))
+        push!(results, _query_vector(opensql_db, attribute, id; default))
     end
 
     return results
 end
 
 function read_vector_parameter(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     attribute_name::String,
-    label::String,
+    label::String;
+    default::Union{Nothing, Any} = nothing,
 )
     _throw_if_attribute_is_not_vector_parameter(
         opensql_db,
@@ -122,25 +129,27 @@ function read_vector_parameter(
     )
     attribute = _get_attribute(opensql_db, collection_name, attribute_name)
     id = read_scalar_parameter(opensql_db, collection_name, "id", label)
-    return _query_vector(opensql_db, attribute, id)
+    return _query_vector(opensql_db, attribute, id; default)
 end
 
 function _query_vector(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     attribute::VectorParameter,
-    id::Integer,
+    id::Integer;
+    default::Union{Nothing, Any} = nothing,
 )
     query = "SELECT $(attribute.name) FROM $(attribute.table_where_is_located) WHERE id = '$id' ORDER BY vector_index"
     df = DBInterface.execute(opensql_db.sqlite_db, query) |> DataFrame
-    result = df[!, 1]
-    return result
+    results = df[!, 1]
+    results = _treat_query_result(results, attribute, default)
+    return results
 end
 
 """
 TODO
 """
 function read_scalar_relations(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_from::String,
     collection_to::String,
     relation_type::String,
@@ -159,7 +168,7 @@ function read_scalar_relations(
 end
 
 function read_scalar_relation(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_from::String,
     collection_to::String,
     relation_type::String,
@@ -177,7 +186,7 @@ function read_scalar_relation(
 end
 
 function _get_scalar_relation_map(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_from::String,
     collection_to::String,
     relation_type::String,
@@ -208,7 +217,7 @@ function _get_scalar_relation_map(
 end
 
 function read_vector_relations(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_from::String,
     collection_to::String,
     relation_type::String,
@@ -235,7 +244,7 @@ function read_vector_relations(
 end
 
 function read_vector_relation(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_from::String,
     collection_to::String,
     collection_from_label::String,
@@ -253,7 +262,7 @@ function read_vector_relation(
 end
 
 function _get_vector_relation_map(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_from::String,
     collection_to::String,
     relation_type::String,
@@ -291,7 +300,7 @@ function _get_vector_relation_map(
 end
 
 function read_time_series_file(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     attribute_name::String,
 )
@@ -314,3 +323,82 @@ function read_time_series_file(
     results = df[!, 1][1]
     return results
 end
+
+function _treat_query_result(
+    query_results::Vector{Missing},
+    attribute::Attribute,
+    default::Union{Nothing, Any},
+)
+    type_of_attribute = _type(attribute)
+    default = if isnothing(default)
+        _opensql_default_value_for_type(type_of_attribute)
+    else
+        default
+    end
+    final_results = fill(default, length(query_results))
+    return final_results
+end
+function _treat_query_result(
+    query_results::Vector{Union{Missing, T}},
+    attribute::Attribute,
+    default::Union{Nothing, Any},
+) where {T <: Union{Int64, Float64}}
+    type_of_attribute = _type(attribute)
+    default = if isnothing(default)
+        _opensql_default_value_for_type(type_of_attribute)
+    else
+        if isa(default, type_of_attribute)
+            default
+        else
+            error(
+                "default value must be of the same type as attribute \"$(attribute.name)\": $(type_of_attribute). User inputed $(typeof(default)): default.",
+            )
+        end
+    end
+    final_results = fill(default, length(query_results))
+    for i in eachindex(final_results)
+        if !ismissing(query_results[i])
+            final_results[i] = query_results[i]
+        end
+    end
+    return final_results
+end
+function _treat_query_result(
+    query_results::Vector{<:Union{Missing, String}},
+    attribute::Attribute,
+    default::Union{Nothing, Any},
+)
+    type_of_attribute = _type(attribute)
+    default = if isnothing(default)
+        _opensql_default_value_for_type(type_of_attribute)
+    else
+        if isa(default, type_of_attribute)
+            default
+        else
+            error(
+                "default value must be of the same type as attribute \"$(attribute.name)\": $(type_of_attribute). User inputed $(typeof(default)): default.",
+            )
+        end
+    end
+    final_results = fill(default, length(query_results))
+    for i in eachindex(final_results)
+        if !ismissing(query_results[i])
+            if isa(default, String)
+                final_results[i] = query_results[i]
+            else
+                final_results[i] = DateTime(query_results[i])
+            end
+        end
+    end
+    return final_results
+end
+_treat_query_result(
+    results::Vector{T},
+    ::Attribute,
+    ::Union{Nothing, Any},
+) where {T <: Union{Int64, Float64}} = results
+
+_opensql_default_value_for_type(::Type{Float64}) = NaN
+_opensql_default_value_for_type(::Type{Int64}) = typemin(Int64)
+_opensql_default_value_for_type(::Type{String}) = ""
+_opensql_default_value_for_type(::Type{DateTime}) = typemin(DateTime)

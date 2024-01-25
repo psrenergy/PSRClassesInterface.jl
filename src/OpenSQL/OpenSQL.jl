@@ -9,6 +9,7 @@ using Tables
 using OrderedCollections
 using DataFrames
 using Dates
+using Random
 
 const DB = SQLite.DB
 

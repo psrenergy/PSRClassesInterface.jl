@@ -7,7 +7,7 @@ const UPDATE_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
 )
 
 function update_scalar_parameter!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     attribute_name::String,
     label::String,
@@ -32,7 +32,7 @@ function update_scalar_parameter!(
 end
 
 function _update_scalar_parameter!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     attribute_name::String,
     id::Integer,
@@ -49,7 +49,7 @@ function _update_scalar_parameter!(
 end
 
 function update_vector_parameters!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     attribute_name::String,
     label::String,
@@ -73,7 +73,7 @@ function update_vector_parameters!(
 end
 
 function _update_vector_parameters!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     attribute_name::String,
     id::Integer,
@@ -122,7 +122,7 @@ end
 
 # Helper to guide user to correct method
 function set_scalar_relation!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_from::String,
     collection_to::String,
     label_collection_from::String,
@@ -134,7 +134,7 @@ function set_scalar_relation!(
 end
 
 function set_scalar_relation!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_from::String,
     collection_to::String,
     label_collection_from::String,
@@ -162,7 +162,7 @@ function set_scalar_relation!(
 end
 
 function set_scalar_relation!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_from::String,
     collection_to::String,
     id_collection_from::Integer,
@@ -183,7 +183,7 @@ function set_scalar_relation!(
 end
 
 function set_vector_relation!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_from::String,
     collection_to::String,
     label_collection_from::String,
@@ -214,7 +214,7 @@ function set_vector_relation!(
 end
 
 function set_vector_relation!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_from::String,
     collection_to::String,
     id_collection_from::Integer,
@@ -267,7 +267,7 @@ function set_vector_relation!(
 end
 
 function set_time_series_file!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String;
     kwargs...,
 )
@@ -289,17 +289,22 @@ function set_time_series_file!(
         _validate_time_series_attribute_value(value)
         dict_time_series[key] = value
     end
-    SQLite.transaction(opensql_db.sqlite_db) do
-        # Delete every previous entry and then add it again
-        # it must be done within a transaction so we don't lose
-        # the time series files if something goes wrong
-        cols = join(keys(dict_time_series), ", ")
-        vals = join(values(dict_time_series), "', '")
+    # Delete every previous entry and then add it again
+    # it must be done within a transaction so we don't lose
+    # the time series files if something goes wrong
+    cols = join(keys(dict_time_series), ", ")
+    vals = join(values(dict_time_series), "', '")
+    savepoint_name = string("SQLITE", Random.randstring(10))
+    DBInterface.execute(opensql_db.sqlite_db, "SAVEPOINT $savepoint_name;")
+    try
         DBInterface.execute(opensql_db.sqlite_db, "DELETE FROM $table_name")
-        return DBInterface.execute(
+        DBInterface.execute(
             opensql_db.sqlite_db,
             "INSERT INTO $table_name ($cols) VALUES ('$vals')",
         )
+    catch e
+        DBInterface.execute(opensql_db.sqlite_db, "ROLLBACK TO SAVEPOINT $savepoint_name;")
+        rethrow(e)
     end
     return nothing
 end

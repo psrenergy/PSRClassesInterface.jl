@@ -74,7 +74,7 @@ Example:
 CREATE TABLE Plant(
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT UNIQUE NOT NULL,
-    capacity REAL NOT NULL
+    capacity REAL NOT NULL,
     gaugingstation_id INTEGER,
     plant_spill_to INTEGER,
     FOREIGN KEY(gaugingstation_id) REFERENCES GaugingStation(id) ON UPDATE CASCADE ON DELETE CASCADE,

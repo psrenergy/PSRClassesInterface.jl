@@ -1,5 +1,5 @@
 function _create_scalar_attributes!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     scalar_attributes,
 )
@@ -18,7 +18,7 @@ function _create_scalar_attributes!(
 end
 
 function _create_vector_group!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     group::String,
     id::Integer,
@@ -45,13 +45,30 @@ function _create_vector_group!(
     num_values = size(df, 1)
     ids = fill(id, num_values)
     vector_index = collect(1:num_values)
-    DataFrames.insertcols!(df, :id => ids, :vector_index => vector_index)
-    SQLite.load!(df, opensql_db.sqlite_db, vectors_group_table_name)
+    DataFrames.insertcols!(df, 1, :vector_index => vector_index)
+    DataFrames.insertcols!(df, 1, :id => ids)
+    cols = join(string.(names(df)), ", ")
+    num_cols = size(df, 2)
+    for row in eachrow(df)
+        query = "INSERT INTO $vectors_group_table_name ($cols) VALUES ("
+        for (i, value) in enumerate(row)
+            if ismissing(value)
+                query *= "NULL, "
+            else
+                query *= "\'$value\', "
+            end
+            if i == num_cols
+                query = query[1:end-2]
+                query *= ")"
+            end
+        end
+        DBInterface.execute(opensql_db.sqlite_db, query)
+    end
     return nothing
 end
 
 function _create_vectors!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     id::Integer,
     dict_vector_attributes,
@@ -83,7 +100,7 @@ function _create_vectors!(
 end
 
 function _create_element!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String;
     kwargs...,
 )
@@ -129,7 +146,7 @@ function _create_element!(
 end
 
 function create_element!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String;
     kwargs...,
 )
@@ -230,7 +247,7 @@ end
 _convert_date_to_string(value) = value
 
 function _replace_scalar_relation_labels_with_id!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     scalar_attributes,
 )
@@ -246,7 +263,7 @@ function _replace_scalar_relation_labels_with_id!(
 end
 
 function _replace_vector_relation_labels_with_ids!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     vector_attributes,
 )
@@ -266,7 +283,7 @@ function _replace_vector_relation_labels_with_ids!(
 end
 
 function _validate_attribute_types_on_creation!(
-    opensql_db::OpenSQLDataBase,
+    opensql_db::OpenSQLDatabase,
     collection_name::String,
     dict_scalar_attributes::AbstractDict,
     dict_vector_attributes::AbstractDict,
