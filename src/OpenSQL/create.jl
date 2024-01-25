@@ -26,12 +26,20 @@ function _create_vector_group!(
     group_vector_attributes,
 )
     vectors_group_table_name = _vectors_group_table_name(collection_name, group)
-    _throw_if_collection_or_attribute_do_not_exist(opensql_db, collection_name, vector_attributes)
-    _replace_vector_relation_labels_with_ids!(opensql_db, collection_name, group_vector_attributes)
+    _throw_if_collection_or_attribute_do_not_exist(
+        opensql_db,
+        collection_name,
+        vector_attributes,
+    )
+    _replace_vector_relation_labels_with_ids!(
+        opensql_db,
+        collection_name,
+        group_vector_attributes,
+    )
     _all_vector_of_group_must_have_same_size!(
-        group_vector_attributes, 
-        vector_attributes, 
-        vectors_group_table_name
+        group_vector_attributes,
+        vector_attributes,
+        vectors_group_table_name,
     )
     df = DataFrame(group_vector_attributes)
     num_values = size(df, 1)
@@ -42,20 +50,34 @@ function _create_vector_group!(
     return nothing
 end
 
-function _create_vectors!(opensql_db::OpenSQLDataBase, collection_name::String, id::Integer, dict_vector_attributes)
+function _create_vectors!(
+    opensql_db::OpenSQLDataBase,
+    collection_name::String,
+    id::Integer,
+    dict_vector_attributes,
+)
     # separate vectors by groups
-    map_of_groups_to_vector_attributes = _map_of_groups_to_vector_attributes(opensql_db, collection_name)
+    map_of_groups_to_vector_attributes =
+        _map_of_groups_to_vector_attributes(opensql_db, collection_name)
     for (group, vector_attributes) in map_of_groups_to_vector_attributes
         group_vector_attributes = Dict()
         for vector_attribute in Symbol.(vector_attributes)
             if haskey(dict_vector_attributes, vector_attribute)
-                group_vector_attributes[vector_attribute] = dict_vector_attributes[vector_attribute]
+                group_vector_attributes[vector_attribute] =
+                    dict_vector_attributes[vector_attribute]
             end
         end
         if isempty(group_vector_attributes)
             continue
         end
-        _create_vector_group!(opensql_db, collection_name, group, id, vector_attributes, group_vector_attributes)
+        _create_vector_group!(
+            opensql_db,
+            collection_name,
+            group,
+            id,
+            vector_attributes,
+            group_vector_attributes,
+        )
     end
     return nothing
 end
@@ -84,13 +106,22 @@ function _create_element!(
         end
     end
 
-    _validate_attribute_types_on_creation!(opensql_db, collection_name, dict_scalar_attributes, dict_vector_attributes)
+    _validate_attribute_types_on_creation!(
+        opensql_db,
+        collection_name,
+        dict_scalar_attributes,
+        dict_vector_attributes,
+    )
     _convert_date_to_string!(dict_scalar_attributes, dict_vector_attributes)
 
     _create_scalar_attributes!(opensql_db, collection_name, dict_scalar_attributes)
 
     if !isempty(dict_vector_attributes)
-        id = get(dict_scalar_attributes, :id, _get_id(opensql_db, collection_name, dict_scalar_attributes[:label]))
+        id = get(
+            dict_scalar_attributes,
+            :id,
+            _get_id(opensql_db, collection_name, dict_scalar_attributes[:label]),
+        )
         _create_vectors!(opensql_db, collection_name, id, dict_vector_attributes)
     end
 
@@ -102,7 +133,7 @@ function create_element!(
     collection_name::String;
     kwargs...,
 )
-    try 
+    try
         _create_element!(opensql_db, collection_name; kwargs...)
     catch e
         @error """
@@ -117,7 +148,7 @@ end
 function _all_vector_of_group_must_have_same_size!(
     group_vector_attributes,
     vector_attributes::Vector{String},
-    table_name::String
+    table_name::String,
 )
     vector_attributes = Symbol.(vector_attributes)
     if isempty(group_vector_attributes)
@@ -130,7 +161,7 @@ function _all_vector_of_group_must_have_same_size!(
     unique_lengths = unique(values(dict_of_lengths))
     if length(unique_lengths) > 1
         error(
-            "All vectors of table $table_name must have the same length. These are the current lengths: $(_show_sizes_of_vectors_in_string(dict_of_lengths)) "
+            "All vectors of table $table_name must have the same length. These are the current lengths: $(_show_sizes_of_vectors_in_string(dict_of_lengths)) ",
         )
     end
     length_first_vector = unique_lengths[1]
@@ -152,8 +183,8 @@ function _show_sizes_of_vectors_in_string(dict_of_lengths::Dict{String, Int})
 end
 
 function _get_label_or_id(
-    collection_name::String, 
-    dict_scalar_attributes
+    collection_name::String,
+    dict_scalar_attributes,
 )
     if haskey(dict_scalar_attributes, :label)
         return dict_scalar_attributes[:label]
@@ -182,13 +213,13 @@ function _convert_date_to_string!(
 end
 
 function _convert_date_to_string(
-    value::TimeType
+    value::TimeType,
 )
     return string(DateTime(value))
 end
 
 function _convert_date_to_string(
-    values::AbstractVector{<:TimeType}
+    values::AbstractVector{<:TimeType},
 )
     dates = DateTime.(values)
     if !issorted(dates)
@@ -199,12 +230,13 @@ end
 _convert_date_to_string(value) = value
 
 function _replace_scalar_relation_labels_with_id!(
-    opensql_db::OpenSQLDataBase, 
-    collection_name::String, 
-    scalar_attributes
+    opensql_db::OpenSQLDataBase,
+    collection_name::String,
+    scalar_attributes,
 )
     for (key, value) in scalar_attributes
-        if _is_scalar_relation(opensql_db, collection_name, string(key)) && isa(value, String)
+        if _is_scalar_relation(opensql_db, collection_name, string(key)) &&
+           isa(value, String)
             scalar_relation = _get_attribute(opensql_db, collection_name, string(key))
             collection_to = scalar_relation.relation_collection
             scalar_attributes[key] = _get_id(opensql_db, collection_to, value)
@@ -214,12 +246,13 @@ function _replace_scalar_relation_labels_with_id!(
 end
 
 function _replace_vector_relation_labels_with_ids!(
-    opensql_db::OpenSQLDataBase, 
-    collection_name::String, 
-    vector_attributes
+    opensql_db::OpenSQLDataBase,
+    collection_name::String,
+    vector_attributes,
 )
     for (key, value) in vector_attributes
-        if _is_vector_relation(opensql_db, collection_name, string(key)) && isa(value, Vector{String})
+        if _is_vector_relation(opensql_db, collection_name, string(key)) &&
+           isa(value, Vector{String})
             vector_relation = _get_attribute(opensql_db, collection_name, string(key))
             collection_to = vector_relation.relation_collection
             vec_of_ids = zeros(Int, length(value))
@@ -239,7 +272,13 @@ function _validate_attribute_types_on_creation!(
     dict_vector_attributes::AbstractDict,
 )
     label_or_id = _get_label_or_id(collection_name, dict_scalar_attributes)
-    _validate_attribute_types!(opensql_db, collection_name, label_or_id, dict_scalar_attributes, dict_vector_attributes)
+    _validate_attribute_types!(
+        opensql_db,
+        collection_name,
+        label_or_id,
+        dict_scalar_attributes,
+        dict_vector_attributes,
+    )
     return nothing
 end
 
@@ -247,7 +286,9 @@ function _validate_create_elements_kwargs(collection_name::String, kwargs)
     if !haskey(kwargs, :label)
         @warn("Creating an element in collection \"$collection_name\" without \"label\"")
         if !haskey(kwargs, :id)
-            error("User tried to create an element in collection \"$collection_name\" without \"id\" nor \"label\". This is not allowed.")
+            error(
+                "User tried to create an element in collection \"$collection_name\" without \"id\" nor \"label\". This is not allowed.",
+            )
         end
     end
     return nothing

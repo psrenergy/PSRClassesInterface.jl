@@ -13,8 +13,17 @@ function update_scalar_parameter!(
     label::String,
     val,
 )
-    _throw_if_collection_or_attribute_do_not_exist(opensql_db, collection_name, attribute_name)
-    _throw_if_attribute_is_not_scalar_parameter(opensql_db, collection_name, attribute_name, :update)
+    _throw_if_collection_or_attribute_do_not_exist(
+        opensql_db,
+        collection_name,
+        attribute_name,
+    )
+    _throw_if_attribute_is_not_scalar_parameter(
+        opensql_db,
+        collection_name,
+        attribute_name,
+        :update,
+    )
     attribute = _get_attribute(opensql_db, collection_name, attribute_name)
     _validate_scalar_parameter_type(attribute, label, val)
     id = _get_id(opensql_db, collection_name, label)
@@ -32,7 +41,10 @@ function _update_scalar_parameter!(
     attribute = _get_attribute(opensql_db, collection_name, attribute_name)
     new_value = _convert_date_to_string(val)
     table_name = attribute.table_where_is_located
-    DBInterface.execute(opensql_db.sqlite_db, "UPDATE $table_name SET $attribute_name = '$new_value' WHERE id = '$id'")
+    DBInterface.execute(
+        opensql_db.sqlite_db,
+        "UPDATE $table_name SET $attribute_name = '$new_value' WHERE id = '$id'",
+    )
     return nothing
 end
 
@@ -43,12 +55,21 @@ function update_vector_parameters!(
     label::String,
     vals::Vector{<:Any},
 )
-    _throw_if_collection_or_attribute_do_not_exist(opensql_db, collection_name, attribute_name)
-    _throw_if_attribute_is_not_vector_parameter(opensql_db, collection_name, attribute_name, :update)
+    _throw_if_collection_or_attribute_do_not_exist(
+        opensql_db,
+        collection_name,
+        attribute_name,
+    )
+    _throw_if_attribute_is_not_vector_parameter(
+        opensql_db,
+        collection_name,
+        attribute_name,
+        :update,
+    )
     attribute = _get_attribute(opensql_db, collection_name, attribute_name)
     _validate_vector_parameter_type(attribute, label, vals)
     id = _get_id(opensql_db, collection_name, label)
-    _update_vector_parameters!(opensql_db, collection_name, attribute_name, id, vals)
+    return _update_vector_parameters!(opensql_db, collection_name, attribute_name, id, vals)
 end
 
 function _update_vector_parameters!(
@@ -63,19 +84,28 @@ function _update_vector_parameters!(
     new_vals = _convert_date_to_string(vals)
     table_name = attribute.table_where_is_located
     num_new_elements = length(vals)
-    df_num_rows = DBInterface.execute(opensql_db.sqlite_db, "SELECT $(attribute_name) FROM $table_name WHERE id = '$id'") |> DataFrame
+    df_num_rows =
+        DBInterface.execute(
+            opensql_db.sqlite_db,
+            "SELECT $(attribute_name) FROM $table_name WHERE id = '$id'",
+        ) |> DataFrame
     num_rows_in_query = size(df_num_rows, 1)
     if num_rows_in_query != num_new_elements
         if num_rows_in_query == 0
             # If there are no rows in the table we can create them
-            _create_vectors!(opensql_db, collection_name, id, Dict(Symbol(attribute_name) => vals))
+            _create_vectors!(
+                opensql_db,
+                collection_name,
+                id,
+                Dict(Symbol(attribute_name) => vals),
+            )
         else
             # If there are rows in the table we must check that the number of rows is the same as the number of new relations
             error(
                 "There is currently a vector of $num_rows_in_query elements in the group $group. " *
                 "User is trying to set a vector of length $num_new_elements. This is invalid. " *
                 "If you want to change the number of elements in the group you might have to delete " *
-                "the element and create it again with the new vector."
+                "the element and create it again with the new vector.",
             )
         end
     else
@@ -89,7 +119,6 @@ function _update_vector_parameters!(
     end
     return nothing
 end
-
 
 # Helper to guide user to correct method
 function set_scalar_relation!(
@@ -113,7 +142,12 @@ function set_scalar_relation!(
     relation_type::String,
 )
     attribute_name = lowercase(collection_to) * "_" * relation_type
-    _throw_if_attribute_is_not_scalar_relation(opensql_db, collection_from, attribute_name, :update)
+    _throw_if_attribute_is_not_scalar_relation(
+        opensql_db,
+        collection_from,
+        attribute_name,
+        :update,
+    )
     id_collection_from = _get_id(opensql_db, collection_from, label_collection_from)
     id_collection_to = _get_id(opensql_db, collection_to, label_collection_to)
     set_scalar_relation!(
@@ -157,7 +191,12 @@ function set_vector_relation!(
     relation_type::String,
 )
     attribute_name = lowercase(collection_to) * "_" * relation_type
-    _throw_if_attribute_is_not_vector_relation(opensql_db, collection_from, attribute_name, :update)
+    _throw_if_attribute_is_not_vector_relation(
+        opensql_db,
+        collection_from,
+        attribute_name,
+        :update,
+    )
     id_collection_from = _get_id(opensql_db, collection_from, label_collection_from)
     ids_collection_to = Vector{Int}(undef, length(labels_collection_to))
     for (i, label) in enumerate(labels_collection_to)
@@ -190,12 +229,21 @@ function set_vector_relation!(
     group = attribute.group
     table_name = attribute.table_where_is_located
     num_new_relations = length(ids_collection_to)
-    df_num_rows = DBInterface.execute(opensql_db.sqlite_db, "SELECT $(attribute_name) FROM $table_name WHERE id = '$id_collection_from'") |> DataFrame
+    df_num_rows =
+        DBInterface.execute(
+            opensql_db.sqlite_db,
+            "SELECT $(attribute_name) FROM $table_name WHERE id = '$id_collection_from'",
+        ) |> DataFrame
     num_rows_in_query = size(df_num_rows, 1)
     if num_rows_in_query != num_new_relations
         if num_rows_in_query == 0
             # If there are no rows in the table we can create them
-            _create_vectors!(opensql_db, collection_from, id_collection_from, Dict(Symbol(attribute_name) => ids_collection_to))
+            _create_vectors!(
+                opensql_db,
+                collection_from,
+                id_collection_from,
+                Dict(Symbol(attribute_name) => ids_collection_to),
+            )
         else
             # If there are rows in the table we must check that the number of rows is the same as the number of new relations
             error(
@@ -203,7 +251,7 @@ function set_vector_relation!(
                 "User is trying to set a vector of $num_new_relations relations. This is invalid. " *
                 "If you want to change the number of elements in the group you might have to update " *
                 "the vectors in the group before setting this relation. Another option is to delete " *
-                "the element and create it again with the new vector."
+                "the element and create it again with the new vector.",
             )
         end
     else
@@ -228,9 +276,16 @@ function set_time_series_file!(
     dict_time_series = Dict()
     for (key, value) in kwargs
         if !isa(value, AbstractString)
-            error("As a time_series_file the value of the attribute $key must be a String. User inputed $(typeof(value)): $value.")
+            error(
+                "As a time_series_file the value of the attribute $key must be a String. User inputed $(typeof(value)): $value.",
+            )
         end
-        _throw_if_attribute_is_not_time_series_file(opensql_db, collection_name, string(key), :update)
+        _throw_if_attribute_is_not_time_series_file(
+            opensql_db,
+            collection_name,
+            string(key),
+            :update,
+        )
         _validate_time_series_attribute_value(value)
         dict_time_series[key] = value
     end
@@ -241,7 +296,10 @@ function set_time_series_file!(
         cols = join(keys(dict_time_series), ", ")
         vals = join(values(dict_time_series), "', '")
         DBInterface.execute(opensql_db.sqlite_db, "DELETE FROM $table_name")
-        DBInterface.execute(opensql_db.sqlite_db, "INSERT INTO $table_name ($cols) VALUES ('$vals')")
+        return DBInterface.execute(
+            opensql_db.sqlite_db,
+            "INSERT INTO $table_name ($cols) VALUES ('$vals')",
+        )
     end
     return nothing
 end

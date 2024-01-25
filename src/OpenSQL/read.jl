@@ -7,7 +7,11 @@ const READ_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
 )
 
 # TODO rename to _get_id_of_element also it should pass a collection_name
-function _get_id(opensql_db::OpenSQLDataBase, collection_name::String, label::String)::Integer
+function _get_id(
+    opensql_db::OpenSQLDataBase,
+    collection_name::String,
+    label::String,
+)::Integer
     query = "SELECT id FROM $collection_name WHERE label = '$label'"
     df = DBInterface.execute(opensql_db.sqlite_db, query) |> DataFrame
     if isempty(df)
@@ -25,7 +29,12 @@ function read_scalar_parameters(
     collection_name::String,
     attribute_name::String,
 )
-    _throw_if_attribute_is_not_scalar_parameter(opensql_db, collection_name, attribute_name, :read)
+    _throw_if_attribute_is_not_scalar_parameter(
+        opensql_db,
+        collection_name,
+        attribute_name,
+        :read,
+    )
 
     attribute = _get_attribute(opensql_db, collection_name, attribute_name)
     table = _table_where_is_located(attribute)
@@ -42,7 +51,12 @@ function read_scalar_parameter(
     attribute_name::String,
     label::String,
 )
-    _throw_if_attribute_is_not_scalar_parameter(opensql_db, collection_name, attribute_name, :read)
+    _throw_if_attribute_is_not_scalar_parameter(
+        opensql_db,
+        collection_name,
+        attribute_name,
+        :read,
+    )
 
     attribute = _get_attribute(opensql_db, collection_name, attribute_name)
     table = _table_where_is_located(attribute)
@@ -57,7 +71,12 @@ function read_scalar_parameter(
     attribute_name::String,
     id::Integer,
 )
-    _throw_if_attribute_is_not_scalar_parameter(opensql_db, collection_name, attribute_name, :read)
+    _throw_if_attribute_is_not_scalar_parameter(
+        opensql_db,
+        collection_name,
+        attribute_name,
+        :read,
+    )
     attribute = _get_attribute(opensql_db, collection_name, attribute_name)
     table = _table_where_is_located(attribute)
 
@@ -72,7 +91,12 @@ function read_vector_parameters(
     collection_name::String,
     attribute_name::String,
 )
-    _throw_if_attribute_is_not_vector_parameter(opensql_db, collection_name, attribute_name, :read)
+    _throw_if_attribute_is_not_vector_parameter(
+        opensql_db,
+        collection_name,
+        attribute_name,
+        :read,
+    )
     attribute = _get_attribute(opensql_db, collection_name, attribute_name)
     ids_in_table = read_scalar_parameters(opensql_db, collection_name, "id")
 
@@ -90,7 +114,12 @@ function read_vector_parameter(
     attribute_name::String,
     label::String,
 )
-    _throw_if_attribute_is_not_vector_parameter(opensql_db, collection_name, attribute_name, :read)
+    _throw_if_attribute_is_not_vector_parameter(
+        opensql_db,
+        collection_name,
+        attribute_name,
+        :read,
+    )
     attribute = _get_attribute(opensql_db, collection_name, attribute_name)
     id = read_scalar_parameter(opensql_db, collection_name, "id", label)
     return _query_vector(opensql_db, attribute, id)
@@ -154,7 +183,12 @@ function _get_scalar_relation_map(
     relation_type::String,
 )
     attribute_on_collection_from = lowercase(collection_to) * "_" * relation_type
-    _throw_if_attribute_is_not_scalar_relation(opensql_db, collection_from, attribute_on_collection_from, :read)
+    _throw_if_attribute_is_not_scalar_relation(
+        opensql_db,
+        collection_from,
+        attribute_on_collection_from,
+        :read,
+    )
     attribute = _get_attribute(opensql_db, collection_from, attribute_on_collection_from)
 
     query = "SELECT $(attribute.name) FROM $(attribute.table_where_is_located) ORDER BY rowid"
@@ -196,7 +230,7 @@ function read_vector_relations(
     for (i, vector_with_indexes) in enumerate(map_of_vector_with_indexes)
         map_with_labels[i] = replace(vector_with_indexes, replace_dict...)
     end
-    
+
     return map_with_labels
 end
 
@@ -225,7 +259,12 @@ function _get_vector_relation_map(
     relation_type::String,
 )
     attribute_on_collection_from = lowercase(collection_to) * "_" * relation_type
-    _throw_if_attribute_is_not_vector_relation(opensql_db, collection_from, attribute_on_collection_from, :read)
+    _throw_if_attribute_is_not_vector_relation(
+        opensql_db,
+        collection_from,
+        attribute_on_collection_from,
+        :read,
+    )
     attribute = _get_attribute(opensql_db, collection_from, attribute_on_collection_from)
 
     query = "SELECT id, vector_index, $(attribute.name) FROM $(attribute.table_where_is_located) ORDER BY rowid, vector_index"
@@ -256,14 +295,21 @@ function read_time_series_file(
     collection_name::String,
     attribute_name::String,
 )
-    _throw_if_attribute_is_not_time_series_file(opensql_db, collection_name, attribute_name, :read)
+    _throw_if_attribute_is_not_time_series_file(
+        opensql_db,
+        collection_name,
+        attribute_name,
+        :read,
+    )
     attribute = _get_attribute(opensql_db, collection_name, attribute_name)
     table = attribute.table_where_is_located
 
     query = "SELECT $(attribute.name) FROM $table ORDER BY rowid"
     df = DBInterface.execute(opensql_db.sqlite_db, query) |> DataFrame
     if size(df, 1) > 1
-        error("Table $table has more than one row. As a time series file, it should have only one row.")
+        error(
+            "Table $table has more than one row. As a time series file, it should have only one row.",
+        )
     end
     results = df[!, 1][1]
     return results

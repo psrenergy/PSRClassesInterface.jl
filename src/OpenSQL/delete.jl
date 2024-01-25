@@ -1,5 +1,5 @@
 """
-TODO 
+TODO
 """
 function delete_element!(
     opensql_db::OpenSQLDataBase,
@@ -18,6 +18,9 @@ function _delete_element!(
     id::Integer,
 )
     # This assumes that we have on cascade delete for every reference 
-    DBInterface.execute(opensql_db.sqlite_db, "DELETE FROM $collection_name WHERE id = '$id'")
+    DBInterface.execute(
+        opensql_db.sqlite_db,
+        "DELETE FROM $collection_name WHERE id = '$id'",
+    )
     return nothing
 end

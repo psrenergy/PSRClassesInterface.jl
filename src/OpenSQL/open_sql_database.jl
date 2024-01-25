@@ -84,10 +84,12 @@ mutable struct OpenSQLDataBase
         database_path::String;
         path_migrations_directory::String = "",
         path_schema::String = "",
-        force::Bool = false
+        force::Bool = false,
     )
         if !isempty(path_schema) && !isempty(path_migrations_directory)
-            error("User must define wither a `path_schema` or a `path_migrations_directory`. Not both.")
+            error(
+                "User must define wither a `path_schema` or a `path_migrations_directory`. Not both.",
+            )
         end
         if !isempty(path_schema) || !isempty(path_migrations_directory)
             # Creating a database from a schema or migrations
@@ -96,7 +98,7 @@ mutable struct OpenSQLDataBase
 
         sqlite_db = SQLite.DB(database_path)
 
-        collections_map = try 
+        collections_map = try
             if !isempty(path_schema)
                 execute_statements(sqlite_db, path_schema)
             elseif !isempty(path_migrations_directory)
@@ -122,45 +124,45 @@ mutable struct OpenSQLDataBase
 end
 
 function _is_scalar_parameter(
-    opensql_db::OpenSQLDataBase, 
-    collection_name::String, 
-    attribute_name::String
+    opensql_db::OpenSQLDataBase,
+    collection_name::String,
+    attribute_name::String,
 )
     collection = _get_collection(opensql_db, collection_name)
     return haskey(collection.scalar_parameters, attribute_name)
 end
 
 function _is_vector_parameter(
-    opensql_db::OpenSQLDataBase, 
-    collection_name::String, 
-    attribute_name::String
+    opensql_db::OpenSQLDataBase,
+    collection_name::String,
+    attribute_name::String,
 )
     collection = _get_collection(opensql_db, collection_name)
     return haskey(collection.vector_parameters, attribute_name)
 end
 
 function _is_scalar_relation(
-    opensql_db::OpenSQLDataBase, 
-    collection_name::String, 
-    attribute_name::String
+    opensql_db::OpenSQLDataBase,
+    collection_name::String,
+    attribute_name::String,
 )
     collection = _get_collection(opensql_db, collection_name)
     return haskey(collection.scalar_relations, attribute_name)
 end
 
 function _is_vector_relation(
-    opensql_db::OpenSQLDataBase, 
-    collection_name::String, 
-    attribute_name::String
+    opensql_db::OpenSQLDataBase,
+    collection_name::String,
+    attribute_name::String,
 )
     collection = _get_collection(opensql_db, collection_name)
     return haskey(collection.vector_relations, attribute_name)
 end
 
 function _is_time_series_file(
-    opensql_db::OpenSQLDataBase, 
-    collection_name::String, 
-    attribute_name::String
+    opensql_db::OpenSQLDataBase,
+    collection_name::String,
+    attribute_name::String,
 )
     collection = _get_collection(opensql_db, collection_name)
     return haskey(collection.time_series_files, attribute_name)
@@ -177,7 +179,11 @@ function _get_collection(opensql_db::OpenSQLDataBase, collection_name::String)
     return opensql_db.collections_map[collection_name]
 end
 
-function _get_attribute(opensql_db::OpenSQLDataBase, collection_name::String, attribute_name::String)
+function _get_attribute(
+    opensql_db::OpenSQLDataBase,
+    collection_name::String,
+    attribute_name::String,
+)
     collection = _get_collection(opensql_db, collection_name)
     if _is_scalar_parameter(opensql_db, collection_name, attribute_name)
         return collection.scalar_parameters[attribute_name]
@@ -195,7 +201,7 @@ function _get_attribute(opensql_db::OpenSQLDataBase, collection_name::String, at
             Attribute \"$attribute_name\" not found in collection \"$collection_name\". 
             This is the list of attributes in this collection: 
             # TODO
-            """
+            """,
         )
     end
 end
@@ -216,7 +222,11 @@ function _string_for_composite_types(composite_type::Type)
     end
 end
 
-function _attribute_composite_type(opensql_db::OpenSQLDataBase, collection_name::String, attribute_name::String)
+function _attribute_composite_type(
+    opensql_db::OpenSQLDataBase,
+    collection_name::String,
+    attribute_name::String,
+)
     attribute = _get_attribute(opensql_db, collection_name, attribute_name)
     return typeof(attribute)
 end
@@ -224,15 +234,22 @@ end
 function _collection_exists(opensql_db::OpenSQLDataBase, collection_name::String)
     return haskey(opensql_db.collections_map, collection_name)
 end
-function _attribute_exists(opensql_db::OpenSQLDataBase, collection_name::String, attribute_name::String)
+function _attribute_exists(
+    opensql_db::OpenSQLDataBase,
+    collection_name::String,
+    attribute_name::String,
+)
     return _is_scalar_parameter(opensql_db, collection_name, attribute_name) ||
-        _is_vector_parameter(opensql_db, collection_name, attribute_name) ||
-        _is_scalar_relation(opensql_db, collection_name, attribute_name) ||
-        _is_vector_relation(opensql_db, collection_name, attribute_name) ||
-        _is_time_series_file(opensql_db, collection_name, attribute_name)
+           _is_vector_parameter(opensql_db, collection_name, attribute_name) ||
+           _is_scalar_relation(opensql_db, collection_name, attribute_name) ||
+           _is_vector_relation(opensql_db, collection_name, attribute_name) ||
+           _is_time_series_file(opensql_db, collection_name, attribute_name)
 end
 
-function _map_of_groups_to_vector_attributes(opensql_db::OpenSQLDataBase, collection_name::String)
+function _map_of_groups_to_vector_attributes(
+    opensql_db::OpenSQLDataBase,
+    collection_name::String,
+)
     collection = _get_collection(opensql_db, collection_name)
     groups = Set{String}()
     for (_, attribute) in collection.vector_parameters
@@ -273,7 +290,8 @@ function _is_collection_vector_table_name(name::String, collection_name::String)
     return occursin("$(collection_name)_vector_", name)
 end
 
-_get_collection_names(opensql_db::OpenSQLDataBase) = _get_collection_names(opensql_db.sqlite_db)
+_get_collection_names(opensql_db::OpenSQLDataBase) =
+    _get_collection_names(opensql_db.sqlite_db)
 function _get_collection_names(db::SQLite.DB)
     tables = SQLite.tables(db)
     collection_names = Vector{String}(undef, 0)
@@ -303,7 +321,10 @@ function _get_collection_scalar_attribute_tables(::SQLite.DB, collection_name::S
     return collection_name
 end
 
-function _get_collection_vector_attributes_tables(sqlite_db::SQLite.DB, collection_name::String)
+function _get_collection_vector_attributes_tables(
+    sqlite_db::SQLite.DB,
+    collection_name::String,
+)
     tables = SQLite.tables(sqlite_db)
     vector_parameters_tables = Vector{String}(undef, 0)
     for table in tables
@@ -333,7 +354,10 @@ function _create_collections_map(db::SQLite.DB)
     collections_map = OrderedDict{String, Collection}()
     return _create_collections_map!(collections_map, db)
 end
-function _create_collections_map!(collections_map::OrderedDict{String, Collection}, db::SQLite.DB)
+function _create_collections_map!(
+    collections_map::OrderedDict{String, Collection},
+    db::SQLite.DB,
+)
     collection_names = _get_collection_names(db)
     for collection_name in collection_names
         scalar_parameters = _create_collection_scalar_parameters(db, collection_name)
@@ -354,7 +378,6 @@ function _create_collections_map!(collections_map::OrderedDict{String, Collectio
     end
     return collections_map
 end
-
 
 function table_info(db::SQLite.DB, table_name::String)
     query = "PRAGMA table_info($table_name);"
@@ -392,10 +415,10 @@ function _try_cast_as_datetime(date::String)
 end
 
 function _get_default_value(
-    ::Type{T}, 
-    default_value::Union{Missing, String}
-) where T
-    try 
+    ::Type{T},
+    default_value::Union{Missing, String},
+) where {T}
+    try
         if ismissing(default_value)
             return default_value # missing
         elseif T <: Number
@@ -411,7 +434,10 @@ function _get_default_value(
     end
 end
 
-function _warn_if_foreign_keys_does_not_cascade(collection_name::String, foreign_key::DataFrameRow)
+function _warn_if_foreign_keys_does_not_cascade(
+    collection_name::String,
+    foreign_key::DataFrameRow,
+)
     foreign_key_name = foreign_key.from
     on_update = foreign_key.on_update
     on_delete = foreign_key.on_delete
@@ -447,12 +473,12 @@ function _create_collection_scalar_parameters(db::SQLite.DB, collection_name::St
             error("Duplicated scalar parameter $name in collection $collection_name")
         end
         scalar_parameters[name] = ScalarParameter(
-            name, 
+            name,
             type,
             default_value,
             not_null,
             parent_collection,
-            table_where_is_located
+            table_where_is_located,
         )
     end
     return scalar_parameters
@@ -494,7 +520,7 @@ function _create_collection_scalar_relations(db::SQLite.DB, collection_name::Str
             parent_collection,
             relation_collection,
             relation_type,
-            table_where_is_located
+            table_where_is_located,
         )
     end
     return scalar_relations
@@ -530,13 +556,13 @@ function _create_collection_vector_parameters(db::SQLite.DB, collection_name::St
                 error("Duplicated vector parameter $name in collection $collection_name")
             end
             vector_parameters[name] = VectorParameter(
-                name, 
-                type, 
+                name,
+                type,
                 default_value,
                 not_null,
-                group, 
-                parent_collection, 
-                table_where_is_located
+                group,
+                parent_collection,
+                table_where_is_located,
             )
         end
     end
@@ -584,7 +610,7 @@ function _create_collection_vector_relations(db::SQLite.DB, collection_name::Str
                 parent_collection,
                 relation_collection,
                 relation_type,
-                table_where_is_located
+                table_where_is_located,
             )
         end
     end
@@ -608,7 +634,7 @@ function _get_collection_time_series(db::SQLite.DB, collection_name::String)
             default_value,
             not_null,
             parent_collection,
-            table_where_is_located
+            table_where_is_located,
         )
     end
     return time_series
@@ -637,7 +663,9 @@ function _no_duplicated_attributes(collection::Collection)
         end
         for attribute in attributes
             if attribute.name in list_of_attributes
-                @error("Duplicated attribute $(attribute.name) in collection $(collection.name)")
+                @error(
+                    "Duplicated attribute $(attribute.name) in collection $(collection.name)"
+                )
                 num_errors += 1
             else
                 push!(list_of_attributes, attribute.name)
@@ -655,13 +683,17 @@ function _all_scalar_parameters_are_in_same_table(collection::Collection)
     table_where_first_islocated = first_scalar_parameter.table_where_is_located
     for (_, scalar_parameter) in scalar_parameters
         if scalar_parameter.table_where_is_located != table_where_first_islocated
-            @error("Scalar parameter $(scalar_parameter.name) in collection $(collection.name) is not in the same table as the other scalar parameters.")
+            @error(
+                "Scalar parameter $(scalar_parameter.name) in collection $(collection.name) is not in the same table as the other scalar parameters."
+            )
             num_errors += 1
         end
     end
     for (_, scalar_relation) in scalar_relations
         if scalar_relation.table_where_is_located != table_where_first_islocated
-            @error("Scalar relation $(scalar_relation.name) in collection $(collection.name) is not in the same table as the other scalar parameters.")
+            @error(
+                "Scalar relation $(scalar_relation.name) in collection $(collection.name) is not in the same table as the other scalar parameters."
+            )
             num_errors += 1
         end
     end
@@ -674,13 +706,17 @@ function _relations_do_not_have_null_constraints(collection::Collection)
     vector_relations = collection.vector_relations
     for (_, scalar_relation) in scalar_relations
         if scalar_relation.not_null
-            @error("Scalar relation $(scalar_relation.name) in collection $(collection.name) has a not null constraint. This is not allowed.")
+            @error(
+                "Scalar relation $(scalar_relation.name) in collection $(collection.name) has a not null constraint. This is not allowed."
+            )
             num_errors += 1
         end
     end
     for (_, vector_relation) in vector_relations
         if vector_relation.not_null
-            @error("vector relation $(vector_relation.name) in collection $(collection.name) has a not null constraint. This is not allowed.")
+            @error(
+                "vector relation $(vector_relation.name) in collection $(collection.name) has a not null constraint. This is not allowed."
+            )
             num_errors += 1
         end
     end
@@ -693,13 +729,17 @@ function _relations_do_not_have_default_values(collection::Collection)
     vector_relations = collection.vector_relations
     for (_, scalar_relation) in scalar_relations
         if !ismissing(scalar_relation.default_value)
-            @error("Scalar relation $(scalar_relation.name) in collection $(collection.name) has a default value.")
+            @error(
+                "Scalar relation $(scalar_relation.name) in collection $(collection.name) has a default value."
+            )
             num_errors += 1
         end
     end
     for (_, vector_relation) in vector_relations
         if !ismissing(vector_relation.default_value)
-            @error("vector relation $(vector_relation.name) in collection $(collection.name) has a default value.")
+            @error(
+                "vector relation $(vector_relation.name) in collection $(collection.name) has a default value."
+            )
             num_errors += 1
         end
     end

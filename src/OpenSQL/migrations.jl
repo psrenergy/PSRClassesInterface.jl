@@ -128,10 +128,10 @@ function _apply_migrations!(
 end
 
 function apply_migration!(
-    db::SQLite.DB, 
+    db::SQLite.DB,
     path_migrations_directory::String,
-    version::Int, 
-    direction::Symbol
+    version::Int,
+    direction::Symbol,
 )
     migrations = get_sorted_migrations(path_migrations_directory)
 
@@ -168,11 +168,11 @@ function _apply_migration!(
 end
 
 function apply_migrations!(
-    db::SQLite.DB, 
+    db::SQLite.DB,
     path_migrations_directory::String,
-    from::Int, 
-    to::Int, 
-    direction::Symbol
+    from::Int,
+    to::Int,
+    direction::Symbol,
 )
     if from == to
         error("starting at $from and ending at $to is not a valid migration range.")

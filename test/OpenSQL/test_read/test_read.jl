@@ -11,27 +11,53 @@ function test_read_parameters()
     OpenSQL.create_element!(db, "Configuration"; label = "Toy Case")
     OpenSQL.create_element!(db, "Resource"; label = "Resource 1", some_value = [1, 2, 3.0])
     OpenSQL.create_element!(db, "Resource"; label = "Resource 2", some_value = [1, 2, 4.0])
-    OpenSQL.create_element!(db, "Plant"; label = "Plant 1", capacity = 2.02, some_factor = [1.0])
-    OpenSQL.create_element!(db, "Plant"; label = "Plant 2", capacity = 53.0, some_factor = [1.0, 2.0])
+    OpenSQL.create_element!(
+        db,
+        "Plant";
+        label = "Plant 1",
+        capacity = 2.02,
+        some_factor = [1.0],
+    )
+    OpenSQL.create_element!(
+        db,
+        "Plant";
+        label = "Plant 2",
+        capacity = 53.0,
+        some_factor = [1.0, 2.0],
+    )
     OpenSQL.create_element!(db, "Plant"; label = "Plant 3", capacity = 54.0)
 
     @test OpenSQL.read_scalar_parameters(db, "Configuration", "label") == ["Toy Case"]
-    @test OpenSQL.read_scalar_parameters(db, "Resource", "label") == ["Resource 1", "Resource 2"]
-    @test OpenSQL.read_scalar_parameter(db, "Resource", "label", "Resource 1") == "Resource 1"
+    @test OpenSQL.read_scalar_parameters(db, "Resource", "label") ==
+          ["Resource 1", "Resource 2"]
+    @test OpenSQL.read_scalar_parameter(db, "Resource", "label", "Resource 1") ==
+          "Resource 1"
     @test OpenSQL.read_scalar_parameter(db, "Plant", "capacity", "Plant 3") == 54.0
-    @test_throws ErrorException OpenSQL.read_scalar_parameter(db, "Plant", "capacity", "Plant 5")
+    @test_throws ErrorException OpenSQL.read_scalar_parameter(
+        db,
+        "Plant",
+        "capacity",
+        "Plant 5",
+    )
     @test_throws ErrorException OpenSQL.read_scalar_parameters(db, "Resource", "capacity")
-    @test OpenSQL.read_scalar_parameters(db, "Plant", "label") == ["Plant 1", "Plant 2", "Plant 3"]
+    @test OpenSQL.read_scalar_parameters(db, "Plant", "label") ==
+          ["Plant 1", "Plant 2", "Plant 3"]
     @test OpenSQL.read_scalar_parameters(db, "Plant", "capacity") == [2.02, 53.0, 54.0]
     @test_throws ErrorException OpenSQL.read_scalar_parameters(db, "Resource", "some_value")
     @test_throws ErrorException OpenSQL.read_vector_parameters(db, "Plant", "capacity")
-    @test OpenSQL.read_vector_parameters(db, "Resource", "some_value") == [[1, 2, 3.0], [1, 2, 4.0]]
-    @test OpenSQL.read_vector_parameters(db, "Plant", "some_factor") == [[1.0], [1.0, 2.0], []]
+    @test OpenSQL.read_vector_parameters(db, "Resource", "some_value") ==
+          [[1, 2, 3.0], [1, 2, 4.0]]
+    @test OpenSQL.read_vector_parameters(db, "Plant", "some_factor") ==
+          [[1.0], [1.0, 2.0], []]
     @test OpenSQL.read_vector_parameter(db, "Plant", "some_factor", "Plant 1") == [1.0]
     @test OpenSQL.read_vector_parameter(db, "Plant", "some_factor", "Plant 2") == [1.0, 2.0]
     @test OpenSQL.read_vector_parameter(db, "Plant", "some_factor", "Plant 3") == Float64[]
-    @test_throws ErrorException OpenSQL.read_vector_parameter(db, "Plant", "some_factor", "Plant 4")
-
+    @test_throws ErrorException OpenSQL.read_vector_parameter(
+        db,
+        "Plant",
+        "some_factor",
+        "Plant 4",
+    )
 
     OpenSQL.update_scalar_parameter!(db, "Plant", "capacity", "Plant 1", 2.0)
     @test OpenSQL.read_scalar_parameters(db, "Plant", "capacity") == [2.0, 53.0, 54.0]
@@ -39,7 +65,7 @@ function test_read_parameters()
     @test OpenSQL.read_scalar_parameters(db, "Resource", "label") == ["Resource 2"]
 
     OpenSQL.close!(db)
-    rm(db_path)
+    return rm(db_path)
 end
 
 function test_read_relations()
@@ -51,28 +77,45 @@ function test_read_relations()
     OpenSQL.create_element!(db, "Resource"; label = "Resource 2", some_value = [1, 2, 4.0])
     OpenSQL.create_element!(db, "Cost"; label = "Cost 1")
     OpenSQL.create_element!(db, "Cost"; label = "Cost 2")
-    OpenSQL.create_element!(db, "Plant"; label = "Plant 1", capacity = 2.02, some_factor = [1.0])
-    OpenSQL.create_element!(db, "Plant"; label = "Plant 2", capacity = 53.0, some_factor = [1.0, 2.0])
+    OpenSQL.create_element!(
+        db,
+        "Plant";
+        label = "Plant 1",
+        capacity = 2.02,
+        some_factor = [1.0],
+    )
+    OpenSQL.create_element!(
+        db,
+        "Plant";
+        label = "Plant 2",
+        capacity = 53.0,
+        some_factor = [1.0, 2.0],
+    )
     OpenSQL.create_element!(db, "Plant"; label = "Plant 3", capacity = 54.0)
 
     OpenSQL.set_scalar_relation!(db, "Plant", "Resource", "Plant 1", "Resource 1", "id")
     OpenSQL.set_scalar_relation!(db, "Plant", "Plant", "Plant 3", "Plant 2", "turbine_to")
     OpenSQL.set_scalar_relation!(db, "Plant", "Resource", "Plant 1", "Resource 1", "id")
-    OpenSQL.set_vector_relation!(db, "Plant", "Cost",  "Plant 1", ["Cost 1"], "id")
-    OpenSQL.set_vector_relation!(db, "Plant", "Cost",  "Plant 2", ["Cost 1", "Cost 2"], "id")
+    OpenSQL.set_vector_relation!(db, "Plant", "Cost", "Plant 1", ["Cost 1"], "id")
+    OpenSQL.set_vector_relation!(db, "Plant", "Cost", "Plant 2", ["Cost 1", "Cost 2"], "id")
 
-    @test OpenSQL.read_scalar_relations(db, "Plant", "Resource", "id") == ["Resource 1", "", ""]
-    @test OpenSQL.read_scalar_relations(db, "Plant", "Plant", "turbine_to") == ["", "", "Plant 2"]
+    @test OpenSQL.read_scalar_relations(db, "Plant", "Resource", "id") ==
+          ["Resource 1", "", ""]
+    @test OpenSQL.read_scalar_relations(db, "Plant", "Plant", "turbine_to") ==
+          ["", "", "Plant 2"]
     @test_throws ErrorException OpenSQL.read_scalar_relations(db, "Plant", "Cost", "id")
-    @test OpenSQL.read_vector_relations(db, "Plant", "Cost", "id") == [["Cost 1"], ["Cost 1", "Cost 2"], String[]]
-    OpenSQL.set_vector_relation!(db, "Plant", "Cost",  "Plant 1", ["Cost 2"], "id")
-    @test OpenSQL.read_vector_relations(db, "Plant", "Cost", "id") == [["Cost 2"], ["Cost 1", "Cost 2"], String[]]
+    @test OpenSQL.read_vector_relations(db, "Plant", "Cost", "id") ==
+          [["Cost 1"], ["Cost 1", "Cost 2"], String[]]
+    OpenSQL.set_vector_relation!(db, "Plant", "Cost", "Plant 1", ["Cost 2"], "id")
+    @test OpenSQL.read_vector_relations(db, "Plant", "Cost", "id") ==
+          [["Cost 2"], ["Cost 1", "Cost 2"], String[]]
     @test_throws ErrorException OpenSQL.read_vector_relations(db, "Plant", "Resource", "id")
     @test OpenSQL.read_vector_relation(db, "Plant", "Cost", "Plant 1", "id") == ["Cost 2"]
-    @test OpenSQL.read_vector_relation(db, "Plant", "Cost", "Plant 2", "id") == ["Cost 1", "Cost 2"]
+    @test OpenSQL.read_vector_relation(db, "Plant", "Cost", "Plant 2", "id") ==
+          ["Cost 1", "Cost 2"]
 
     OpenSQL.close!(db)
-    rm(db_path)
+    return rm(db_path)
 end
 
 function test_read_time_series_files()
@@ -82,7 +125,12 @@ function test_read_time_series_files()
     OpenSQL.create_element!(db, "Configuration"; label = "Toy Case")
     OpenSQL.create_element!(db, "Plant"; label = "Plant 1")
 
-    OpenSQL.set_time_series_file!(db, "Plant"; wind_speed = "some_file.txt", wind_direction = "some_file2")
+    OpenSQL.set_time_series_file!(
+        db,
+        "Plant";
+        wind_speed = "some_file.txt",
+        wind_direction = "some_file2",
+    )
     @test OpenSQL.read_time_series_file(db, "Plant", "wind_speed") == "some_file.txt"
     @test OpenSQL.read_time_series_file(db, "Plant", "wind_direction") == "some_file2"
     @test_throws ErrorException OpenSQL.read_time_series_file(db, "Plant", "spill")

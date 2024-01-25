@@ -7,7 +7,9 @@ function PSRI.create_study(
     kwargs...,
 )
     if !isempty(path_schema) && !isempty(path_migrations_directory)
-        error("User must define wither a `path_schema` or a `path_migrations_directory`. Not both.")
+        error(
+            "User must define wither a `path_schema` or a `path_migrations_directory`. Not both.",
+        )
     end
 
     opensql_db = if !isempty(path_schema)
@@ -15,16 +17,18 @@ function PSRI.create_study(
     elseif !isempty(path_migrations_directory)
         OpenSQL.create_empty_db_from_migrations(path_db, path_migrations_directory; force)
     else
-        error("User must provide either a `path_schema` or a `path_migrations_directory` to create a case.")
+        error(
+            "User must provide either a `path_schema` or a `path_migrations_directory` to create a case.",
+        )
     end
-    
+
     OpenSQL.create_element!(opensql_db, "Configuration"; kwargs...)
     return opensql_db
 end
 
 PSRI.load_study(
-    ::OpenSQLInterface, 
-    data_path::String
+    ::OpenSQLInterface,
+    data_path::String,
 ) = OpenSQL.load_db(data_path)
 
 # Read
@@ -120,7 +124,7 @@ PSRI.get_vector_related(
     source::String,
     target::String,
     source_label::String,
-    relation_type::String
+    relation_type::String,
 ) = OpenSQL.read_vector_relation(
     opensql_db,
     source,
@@ -133,7 +137,11 @@ PSRI.get_vector_related(
 PSRI.create_element!(opensql_db::OpenSQLDataBase, collection::String; kwargs...) =
     OpenSQL.create_element!(opensql_db, collection; kwargs...)
 
-PSRI.delete_element!(opensql_db::OpenSQLDataBase, collection::String, element_label::String) =
+PSRI.delete_element!(
+    opensql_db::OpenSQLDataBase,
+    collection::String,
+    element_label::String,
+) =
     OpenSQL.delete_element!(opensql_db, collection, element_label)
 
 PSRI.set_parm!(

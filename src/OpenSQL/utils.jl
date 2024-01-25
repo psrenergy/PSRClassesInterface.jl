@@ -39,15 +39,15 @@ function _treat_sql_statement(statement::AbstractString)
 end
 
 function create_empty_db_from_schema(
-    database_path::String, 
-    path_schema::String; 
-    force::Bool = false
+    database_path::String,
+    path_schema::String;
+    force::Bool = false,
 )
-    opensql_db = try 
+    opensql_db = try
         OpenSQLDataBase(
-            database_path; 
-            path_schema = path_schema, 
-            force = force
+            database_path;
+            path_schema = path_schema,
+            force = force,
         )
     catch e
         rethrow(e)
@@ -56,15 +56,15 @@ function create_empty_db_from_schema(
 end
 
 function create_empty_db_from_migrations(
-    database_path::String, 
-    path_migrations_directory::String; 
-    force::Bool = false
+    database_path::String,
+    path_migrations_directory::String;
+    force::Bool = false,
 )
-    opensql_db = try 
+    opensql_db = try
         OpenSQLDataBase(
-            database_path; 
-            path_migrations_directory = path_migrations_directory, 
-            force = force
+            database_path;
+            path_migrations_directory = path_migrations_directory,
+            force = force,
         )
     catch e
         rethrow(e)
@@ -73,9 +73,9 @@ function create_empty_db_from_migrations(
 end
 
 function load_db(database_path::String)
-    opensql_db = try 
+    opensql_db = try
         OpenSQLDataBase(
-            database_path
+            database_path,
         )
     catch e
         rethrow(e)
