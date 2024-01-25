@@ -58,7 +58,7 @@ end
     @testset "Utils" begin
         @time include("utils.jl")
     end
-    @testset "OpenSQL" begin
-        include("OpenSQL/runtests.jl")
+    @testset "PSRDatabaseSQLite" begin
+        include("PSRDatabaseSQLite/runtests.jl")
     end
 end

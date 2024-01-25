@@ -5,7 +5,7 @@ PSRClassesInterface, or PSRI, is a Julia package that provides an interface to r
 It is comprised of three main modules:
 - `OpenStudy`: Reads and writes data in the JSON format
 - `OpenBinary`: Reads and writes time series data in the binary format
-- `OpenSQL`: Reads and writes data in the SQL format
+- `PSRDBSQLite`: Reads and writes data in the SQL format
 
 ## Installation
 
