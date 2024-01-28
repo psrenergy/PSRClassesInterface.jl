@@ -17,7 +17,7 @@ PSRDatabaseSQLiteInterface <: PSRI.AbstractStudyInterface
 struct PSRDatabaseSQLiteInterface <: PSRI.AbstractStudyInterface end
 
 include("utils.jl")
-include("open_sql_database.jl")
+include("psr_database_sqlite.jl")
 include("create.jl")
 include("read.jl")
 include("update.jl")
