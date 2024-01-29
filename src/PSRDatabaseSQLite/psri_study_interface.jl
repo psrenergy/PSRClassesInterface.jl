@@ -26,13 +26,21 @@ function PSRI.create_study(
         )
     end
     
-    dict_kwargs = Dict(kwargs)
-    if !haskey(dict_kwargs, :id)
-        dict_kwargs[:id] = 1
-    end
+    dict_kwargs = _add_at_least_id_in_configurations_parameters(kwargs...)
 
     PSRDatabaseSQLite.create_element!(db, "Configuration"; dict_kwargs...)
     return db
+end
+
+function _add_at_least_id_in_configurations_parameters(kwargs...)
+    dict_kwargs = Dict()
+    for (key, value) in kwargs
+        dict_kwargs[key] = value
+    end
+    if !haskey(dict_kwargs, :id)
+        dict_kwargs[:id] = 1
+    end
+    return dict_kwargs
 end
 
 PSRI.load_study(

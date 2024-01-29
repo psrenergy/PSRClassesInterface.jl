@@ -254,6 +254,21 @@ function test_create_case_relation()
     return nothing
 end
 
+function test_create_study_without_passing_configuration_parameters()
+    case_path = @__DIR__
+
+    db = PSRI.create_study(
+        PSRI.PSRDatabaseSQLiteInterface(),
+        joinpath(case_path, "case_without_passing_configuration_parameters.sqlite");
+        path_schema = joinpath(case_path, "toy_schema.sql"),
+        force = true,
+    )
+
+    PSRI.PSRDatabaseSQLite.close!(db)
+
+    rm(joinpath(case_path, "case_without_passing_configuration_parameters.sqlite"))
+end
+
 function runtests()
     GC.gc()
     GC.gc()

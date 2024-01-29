@@ -301,7 +301,7 @@ end
 
 function _validate_create_elements_kwargs(collection_name::String, kwargs)
     if !haskey(kwargs, :label)
-        if collection != "Configuration"
+        if collection_name != "Configuration"
             @warn("Creating an element in collection \"$collection_name\" without \"label\"")
         end
         if !haskey(kwargs, :id)
