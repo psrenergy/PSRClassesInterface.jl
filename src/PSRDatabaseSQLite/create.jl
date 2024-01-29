@@ -203,10 +203,6 @@ function _get_label_or_id(
     collection_name::String,
     dict_scalar_attributes,
 )
-    # Configuration does not need to have a label or pass an id
-    if collection_name == "Configuration"
-        return "Configuration"
-    end
     if haskey(dict_scalar_attributes, :label)
         return dict_scalar_attributes[:label]
     elseif haskey(dict_scalar_attributes, :id)
@@ -304,12 +300,10 @@ function _validate_attribute_types_on_creation!(
 end
 
 function _validate_create_elements_kwargs(collection_name::String, kwargs)
-    # Configuration does not need to have a label or pass an id
-    if collection_name == "Configuration"
-        return nothing
-    end
     if !haskey(kwargs, :label)
-        @warn("Creating an element in collection \"$collection_name\" without \"label\"")
+        if collection != "Configuration"
+            @warn("Creating an element in collection \"$collection_name\" without \"label\"")
+        end
         if !haskey(kwargs, :id)
             error(
                 "User tried to create an element in collection \"$collection_name\" without \"id\" nor \"label\". This is not allowed.",
