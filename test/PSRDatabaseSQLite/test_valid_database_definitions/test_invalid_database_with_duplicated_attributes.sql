@@ -11,13 +11,13 @@ CREATE TABLE Configuration (
 CREATE TABLE Resource (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT UNIQUE,
-    type TEXT NOT NULL DEFAULT "D" CHECK(type IN ('D', 'E', 'F'))
+    some_type TEXT NOT NULL
 ) STRICT;
 
 CREATE TABLE Resource_vector_some_group (
     id INTEGER, 
     vector_index INTEGER NOT NULL,
-    type REAL NOT NULL,
+    some_type REAL NOT NULL,
     FOREIGN KEY(id) REFERENCES Resource(id) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY (id, vector_index)
 ) STRICT;

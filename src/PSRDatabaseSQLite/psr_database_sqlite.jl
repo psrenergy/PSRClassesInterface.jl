@@ -657,12 +657,12 @@ function _no_duplicated_attributes(collection::Collection)
     num_errors = 0
     list_of_attributes = Vector{String}(undef, 0)
     for field in fieldnames(Collection)
-        attributes = getfield(collection, field)
-        if !isa(attributes, Vector{<:Attribute})
+        if field == :name
             continue
         end
-        for attribute in attributes
-            if attribute.name in list_of_attributes
+        attributes = getfield(collection, field)
+        for (name, attribute) in attributes
+            if name in list_of_attributes
                 @error(
                     "Duplicated attribute $(attribute.name) in collection $(collection.name)"
                 )

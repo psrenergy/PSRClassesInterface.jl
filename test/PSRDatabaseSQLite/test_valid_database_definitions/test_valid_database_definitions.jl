@@ -18,8 +18,8 @@ function test_invalid_database_without_configuration_table()
 end
 
 function test_invalid_database_with_duplicated_attributes()
-    path_schema = joinpath(@__DIR__, "test_create_duplicated_attributes.sql")
-    db_path = joinpath(@__DIR__, "test_create_duplicated_attributes.sqlite")
+    path_schema = joinpath(@__DIR__, "test_invalid_database_with_duplicated_attributes.sql")
+    db_path = joinpath(@__DIR__, "test_invalid_database_with_duplicated_attributes.sqlite")
     @test_throws ErrorException PSRDatabaseSQLite.create_empty_db_from_schema(
         db_path,
         path_schema;
