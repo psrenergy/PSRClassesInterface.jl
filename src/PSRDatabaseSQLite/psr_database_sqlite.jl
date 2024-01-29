@@ -575,7 +575,6 @@ function _create_collection_vector_relations(db::SQLite.DB, collection_name::Str
     parent_collection = collection_name
     for table_name in vector_attributes_tables
         group = _name_of_vector_group(table_name)
-        table_where_is_located = table_name
         df_table_infos = table_info(db, table_name)
         df_foreign_keys_list = foreign_keys_list(db, table_name)
         for foreign_key in eachrow(df_foreign_keys_list)

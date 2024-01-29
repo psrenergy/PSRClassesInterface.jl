@@ -8,11 +8,11 @@ function delete_element!(
 )
     _throw_if_collection_does_not_exist(db, collection_name)
     id = _get_id(db, collection_name, label)
-    _delete_element!(db, collection_name, id)
+    delete_element!(db, collection_name, id)
     return nothing
 end
 
-function _delete_element!(
+function delete_element!(
     db::PSRDBSQLite,
     collection_name::String,
     id::Integer,
