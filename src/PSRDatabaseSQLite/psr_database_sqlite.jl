@@ -553,7 +553,7 @@ function _create_collection_vector_parameters(db::SQLite.DB, collection_name::St
             default_value = _get_default_value(type, vector_attribute.dflt_value)
             not_null = Bool(vector_attribute.notnull)
             if haskey(vector_parameters, name)
-                error("Duplicated vector parameter $name in collection $collection_name")
+                error("Duplicated vector parameter \"$name\" in collection \"$collection_name\"")
             end
             vector_parameters[name] = VectorParameter(
                 name,
@@ -600,6 +600,9 @@ function _create_collection_vector_relations(db::SQLite.DB, collection_name::Str
             relation_type = _get_relation_type_from_attribute(name)
             relation_collection = foreign_key.table
             table_where_is_located = table_name
+            if haskey(vector_relations, name)
+                error("Duplicated vector relation \"$name\" in collection \"$collection_name\"")
+            end
             vector_relations[name] = VectorRelation(
                 name,
                 type,

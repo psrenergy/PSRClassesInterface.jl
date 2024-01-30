@@ -26,6 +26,15 @@ function test_invalid_database_with_duplicated_attributes()
         force = true,
     )
     rm(db_path)
+
+    path_schema = joinpath(@__DIR__, "test_invalid_database_with_duplicated_attributes_2.sql")
+    db_path = joinpath(@__DIR__, "test_invalid_database_with_duplicated_attributes_2.sqlite")
+    @test_throws ErrorException PSRDatabaseSQLite.create_empty_db_from_schema(
+        db_path,
+        path_schema;
+        force = true,
+    )
+    rm(db_path)
     return nothing
 end
 
