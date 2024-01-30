@@ -27,6 +27,29 @@ mutable struct ScalarRelation{T} <: ScalarAttribute
     relation_collection::String
     relation_type::String
     table_where_is_located::String
+
+    function ScalarRelation(
+        name::String,
+        type::Type{T},
+        default_value::Union{Missing, T},
+        not_null::Bool,
+        parent_collection::String,
+        relation_collection::String,
+        relation_type::String,
+        table_where_is_located::String,
+    ) where {T}
+        _check_valid_relation_name(name, relation_collection)
+        return new{T}(
+            name,
+            type,
+            default_value,
+            not_null,
+            parent_collection,
+            relation_collection,
+            relation_type,
+            table_where_is_located,
+        )
+    end
 end
 
 mutable struct VectorParameter{T} <: VectorAttribute
@@ -49,6 +72,31 @@ mutable struct VectorRelation{T} <: VectorAttribute
     relation_collection::String
     relation_type::String
     table_where_is_located::String
+
+    function VectorRelation(
+        name::String,
+        type::Type{T},
+        default_value::Union{Missing, T},
+        not_null::Bool,
+        group::String,
+        parent_collection::String,
+        relation_collection::String,
+        relation_type::String,
+        table_where_is_located::String,
+    ) where {T}
+        _check_valid_relation_name(name, relation_collection)
+        return new{T}(
+            name,
+            type,
+            default_value,
+            not_null,
+            group,
+            parent_collection,
+            relation_collection,
+            relation_type,
+            table_where_is_located,
+        )
+    end
 end
 
 mutable struct TimeSeriesFile{T} <: ReferenceToFileAttribute
@@ -345,6 +393,23 @@ function _get_collection_time_series_tables(::SQLite.DB, collection_name::String
     return string(collection_name, "_timeseriesfiles")
 end
 
+function _get_related_collection_from_attribute_name(attribute_name::String)
+    name_separated_by_underscore = split(attribute_name, "_")
+    return lowercase(name_separated_by_underscore[1])
+end
+
+function _check_valid_relation_name(attribute_name::String, related_collection::String)
+    related_collection_from_attribute_name = _get_related_collection_from_attribute_name(attribute_name)
+    if related_collection_from_attribute_name != lowercase(related_collection)
+        error(
+            """
+            Attribute \"$attribute_name\" is not a valid relation name. It is related to collection \"$related_collection\" so its name must start with \"$(lowercase(related_collection))_\".
+            """,
+        )
+    end
+    return nothing
+end
+
 function _name_of_vector_group(table_name::String)
     matches = match(r"_vector_(.*)", table_name)
     return string(matches.captures[1])
@@ -373,9 +438,9 @@ function _create_collections_map!(
             vector_relations,
             time_series,
         )
-        _validate_collection(collection)
         collections_map[collection_name] = collection
     end
+    _validate_collections(collections_map)
     return collections_map
 end
 
@@ -643,14 +708,16 @@ function _get_collection_time_series(db::SQLite.DB, collection_name::String)
 end
 
 # validations
-function _validate_collection(collection::Collection)
+function _validate_collections(collections_map::OrderedDict{String, Collection})
     num_errors = 0
-    num_errors += _no_duplicated_attributes(collection)
-    num_errors += _all_scalar_parameters_are_in_same_table(collection)
-    num_errors += _relations_do_not_have_null_constraints(collection)
-    num_errors += _relations_do_not_have_default_values(collection)
+    for (_, collection) in collections_map
+        num_errors += _no_duplicated_attributes(collection)
+        num_errors += _all_scalar_parameters_are_in_same_table(collection)
+        num_errors += _relations_do_not_have_null_constraints(collection)
+        num_errors += _relations_do_not_have_default_values(collection)
+    end
     if num_errors > 0
-        error("Collection $(collection.name) has $num_errors definition errors.")
+        error("Database definition has $num_errors errors.")
     end
     return nothing
 end
