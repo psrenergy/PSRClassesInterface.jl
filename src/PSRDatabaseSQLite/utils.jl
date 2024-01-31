@@ -43,11 +43,11 @@ function create_empty_db_from_schema(
     path_schema::String;
     force::Bool = false,
 )
+    _throw_if_file_exists(database_path, force = force)
     db = try
-        DatabaseSQLite(
+        DatabaseSQLite_from_schema(
             database_path;
             path_schema = path_schema,
-            force = force,
         )
     catch e
         rethrow(e)
@@ -57,14 +57,14 @@ end
 
 function create_empty_db_from_migrations(
     database_path::String,
-    path_migrations_directory::String;
+    path_migrations::String;
     force::Bool = false,
 )
+    _throw_if_file_exists(database_path, force = force)
     db = try
-        DatabaseSQLite(
+        DatabaseSQLite_from_migrations(
             database_path;
-            path_migrations_directory = path_migrations_directory,
-            force = force,
+            path_migrations = path_migrations,
         )
     catch e
         rethrow(e)
@@ -83,7 +83,7 @@ function load_db(database_path::String)
     return db
 end
 
-function _throw_if_file_exists(file::String, force::Bool)
+function _throw_if_file_exists(file::String; force::Bool = false)
     if isfile(file)
         if force
             rm(file)

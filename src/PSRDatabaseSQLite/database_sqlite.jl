@@ -1,52 +1,76 @@
 mutable struct DatabaseSQLite
     sqlite_db::SQLite.DB
     collections_map::OrderedDict{String, Collection}
-    path_migrations_directory::String
+end
 
-    function DatabaseSQLite(
-        database_path::String;
-        path_migrations_directory::String = "",
-        path_schema::String = "",
-        force::Bool = false,
-    )
-        if !isempty(path_schema) && !isempty(path_migrations_directory)
-            error(
-                "User must define wither a `path_schema` or a `path_migrations_directory`. Not both.",
-            )
-        end
-        if !isempty(path_schema) || !isempty(path_migrations_directory)
-            # Creating a database from a schema or migrations
-            _throw_if_file_exists(database_path, force)
-        end
+function DatabaseSQLite_from_schema(
+    database_path::String;
+    path_schema::String = "",
+)
 
-        sqlite_db = SQLite.DB(database_path)
+    sqlite_db = SQLite.DB(database_path)
 
-        collections_map = try
-            if !isempty(path_schema)
-                execute_statements(sqlite_db, path_schema)
-            elseif !isempty(path_migrations_directory)
-                @show current_version = get_user_version(sqlite_db)
-                @show most_recent_version = get_last_user_version(path_migrations_directory)
-                # before applying the migrations we should make a backup of the database
-                apply_migrations!(sqlite_db, path_migrations_directory, current_version, most_recent_version, :up)
-            end
-            _validate_database(sqlite_db)
-            # as this is the last line of the block it is equivalent to 
-            # collections_map = _create_collections_map(sqlite_db)
-            _create_collections_map(sqlite_db)
-        catch e
-            SQLite.close(sqlite_db)
-            rethrow(e)
-        end
-
-        db = new(
-            sqlite_db,
-            collections_map,
-            path_migrations_directory,
-        )
-
-        return db
+    collections_map = try
+        execute_statements(sqlite_db, path_schema)
+        _validate_database(sqlite_db)
+        _create_collections_map(sqlite_db)
+    catch e
+        SQLite.close(sqlite_db)
+        rethrow(e)
     end
+
+    db = DatabaseSQLite(
+        sqlite_db,
+        collections_map,
+    )
+
+    return db
+end
+
+function DatabaseSQLite_from_migrations(
+    database_path::String;
+    path_migrations::String = "",
+)
+    sqlite_db = SQLite.DB(database_path)
+
+    collections_map = try
+        current_version = get_user_version(sqlite_db)
+        most_recent_version = get_last_user_version(path_migrations)
+        # before applying the migrations we should make a backup of the database
+        apply_migrations!(sqlite_db, path_migrations, current_version, most_recent_version, :up)
+        _validate_database(sqlite_db)
+        _create_collections_map(sqlite_db)
+    catch e
+        SQLite.close(sqlite_db)
+        rethrow(e)
+    end
+
+    db = DatabaseSQLite(
+        sqlite_db,
+        collections_map,
+    )
+
+    return db
+end
+
+function DatabaseSQLite(
+    database_path::String
+)
+    sqlite_db = SQLite.DB(database_path)
+
+    collections_map = try
+        _validate_database(sqlite_db)
+        _create_collections_map(sqlite_db)
+    catch e
+        SQLite.close(sqlite_db)
+        rethrow(e)
+    end
+
+    db = DatabaseSQLite(
+        sqlite_db,
+        collections_map,
+    )
+    return db
 end
 
 function _is_scalar_parameter(
