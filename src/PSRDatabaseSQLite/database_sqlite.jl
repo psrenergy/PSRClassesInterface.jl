@@ -25,7 +25,10 @@ mutable struct DatabaseSQLite
             if !isempty(path_schema)
                 execute_statements(sqlite_db, path_schema)
             elseif !isempty(path_migrations_directory)
-                _apply_all_up_migrations(sqlite_db, path_migrations_directory)
+                @show current_version = get_user_version(sqlite_db)
+                @show most_recent_version = get_last_user_version(path_migrations_directory)
+                # before applying the migrations we should make a backup of the database
+                apply_migrations!(sqlite_db, path_migrations_directory, current_version, most_recent_version, :up)
             end
             _validate_database(sqlite_db)
             # as this is the last line of the block it is equivalent to 

@@ -45,6 +45,9 @@ end
 function migration_versions(migrations::Vector{Migration})
     return map(migration -> migration.version, migrations)
 end
+function possible_database_versions(migrations::Vector{Migration})
+    return vcat(0, migration_versions(migrations))
+end
 function db_is_empty(db::SQLite.DB)
     tbls = SQLite.tables(db)
     return length(tbls) == 0
@@ -103,47 +106,42 @@ end
 function _apply_migrations!(
     db::SQLite.DB,
     migrations::Vector{Migration},
-    starting_point::Int,
-    ending_point::Int,
+    from_version::Int,
+    to_version::Int,
     direction::Symbol,
 )
-    if direction == :down && starting_point < ending_point
-        psr_database_sqlite_error("when going down, the starting migration must be after the ending migration")
+    if direction == :down && from_version < to_version
+        psr_database_sqlite_error("When applying migrations \":down\", the starting migration must be after the ending migration")
     end
-    if direction == :up && starting_point > ending_point
-        psr_database_sqlite_error("when going up, the starting migration must be before the ending migration")
+    if direction == :up && from_version > to_version
+        psr_database_sqlite_error("When applying migrations \":up\", the starting migration must be before the ending migration")
+    end
+
+    possible_versions = possible_database_versions(migrations)
+    if !(from_version in possible_versions)
+        psr_database_sqlite_error("Migration $from_version not found.")
+    end
+    if !(to_version in possible_versions)
+        psr_database_sqlite_error("Migration $to_version not found.")
+    end
+
+    # assert database is at the correct version
+    current_version = get_user_version(db)
+    if current_version != from_version
+        psr_database_sqlite_error("Database is not at the correct version to apply migrations from \"$from_version\" to \"$to_version\". Expected \"$from_version\", got \"$current_version\".")
     end
 
     range_of_migrations = if direction == :up
-        starting_point:ending_point
+        from_version+1:to_version
     else
-        starting_point:-1:ending_point
+        from_version:-1:to_version+1
     end
 
-    for migration in migrations[range_of_migrations]
-        _apply_migration!(db, migration, direction)
+    SQLite.transaction(db) do
+        for migration in migrations[range_of_migrations]
+            _apply_migration!(db, migration, direction)
+        end
     end
-
-    return db
-end
-
-function apply_migration!(
-    db::SQLite.DB,
-    path_migrations_directory::String,
-    version::Int,
-    direction::Symbol,
-)
-    migrations = get_sorted_migrations(path_migrations_directory)
-
-    migration_index = findfirst(migration -> migration.version == version, migrations)
-
-    if migration_index === nothing
-        psr_database_sqlite_error("migration not found: $version")
-    end
-
-    migration = migrations[migration_index]
-
-    _apply_migration!(db, migration, direction)
 
     return db
 end
@@ -179,27 +177,9 @@ function apply_migrations!(
     end
 
     migrations = get_sorted_migrations(path_migrations_directory)
-    versions = migration_versions(migrations)
-    starting_point = findfirst(isequal(from), versions)
-    ending_point = findfirst(isequal(to), versions)
 
-    if starting_point === nothing
-        psr_database_sqlite_error("starting migration not found: $from")
-    end
-    if ending_point === nothing
-        psr_database_sqlite_error("ending migration not found: $to")
-    end
+    _apply_migrations!(db, migrations, from, to, direction)
 
-    _apply_migrations!(db, migrations, starting_point, ending_point, direction)
-
-    return db
-end
-
-function _apply_all_up_migrations(db::SQLite.DB, path_migrations_directory::String)
-    migrations = get_sorted_migrations(path_migrations_directory)
-    for migration in migrations
-        _apply_migration!(db, migration, :up)
-    end
     return db
 end
 
@@ -238,27 +218,29 @@ function test_migrations(path_migrations_directory::String)
     # Go to the first migration and apply every 
     # migration in vector_index.
     db = SQLite.DB()
-    expected_user_version = 0
-    for migration in migrations
-        apply_migration!(db, path_migrations_directory, migration.version, :up)
-        expected_user_version += 1
-        user_version = get_user_version(db)
-        if expected_user_version != user_version
-            psr_database_sqlite_error(
-                "The user version is not correct. Expected $user_version, got $expected_user_version",
-            )
+    SQLite.transaction(db) do
+        expected_user_version = 0
+        for migration in migrations
+            _apply_migration!(db, migration, :up)
+            expected_user_version += 1
+            user_version = get_user_version(db)
+            if expected_user_version != user_version
+                psr_database_sqlite_error(
+                    "The user version is not correct. Expected $user_version, got $expected_user_version",
+                )
+            end
         end
-    end
-
-    expected_user_version = get_last_user_version(path_migrations_directory)
-    for migration in reverse(migrations)
-        apply_migration!(db, path_migrations_directory, migration.version, :down)
-        expected_user_version -= 1
-        user_version = get_user_version(db)
-        if expected_user_version != user_version
-            psr_database_sqlite_error(
-                "The user version is not correct. Expected $user_version, got $expected_user_version",
-            )
+    
+        expected_user_version = get_last_user_version(path_migrations_directory)
+        for migration in reverse(migrations)
+            _apply_migration!(db, migration, :down)
+            expected_user_version -= 1
+            user_version = get_user_version(db)
+            if expected_user_version != user_version
+                psr_database_sqlite_error(
+                    "The user version is not correct. Expected $user_version, got $expected_user_version",
+                )
+            end
         end
     end
 

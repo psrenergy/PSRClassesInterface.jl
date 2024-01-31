@@ -42,54 +42,58 @@ end
 
 function _validate_table(db::SQLite.DB, table::String)
     attributes = column_names(db, table)
+    num_errors = 0
     if !("id" in attributes)
-        psr_database_sqlite_error("Table $table does not have an \"id\" column.")
+        @error("Table $table does not have an \"id\" column.")
+        num_errors += 1
     end
     for attribute in attributes
-        _validate_column_name(table, attribute)
+        num_errors += _validate_column_name(table, attribute)
     end
+    return num_errors
 end
 
 function _validate_timeseries_table(db::SQLite.DB, table::String)
     attributes = column_names(db, table)
+    num_errors = 0
     if ("id" in attributes)
-        psr_database_sqlite_error("Table $table should not have an \"id\" column.")
+        @error("Table $table should not have an \"id\" column.")
+        num_errors += 1
     end
     for attribute in attributes
-        _validate_column_name(table, attribute)
+        num_errors += _validate_column_name(table, attribute)
     end
+    return num_errors
 end
 
 function _validate_vector_table(db::SQLite.DB, table::String)
     attributes = column_names(db, table)
+    num_errors = 0
     if !("id" in attributes)
-        psr_database_sqlite_error("Table $table is a vector table and does not have an \"id\" column.")
+        @error("Table $table is a vector table and does not have an \"id\" column.")
+        num_errors += 1
     end
     if !("vector_index" in attributes)
-        psr_database_sqlite_error(
+        @error(
             "Table $table is a vector table and does not have an \"vector_index\" column.",
         )
+        num_errors += 1
     end
-end
-
-function _validate_column_name(column::String)
-    if !_is_valid_column_name(column)
-        psr_database_sqlite_error("""
-            Invalid column name: $column. \nThe valid column name format is: \n
-            - name_of_attribute (may contain numerals but must start with a letter)
-            """)
-    end
+    return num_errors
 end
 
 function _validate_column_name(table::String, column::String)
+    num_errors = 0
     if !_is_valid_column_name(column)
-        psr_database_sqlite_error(
+        @error(
             """
           Invalid column name: $column for table $table. \nThe valid column name format is: \n
           - name_of_attribute (may contain numerals but must start with a letter)
           """,
         )
+        num_errors += 1
     end
+    return num_errors
 end
 
 function _validate_database(db::SQLite.DB)
@@ -99,26 +103,34 @@ function _validate_database(db::SQLite.DB)
     end
     _validate_database_pragmas(db)
     _set_default_pragmas!(db)
+    num_errors = 0
     for table in tables
         if table == "sqlite_sequence"
             continue
         end
         if _is_valid_table_name(table)
-            _validate_table(db, table)
+            num_errors += _validate_table(db, table)
         elseif _is_valid_table_timeseries_name(table)
-            _validate_timeseries_table(db, table)
+            num_errors += _validate_timeseries_table(db, table)
         elseif _is_valid_table_vector_name(table)
-            _validate_vector_table(db, table)
+            num_errors += _validate_vector_table(db, table)
         else
-            psr_database_sqlite_error("""
+            @error("""
                 Invalid table name: $table.
                 Valid table name formats are:
                 - Collections: NameOfCollection
                 - Vector attributes: NameOfCollection_vector_group_id
                 - Time series: NameOfCollection_timeseries
                 """)
+            num_errors += 1
         end
     end
+    if num_errors > 0
+        psr_database_sqlite_error(
+            "Database has $num_errors errors. Please fix them before continuing.",
+        )
+    end
+    return nothing
 end
 
 function _get_correct_method_to_use(correct_composite_type::Type, action::Symbol)
