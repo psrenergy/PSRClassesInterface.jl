@@ -9,7 +9,7 @@ function test_create_parameters()
     path_schema = joinpath(@__DIR__, "test_create_parameters.sql")
     db_path = joinpath(@__DIR__, "test_create_parameters.sqlite")
     db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
-    @test_throws ErrorException PSRDatabaseSQLite.create_element!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
         db,
         "Configuration";
         label = "Toy Case",
@@ -18,13 +18,13 @@ function test_create_parameters()
     PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
     PSRDatabaseSQLite.create_element!(db, "Resource"; label = "Resource 2")
     PSRDatabaseSQLite.create_element!(db, "Resource"; label = "Resource 1", type = "E")
-    @test_throws ErrorException PSRDatabaseSQLite.create_element!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
         db,
         "Resource";
         label = "Resource 4",
         type3 = "E",
     )
-    @test_throws ErrorException PSRDatabaseSQLite.create_element!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
         db,
         "Resource";
         label = "Resource 5",
@@ -64,13 +64,13 @@ function test_create_parameters_and_vectors()
         capacity = 50.0,
         some_factor = [0.1, 0.3, 0.5],
     )
-    @test_throws ErrorException PSRDatabaseSQLite.create_element!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
         db,
         "Plant";
         label = "Plant 3",
         generation = "some_file.txt",
     )
-    @test_throws ErrorException PSRDatabaseSQLite.create_element!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
         db,
         "Plant";
         label = "Plant 2",
@@ -78,7 +78,7 @@ function test_create_parameters_and_vectors()
         some_factor = [],
     )
     PSRDatabaseSQLite.create_element!(db, "Plant"; label = "Plant 3", resource_id = 1)
-    @test_throws ErrorException PSRDatabaseSQLite.create_element!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
         db,
         "Resource";
         label = "Resource 1",
@@ -118,7 +118,7 @@ function test_create_vectors_with_different_sizes_in_same_group()
         joinpath(@__DIR__, "test_create_vectors_with_different_sizes_in_same_group.sqlite")
     db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
     PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
-    @test_throws ErrorException PSRDatabaseSQLite.create_element!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
         db,
         "Resource";
         label = "Resource 1",
@@ -143,20 +143,20 @@ function test_create_scalar_parameter_date()
         date_initial = DateTime(2000),
         date_final = DateTime(2001, 10, 12, 23, 45, 12),
     )
-    @test_throws ErrorException PSRDatabaseSQLite.create_element!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
         db,
         "Configuration";
         label = "Toy Case",
         date_initial = Date(2000),
         date_final = DateTime(2001, 10, 12, 23, 45, 12),
     )
-    @test_throws ErrorException PSRDatabaseSQLite.create_element!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
         db,
         "Resource";
         label = "Resource 1",
         date_initial_1 = "2000-01",
     )
-    @test_throws ErrorException PSRDatabaseSQLite.create_element!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
         db,
         "Resource";
         label = "Resource 2",
@@ -181,7 +181,7 @@ function test_create_small_time_series_as_vectors()
         date_of_modification = [DateTime(2000), DateTime(2001)],
         some_value = [1.0, 2.0],
     )
-    @test_throws ErrorException PSRDatabaseSQLite.create_element!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
         db,
         "Resource";
         label = "Resource 2",
@@ -207,7 +207,7 @@ function test_create_vectors_with_relations()
     PSRDatabaseSQLite.create_element!(db, "Product"; label = "Sugarcane", unit = "ton")
     PSRDatabaseSQLite.create_element!(db, "Product"; label = "Molasse", unit = "ton")
     PSRDatabaseSQLite.create_element!(db, "Product"; label = "Bagasse", unit = "ton")
-    @test_throws ErrorException PSRDatabaseSQLite.create_element!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
         db,
         "Product",
         label = "Bagasse 2",
@@ -221,7 +221,7 @@ function test_create_vectors_with_relations()
         factor_output = [0.3, 0.3, 0.4],
     )
 
-    @test_throws ErrorException PSRDatabaseSQLite.create_element!(db, "Process";
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(db, "Process";
         label = "Sugar Mill 2",
         product_input = ["Sugar"],
         factor_input = ["wrong"],
@@ -229,7 +229,7 @@ function test_create_vectors_with_relations()
         factor_output = [1.0],
     )
 
-    @test_throws ErrorException PSRDatabaseSQLite.create_element!(db, "Process";
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(db, "Process";
         label = "Sugar Mill 3",
         product_input = ["Some Sugar"],
         factor_input = [1.0],
@@ -237,7 +237,7 @@ function test_create_vectors_with_relations()
         factor_output = [1.0],
     )
 
-    @test_throws ErrorException PSRDatabaseSQLite.create_element!(db, "Process";
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(db, "Process";
         label = "Sugar Mill 3",
         product_input = ["Some Sugar"],
         factor_input = [],

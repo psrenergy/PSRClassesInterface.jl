@@ -5,7 +5,7 @@ Execute all statements in a .sql file against a database.
 """
 function execute_statements(db::SQLite.DB, file::String)
     if !isfile(file)
-        error("file not found: $file")
+        psr_database_sqlite_error("file not found: $file")
     end
     #! format: off
     # We turn off formatting here because of this discussion
@@ -23,8 +23,8 @@ function execute_statements(db::SQLite.DB, file::String)
                 DBInterface.execute(db, trated_statement)
             catch e
                 @error """
-                        Error executing command: $trated_statement
-                        error message: $(e.msg)
+                        psr_database_sqlite_error executing command: $trated_statement
+                        psr_database_sqlite_error message: $(e.msg)
                         """
                 rethrow(e)
             end
@@ -44,7 +44,7 @@ function create_empty_db_from_schema(
     force::Bool = false,
 )
     db = try
-        PSRDBSQLite(
+        DatabaseSQLite(
             database_path;
             path_schema = path_schema,
             force = force,
@@ -61,7 +61,7 @@ function create_empty_db_from_migrations(
     force::Bool = false,
 )
     db = try
-        PSRDBSQLite(
+        DatabaseSQLite(
             database_path;
             path_migrations_directory = path_migrations_directory,
             force = force,
@@ -74,7 +74,7 @@ end
 
 function load_db(database_path::String)
     db = try
-        PSRDBSQLite(
+        DatabaseSQLite(
             database_path,
         )
     catch e
@@ -88,7 +88,7 @@ function _throw_if_file_exists(file::String, force::Bool)
         if force
             rm(file)
         else
-            error("file already exists: $file")
+            psr_database_sqlite_error("file already exists: $file")
         end
     end
     return nothing

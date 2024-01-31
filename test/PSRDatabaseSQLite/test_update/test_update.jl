@@ -66,7 +66,7 @@ function test_create_scalar_relations()
     )
 
     # invalid relations
-    @test_throws ErrorException PSRDatabaseSQLite.set_scalar_relation!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.set_scalar_relation!(
         db,
         "Plant",
         "Resource",
@@ -74,7 +74,7 @@ function test_create_scalar_relations()
         "Resource 1",
         "wrong",
     )
-    @test_throws ErrorException PSRDatabaseSQLite.set_scalar_relation!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.set_scalar_relation!(
         db,
         "Plant",
         "Resource",
@@ -82,7 +82,7 @@ function test_create_scalar_relations()
         "Resource 4",
         "id",
     )
-    @test_throws ErrorException PSRDatabaseSQLite.set_scalar_relation!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.set_scalar_relation!(
         db,
         "Plant",
         "Resource",
@@ -90,7 +90,7 @@ function test_create_scalar_relations()
         "Resource 1",
         "id",
     )
-    @test_throws ErrorException PSRDatabaseSQLite.set_scalar_relation!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.set_scalar_relation!(
         db,
         "Resource",
         "Resource",
@@ -98,7 +98,7 @@ function test_create_scalar_relations()
         "Resource 2",
         "wrong",
     )
-    @test_throws ErrorException PSRDatabaseSQLite.set_scalar_relation!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.set_scalar_relation!(
         db,
         "Plant",
         "Plant",
@@ -106,7 +106,7 @@ function test_create_scalar_relations()
         "Plant 2",
         "wrong",
     )
-    @test_throws ErrorException PSRDatabaseSQLite.set_scalar_relation!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.set_scalar_relation!(
         db,
         "Plant",
         "Plant",
@@ -114,7 +114,7 @@ function test_create_scalar_relations()
         "Plant 1",
         "turbine_to",
     )
-    @test_throws ErrorException PSRDatabaseSQLite.set_scalar_relation!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.set_scalar_relation!(
         db,
         "Plant",
         "Plant",
@@ -122,7 +122,7 @@ function test_create_scalar_relations()
         "Plant 2",
         "id",
     )
-    @test_throws ErrorException PSRDatabaseSQLite.set_scalar_relation!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.set_scalar_relation!(
         db,
         "Plant",
         "Plant",
@@ -130,7 +130,7 @@ function test_create_scalar_relations()
         "Plant",
         "id",
     )
-    @test_throws ErrorException PSRDatabaseSQLite.set_scalar_relation!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.set_scalar_relation!(
         db,
         "Plant",
         "Plant 1",
@@ -163,7 +163,7 @@ function test_create_vector_relations()
         some_factor = [0.1, 0.3],
     )
 
-    @test_throws ErrorException PSRDatabaseSQLite.set_scalar_relation!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.set_scalar_relation!(
         db,
         "Plant",
         "Cost",
@@ -195,7 +195,7 @@ function test_create_vector_relations()
         ["Cost 1", "Cost 3"],
         "id",
     )
-    @test_throws ErrorException PSRDatabaseSQLite.set_vector_relation!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.set_vector_relation!(
         db,
         "Plant",
         "Cost",
@@ -203,7 +203,7 @@ function test_create_vector_relations()
         ["Cost 10", "Cost 2"],
         "some_relation_type",
     )
-    @test_throws ErrorException PSRDatabaseSQLite.set_vector_relation!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.set_vector_relation!(
         db,
         "Plant",
         "Cost",
@@ -227,14 +227,14 @@ function test_update_scalar_parameters()
     PSRDatabaseSQLite.create_element!(db, "Cost"; label = "Cost 2")
 
     PSRDatabaseSQLite.update_scalar_parameter!(db, "Resource", "type", "Resource 1", "D")
-    @test_throws ErrorException PSRDatabaseSQLite.update_scalar_parameter!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.update_scalar_parameter!(
         db,
         "Resource",
         "some_value",
         "Resource 4",
         1.0,
     )
-    @test_throws ErrorException PSRDatabaseSQLite.update_scalar_parameter!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.update_scalar_parameter!(
         db,
         "Resource",
         "invented_attribute",
@@ -262,14 +262,14 @@ function test_update_scalar_parameters()
         "Resource 1",
         99.0,
     )
-    @test_throws ErrorException PSRDatabaseSQLite.update_scalar_parameter!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.update_scalar_parameter!(
         db,
         "Resource",
         "some_value_2",
         "Resource 1",
         "wrong!",
     )
-    @test_throws ErrorException PSRDatabaseSQLite.update_scalar_parameter!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.update_scalar_parameter!(
         db,
         "Resource",
         "cost_id",
@@ -308,21 +308,21 @@ function test_update_vector_parameters()
         "Resource 1",
         [4.0, 5.0, 6.0],
     )
-    @test_throws ErrorException PSRDatabaseSQLite.update_vector_parameters!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.update_vector_parameters!(
         db,
         "Resource",
         "some_value_3",
         "Resource 1",
         [4.0, 5.0, 6.0],
     )
-    @test_throws ErrorException PSRDatabaseSQLite.update_vector_parameters!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.update_vector_parameters!(
         db,
         "Resource",
         "some_value_1",
         "Resource 1",
         [1, 2, 3],
     )
-    @test_throws ErrorException PSRDatabaseSQLite.update_vector_parameters!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.update_vector_parameters!(
         db,
         "Resource",
         "some_value_1",
@@ -340,12 +340,12 @@ function test_create_time_series_files()
     PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
     PSRDatabaseSQLite.create_element!(db, "Resource"; label = "Resource 1")
     PSRDatabaseSQLite.set_time_series_file!(db, "Resource"; wind_speed = "some_file.txt")
-    @test_throws ErrorException PSRDatabaseSQLite.set_time_series_file!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.set_time_series_file!(
         db,
         "Resource";
         wind_speed = ["some_file.txt"],
     )
-    @test_throws ErrorException PSRDatabaseSQLite.set_time_series_file!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.set_time_series_file!(
         db,
         "Resource";
         label = "RS",
@@ -361,12 +361,12 @@ function test_create_time_series_files()
         wind_speed = "speed.txt",
         wind_direction = "direction.txt",
     )
-    @test_throws ErrorException PSRDatabaseSQLite.set_time_series_file!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.set_time_series_file!(
         db,
         "Resource";
         wind_speed = "C:\\Users\\some_user\\some_file.txt",
     )
-    @test_throws ErrorException PSRDatabaseSQLite.set_time_series_file!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.set_time_series_file!(
         db,
         "Resource";
         wind_speed = "~/some_user/some_file.txt",

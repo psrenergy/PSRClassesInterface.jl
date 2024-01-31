@@ -6,16 +6,16 @@ const READ_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
     TimeSeriesFile => "read_time_series_file",
 )
 
-# TODO rename to _get_id_of_element also it should pass a collection_name
+# TODO rename to _get_id_of_element also it should pass a collection_id
 function _get_id(
-    db::PSRDBSQLite,
-    collection_name::String,
+    db::DatabaseSQLite,
+    collection_id::String,
     label::String,
 )::Integer
-    query = "SELECT id FROM $collection_name WHERE label = '$label'"
+    query = "SELECT id FROM $collection_id WHERE label = '$label'"
     df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
     if isempty(df)
-        error("label \"$label\" does not exist in collection \"$collection_name\".")
+        psr_database_sqlite_error("label \"$label\" does not exist in collection \"$collection_id\".")
     end
     result = df[!, 1][1]
     return result
@@ -25,22 +25,22 @@ end
 TODO
 """
 function read_scalar_parameters(
-    db::PSRDBSQLite,
-    collection_name::String,
-    attribute_name::String;
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute_id::String;
     default::Union{Nothing, Any} = nothing,
 )
     _throw_if_attribute_is_not_scalar_parameter(
         db,
-        collection_name,
-        attribute_name,
+        collection_id,
+        attribute_id,
         :read,
     )
 
-    attribute = _get_attribute(db, collection_name, attribute_name)
+    attribute = _get_attribute(db, collection_id, attribute_id)
     table = _table_where_is_located(attribute)
 
-    query = "SELECT $attribute_name FROM $table ORDER BY rowid"
+    query = "SELECT $attribute_id FROM $table ORDER BY rowid"
     df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
     results = df[!, 1]
     results = _treat_query_result(results, attribute, default)
@@ -48,43 +48,43 @@ function read_scalar_parameters(
 end
 
 function read_scalar_parameter(
-    db::PSRDBSQLite,
-    collection_name::String,
-    attribute_name::String,
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute_id::String,
     label::String;
     default::Union{Nothing, Any} = nothing,
 )
     _throw_if_attribute_is_not_scalar_parameter(
         db,
-        collection_name,
-        attribute_name,
+        collection_id,
+        attribute_id,
         :read,
     )
 
-    attribute = _get_attribute(db, collection_name, attribute_name)
+    attribute = _get_attribute(db, collection_id, attribute_id)
     table = _table_where_is_located(attribute)
     id = _get_id(db, table, label)
 
-    return read_scalar_parameter(db, collection_name, attribute_name, id; default)
+    return read_scalar_parameter(db, collection_id, attribute_id, id; default)
 end
 
 function read_scalar_parameter(
-    db::PSRDBSQLite,
-    collection_name::String,
-    attribute_name::String,
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute_id::String,
     id::Integer;
     default::Union{Nothing, Any} = nothing,
 )
     _throw_if_attribute_is_not_scalar_parameter(
         db,
-        collection_name,
-        attribute_name,
+        collection_id,
+        attribute_id,
         :read,
     )
-    attribute = _get_attribute(db, collection_name, attribute_name)
+    attribute = _get_attribute(db, collection_id, attribute_id)
     table = _table_where_is_located(attribute)
 
-    query = "SELECT $attribute_name FROM $table WHERE id = '$id'"
+    query = "SELECT $attribute_id FROM $table WHERE id = '$id'"
     df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
     results = df[!, 1]
     results = _treat_query_result(results, attribute, default)
@@ -92,19 +92,19 @@ function read_scalar_parameter(
 end
 
 function read_vector_parameters(
-    db::PSRDBSQLite,
-    collection_name::String,
-    attribute_name::String;
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute_id::String;
     default::Union{Nothing, Any} = nothing,
 )
     _throw_if_attribute_is_not_vector_parameter(
         db,
-        collection_name,
-        attribute_name,
+        collection_id,
+        attribute_id,
         :read,
     )
-    attribute = _get_attribute(db, collection_name, attribute_name)
-    ids_in_table = read_scalar_parameters(db, collection_name, "id")
+    attribute = _get_attribute(db, collection_id, attribute_id)
+    ids_in_table = read_scalar_parameters(db, collection_id, "id")
 
     results = []
     for id in ids_in_table
@@ -115,30 +115,30 @@ function read_vector_parameters(
 end
 
 function read_vector_parameter(
-    db::PSRDBSQLite,
-    collection_name::String,
-    attribute_name::String,
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute_id::String,
     label::String;
     default::Union{Nothing, Any} = nothing,
 )
     _throw_if_attribute_is_not_vector_parameter(
         db,
-        collection_name,
-        attribute_name,
+        collection_id,
+        attribute_id,
         :read,
     )
-    attribute = _get_attribute(db, collection_name, attribute_name)
-    id = read_scalar_parameter(db, collection_name, "id", label)
+    attribute = _get_attribute(db, collection_id, attribute_id)
+    id = read_scalar_parameter(db, collection_id, "id", label)
     return _query_vector(db, attribute, id; default)
 end
 
 function _query_vector(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     attribute::VectorParameter,
     id::Integer;
     default::Union{Nothing, Any} = nothing,
 )
-    query = "SELECT $(attribute.name) FROM $(attribute.table_where_is_located) WHERE id = '$id' ORDER BY vector_index"
+    query = "SELECT $(attribute.id) FROM $(attribute.table_where_is_located) WHERE id = '$id' ORDER BY vector_index"
     df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
     results = df[!, 1]
     results = _treat_query_result(results, attribute, default)
@@ -149,7 +149,7 @@ end
 TODO
 """
 function read_scalar_relations(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection_from::String,
     collection_to::String,
     relation_type::String,
@@ -168,7 +168,7 @@ function read_scalar_relations(
 end
 
 function read_scalar_relation(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection_from::String,
     collection_to::String,
     relation_type::String,
@@ -186,7 +186,7 @@ function read_scalar_relation(
 end
 
 function _get_scalar_relation_map(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection_from::String,
     collection_to::String,
     relation_type::String,
@@ -200,7 +200,7 @@ function _get_scalar_relation_map(
     )
     attribute = _get_attribute(db, collection_from, attribute_on_collection_from)
 
-    query = "SELECT $(attribute.name) FROM $(attribute.table_where_is_located) ORDER BY rowid"
+    query = "SELECT $(attribute.id) FROM $(attribute.table_where_is_located) ORDER BY rowid"
     df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
     results = df[!, 1]
     num_results = length(results)
@@ -217,7 +217,7 @@ function _get_scalar_relation_map(
 end
 
 function read_vector_relations(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection_from::String,
     collection_to::String,
     relation_type::String,
@@ -244,7 +244,7 @@ function read_vector_relations(
 end
 
 function read_vector_relation(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection_from::String,
     collection_to::String,
     collection_from_label::String,
@@ -262,7 +262,7 @@ function read_vector_relation(
 end
 
 function _get_vector_relation_map(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection_from::String,
     collection_to::String,
     relation_type::String,
@@ -276,7 +276,7 @@ function _get_vector_relation_map(
     )
     attribute = _get_attribute(db, collection_from, attribute_on_collection_from)
 
-    query = "SELECT id, vector_index, $(attribute.name) FROM $(attribute.table_where_is_located) ORDER BY rowid, vector_index"
+    query = "SELECT id, vector_index, $(attribute.id) FROM $(attribute.table_where_is_located) ORDER BY rowid, vector_index"
     df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
     id = df[!, 1]
     results = df[!, 3]
@@ -300,23 +300,23 @@ function _get_vector_relation_map(
 end
 
 function read_time_series_file(
-    db::PSRDBSQLite,
-    collection_name::String,
-    attribute_name::String,
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute_id::String,
 )
     _throw_if_attribute_is_not_time_series_file(
         db,
-        collection_name,
-        attribute_name,
+        collection_id,
+        attribute_id,
         :read,
     )
-    attribute = _get_attribute(db, collection_name, attribute_name)
+    attribute = _get_attribute(db, collection_id, attribute_id)
     table = attribute.table_where_is_located
 
-    query = "SELECT $(attribute.name) FROM $table ORDER BY rowid"
+    query = "SELECT $(attribute.id) FROM $table ORDER BY rowid"
     df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
     if size(df, 1) > 1
-        error(
+        psr_database_sqlite_error(
             "Table $table has more than one row. As a time series file, it should have only one row.",
         )
     end
@@ -350,8 +350,8 @@ function _treat_query_result(
         if isa(default, type_of_attribute)
             default
         else
-            error(
-                "default value must be of the same type as attribute \"$(attribute.name)\": $(type_of_attribute). User inputed $(typeof(default)): default.",
+            psr_database_sqlite_error(
+                "default value must be of the same type as attribute \"$(attribute.id)\": $(type_of_attribute). User inputed $(typeof(default)): default.",
             )
         end
     end
@@ -375,8 +375,8 @@ function _treat_query_result(
         if isa(default, type_of_attribute)
             default
         else
-            error(
-                "default value must be of the same type as attribute \"$(attribute.name)\": $(type_of_attribute). User inputed $(typeof(default)): default.",
+            psr_database_sqlite_error(
+                "default value must be of the same type as attribute \"$(attribute.id)\": $(type_of_attribute). User inputed $(typeof(default)): default.",
             )
         end
     end

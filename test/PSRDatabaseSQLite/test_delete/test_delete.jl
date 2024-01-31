@@ -32,7 +32,7 @@ function test_delete_element()
         plant_turbine_to = "Plant 1",
     )
     PSRDatabaseSQLite.create_element!(db, "Plant"; label = "Plant 3", capacity = 50.0)
-    @test_throws ErrorException PSRDatabaseSQLite.delete_element!(db, "Plant", "Plant 14")
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.delete_element!(db, "Plant", "Plant 14")
     @test_throws SQLite.SQLiteException PSRDatabaseSQLite.create_element!(
         db,
         "Plant";
@@ -40,7 +40,7 @@ function test_delete_element()
     )
     PSRDatabaseSQLite.delete_element!(db, "Plant", "Plant 3")
     PSRDatabaseSQLite.create_element!(db, "Plant"; label = "Plant 3")
-    @test_throws ErrorException PSRDatabaseSQLite.delete_element!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.delete_element!(
         db,
         "SomeCollection",
         "Plant 2",

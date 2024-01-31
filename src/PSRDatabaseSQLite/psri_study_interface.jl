@@ -50,7 +50,7 @@ PSRI.load_study(
 
 # Read
 PSRI.get_vector(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection::String,
     attribute::String,
     element_label::String;
@@ -64,14 +64,14 @@ PSRI.get_vector(
         default,
     )
 
-PSRI.get_vectors(db::PSRDBSQLite, collection::String, attribute::String) =
+PSRI.get_vectors(db::DatabaseSQLite, collection::String, attribute::String) =
     PSRDatabaseSQLite.read_vector_parameters(db, collection, attribute)
 
-PSRI.max_elements(db::PSRDBSQLite, collection::String) =
+PSRI.max_elements(db::DatabaseSQLite, collection::String) =
     length(PSRI.get_parms(db, collection, "id"))
 
 PSRI.get_parm(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection::String,
     attribute::String,
     element_label::String;
@@ -86,23 +86,23 @@ PSRI.get_parm(
     )
 
 PSRI.get_parms(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection::String,
     attribute::String;
     default::Union{Nothing, Any} = nothing,
 ) =
     PSRDatabaseSQLite.read_scalar_parameters(db, collection, attribute; default)
 
-function PSRI.get_attributes(db::PSRDBSQLite, collection::String)
-    return PSRDatabaseSQLite._get_attribute_names(db, collection)
+function PSRI.get_attributes(db::DatabaseSQLite, collection::String)
+    return PSRDatabaseSQLite._get_attribute_ids(db, collection)
 end
 
-function PSRI.get_collections(db::PSRDBSQLite)
-    return PSRDatabaseSQLite._get_collection_names(db)
+function PSRI.get_collections(db::DatabaseSQLite)
+    return PSRDatabaseSQLite._get_collection_ids(db)
 end
 
 function PSRI.get_map(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     source::String,
     target::String,
     relation_type::String,
@@ -116,7 +116,7 @@ function PSRI.get_map(
 end
 
 function PSRI.get_vector_map(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     source::String,
     target::String,
     relation_type::String,
@@ -130,7 +130,7 @@ function PSRI.get_vector_map(
 end
 
 function PSRI.get_related(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     source::String,
     target::String,
     source_label::String,
@@ -146,7 +146,7 @@ function PSRI.get_related(
 end
 
 PSRI.get_vector_related(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     source::String,
     target::String,
     source_label::String,
@@ -160,18 +160,18 @@ PSRI.get_vector_related(
 )
 
 # Modification
-PSRI.create_element!(db::PSRDBSQLite, collection::String; kwargs...) =
+PSRI.create_element!(db::DatabaseSQLite, collection::String; kwargs...) =
     PSRDatabaseSQLite.create_element!(db, collection; kwargs...)
 
 PSRI.delete_element!(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection::String,
     element_label::String,
 ) =
     PSRDatabaseSQLite.delete_element!(db, collection, element_label)
 
 PSRI.set_parm!(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection::String,
     attribute::String,
     element_label::String,
@@ -185,7 +185,7 @@ PSRI.set_parm!(
 )
 
 PSRI.set_vector!(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection::String,
     attribute::String,
     element_label::String,
@@ -199,7 +199,7 @@ PSRI.set_vector!(
 )
 
 PSRI.set_related!(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     source::String,
     target::String,
     source_label::String,
@@ -215,7 +215,7 @@ PSRI.set_related!(
 )
 
 PSRI.set_vector_related!(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     source::String,
     target::String,
     source_label::String,
@@ -231,7 +231,7 @@ PSRI.set_vector_related!(
 )
 
 PSRI.delete_relation!(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     source::String,
     target::String,
     source_label::String,
@@ -240,7 +240,7 @@ PSRI.delete_relation!(
 
 # Graf files
 function PSRI.link_series_to_file(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection::String;
     kwargs...,
 )

@@ -75,13 +75,13 @@ function test_read_parameters()
     ) == [2.0, 2.0]
     @test PSRDatabaseSQLite.read_scalar_parameter(db, "Plant", "capacity", "Plant 3") ==
           54.0
-    @test_throws ErrorException PSRDatabaseSQLite.read_scalar_parameter(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.read_scalar_parameter(
         db,
         "Plant",
         "capacity",
         "Plant 5",
     )
-    @test_throws ErrorException PSRDatabaseSQLite.read_scalar_parameters(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.read_scalar_parameters(
         db,
         "Resource",
         "capacity",
@@ -90,12 +90,12 @@ function test_read_parameters()
           ["Plant 1", "Plant 2", "Plant 3", "Plant 4"]
     @test PSRDatabaseSQLite.read_scalar_parameters(db, "Plant", "capacity") ==
           [2.02, 53.0, 54.0, 53.0]
-    @test_throws ErrorException PSRDatabaseSQLite.read_scalar_parameters(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.read_scalar_parameters(
         db,
         "Resource",
         "some_value",
     )
-    @test_throws ErrorException PSRDatabaseSQLite.read_vector_parameters(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.read_vector_parameters(
         db,
         "Plant",
         "capacity",
@@ -131,7 +131,7 @@ function test_read_parameters()
         "Plant 4",
     ) ==
           DateTime[typemin(DateTime), typemin(DateTime)]
-    @test_throws ErrorException PSRDatabaseSQLite.read_vector_parameter(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.read_vector_parameter(
         db,
         "Plant",
         "some_factor",
@@ -222,7 +222,7 @@ function test_read_relations()
           ["Resource 1", "", ""]
     @test PSRDatabaseSQLite.read_scalar_relations(db, "Plant", "Plant", "turbine_to") ==
           ["", "", "Plant 2"]
-    @test_throws ErrorException PSRDatabaseSQLite.read_scalar_relations(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.read_scalar_relations(
         db,
         "Plant",
         "Cost",
@@ -233,7 +233,7 @@ function test_read_relations()
     PSRDatabaseSQLite.set_vector_relation!(db, "Plant", "Cost", "Plant 1", ["Cost 2"], "id")
     @test PSRDatabaseSQLite.read_vector_relations(db, "Plant", "Cost", "id") ==
           [["Cost 2"], ["Cost 1", "Cost 2"], String[]]
-    @test_throws ErrorException PSRDatabaseSQLite.read_vector_relations(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.read_vector_relations(
         db,
         "Plant",
         "Resource",
@@ -265,7 +265,7 @@ function test_read_time_series_files()
           "some_file.txt"
     @test PSRDatabaseSQLite.read_time_series_file(db, "Plant", "wind_direction") ==
           "some_file2"
-    @test_throws ErrorException PSRDatabaseSQLite.read_time_series_file(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.read_time_series_file(
         db,
         "Plant",
         "spill",

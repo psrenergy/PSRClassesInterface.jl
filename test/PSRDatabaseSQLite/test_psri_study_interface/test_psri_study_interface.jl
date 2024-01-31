@@ -34,7 +34,7 @@ function test_create_case_1()
         label = "Plant 2",
     )
 
-    @test_throws ErrorException PSRI.create_element!(
+    @test_throws PSRI.PSRDatabaseSQLite.DatabaseException PSRI.create_element!(
         db,
         "Plant";
         label = "Plant 3",
@@ -127,7 +127,7 @@ function test_create_case_1()
         "id",
     ) == "R1"
 
-    @test_throws ErrorException PSRI.get_parm(db, "Plant", "resource_id", "Plant 1")
+    @test_throws PSRI.PSRDatabaseSQLite.DatabaseException PSRI.get_parm(db, "Plant", "resource_id", "Plant 1")
 
     @test PSRI.max_elements(db, "Plant") == 2
     @test PSRI.max_elements(db, "Resource") == 2
@@ -240,7 +240,7 @@ function test_create_case_relation()
         "id",
     ) == ["Cost 1"]
 
-    @test_throws ErrorException PSRI.get_vector_related(
+    @test_throws PSRI.PSRDatabaseSQLite.DatabaseException PSRI.get_vector_related(
         db,
         "Plant",
         "Cost",

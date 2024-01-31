@@ -1,6 +1,6 @@
-# PSRDBSQLite
+# DatabaseSQLite
 
-Following PSRI's `OpenStudy` standards, SQL schemas for the `PSRDBSQLite` framework should follow the conventions described in this document.
+Following PSRI's `OpenStudy` standards, SQL schemas for the `DatabaseSQLite` framework should follow the conventions described in this document.
 
 
 ## SQL Schema Conventions
@@ -152,7 +152,7 @@ CREATE TABLE Plant_timeseriesfiles (
 
 ## Migrations
 
-Migrations are an important part of the `PSRDBSQLite` framework. They are used to update the database schema to a new version without the need to delete the database and create a new one from scratch. Migrations are defined by two separate `.sql` files that are stored in the `migrations` directory of the model. The first file is the `up` migration and it is used to update the database schema to a new version. The second file is the `down` migration and it is used to revert the changes made by the `up` migration. Migrations are stored in directories in the model and they have a specific naming convention. The name of the migration folder should be the number of the version (e.g. `/migrations/1/`).
+Migrations are an important part of the `DatabaseSQLite` framework. They are used to update the database schema to a new version without the need to delete the database and create a new one from scratch. Migrations are defined by two separate `.sql` files that are stored in the `migrations` directory of the model. The first file is the `up` migration and it is used to update the database schema to a new version. The second file is the `down` migration and it is used to revert the changes made by the `up` migration. Migrations are stored in directories in the model and they have a specific naming convention. The name of the migration folder should be the number of the version (e.g. `/migrations/1/`).
 
 ```md
 database/migrations
@@ -166,13 +166,13 @@ database/migrations
 
 ### Creating a migration
 
-It is advised to create new migrations using the functions from `PSRDBSQLite`. First you need to make sure that the migrations directory is registered 
-by the function `PSRDBSQLite.set_migrations_folder` and after that you can create a new migration using the function `PSRDBSQLite.create_migration`. This function will create a new migration file with the name and version specified by the user. The migration file will contain a template for the migration.
+It is advised to create new migrations using the functions from `DatabaseSQLite`. First you need to make sure that the migrations directory is registered 
+by the function `DatabaseSQLite.set_migrations_folder` and after that you can create a new migration using the function `DatabaseSQLite.create_migration`. This function will create a new migration file with the name and version specified by the user. The migration file will contain a template for the migration.
 
 ### Running migrations
 
-To run migrations you need to use the function `PSRDBSQLite.apply_migrations!`. There are various versions of this function, each one tailored to make something easier for the user.
+To run migrations you need to use the function `DatabaseSQLite.apply_migrations!`. There are various versions of this function, each one tailored to make something easier for the user.
 
 ### Testing migrations
 
-It is very important to test if the migrations of a certain model are working as expected, so the user can be sure that the database schema is updated correctly. To test migrations you need to use the function `PSRDBSQLite.test_migrations()`. It is highly advised that each model has one of these functions in their test suite to make sure that the migrations are working as expected.
+It is very important to test if the migrations of a certain model are working as expected, so the user can be sure that the database schema is updated correctly. To test migrations you need to use the function `DatabaseSQLite.test_migrations()`. It is highly advised that each model has one of these functions in their test suite to make sure that the migrations are working as expected.

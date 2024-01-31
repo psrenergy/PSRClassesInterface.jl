@@ -28,7 +28,7 @@ _is_valid_time_series_attribute_value(value::String) =
 
 function _validate_time_series_attribute_value(value::String)
     if !_is_valid_time_series_attribute_value(value)
-        error(
+        psr_database_sqlite_error(
             """
             Invalid time series file name: $value. 
             The valid time series attribute name format is:
@@ -43,7 +43,7 @@ end
 function _validate_table(db::SQLite.DB, table::String)
     attributes = column_names(db, table)
     if !("id" in attributes)
-        error("Table $table does not have an \"id\" column.")
+        psr_database_sqlite_error("Table $table does not have an \"id\" column.")
     end
     for attribute in attributes
         _validate_column_name(table, attribute)
@@ -53,7 +53,7 @@ end
 function _validate_timeseries_table(db::SQLite.DB, table::String)
     attributes = column_names(db, table)
     if ("id" in attributes)
-        error("Table $table should not have an \"id\" column.")
+        psr_database_sqlite_error("Table $table should not have an \"id\" column.")
     end
     for attribute in attributes
         _validate_column_name(table, attribute)
@@ -63,10 +63,10 @@ end
 function _validate_vector_table(db::SQLite.DB, table::String)
     attributes = column_names(db, table)
     if !("id" in attributes)
-        error("Table $table is a vector table and does not have an \"id\" column.")
+        psr_database_sqlite_error("Table $table is a vector table and does not have an \"id\" column.")
     end
     if !("vector_index" in attributes)
-        error(
+        psr_database_sqlite_error(
             "Table $table is a vector table and does not have an \"vector_index\" column.",
         )
     end
@@ -74,7 +74,7 @@ end
 
 function _validate_column_name(column::String)
     if !_is_valid_column_name(column)
-        error("""
+        psr_database_sqlite_error("""
             Invalid column name: $column. \nThe valid column name format is: \n
             - name_of_attribute (may contain numerals but must start with a letter)
             """)
@@ -83,7 +83,7 @@ end
 
 function _validate_column_name(table::String, column::String)
     if !_is_valid_column_name(column)
-        error(
+        psr_database_sqlite_error(
             """
           Invalid column name: $column for table $table. \nThe valid column name format is: \n
           - name_of_attribute (may contain numerals but must start with a letter)
@@ -95,7 +95,7 @@ end
 function _validate_database(db::SQLite.DB)
     tables = table_names(db)
     if !("Configuration" in tables)
-        error("Database does not have a \"Configuration\" table.")
+        psr_database_sqlite_error("Database does not have a \"Configuration\" table.")
     end
     _validate_database_pragmas(db)
     _set_default_pragmas!(db)
@@ -110,7 +110,7 @@ function _validate_database(db::SQLite.DB)
         elseif _is_valid_table_vector_name(table)
             _validate_vector_table(db, table)
         else
-            error("""
+            psr_database_sqlite_error("""
                 Invalid table name: $table.
                 Valid table name formats are:
                 - Collections: NameOfCollection
@@ -135,12 +135,12 @@ function _get_correct_method_to_use(correct_composite_type::Type, action::Symbol
             end
         end
     else
-        error()
+        psr_database_sqlite_error()
     end
 end
 
 function _throw_if_attribute_is_not_scalar_parameter(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection::String,
     attribute::String,
     action::Symbol,
@@ -152,7 +152,7 @@ function _throw_if_attribute_is_not_scalar_parameter(
             _attribute_composite_type(db, collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error(
+        psr_database_sqlite_error(
             "Attribute \"$attribute\" is not a scalar parameter. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.",
         )
     end
@@ -160,7 +160,7 @@ function _throw_if_attribute_is_not_scalar_parameter(
 end
 
 function _throw_if_attribute_is_not_vector_parameter(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection::String,
     attribute::String,
     action::Symbol,
@@ -172,7 +172,7 @@ function _throw_if_attribute_is_not_vector_parameter(
             _attribute_composite_type(db, collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error(
+        psr_database_sqlite_error(
             "Attribute \"$attribute\" is not a vector parameter. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.",
         )
     end
@@ -180,7 +180,7 @@ function _throw_if_attribute_is_not_vector_parameter(
 end
 
 function _throw_if_attribute_is_not_scalar_relation(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection::String,
     attribute::String,
     action::Symbol,
@@ -192,7 +192,7 @@ function _throw_if_attribute_is_not_scalar_relation(
             _attribute_composite_type(db, collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error(
+        psr_database_sqlite_error(
             "Attribute \"$attribute\" is not a scalar relation. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.",
         )
     end
@@ -200,7 +200,7 @@ function _throw_if_attribute_is_not_scalar_relation(
 end
 
 function _throw_if_attribute_is_not_vector_relation(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection::String,
     attribute::String,
     action::Symbol,
@@ -212,7 +212,7 @@ function _throw_if_attribute_is_not_vector_relation(
             _attribute_composite_type(db, collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error(
+        psr_database_sqlite_error(
             "Attribute \"$attribute\" is not a vector relation. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.",
         )
     end
@@ -220,7 +220,7 @@ function _throw_if_attribute_is_not_vector_relation(
 end
 
 function _throw_if_attribute_is_not_time_series_file(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection::String,
     attribute::String,
     action::Symbol,
@@ -232,7 +232,7 @@ function _throw_if_attribute_is_not_time_series_file(
             _attribute_composite_type(db, collection, attribute)
         string_of_composite_types = _string_for_composite_types(correct_composity_type)
         correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
-        error(
+        psr_database_sqlite_error(
             "Attribute \"$attribute\" is not a time series file. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.",
         )
     end
@@ -240,7 +240,7 @@ function _throw_if_attribute_is_not_time_series_file(
 end
 
 function _throw_if_not_scalar_attribute(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection::String,
     attribute::String,
 )
@@ -248,7 +248,7 @@ function _throw_if_not_scalar_attribute(
 
     if _is_vector_parameter(db, collection, attribute) ||
        _is_vector_relation(db, collection, attribute)
-        error(
+        psr_database_sqlite_error(
             "Attribute \"$attribute\" is not a scalar attribute. You must input a vector for this attribute.",
         )
     end
@@ -257,7 +257,7 @@ function _throw_if_not_scalar_attribute(
 end
 
 function _throw_if_not_vector_attribute(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection::String,
     attribute::String,
 )
@@ -265,7 +265,7 @@ function _throw_if_not_vector_attribute(
 
     if _is_scalar_parameter(db, collection, attribute) ||
        _is_scalar_relation(db, collection, attribute)
-        error(
+        psr_database_sqlite_error(
             "Attribute \"$attribute\" is not a vector attribute. You must input a scalar for this attribute.",
         )
     end
@@ -280,7 +280,7 @@ function _throw_if_relation_does_not_exist(
 )
     if !_scalar_relation_exists(collection_from, collection_to, relation_type) &&
        !_vector_relation_exists(collection_from, collection_to, relation_type)
-        error(
+        psr_database_sqlite_error(
             "relation `$relation_type` between $collection_from and $collection_to does not exist. \n" *
             "This is the list of relations that exist: " *
             "$(_show_existing_relation_types(_list_of_relation_types(collection_from, collection_to)))",
@@ -289,12 +289,12 @@ function _throw_if_relation_does_not_exist(
 end
 
 function _throw_if_is_time_series_file(
-    db::PSRDBSQLite,
+    db::DatabaseSQLite,
     collection::String,
     attribute::String,
 )
     if _is_time_series_file(db, collection, attribute)
-        error(
+        psr_database_sqlite_error(
             "Attribute \"$attribute\" is a time series file. " *
             "You must use the function `set_time_series_file!` to create or update it.",
         )
@@ -314,14 +314,14 @@ function _show_existing_relation_types(possible_relation_types::Vector{String})
 end
 
 function _validate_attribute_types!(
-    db::PSRDBSQLite,
-    collection_name::String,
+    db::DatabaseSQLite,
+    collection_id::String,
     label_or_id::Union{Integer, String},
     dict_scalar_attributes,
     dict_vector_attributes,
 )
     for (key, value) in dict_scalar_attributes
-        attribute = _get_attribute(db, collection_name, string(key))
+        attribute = _get_attribute(db, collection_id, string(key))
         if isa(attribute, ScalarRelation)
             _validate_scalar_relation_type(attribute, label_or_id, value)
         else
@@ -329,7 +329,7 @@ function _validate_attribute_types!(
         end
     end
     for (key, value) in dict_vector_attributes
-        attribute = _get_attribute(db, collection_name, string(key))
+        attribute = _get_attribute(db, collection_id, string(key))
         if isa(attribute, VectorRelation)
             _validate_vector_relation_type(attribute, label_or_id, value)
         else
@@ -345,8 +345,8 @@ function _validate_scalar_parameter_type(
     value,
 )
     if !isa(value, attribute.type)
-        error(
-            "The value of the attribute \"$(attribute.name)\" in element \"$label_or_id\" " *
+        psr_database_sqlite_error(
+            "The value of the attribute \"$(attribute.id)\" in element \"$label_or_id\" " *
             "of collection \"$(attribute.parent_collection)\" should be of type $(attribute.type). User inputed $(typeof(value)): $value.",
         )
     end
@@ -358,8 +358,8 @@ function _validate_scalar_relation_type(
     value,
 )
     if !isa(value, String) && !isa(value, Int64)
-        error(
-            "The value of the attribute \"$(attribute.name)\" in element \"$label_or_id\" " *
+        psr_database_sqlite_error(
+            "The value of the attribute \"$(attribute.id)\" in element \"$label_or_id\" " *
             "of collection \"$(attribute.parent_collection)\" should be of type String or Int64. User inputed $(typeof(value)): $value.",
         )
     end
@@ -371,8 +371,8 @@ function _validate_vector_parameter_type(
     values::Vector{<:Any},
 )
     if !isa(values, Vector{attribute.type})
-        error(
-            "The value of the attribute \"$(attribute.name)\" in element \"$label_or_id\" " *
+        psr_database_sqlite_error(
+            "The value of the attribute \"$(attribute.id)\" in element \"$label_or_id\" " *
             "of collection \"$(attribute.parent_collection)\" should be of type Vector{$(attribute.type)}. User inputed $(typeof(values)): $values.",
         )
     end
@@ -384,8 +384,8 @@ function _validate_vector_relation_type(
     values::Vector{<:Any},
 )
     if !isa(values, Vector{String}) && !isa(values, Vector{Int64})
-        error(
-            "The value of the attribute \"$(attribute.name)\" in element \"$label_or_id\" " *
+        psr_database_sqlite_error(
+            "The value of the attribute \"$(attribute.id)\" in element \"$label_or_id\" " *
             "of collection \"$(attribute.parent_collection)\" should be of type Vector{String} or Vector{Int64}. User inputed $(typeof(values)): $values.",
         )
     end
@@ -414,7 +414,7 @@ end
 function _validate_user_version(db::SQLite.DB)
     df = DBInterface.execute(db, "PRAGMA user_version;") |> DataFrame
     if df[!, 1][1] == 0
-        error(
+        psr_database_sqlite_error(
             "User version not defined or set to zero in the database. Please add 'PRAGMA user_version = \"your version\";' to your .sql file.",
         )
     end
@@ -422,34 +422,34 @@ function _validate_user_version(db::SQLite.DB)
 end
 
 function _throw_if_collection_or_attribute_do_not_exist(
-    db::PSRDBSQLite,
-    collection_name::String,
-    attribute_name::String,
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute_id::String,
 )
-    _throw_if_collection_does_not_exist(db, collection_name)
-    _throw_if_attribute_does_not_exist(db, collection_name, attribute_name)
+    _throw_if_collection_does_not_exist(db, collection_id)
+    _throw_if_attribute_does_not_exist(db, collection_id, attribute_id)
     return nothing
 end
 
 function _throw_if_collection_or_attribute_do_not_exist(
-    db::PSRDBSQLite,
-    collection_name::String,
-    attribute_names::Vector{String},
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute_ids::Vector{String},
 )
-    _throw_if_collection_does_not_exist(db, collection_name)
-    for attribute_name in attribute_names
-        _throw_if_attribute_does_not_exist(db, collection_name, attribute_name)
+    _throw_if_collection_does_not_exist(db, collection_id)
+    for attribute_id in attribute_ids
+        _throw_if_attribute_does_not_exist(db, collection_id, attribute_id)
     end
     return nothing
 end
 
 function _throw_if_collection_does_not_exist(
-    db::PSRDBSQLite,
-    collection_name::String,
+    db::DatabaseSQLite,
+    collection_id::String,
 )
-    if !_collection_exists(db, collection_name)
-        error(
-            "Collection \"$collection_name\" does not exist. " *
+    if !_collection_exists(db, collection_id)
+        psr_database_sqlite_error(
+            "Collection \"$collection_id\" does not exist. " *
             "This is the list of available collections: " *
             "$(_string_of_collections(db))",
         )
@@ -457,33 +457,33 @@ function _throw_if_collection_does_not_exist(
 end
 
 function _throw_if_attribute_does_not_exist(
-    db::PSRDBSQLite,
-    collection_name::String,
-    attribute_name::String,
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute_id::String,
 )
-    if !_attribute_exists(db, collection_name, attribute_name)
-        error(
-            "Attribute \"$attribute_name\" does not exist in collection \"$collection_name\". " *
-            "This is the list of available attributes: $(_string_of_attributes(db, collection_name))",
+    if !_attribute_exists(db, collection_id, attribute_id)
+        psr_database_sqlite_error(
+            "Attribute \"$attribute_id\" does not exist in collection \"$collection_id\". " *
+            "This is the list of available attributes: $(_string_of_attributes(db, collection_id))",
         )
     end
 end
 
-function _string_of_collections(db::PSRDBSQLite)
+function _string_of_collections(db::DatabaseSQLite)
     string_of_collections = ""
-    for collection in _get_collection_names(db)
+    for collection in _get_collection_ids(db)
         string_of_collections *= "\n - $collection"
     end
     return string_of_collections
 end
 function _string_of_attributes(
-    db::PSRDBSQLite,
-    collection_name::String,
+    db::DatabaseSQLite,
+    collection_id::String,
 )
-    attribute_names = _get_attribute_names(db, collection_name)
+    attribute_ids = _get_attribute_ids(db, collection_id)
     string_of_attributes_names = ""
-    for attribute_name in attribute_names
-        string_of_attributes_names *= "\n - $attribute_name"
+    for attribute_id in attribute_ids
+        string_of_attributes_names *= "\n - $attribute_id"
     end
     return string_of_attributes_names
 end

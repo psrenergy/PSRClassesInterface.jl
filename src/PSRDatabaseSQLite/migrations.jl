@@ -27,7 +27,7 @@ function get_sorted_migrations(path_migrations_directory::String)
         for migration in sorted_migrations
             @debug(migration)
         end
-        error("Migrations are not unique.")
+        psr_database_sqlite_error("Migrations are not unique.")
     end
 
     return sorted_migrations
@@ -68,7 +68,7 @@ function create_migration(path_migrations_directory::String, version::Int)
         findfirst(migration -> migration.version == version, existing_migrations)
 
     if migration_index !== nothing
-        error(
+        psr_database_sqlite_error(
             "migration already exists in folder: $(existing_migrations[migration_index].path)",
         )
     end
@@ -108,10 +108,10 @@ function _apply_migrations!(
     direction::Symbol,
 )
     if direction == :down && starting_point < ending_point
-        error("when going down, the starting migration must be after the ending migration")
+        psr_database_sqlite_error("when going down, the starting migration must be after the ending migration")
     end
     if direction == :up && starting_point > ending_point
-        error("when going up, the starting migration must be before the ending migration")
+        psr_database_sqlite_error("when going up, the starting migration must be before the ending migration")
     end
 
     range_of_migrations = if direction == :up
@@ -138,7 +138,7 @@ function apply_migration!(
     migration_index = findfirst(migration -> migration.version == version, migrations)
 
     if migration_index === nothing
-        error("migration not found: $version")
+        psr_database_sqlite_error("migration not found: $version")
     end
 
     migration = migrations[migration_index]
@@ -154,7 +154,7 @@ function _apply_migration!(
     direction::Symbol,
 )
     if !(direction in [:up, :down])
-        error(
+        psr_database_sqlite_error(
             "direction not recognized: $direction. The only directions allowed are :up and :down.",
         )
     end
@@ -175,7 +175,7 @@ function apply_migrations!(
     direction::Symbol,
 )
     if from == to
-        error("starting at $from and ending at $to is not a valid migration range.")
+        psr_database_sqlite_error("starting at $from and ending at $to is not a valid migration range.")
     end
 
     migrations = get_sorted_migrations(path_migrations_directory)
@@ -184,10 +184,10 @@ function apply_migrations!(
     ending_point = findfirst(isequal(to), versions)
 
     if starting_point === nothing
-        error("starting migration not found: $from")
+        psr_database_sqlite_error("starting migration not found: $from")
     end
     if ending_point === nothing
-        error("ending migration not found: $to")
+        psr_database_sqlite_error("ending migration not found: $to")
     end
 
     _apply_migrations!(db, migrations, starting_point, ending_point, direction)
@@ -232,7 +232,7 @@ function test_migrations(path_migrations_directory::String)
     versions = migration_versions(migrations)
 
     if versions != collect(versions[1]:versions[end])
-        error("Migrations are not consecutive.")
+        psr_database_sqlite_error("Migrations are not consecutive.")
     end
 
     # Go to the first migration and apply every 
@@ -244,7 +244,7 @@ function test_migrations(path_migrations_directory::String)
         expected_user_version += 1
         user_version = get_user_version(db)
         if expected_user_version != user_version
-            error(
+            psr_database_sqlite_error(
                 "The user version is not correct. Expected $user_version, got $expected_user_version",
             )
         end
@@ -256,14 +256,14 @@ function test_migrations(path_migrations_directory::String)
         expected_user_version -= 1
         user_version = get_user_version(db)
         if expected_user_version != user_version
-            error(
+            psr_database_sqlite_error(
                 "The user version is not correct. Expected $user_version, got $expected_user_version",
             )
         end
     end
 
     if !db_is_empty(db)
-        error("The database is not empty after applying all migrations up and down.")
+        psr_database_sqlite_error("The database is not empty after applying all migrations up and down.")
     end
 
     return true

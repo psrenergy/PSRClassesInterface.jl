@@ -1,14 +1,14 @@
 function _create_scalar_attributes!(
-    db::PSRDBSQLite,
-    collection_name::String,
+    db::DatabaseSQLite,
+    collection_id::String,
     scalar_attributes,
 )
     attributes = string.(keys(scalar_attributes))
-    _throw_if_collection_or_attribute_do_not_exist(db, collection_name, attributes)
+    _throw_if_collection_or_attribute_do_not_exist(db, collection_id, attributes)
 
-    _replace_scalar_relation_labels_with_id!(db, collection_name, scalar_attributes)
+    _replace_scalar_relation_labels_with_id!(db, collection_id, scalar_attributes)
 
-    table = _get_collection_scalar_attribute_tables(db.sqlite_db, collection_name)
+    table = _get_collection_scalar_attribute_tables(db.sqlite_db, collection_id)
 
     cols = join(keys(scalar_attributes), ", ")
     vals = join(values(scalar_attributes), "', '")
@@ -18,22 +18,22 @@ function _create_scalar_attributes!(
 end
 
 function _create_vector_group!(
-    db::PSRDBSQLite,
-    collection_name::String,
+    db::DatabaseSQLite,
+    collection_id::String,
     group::String,
     id::Integer,
     vector_attributes::Vector{String},
     group_vector_attributes,
 )
-    vectors_group_table_name = _vectors_group_table_name(collection_name, group)
+    vectors_group_table_name = _vectors_group_table_name(collection_id, group)
     _throw_if_collection_or_attribute_do_not_exist(
         db,
-        collection_name,
+        collection_id,
         vector_attributes,
     )
     _replace_vector_relation_labels_with_ids!(
         db,
-        collection_name,
+        collection_id,
         group_vector_attributes,
     )
     _all_vector_of_group_must_have_same_size!(
@@ -68,14 +68,14 @@ function _create_vector_group!(
 end
 
 function _create_vectors!(
-    db::PSRDBSQLite,
-    collection_name::String,
+    db::DatabaseSQLite,
+    collection_id::String,
     id::Integer,
     dict_vector_attributes,
 )
     # separate vectors by groups
     map_of_groups_to_vector_attributes =
-        _map_of_groups_to_vector_attributes(db, collection_name)
+        _map_of_groups_to_vector_attributes(db, collection_id)
     for (group, vector_attributes) in map_of_groups_to_vector_attributes
         group_vector_attributes = Dict()
         for vector_attribute in Symbol.(vector_attributes)
@@ -89,7 +89,7 @@ function _create_vectors!(
         end
         _create_vector_group!(
             db,
-            collection_name,
+            collection_id,
             group,
             id,
             vector_attributes,
@@ -100,61 +100,61 @@ function _create_vectors!(
 end
 
 function _create_element!(
-    db::PSRDBSQLite,
-    collection_name::String;
+    db::DatabaseSQLite,
+    collection_id::String;
     kwargs...,
 )
-    _throw_if_collection_does_not_exist(db, collection_name)
-    _validate_create_elements_kwargs(collection_name, kwargs)
+    _throw_if_collection_does_not_exist(db, collection_id)
+    _validate_create_elements_kwargs(collection_id, kwargs)
     dict_scalar_attributes = Dict{Symbol, Any}()
     dict_vector_attributes = Dict{Symbol, Any}()
 
     for (key, value) in kwargs
         if isa(value, AbstractVector)
-            _throw_if_not_vector_attribute(db, collection_name, string(key))
+            _throw_if_not_vector_attribute(db, collection_id, string(key))
             if isempty(value)
-                error("Cannot create the attribute $key with an empty vector.")
+                psr_database_sqlite_error("Cannot create the attribute \"$key\" with an empty vector.")
             end
             dict_vector_attributes[key] = value
         else
-            _throw_if_is_time_series_file(db, collection_name, string(key))
-            _throw_if_not_scalar_attribute(db, collection_name, string(key))
+            _throw_if_is_time_series_file(db, collection_id, string(key))
+            _throw_if_not_scalar_attribute(db, collection_id, string(key))
             dict_scalar_attributes[key] = value
         end
     end
 
     _validate_attribute_types_on_creation!(
         db,
-        collection_name,
+        collection_id,
         dict_scalar_attributes,
         dict_vector_attributes,
     )
     _convert_date_to_string!(dict_scalar_attributes, dict_vector_attributes)
 
-    _create_scalar_attributes!(db, collection_name, dict_scalar_attributes)
+    _create_scalar_attributes!(db, collection_id, dict_scalar_attributes)
 
     if !isempty(dict_vector_attributes)
         id = get(
             dict_scalar_attributes,
             :id,
-            _get_id(db, collection_name, dict_scalar_attributes[:label]),
+            _get_id(db, collection_id, dict_scalar_attributes[:label]),
         )
-        _create_vectors!(db, collection_name, id, dict_vector_attributes)
+        _create_vectors!(db, collection_id, id, dict_vector_attributes)
     end
 
     return nothing
 end
 
 function create_element!(
-    db::PSRDBSQLite,
-    collection_name::String;
+    db::DatabaseSQLite,
+    collection_id::String;
     kwargs...,
 )
     try
-        _create_element!(db, collection_name; kwargs...)
+        _create_element!(db, collection_id; kwargs...)
     catch e
         @error """
-               Error creating element in collection $collection_name
+               Error creating element in collection \"$collection_id\"
                error message: $(e.msg)
                """
         rethrow(e)
@@ -177,8 +177,8 @@ function _all_vector_of_group_must_have_same_size!(
     end
     unique_lengths = unique(values(dict_of_lengths))
     if length(unique_lengths) > 1
-        error(
-            "All vectors of table $table_name must have the same length. These are the current lengths: $(_show_sizes_of_vectors_in_string(dict_of_lengths)) ",
+        psr_database_sqlite_error(
+            "All vectors of table \"$table_name\" must have the same length. These are the current lengths: $(_show_sizes_of_vectors_in_string(dict_of_lengths)) ",
         )
     end
     length_first_vector = unique_lengths[1]
@@ -200,7 +200,7 @@ function _show_sizes_of_vectors_in_string(dict_of_lengths::Dict{String, Int})
 end
 
 function _get_label_or_id(
-    collection_name::String,
+    collection_id::String,
     dict_scalar_attributes,
 )
     if haskey(dict_scalar_attributes, :label)
@@ -208,7 +208,7 @@ function _get_label_or_id(
     elseif haskey(dict_scalar_attributes, :id)
         return dict_scalar_attributes[:id]
     else
-        error("No label or id was provided for collection $collection.")
+        psr_database_sqlite_error("No label or id was provided for collection $collection.")
     end
 end
 
@@ -240,21 +240,21 @@ function _convert_date_to_string(
 )
     dates = DateTime.(values)
     if !issorted(dates)
-        error("Vector of dates must be sorted.")
+        psr_database_sqlite_error("Vector of dates must be sorted.")
     end
     return string.(dates)
 end
 _convert_date_to_string(value) = value
 
 function _replace_scalar_relation_labels_with_id!(
-    db::PSRDBSQLite,
-    collection_name::String,
+    db::DatabaseSQLite,
+    collection_id::String,
     scalar_attributes,
 )
     for (key, value) in scalar_attributes
-        if _is_scalar_relation(db, collection_name, string(key)) &&
+        if _is_scalar_relation(db, collection_id, string(key)) &&
            isa(value, String)
-            scalar_relation = _get_attribute(db, collection_name, string(key))
+            scalar_relation = _get_attribute(db, collection_id, string(key))
             collection_to = scalar_relation.relation_collection
             scalar_attributes[key] = _get_id(db, collection_to, value)
         end
@@ -263,14 +263,14 @@ function _replace_scalar_relation_labels_with_id!(
 end
 
 function _replace_vector_relation_labels_with_ids!(
-    db::PSRDBSQLite,
-    collection_name::String,
+    db::DatabaseSQLite,
+    collection_id::String,
     vector_attributes,
 )
     for (key, value) in vector_attributes
-        if _is_vector_relation(db, collection_name, string(key)) &&
+        if _is_vector_relation(db, collection_id, string(key)) &&
            isa(value, Vector{String})
-            vector_relation = _get_attribute(db, collection_name, string(key))
+            vector_relation = _get_attribute(db, collection_id, string(key))
             collection_to = vector_relation.relation_collection
             vec_of_ids = zeros(Int, length(value))
             for i in eachindex(value)
@@ -283,15 +283,15 @@ function _replace_vector_relation_labels_with_ids!(
 end
 
 function _validate_attribute_types_on_creation!(
-    db::PSRDBSQLite,
-    collection_name::String,
+    db::DatabaseSQLite,
+    collection_id::String,
     dict_scalar_attributes::AbstractDict,
     dict_vector_attributes::AbstractDict,
 )
-    label_or_id = _get_label_or_id(collection_name, dict_scalar_attributes)
+    label_or_id = _get_label_or_id(collection_id, dict_scalar_attributes)
     _validate_attribute_types!(
         db,
-        collection_name,
+        collection_id,
         label_or_id,
         dict_scalar_attributes,
         dict_vector_attributes,
@@ -299,14 +299,14 @@ function _validate_attribute_types_on_creation!(
     return nothing
 end
 
-function _validate_create_elements_kwargs(collection_name::String, kwargs)
+function _validate_create_elements_kwargs(collection_id::String, kwargs)
     if !haskey(kwargs, :label)
-        if collection_name != "Configuration"
-            @warn("Creating an element in collection \"$collection_name\" without \"label\"")
+        if collection_id != "Configuration"
+            @warn("Creating an element in collection \"$collection_id\" without \"label\"")
         end
         if !haskey(kwargs, :id)
-            error(
-                "User tried to create an element in collection \"$collection_name\" without \"id\" nor \"label\". This is not allowed.",
+            psr_database_sqlite_error(
+                "User tried to create an element in collection \"$collection_id\" without \"id\" nor \"label\". This is not allowed.",
             )
         end
     end
