@@ -82,7 +82,7 @@ function _create_collection_scalar_relations(db::SQLite.DB, collection_id::Strin
     df_table_infos = table_info(db, scalar_attributes_table)
     scalar_relations = OrderedDict{String, ScalarRelation}()
     for foreign_key in eachrow(df_foreign_keys_list)
-        _warn_if_foreign_keys_does_not_cascade(collection_id, foreign_key)
+        _validate_actions_on_foreign_key(collection_id, scalar_attributes_table, foreign_key)
         id = foreign_key.from
         # This is not the optimal way of doing
         # this query but it is fast enough.
@@ -133,6 +133,12 @@ function _create_collection_vector_parameters(db::SQLite.DB, collection_id::Stri
             if id == "id" || id == "vector_index"
                 # These are obligatory for every vector table
                 # and have no point in being stored in the database definition.
+                if vector_attribute.pk == 0
+                    psr_database_sqlite_error(
+                        "Invalid table \"$(table_name)\" of vector attributes of collection \"$(collection_id)\". " *
+                        "The column \"$(vector_attribute.name)\" is not a primary key but it should."
+                    )
+                end
                 continue
             end
             if id in df_foreign_keys_list.from
@@ -170,10 +176,19 @@ function _create_collection_vector_relations(db::SQLite.DB, collection_id::Strin
         df_table_infos = table_info(db, table_name)
         df_foreign_keys_list = foreign_keys_list(db, table_name)
         for foreign_key in eachrow(df_foreign_keys_list)
-            _warn_if_foreign_keys_does_not_cascade(collection_id, foreign_key)
+            _validate_actions_on_foreign_key(collection_id, table_name, foreign_key)
             id = foreign_key.from
-            if id == "id"
-                # This is obligatory for every vector table.
+            if id == "id" || id == "vector_index"
+                # These are obligatory for every vector table
+                # and have no point in being stored in the database definition.
+                for column in eachrow(df_table_infos)
+                    if column.name in ["id", "vector_index"] && column.pk == 0
+                        psr_database_sqlite_error(
+                            "Invalid table \"$(table_name)\" of vector attributes of collection \"$(collection_id)\". " *
+                            "The column \"$(column.name)\" is not a primary key but it should."
+                        )
+                    end
+                end
                 continue
             end
             # This is not the optimal way of doing
@@ -310,19 +325,40 @@ function _get_collection_time_series_tables(::SQLite.DB, collection_id::String)
     return string(collection_id, "_timeseriesfiles")
 end
 
-function _warn_if_foreign_keys_does_not_cascade(
+function _validate_actions_on_foreign_key(
     collection_id::String,
+    table_name::String,
     foreign_key::DataFrameRow,
 )
     foreign_key_name = foreign_key.from
+    table = foreign_key.table
     on_update = foreign_key.on_update
     on_delete = foreign_key.on_delete
-    if on_update != "CASCADE" && on_delete != "CASCADE"
-        @warn """
-        Attribute `$foreign_key_name` in collection `$collection_id` does not cascade on update or on delete. This might cause problems in the future. It is recommended to set both to CASCADE.
-        on_update: $on_update
-        on_delete: $on_delete
-        """
+
+    num_errors = 0
+    if foreign_key_name == "id"
+        if table != collection_id
+            @error("The foreign key \"id\" in table \"$table_name\" of collection \"$collection_id\" does not reference the collection \"$collection_id\". You must set it to reference the collection \"$collection_id\".")
+            num_errors += 1
+        end
+        if on_delete != "CASCADE"
+            @error("The foreign key \"id\" in table \"$table_name\" of collection \"$collection_id\" does not cascade on delete. This might cause problems in the future. You must set it to \"CASCADE\".")
+            num_errors += 1
+        end
+    else
+        if on_delete != "SET NULL"
+            @error("The foreign key \"$foreign_key_name\" in table \"$table_name\" of collection \"$collection_id\" does not set to null on delete. You must set it to \"SET NULL\".")
+            num_errors += 1
+        end
+    end
+
+    if on_update != "CASCADE"
+        @error("The foreign key \"id\" in table \"$table_name\" of collection \"$collection_id\" does not cascade on update. This might cause problems in the future. You must set it to \"CASCADE\".")
+        num_errors += 1
+    end
+
+    if num_errors > 0
+        psr_database_sqlite_error("Database definition has $num_errors errors.")
     end
     return nothing
 end

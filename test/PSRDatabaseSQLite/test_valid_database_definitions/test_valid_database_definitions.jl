@@ -52,6 +52,34 @@ function test_invalid_database_with_invalid_collection_id()
     return nothing
 end
 
+function test_invalid_vector_table()
+    path_schema =
+        joinpath(@__DIR__, "test_invalid_vector_table.sql")
+    db_path =
+        joinpath(@__DIR__, "test_invalid_vector_table.sqlite")
+    @test_throws PSRDatabaseSQLite.DatabaseException  PSRDatabaseSQLite.create_empty_db_from_schema(
+        db_path,
+        path_schema;
+        force = true,
+    )
+    rm(db_path)
+    return nothing
+end
+
+function test_invalid_database_foreign_key_actions()
+    path_schema =
+        joinpath(@__DIR__, "test_invalid_database_foreign_key_actions.sql")
+    db_path =
+        joinpath(@__DIR__, "test_invalid_database_foreign_key_actions.sqlite")
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_empty_db_from_schema(
+        db_path,
+        path_schema;
+        force = true,
+    )
+    rm(db_path)
+    return nothing
+end
+
 function test_invalid_database_vector_table_without_vector_index()
     path_schema =
         joinpath(@__DIR__, "test_invalid_database_vector_table_without_vector_index.sql")
@@ -96,7 +124,6 @@ function test_invalid_foreign_key_has_not_null_constraint()
         path_schema;
         force = true,
     )
-    @test true
     rm(db_path)
     return nothing
 end
@@ -109,7 +136,6 @@ function test_invalid_relation_attribute()
         path_schema;
         force = true,
     )
-    @test true
     rm(db_path)
     return nothing
 end

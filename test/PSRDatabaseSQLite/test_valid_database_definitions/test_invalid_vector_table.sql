@@ -1,0 +1,21 @@
+PRAGMA user_version = 1;
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE Configuration (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    label TEXT UNIQUE,
+    value1 REAL NOT NULL DEFAULT 100
+) STRICT;
+
+CREATE TABLE MultiFuelThermalPlant (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    label TEXT UNIQUE,
+    capacity REAL NOT NULL DEFAULT 0
+) STRICT;
+
+CREATE TABLE MultiFuelThermalPlant_vector_fuels (
+    id INTEGER PRIMARY KEY AUTOINCREMENT, 
+    vector_index INTEGER NOT NULL,
+    something INTEGER,
+    FOREIGN KEY(id) REFERENCES MultiFuelThermalPlant(id) ON DELETE CASCADE ON UPDATE CASCADE
+) STRICT; 

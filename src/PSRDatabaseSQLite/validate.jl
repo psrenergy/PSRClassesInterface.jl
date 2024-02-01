@@ -120,7 +120,7 @@ function _validate_database(db::SQLite.DB)
                 Valid table name formats are:
                 - Collections: NameOfCollection
                 - Vector attributes: NameOfCollection_vector_group_id
-                - Time series: NameOfCollection_timeseries
+                - Time series: NameOfCollection_timeseriesfiles
                 """)
             num_errors += 1
         end

@@ -237,7 +237,7 @@ function _is_collection_id(name::String)
 end
 
 function _is_collection_vector_table_name(name::String, collection_id::String)
-    return occursin("$(collection_id)_vector_", name)
+    return startswith(name, "$(collection_id)_vector_")
 end
 
 _get_collection_ids(db::DatabaseSQLite) = collect(keys(db.collections_map))

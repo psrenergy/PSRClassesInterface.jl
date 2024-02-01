@@ -38,9 +38,9 @@ CREATE TABLE Plant (
     resource_id INTEGER,
     plant_turbine_to INTEGER,
     plant_spill_to INTEGER,
-    FOREIGN KEY(resource_id) REFERENCES Resource(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY(plant_turbine_to) REFERENCES Plant(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY(plant_spill_to) REFERENCES Plant(id) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY(resource_id) REFERENCES Resource(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY(plant_turbine_to) REFERENCES Plant(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY(plant_spill_to) REFERENCES Plant(id) ON DELETE SET NULL ON UPDATE CASCADE
 ) STRICT;
 
 CREATE TABLE Plant_vector_cost_relation (
@@ -50,7 +50,7 @@ CREATE TABLE Plant_vector_cost_relation (
     date_some_date TEXT,
     cost_id INTEGER,
     FOREIGN KEY(id) REFERENCES Plant(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY(cost_id) REFERENCES Cost(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY(cost_id) REFERENCES Cost(id) ON DELETE SET NULL ON UPDATE CASCADE,
     PRIMARY KEY (id, vector_index)
 ) STRICT;
 

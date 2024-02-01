@@ -12,8 +12,8 @@ CREATE TABLE Plant (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     label TEXT UNIQUE,
     capacity REAL NOT NULL DEFAULT 0,
-    plant_turbine_to INTEGER NOT NULL,
+    plant_turbine_to INTEGER,
     plant_spill_to INTEGER,
-    FOREIGN KEY(plant_turbine_to) REFERENCES Plant(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY(plant_turbine_to) REFERENCES Plant(id) ON DELETE CASCADE ON UPDATE SET NULL,
     FOREIGN KEY(plant_spill_to) REFERENCES Plant(id) ON DELETE SET NULL ON UPDATE CASCADE
 ) STRICT;

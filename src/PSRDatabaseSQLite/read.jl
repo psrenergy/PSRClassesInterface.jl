@@ -161,9 +161,9 @@ function read_scalar_relations(
         relation_type,
     )
     names_in_collection_to = read_scalar_parameters(db, collection_to, "label")
-    ids_in_collection_to = read_scalar_parameters(db, collection_to, "id")
-    replace_dict = Dict{Any, String}(zip(ids_in_collection_to, names_in_collection_to))
-    push!(replace_dict, missing => "")
+    num_elements = length(names_in_collection_to)
+    replace_dict = Dict{Any, String}(zip(collect(1:num_elements), names_in_collection_to))
+    push!(replace_dict, _opensql_default_value_for_type(Int) => "")
     return replace(map_of_elements, replace_dict...)
 end
 
@@ -204,16 +204,16 @@ function _get_scalar_relation_map(
     df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
     results = df[!, 1]
     num_results = length(results)
-    map_of_indexes = Vector{Union{Int, Missing}}(undef, num_results)
-    ids_in_collection_from = read_scalar_parameters(db, collection_from, "id")
+    map_of_indexes = Vector{Int}(undef, num_results)
+    ids_in_collection_to = read_scalar_parameters(db, collection_to, "id")
     for i in 1:num_results
         if ismissing(results[i])
-            map_of_indexes[i] = missing
+            map_of_indexes[i] = _opensql_default_value_for_type(Int)
         else
-            map_of_indexes[i] = findfirst(isequal(results[i]), ids_in_collection_from)
+            map_of_indexes[i] = findfirst(isequal(results[i]), ids_in_collection_to)
         end
     end
-    return results
+    return map_of_indexes
 end
 
 function read_vector_relations(
@@ -230,9 +230,9 @@ function read_vector_relations(
     )
 
     names_in_collection_to = read_scalar_parameters(db, collection_to, "label")
-    ids_in_collection_to = read_scalar_parameters(db, collection_to, "id")
-    replace_dict = Dict{Any, String}(zip(ids_in_collection_to, names_in_collection_to))
-    push!(replace_dict, missing => "")
+    num_elements = length(names_in_collection_to)
+    replace_dict = Dict{Any, String}(zip(collect(1:num_elements), names_in_collection_to))
+    push!(replace_dict, _opensql_default_value_for_type(Int) => "")
 
     map_with_labels = Vector{Vector{String}}(undef, length(map_of_vector_with_indexes))
 
@@ -276,23 +276,30 @@ function _get_vector_relation_map(
     )
     attribute = _get_attribute(db, collection_from, attribute_on_collection_from)
 
-    query = "SELECT id, vector_index, $(attribute.id) FROM $(attribute.table_where_is_located) ORDER BY rowid, vector_index"
+    query = "SELECT id, vector_index, $(attribute.id) FROM $(attribute.table_where_is_located) ORDER BY id, vector_index"
     df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
     id = df[!, 1]
     results = df[!, 3]
 
     ids_in_collection_from = read_scalar_parameters(db, collection_from, "id")
+    ids_in_collection_to = read_scalar_parameters(db, collection_to, "id")
     num_ids = length(ids_in_collection_from)
-    map_of_vector_with_indexes = Vector{Vector{Union{Int, Missing}}}(undef, num_ids)
+    map_of_vector_with_indexes = Vector{Vector{Int}}(undef, num_ids)
     for i in 1:num_ids
-        map_of_vector_with_indexes[i] = Vector{Union{Int, Missing}}(undef, 0)
+        map_of_vector_with_indexes[i] = Vector{Int}(undef, 0)
     end
 
     num_rows = size(df, 1)
     for i in 1:num_rows
         index_of_id = findfirst(isequal(id[i]), ids_in_collection_from)
-        if index_of_id !== nothing
-            push!(map_of_vector_with_indexes[index_of_id], results[i])
+        index_of_id_collection_to = findfirst(isequal(results[i]), ids_in_collection_to)
+        if isnothing(index_of_id)
+           continue
+        end
+        if isnothing(index_of_id_collection_to)
+            push!(map_of_vector_with_indexes[index_of_id], _opensql_default_value_for_type(Int))
+        else
+            push!(map_of_vector_with_indexes[index_of_id], index_of_id_collection_to)
         end
     end
 
