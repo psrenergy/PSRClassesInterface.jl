@@ -273,8 +273,9 @@ function test_read_time_series_files()
     PSRDatabaseSQLite.set_time_series_file!(db, "Plant"; wind_speed = "some_file3.txt")
     @test PSRDatabaseSQLite.read_time_series_file(db, "Plant", "wind_speed") ==
           "some_file3.txt"
-    @test PSRDatabaseSQLite.read_time_series_file(db, "Plant", "wind_direction") |>
-          ismissing
+    @test PSRDatabaseSQLite.read_time_series_file(db, "Plant", "wind_direction") == "some_file2"
+    PSRDatabaseSQLite.close!(db)
+    return rm(db_path)
 end
 
 function runtests()

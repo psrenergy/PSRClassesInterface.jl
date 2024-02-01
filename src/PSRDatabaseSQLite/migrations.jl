@@ -173,7 +173,7 @@ function apply_migrations!(
     direction::Symbol,
 )
     if from == to
-        psr_database_sqlite_error("starting at $from and ending at $to is not a valid migration range.")
+        return db
     end
 
     migrations = get_sorted_migrations(path_migrations_directory)

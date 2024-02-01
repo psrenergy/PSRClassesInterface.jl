@@ -375,6 +375,37 @@ function test_create_time_series_files()
     return rm(db_path)
 end
 
+function test_update_time_series()
+    path_schema = joinpath(@__DIR__, "test_update_time_series.sql")
+    db_path = joinpath(@__DIR__, "test_update_time_series.sqlite")
+    db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
+    PSRDatabaseSQLite.create_element!(db, "Plant"; label = "Solar")
+    @test PSRDatabaseSQLite.read_time_series_file(db, "Plant", "generation") == ""
+    PSRDatabaseSQLite.set_time_series_file!(db, "Plant"; generation = "hrrnew.csv")
+    @test PSRDatabaseSQLite.read_time_series_file(db, "Plant", "generation") == "hrrnew.csv"
+    PSRDatabaseSQLite.set_time_series_file!(db, "Plant"; generation = "hrrnew2.csv")
+    @test PSRDatabaseSQLite.read_time_series_file(db, "Plant", "generation") == "hrrnew2.csv"
+    PSRDatabaseSQLite.close!(db)
+
+    db = PSRDatabaseSQLite.load_db(db_path)
+    @test PSRDatabaseSQLite.read_time_series_file(db, "Plant", "generation") == "hrrnew2.csv"
+    PSRDatabaseSQLite.set_time_series_file!(db, "Plant"; generation = "hrrnew3.csv")
+    @test PSRDatabaseSQLite.read_time_series_file(db, "Plant", "generation") == "hrrnew3.csv"
+
+    PSRDatabaseSQLite.create_element!(db, "Resource"; label = "Resource 1")
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.set_time_series_file!(db, "Resource"; wind_speed = "some_file.txt")
+    PSRDatabaseSQLite.set_time_series_file!(db, "Resource"; generation = "gen.txt")
+    @test PSRDatabaseSQLite.read_time_series_file(db, "Resource", "generation") == "gen.txt"
+    @test PSRDatabaseSQLite.read_time_series_file(db, "Resource", "other_generation") == ""
+
+    PSRDatabaseSQLite.set_time_series_file!(db, "Resource"; generation = "gen.txt", other_generation = "other_gen.txt")
+    @test PSRDatabaseSQLite.read_time_series_file(db, "Resource", "generation") == "gen.txt"
+    @test PSRDatabaseSQLite.read_time_series_file(db, "Resource", "other_generation") == "other_gen.txt"
+    
+    PSRDatabaseSQLite.close!(db)
+    return rm(db_path)
+end
+
 function runtests()
     Base.GC.gc()
     Base.GC.gc()

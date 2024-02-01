@@ -289,22 +289,41 @@ function set_time_series_file!(
         _validate_time_series_attribute_value(value)
         dict_time_series[key] = value
     end
-    # Delete every previous entry and then add it again
-    # it must be done within a transaction so we don't lose
-    # the time series files if something goes wrong
-    cols = join(keys(dict_time_series), ", ")
-    vals = join(values(dict_time_series), "', '")
-    savepoint_name = string("SQLITE", Random.randstring(10))
-    DBInterface.execute(db.sqlite_db, "SAVEPOINT $savepoint_name;")
-    try
-        DBInterface.execute(db.sqlite_db, "DELETE FROM $table_name")
+    # Count the number of elements in the time series
+    df_count = DBInterface.execute(
+        db.sqlite_db,
+        "SELECT COUNT(*) FROM $table_name",
+    ) |> DataFrame
+    num_elements = df_count[1, 1]
+    if num_elements == 0
+        cols = join(keys(dict_time_series), ", ")
+        vals = join(values(dict_time_series), "', '")
         DBInterface.execute(
             db.sqlite_db,
             "INSERT INTO $table_name ($cols) VALUES ('$vals')",
         )
-    catch e
-        DBInterface.execute(db.sqlite_db, "ROLLBACK TO SAVEPOINT $savepoint_name;")
-        rethrow(e)
+    elseif num_elements == 1
+        cols_vals = join(
+            [string(key, " = '", value, "'") for (key, value) in dict_time_series],
+            ", ",
+        )
+        DBInterface.execute(
+            db.sqlite_db,
+            """
+            WITH TimeSeriesUpdate AS
+            (
+                SELECT * FROM $table_name
+            )
+            UPDATE $table_name
+                SET $cols_vals
+            """
+        )
+    else
+        psr_database_sqlite_error(
+            "There are currently $num_elements time series files in the collection $collection_id. " *
+            "This is invalid, there should be only one entry in this table."
+        )
+            
     end
     return nothing
 end

@@ -310,7 +310,7 @@ function read_time_series_file(
     db::DatabaseSQLite,
     collection_id::String,
     attribute_id::String,
-)
+)::String
     _throw_if_attribute_is_not_time_series_file(
         db,
         collection_id,
@@ -322,13 +322,18 @@ function read_time_series_file(
 
     query = "SELECT $(attribute.id) FROM $table ORDER BY rowid"
     df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
-    if size(df, 1) > 1
+    result = df[!, 1]
+    if isempty(result)
+        return ""
+    elseif size(df, 1) > 1
         psr_database_sqlite_error(
             "Table $table has more than one row. As a time series file, it should have only one row.",
         )
+    elseif ismissing(result[1])
+        return ""
+    else
+        return result[1]
     end
-    results = df[!, 1][1]
-    return results
 end
 
 function _treat_query_result(
