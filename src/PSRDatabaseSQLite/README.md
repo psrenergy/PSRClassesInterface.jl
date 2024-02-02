@@ -78,7 +78,7 @@ CREATE TABLE Plant(
     gaugingstation_id INTEGER,
     plant_spill_to INTEGER,
     FOREIGN KEY(gaugingstation_id) REFERENCES GaugingStation(id) ON UPDATE CASCADE ON DELETE CASCADE,
-    FOREIGN KEY(plant_spill_to) REFERENCES Plant(id) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY(plant_spill_to) REFERENCES Plant(id) ON UPDATE SET NULL ON DELETE CASCADE
 ) STRICT;
 ```
 
