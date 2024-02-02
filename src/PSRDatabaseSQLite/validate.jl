@@ -147,7 +147,7 @@ function _get_correct_method_to_use(correct_composite_type::Type, action::Symbol
             end
         end
     else
-        psr_database_sqlite_error()
+        psr_database_sqlite_error("Invalid action: $action")
     end
 end
 
