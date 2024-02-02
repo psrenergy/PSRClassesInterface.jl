@@ -39,11 +39,10 @@ function _update_scalar_parameter!(
     val,
 )
     attribute = _get_attribute(db, collection_id, attribute_id)
-    new_value = _convert_date_to_string(val)
     table_name = attribute.table_where_is_located
     DBInterface.execute(
         db.sqlite_db,
-        "UPDATE $table_name SET $attribute_id = '$new_value' WHERE id = '$id'",
+        "UPDATE $table_name SET $attribute_id = '$val' WHERE id = '$id'",
     )
     return nothing
 end
@@ -81,7 +80,6 @@ function _update_vector_parameters!(
 )
     attribute = _get_attribute(db, collection_id, attribute_id)
     group_id = attribute.group_id
-    new_vals = _convert_date_to_string(vals)
     table_name = attribute.table_where_is_located
     num_new_elements = length(vals)
     df_num_rows =
@@ -110,7 +108,7 @@ function _update_vector_parameters!(
         end
     else
         # Update the elements
-        for (i, val) in enumerate(new_vals)
+        for (i, val) in enumerate(vals)
             DBInterface.execute(
                 db.sqlite_db,
                 "UPDATE $table_name SET $attribute_id = '$val' WHERE id = '$id' AND vector_index = '$i'",

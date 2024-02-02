@@ -129,7 +129,6 @@ function _create_element!(
         dict_scalar_attributes,
         dict_vector_attributes,
     )
-    _convert_date_to_string!(dict_scalar_attributes, dict_vector_attributes)
 
     _create_scalar_attributes!(db, collection_id, dict_scalar_attributes)
 
@@ -211,40 +210,6 @@ function _get_label_or_id(
         psr_database_sqlite_error("No label or id was provided for collection $collection.")
     end
 end
-
-function _convert_date_to_string!(
-    dict_scalar_attributes::AbstractDict,
-    dict_vector_attributes::AbstractDict,
-)
-    for (key, value) in dict_scalar_attributes
-        if startswith(string(key), "date")
-            dict_scalar_attributes[key] = _convert_date_to_string(value)
-        end
-    end
-    for (key, value) in dict_vector_attributes
-        if startswith(string(key), "date")
-            dict_vector_attributes[key] = _convert_date_to_string(value)
-        end
-    end
-    return nothing
-end
-
-function _convert_date_to_string(
-    value::TimeType,
-)
-    return string(DateTime(value))
-end
-
-function _convert_date_to_string(
-    values::AbstractVector{<:TimeType},
-)
-    dates = DateTime.(values)
-    if !issorted(dates)
-        psr_database_sqlite_error("Vector of dates must be sorted.")
-    end
-    return string.(dates)
-end
-_convert_date_to_string(value) = value
 
 function _replace_scalar_relation_labels_with_id!(
     db::DatabaseSQLite,

@@ -175,7 +175,7 @@ function test_create_small_time_series_as_vectors()
         date_of_modification = [DateTime(2000), DateTime(2001)],
         some_value = [1.0, 2.0],
     )
-    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
+    PSRDatabaseSQLite.create_element!(
         db,
         "Resource";
         label = "Resource 2",
