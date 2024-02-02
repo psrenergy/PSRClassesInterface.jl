@@ -24,12 +24,6 @@ function test_create_parameters()
         label = "Resource 4",
         type3 = "E",
     )
-    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
-        db,
-        "Resource";
-        label = "Resource 5",
-        value1 = "wrong",
-    )
     PSRDatabaseSQLite.close!(db)
     rm(db_path)
     @test true

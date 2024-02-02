@@ -38,7 +38,7 @@ CREATE TABLE Process_vector_input (
     input_factor REAL,
     FOREIGN KEY (id) REFERENCES Process(id) ON UPDATE CASCADE ON DELETE CASCADE,
     PRIMARY KEY (id, vector_index),
-    FOREIGN KEY (product_id) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY (product_id) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE SET NULL
 );
 
 CREATE TABLE Process_vector_output (
@@ -48,5 +48,5 @@ CREATE TABLE Process_vector_output (
     output_factor REAL,
     FOREIGN KEY (id) REFERENCES Process(id) ON UPDATE CASCADE ON DELETE CASCADE,
     PRIMARY KEY (id, vector_index),
-    FOREIGN KEY (product_id) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE CASCADE
+    FOREIGN KEY (product_id) REFERENCES Product(id) ON UPDATE CASCADE ON DELETE SET NULL
 );

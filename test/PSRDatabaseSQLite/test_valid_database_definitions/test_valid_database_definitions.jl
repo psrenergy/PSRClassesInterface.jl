@@ -57,7 +57,7 @@ function test_invalid_vector_table()
         joinpath(@__DIR__, "test_invalid_vector_table.sql")
     db_path =
         joinpath(@__DIR__, "test_invalid_vector_table.sqlite")
-    @test_throws PSRDatabaseSQLite.DatabaseException  PSRDatabaseSQLite.create_empty_db_from_schema(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_empty_db_from_schema(
         db_path,
         path_schema;
         force = true,
