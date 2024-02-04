@@ -1,6 +1,6 @@
 # DatabaseSQLite
 
-Following PSRI's `OpenStudy` standards, SQL schemas for the `DatabaseSQLite` framework should follow the conventions described in this document.
+Following PSRI's `OpenStudy` standards, SQL schemas for the `DatabaseSQLite` framework should follow the conventions described in this document. Note that this is a tool for creating and developing some kinds of applications. Not all tools will need to use this framework.
 
 
 ## SQL Schema Conventions

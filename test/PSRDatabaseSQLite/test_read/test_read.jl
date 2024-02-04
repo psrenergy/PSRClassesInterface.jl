@@ -200,14 +200,6 @@ function test_read_relations()
         "Plant 2",
         "turbine_to",
     )
-    PSRDatabaseSQLite.set_scalar_relation!(
-        db,
-        "Plant",
-        "Resource",
-        "Plant 1",
-        "Resource 1",
-        "id",
-    )
     PSRDatabaseSQLite.set_vector_relation!(db, "Plant", "Cost", "Plant 1", ["Cost 1"], "id")
     PSRDatabaseSQLite.set_vector_relation!(
         db,
