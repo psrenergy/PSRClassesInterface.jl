@@ -9,7 +9,7 @@ Following PSRI's `OpenStudy` standards, SQL schemas for the `OpenSQL` framework 
 ### Collections
 
 - The Table name should be the same as the name of the Collection.
-- The Table name of a Collection should beging with a capital letter and be in singular form.
+- The Table name of a Collection should begin with a capital letter and be in singular form.
 - In case of a Collection with a composite name, the Table name should written in Pascal Case.
 - The Table must contain a primary key named `id` that is an `INTEGER`.
 
@@ -83,7 +83,7 @@ CREATE TABLE ThermalPlant_vector_some_value(
 - All Time Series for the elements from a Collection should be stored in a Table
 - The Table name should be the same as the name of the Collection followed by `_timeseries`, as presented below
 
-<p style="text-align: center"> COLLECTION_vector_ATTRIBUTE</p>
+<p style="text-align: center"> COLLECTION_timeseries_ATTRIBUTE</p>
 
 - Each Column of the table should be named after the name of the attribute.
 - Each Column should store the path to the file containing the time series data.
