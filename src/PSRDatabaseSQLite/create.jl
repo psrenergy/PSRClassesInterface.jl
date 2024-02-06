@@ -105,7 +105,6 @@ function _create_element!(
     kwargs...,
 )
     _throw_if_collection_does_not_exist(db, collection_id)
-    _validate_create_elements_kwargs(collection_id, kwargs)
     dict_scalar_attributes = Dict{Symbol, Any}()
     dict_vector_attributes = Dict{Symbol, Any}()
 
@@ -204,7 +203,9 @@ function _get_label_or_id(
     collection_id::String,
     dict_scalar_attributes,
 )
-    if haskey(dict_scalar_attributes, :label)
+    if collection_id == "Configuration"
+        return 1
+    elseif haskey(dict_scalar_attributes, :label)
         return dict_scalar_attributes[:label]
     elseif haskey(dict_scalar_attributes, :id)
         return dict_scalar_attributes[:id]
@@ -263,19 +264,5 @@ function _validate_attribute_types_on_creation!(
         dict_scalar_attributes,
         dict_vector_attributes,
     )
-    return nothing
-end
-
-function _validate_create_elements_kwargs(collection_id::String, kwargs)
-    if !haskey(kwargs, :label)
-        if collection_id != "Configuration"
-            @warn("Creating an element in collection \"$collection_id\" without \"label\"")
-        end
-        if !haskey(kwargs, :id)
-            psr_database_sqlite_error(
-                "User tried to create an element in collection \"$collection_id\" without \"id\" nor \"label\". This is not allowed.",
-            )
-        end
-    end
     return nothing
 end
