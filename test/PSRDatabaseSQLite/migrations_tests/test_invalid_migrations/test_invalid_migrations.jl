@@ -6,7 +6,9 @@ using Test
 
 function test_invalid_migrations()
     path_migrations_directory = joinpath(@__DIR__, "migrations")
-    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.test_migrations(path_migrations_directory)
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.test_migrations(
+        path_migrations_directory,
+    )
     return nothing
 end
 

@@ -114,7 +114,8 @@ function _get_related_collection_from_attribute_id(attribute_id::String)
 end
 
 function _check_valid_relation_name(attribute_id::String, related_collection::String)
-    related_collection_from_attribute_id = _get_related_collection_from_attribute_id(attribute_id)
+    related_collection_from_attribute_id =
+        _get_related_collection_from_attribute_id(attribute_id)
     if related_collection_from_attribute_id != lowercase(related_collection)
         psr_database_sqlite_error(
             """

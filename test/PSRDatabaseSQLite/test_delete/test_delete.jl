@@ -32,7 +32,11 @@ function test_delete_element()
         plant_turbine_to = "Plant 1",
     )
     PSRDatabaseSQLite.create_element!(db, "Plant"; label = "Plant 3", capacity = 50.0)
-    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.delete_element!(db, "Plant", "Plant 14")
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.delete_element!(
+        db,
+        "Plant",
+        "Plant 14",
+    )
     @test_throws SQLite.SQLiteException PSRDatabaseSQLite.create_element!(
         db,
         "Plant";
@@ -108,13 +112,17 @@ function test_delete_cascade()
         "id",
     )
 
-    @test PSRDatabaseSQLite.read_scalar_relations(db, "ThermalPlant", "Fuel", "id") == ["Fuel 1", "Fuel 2"]
-    @test PSRDatabaseSQLite._get_scalar_relation_map(db, "ThermalPlant", "Fuel", "id") == [1, 2]
+    @test PSRDatabaseSQLite.read_scalar_relations(db, "ThermalPlant", "Fuel", "id") ==
+          ["Fuel 1", "Fuel 2"]
+    @test PSRDatabaseSQLite._get_scalar_relation_map(db, "ThermalPlant", "Fuel", "id") ==
+          [1, 2]
 
     PSRDatabaseSQLite.delete_element!(db, "Fuel", "Fuel 1")
 
-    @test PSRDatabaseSQLite.read_scalar_relations(db, "ThermalPlant", "Fuel", "id") == ["", "Fuel 2"]
-    @test PSRDatabaseSQLite._get_scalar_relation_map(db, "ThermalPlant", "Fuel", "id") == [typemin(Int), 1]
+    @test PSRDatabaseSQLite.read_scalar_relations(db, "ThermalPlant", "Fuel", "id") ==
+          ["", "Fuel 2"]
+    @test PSRDatabaseSQLite._get_scalar_relation_map(db, "ThermalPlant", "Fuel", "id") ==
+          [typemin(Int), 1]
     fuel_labels = PSRDatabaseSQLite.read_scalar_parameters(db, "Fuel", "label")
     @test findfirst(isequal("Fuel 2"), fuel_labels) == 1
 
@@ -143,14 +151,35 @@ function test_delete_cascade()
         "id",
     )
 
-    @test PSRDatabaseSQLite.read_vector_relations(db, "MultiFuelThermalPlant", "Fuel", "id") == [["Fuel 1", "Fuel 2"], ["Fuel 2", "Fuel 3"]]
-    @test PSRDatabaseSQLite.read_scalar_parameters(db, "Fuel", "label") == ["Fuel 2", "Fuel 3", "Fuel 1"]
-    @test PSRDatabaseSQLite._get_vector_relation_map(db, "MultiFuelThermalPlant", "Fuel", "id") == [[3, 1], [1, 2]]
+    @test PSRDatabaseSQLite.read_vector_relations(
+        db,
+        "MultiFuelThermalPlant",
+        "Fuel",
+        "id",
+    ) == [["Fuel 1", "Fuel 2"], ["Fuel 2", "Fuel 3"]]
+    @test PSRDatabaseSQLite.read_scalar_parameters(db, "Fuel", "label") ==
+          ["Fuel 2", "Fuel 3", "Fuel 1"]
+    @test PSRDatabaseSQLite._get_vector_relation_map(
+        db,
+        "MultiFuelThermalPlant",
+        "Fuel",
+        "id",
+    ) == [[3, 1], [1, 2]]
 
     PSRDatabaseSQLite.delete_element!(db, "Fuel", "Fuel 2")
 
-    @test PSRDatabaseSQLite.read_vector_relations(db, "MultiFuelThermalPlant", "Fuel", "id") == [["Fuel 1", ""], ["", "Fuel 3"]]
-    @test PSRDatabaseSQLite._get_vector_relation_map(db, "MultiFuelThermalPlant", "Fuel", "id") == [[2, typemin(Int)], [typemin(Int), 1]]
+    @test PSRDatabaseSQLite.read_vector_relations(
+        db,
+        "MultiFuelThermalPlant",
+        "Fuel",
+        "id",
+    ) == [["Fuel 1", ""], ["", "Fuel 3"]]
+    @test PSRDatabaseSQLite._get_vector_relation_map(
+        db,
+        "MultiFuelThermalPlant",
+        "Fuel",
+        "id",
+    ) == [[2, typemin(Int)], [typemin(Int), 1]]
 
     PSRDatabaseSQLite.close!(db)
     return rm(db_path)

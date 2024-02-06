@@ -13,7 +13,9 @@ end
 
 function test_no_user_version_database()
     db = SQLite.DB()
-    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite._validate_database_pragmas(db)
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite._validate_database_pragmas(
+        db,
+    )
     return nothing
 end
 

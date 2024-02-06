@@ -15,7 +15,9 @@ function _get_id(
     query = "SELECT id FROM $collection_id WHERE label = '$label'"
     df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
     if isempty(df)
-        psr_database_sqlite_error("label \"$label\" does not exist in collection \"$collection_id\".")
+        psr_database_sqlite_error(
+            "label \"$label\" does not exist in collection \"$collection_id\".",
+        )
     end
     result = df[!, 1][1]
     return result
@@ -106,7 +108,7 @@ function read_vector_parameters(
     attribute = _get_attribute(db, collection_id, attribute_id)
     ids_in_table = read_scalar_parameters(db, collection_id, "id")
 
-    results = []
+    results = Vector{attribute.type}[]
     for id in ids_in_table
         push!(results, _query_vector(db, attribute, id; default))
     end
@@ -294,10 +296,13 @@ function _get_vector_relation_map(
         index_of_id = findfirst(isequal(id[i]), ids_in_collection_from)
         index_of_id_collection_to = findfirst(isequal(results[i]), ids_in_collection_to)
         if isnothing(index_of_id)
-           continue
+            continue
         end
         if isnothing(index_of_id_collection_to)
-            push!(map_of_vector_with_indexes[index_of_id], _opensql_default_value_for_type(Int))
+            push!(
+                map_of_vector_with_indexes[index_of_id],
+                _opensql_default_value_for_type(Int),
+            )
         else
             push!(map_of_vector_with_indexes[index_of_id], index_of_id_collection_to)
         end

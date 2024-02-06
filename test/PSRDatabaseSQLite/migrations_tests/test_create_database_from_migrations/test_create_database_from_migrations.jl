@@ -9,9 +9,9 @@ function test_create_database_from_migrations()
     @test PSRDatabaseSQLite.test_migrations(path_migrations_directory)
     db_path = joinpath(@__DIR__, "test_read.sqlite")
     db = PSRDatabaseSQLite.create_empty_db_from_migrations(
-        db_path, 
-        path_migrations_directory; 
-        force = true
+        db_path,
+        path_migrations_directory;
+        force = true,
     )
 
     PSRDatabaseSQLite.close!(db)

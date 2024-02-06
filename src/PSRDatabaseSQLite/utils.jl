@@ -43,7 +43,7 @@ function create_empty_db_from_schema(
     path_schema::String;
     force::Bool = false,
 )
-    _throw_if_file_exists(database_path, force = force)
+    _throw_if_file_exists(database_path; force = force)
     db = try
         DatabaseSQLite_from_schema(
             database_path;
@@ -60,7 +60,7 @@ function create_empty_db_from_migrations(
     path_migrations::String;
     force::Bool = false,
 )
-    _throw_if_file_exists(database_path, force = force)
+    _throw_if_file_exists(database_path; force = force)
     db = try
         DatabaseSQLite_from_migrations(
             database_path;

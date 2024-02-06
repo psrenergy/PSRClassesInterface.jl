@@ -42,7 +42,6 @@ function _create_collections_map!(
     return collections_map
 end
 
-
 function _create_collection_scalar_parameters(db::SQLite.DB, collection_id::String)
     scalar_attributes_table = _get_collection_scalar_attribute_tables(db, collection_id)
     df_table_infos = table_info(db, scalar_attributes_table)
@@ -62,7 +61,9 @@ function _create_collection_scalar_parameters(db::SQLite.DB, collection_id::Stri
         parent_collection = collection_id
         table_where_is_located = scalar_attributes_table
         if haskey(scalar_parameters, id)
-            psr_database_sqlite_error("Duplicated scalar parameter $id incollection $collection_id")
+            psr_database_sqlite_error(
+                "Duplicated scalar parameter $id incollection $collection_id",
+            )
         end
         scalar_parameters[id] = ScalarParameter(
             id,
@@ -82,7 +83,11 @@ function _create_collection_scalar_relations(db::SQLite.DB, collection_id::Strin
     df_table_infos = table_info(db, scalar_attributes_table)
     scalar_relations = OrderedDict{String, ScalarRelation}()
     for foreign_key in eachrow(df_foreign_keys_list)
-        _validate_actions_on_foreign_key(collection_id, scalar_attributes_table, foreign_key)
+        _validate_actions_on_foreign_key(
+            collection_id,
+            scalar_attributes_table,
+            foreign_key,
+        )
         id = foreign_key.from
         # This is not the optimal way of doing
         # this query but it is fast enough.
@@ -102,7 +107,9 @@ function _create_collection_scalar_relations(db::SQLite.DB, collection_id::Strin
         relation_collection = foreign_key.table
         table_where_is_located = scalar_attributes_table
         if haskey(scalar_relations, id)
-            psr_database_sqlite_error("Duplicated scalar relation $id incollection $collection_id")
+            psr_database_sqlite_error(
+                "Duplicated scalar relation $id incollection $collection_id",
+            )
         end
         scalar_relations[id] = ScalarRelation(
             id,
@@ -136,7 +143,7 @@ function _create_collection_vector_parameters(db::SQLite.DB, collection_id::Stri
                 if vector_attribute.pk == 0
                     psr_database_sqlite_error(
                         "Invalid table \"$(table_name)\" of vector attributes of collection \"$(collection_id)\". " *
-                        "The column \"$(vector_attribute.name)\" is not a primary key but it should."
+                        "The column \"$(vector_attribute.name)\" is not a primary key but it should.",
                     )
                 end
                 continue
@@ -151,7 +158,9 @@ function _create_collection_vector_parameters(db::SQLite.DB, collection_id::Stri
             default_value = _get_default_value(type, vector_attribute.dflt_value)
             not_null = Bool(vector_attribute.notnull)
             if haskey(vector_parameters, id)
-                psr_database_sqlite_error("Duplicated vector parameter \"$name\" in collection \"$collection_id\"")
+                psr_database_sqlite_error(
+                    "Duplicated vector parameter \"$name\" in collection \"$collection_id\"",
+                )
             end
             vector_parameters[id] = VectorParameter(
                 id,
@@ -185,7 +194,7 @@ function _create_collection_vector_relations(db::SQLite.DB, collection_id::Strin
                     if column.name in ["id", "vector_index"] && column.pk == 0
                         psr_database_sqlite_error(
                             "Invalid table \"$(table_name)\" of vector attributes of collection \"$(collection_id)\". " *
-                            "The column \"$(column.name)\" is not a primary key but it should."
+                            "The column \"$(column.name)\" is not a primary key but it should.",
                         )
                     end
                 end
@@ -208,7 +217,9 @@ function _create_collection_vector_relations(db::SQLite.DB, collection_id::Strin
             relation_collection = foreign_key.table
             table_where_is_located = table_name
             if haskey(vector_relations, id)
-                psr_database_sqlite_error("Duplicated vector relation \"$id\" in collection \"$collection_id\"")
+                psr_database_sqlite_error(
+                    "Duplicated vector relation \"$id\" in collection \"$collection_id\"",
+                )
             end
             vector_relations[id] = VectorRelation(
                 id,
@@ -338,22 +349,30 @@ function _validate_actions_on_foreign_key(
     num_errors = 0
     if foreign_key_name == "id"
         if table != collection_id
-            @error("The foreign key \"id\" in table \"$table_name\" of collection \"$collection_id\" does not reference the collection \"$collection_id\". You must set it to reference the collection \"$collection_id\".")
+            @error(
+                "The foreign key \"id\" in table \"$table_name\" of collection \"$collection_id\" does not reference the collection \"$collection_id\". You must set it to reference the collection \"$collection_id\"."
+            )
             num_errors += 1
         end
         if on_delete != "CASCADE"
-            @error("The foreign key \"id\" in table \"$table_name\" of collection \"$collection_id\" does not cascade on delete. This might cause problems in the future. You must set it to \"CASCADE\".")
+            @error(
+                "The foreign key \"id\" in table \"$table_name\" of collection \"$collection_id\" does not cascade on delete. This might cause problems in the future. You must set it to \"CASCADE\"."
+            )
             num_errors += 1
         end
     else
         if on_delete != "SET NULL"
-            @error("The foreign key \"$foreign_key_name\" in table \"$table_name\" of collection \"$collection_id\" does not set to null on delete. You must set it to \"SET NULL\".")
+            @error(
+                "The foreign key \"$foreign_key_name\" in table \"$table_name\" of collection \"$collection_id\" does not set to null on delete. You must set it to \"SET NULL\"."
+            )
             num_errors += 1
         end
     end
 
     if on_update != "CASCADE"
-        @error("The foreign key \"id\" in table \"$table_name\" of collection \"$collection_id\" does not cascade on update. This might cause problems in the future. You must set it to \"CASCADE\".")
+        @error(
+            "The foreign key \"id\" in table \"$table_name\" of collection \"$collection_id\" does not cascade on update. This might cause problems in the future. You must set it to \"CASCADE\"."
+        )
         num_errors += 1
     end
 

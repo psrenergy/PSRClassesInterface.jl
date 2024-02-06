@@ -215,7 +215,8 @@ function test_create_vectors_with_relations()
         factor_output = [0.3, 0.3, 0.4],
     )
 
-    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(db, "Process";
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(db,
+        "Process";
         label = "Sugar Mill 2",
         product_input = ["Sugar"],
         factor_input = ["wrong"],
@@ -223,7 +224,8 @@ function test_create_vectors_with_relations()
         factor_output = [1.0],
     )
 
-    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(db, "Process";
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(db,
+        "Process";
         label = "Sugar Mill 3",
         product_input = ["Some Sugar"],
         factor_input = [1.0],
@@ -231,7 +233,8 @@ function test_create_vectors_with_relations()
         factor_output = [1.0],
     )
 
-    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(db, "Process";
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(db,
+        "Process";
         label = "Sugar Mill 3",
         product_input = ["Some Sugar"],
         factor_input = [],

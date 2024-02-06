@@ -111,10 +111,14 @@ function _apply_migrations!(
     direction::Symbol,
 )
     if direction == :down && from_version < to_version
-        psr_database_sqlite_error("When applying migrations \":down\", the starting migration must be after the ending migration")
+        psr_database_sqlite_error(
+            "When applying migrations \":down\", the starting migration must be after the ending migration",
+        )
     end
     if direction == :up && from_version > to_version
-        psr_database_sqlite_error("When applying migrations \":up\", the starting migration must be before the ending migration")
+        psr_database_sqlite_error(
+            "When applying migrations \":up\", the starting migration must be before the ending migration",
+        )
     end
 
     possible_versions = possible_database_versions(migrations)
@@ -128,7 +132,9 @@ function _apply_migrations!(
     # assert database is at the correct version
     current_version = get_user_version(db)
     if current_version != from_version
-        psr_database_sqlite_error("Database is not at the correct version to apply migrations from \"$from_version\" to \"$to_version\". Expected \"$from_version\", got \"$current_version\".")
+        psr_database_sqlite_error(
+            "Database is not at the correct version to apply migrations from \"$from_version\" to \"$to_version\". Expected \"$from_version\", got \"$current_version\".",
+        )
     end
 
     range_of_migrations = if direction == :up
@@ -230,7 +236,7 @@ function test_migrations(path_migrations_directory::String)
                 )
             end
         end
-    
+
         expected_user_version = get_last_user_version(path_migrations_directory)
         for migration in reverse(migrations)
             _apply_migration!(db, migration, :down)
@@ -245,7 +251,9 @@ function test_migrations(path_migrations_directory::String)
     end
 
     if !db_is_empty(db)
-        psr_database_sqlite_error("The database is not empty after applying all migrations up and down.")
+        psr_database_sqlite_error(
+            "The database is not empty after applying all migrations up and down.",
+        )
     end
 
     return true

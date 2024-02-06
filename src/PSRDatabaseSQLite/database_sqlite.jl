@@ -7,7 +7,6 @@ function DatabaseSQLite_from_schema(
     database_path::String;
     path_schema::String = "",
 )
-
     sqlite_db = SQLite.DB(database_path)
 
     collections_map = try
@@ -37,7 +36,13 @@ function DatabaseSQLite_from_migrations(
         current_version = get_user_version(sqlite_db)
         most_recent_version = get_last_user_version(path_migrations)
         # before applying the migrations we should make a backup of the database
-        apply_migrations!(sqlite_db, path_migrations, current_version, most_recent_version, :up)
+        apply_migrations!(
+            sqlite_db,
+            path_migrations,
+            current_version,
+            most_recent_version,
+            :up,
+        )
         _validate_database(sqlite_db)
         _create_collections_map(sqlite_db)
     catch e
@@ -54,7 +59,7 @@ function DatabaseSQLite_from_migrations(
 end
 
 function DatabaseSQLite(
-    database_path::String
+    database_path::String,
 )
     sqlite_db = SQLite.DB(database_path)
 

@@ -113,7 +113,9 @@ function _create_element!(
         if isa(value, AbstractVector)
             _throw_if_not_vector_attribute(db, collection_id, string(key))
             if isempty(value)
-                psr_database_sqlite_error("Cannot create the attribute \"$key\" with an empty vector.")
+                psr_database_sqlite_error(
+                    "Cannot create the attribute \"$key\" with an empty vector.",
+                )
             end
             dict_vector_attributes[key] = value
         else

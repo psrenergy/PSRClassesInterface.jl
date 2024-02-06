@@ -25,7 +25,7 @@ function PSRI.create_study(
             "User must provide either a `path_schema` or a `path_migrations_directory` to create a case.",
         )
     end
-    
+
     dict_kwargs = _add_at_least_id_in_configurations_parameters(kwargs...)
 
     PSRDatabaseSQLite.create_element!(db, "Configuration"; dict_kwargs...)

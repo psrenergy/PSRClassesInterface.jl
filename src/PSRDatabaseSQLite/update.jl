@@ -127,7 +127,9 @@ function set_scalar_relation!(
     label_collection_to::Vector{String},
     relation_type::String,
 )
-    psr_database_sqlite_error("Please use the method `set_vector_relation!` to set a vector relation")
+    psr_database_sqlite_error(
+        "Please use the method `set_vector_relation!` to set a vector relation",
+    )
     return nothing
 end
 
@@ -288,10 +290,11 @@ function set_time_series_file!(
         dict_time_series[key] = value
     end
     # Count the number of elements in the time series
-    df_count = DBInterface.execute(
-        db.sqlite_db,
-        "SELECT COUNT(*) FROM $table_name",
-    ) |> DataFrame
+    df_count =
+        DBInterface.execute(
+            db.sqlite_db,
+            "SELECT COUNT(*) FROM $table_name",
+        ) |> DataFrame
     num_elements = df_count[1, 1]
     if num_elements == 0
         cols = join(keys(dict_time_series), ", ")
@@ -314,14 +317,13 @@ function set_time_series_file!(
             )
             UPDATE $table_name
                 SET $cols_vals
-            """
+            """,
         )
     else
         psr_database_sqlite_error(
             "There are currently $num_elements time series files in the collection $collection_id. " *
-            "This is invalid, there should be only one entry in this table."
+            "This is invalid, there should be only one entry in this table.",
         )
-            
     end
     return nothing
 end

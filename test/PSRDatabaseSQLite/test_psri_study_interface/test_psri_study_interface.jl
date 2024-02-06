@@ -127,7 +127,12 @@ function test_create_case_1()
         "id",
     ) == "R1"
 
-    @test_throws PSRI.PSRDatabaseSQLite.DatabaseException PSRI.get_parm(db, "Plant", "resource_id", "Plant 1")
+    @test_throws PSRI.PSRDatabaseSQLite.DatabaseException PSRI.get_parm(
+        db,
+        "Plant",
+        "resource_id",
+        "Plant 1",
+    )
 
     @test PSRI.max_elements(db, "Plant") == 2
     @test PSRI.max_elements(db, "Resource") == 2
@@ -266,7 +271,7 @@ function test_create_study_without_passing_configuration_parameters()
 
     PSRI.PSRDatabaseSQLite.close!(db)
 
-    rm(joinpath(case_path, "case_without_passing_configuration_parameters.sqlite"))
+    return rm(joinpath(case_path, "case_without_passing_configuration_parameters.sqlite"))
 end
 
 function runtests()

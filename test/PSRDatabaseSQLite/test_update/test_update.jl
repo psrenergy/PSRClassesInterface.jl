@@ -384,24 +384,37 @@ function test_update_time_series()
     PSRDatabaseSQLite.set_time_series_file!(db, "Plant"; generation = "hrrnew.csv")
     @test PSRDatabaseSQLite.read_time_series_file(db, "Plant", "generation") == "hrrnew.csv"
     PSRDatabaseSQLite.set_time_series_file!(db, "Plant"; generation = "hrrnew2.csv")
-    @test PSRDatabaseSQLite.read_time_series_file(db, "Plant", "generation") == "hrrnew2.csv"
+    @test PSRDatabaseSQLite.read_time_series_file(db, "Plant", "generation") ==
+          "hrrnew2.csv"
     PSRDatabaseSQLite.close!(db)
 
     db = PSRDatabaseSQLite.load_db(db_path)
-    @test PSRDatabaseSQLite.read_time_series_file(db, "Plant", "generation") == "hrrnew2.csv"
+    @test PSRDatabaseSQLite.read_time_series_file(db, "Plant", "generation") ==
+          "hrrnew2.csv"
     PSRDatabaseSQLite.set_time_series_file!(db, "Plant"; generation = "hrrnew3.csv")
-    @test PSRDatabaseSQLite.read_time_series_file(db, "Plant", "generation") == "hrrnew3.csv"
+    @test PSRDatabaseSQLite.read_time_series_file(db, "Plant", "generation") ==
+          "hrrnew3.csv"
 
     PSRDatabaseSQLite.create_element!(db, "Resource"; label = "Resource 1")
-    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.set_time_series_file!(db, "Resource"; wind_speed = "some_file.txt")
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.set_time_series_file!(
+        db,
+        "Resource";
+        wind_speed = "some_file.txt",
+    )
     PSRDatabaseSQLite.set_time_series_file!(db, "Resource"; generation = "gen.txt")
     @test PSRDatabaseSQLite.read_time_series_file(db, "Resource", "generation") == "gen.txt"
     @test PSRDatabaseSQLite.read_time_series_file(db, "Resource", "other_generation") == ""
 
-    PSRDatabaseSQLite.set_time_series_file!(db, "Resource"; generation = "gen.txt", other_generation = "other_gen.txt")
+    PSRDatabaseSQLite.set_time_series_file!(
+        db,
+        "Resource";
+        generation = "gen.txt",
+        other_generation = "other_gen.txt",
+    )
     @test PSRDatabaseSQLite.read_time_series_file(db, "Resource", "generation") == "gen.txt"
-    @test PSRDatabaseSQLite.read_time_series_file(db, "Resource", "other_generation") == "other_gen.txt"
-    
+    @test PSRDatabaseSQLite.read_time_series_file(db, "Resource", "other_generation") ==
+          "other_gen.txt"
+
     PSRDatabaseSQLite.close!(db)
     return rm(db_path)
 end
