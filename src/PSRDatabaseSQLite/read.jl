@@ -420,15 +420,15 @@ _opensql_default_value_for_type(::Type{Int64}) = typemin(Int64)
 _opensql_default_value_for_type(::Type{String}) = ""
 _opensql_default_value_for_type(::Type{DateTime}) = typemin(DateTime)
 
-function is_null_in_db(array::Vector{Float64}, index::Integer)
-    return isnan(array[index])
+function _is_null_in_db(value::Float64)
+    return isnan(value)
 end
-function is_null_in_db(array::Vector{Int64}, index::Integer)
-    return array[index] == typemin(Int64)
+function _is_null_in_db(value::Int64)
+    return value == typemin(Int64)
 end
-function is_null_in_db(array::Vector{String}, index::Integer)
-    return isempty(array[index])
+function _is_null_in_db(value::String)
+    return isempty(value)
 end
-function is_null_in_db(array::Vector{DateTime}, index::Integer)
-    return array[index] == typemin(DateTime)
+function _is_null_in_db(value::DateTime)
+    return value == typemin(DateTime)
 end
