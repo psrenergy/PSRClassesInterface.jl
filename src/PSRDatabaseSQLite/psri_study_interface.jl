@@ -247,4 +247,4 @@ function PSRI.link_series_to_file(
     return PSRDatabaseSQLite.set_time_series_file!(db, collection; kwargs...)
 end
 
-PSRI.is_missing(value) = _is_null_in_db(value)
+PSRI.is_missing(::DatabaseSQLite, value) = _is_null_in_db(value)

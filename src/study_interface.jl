@@ -385,11 +385,11 @@ PSRI.get_map(data, "PSRGenerator", "PSRBus")
 function get_reverse_vector_map end
 
 """
-    is_missing(value::T) where T
+    is_missing(data::AbstractData, value::T) where T
 
 Example:
 ```
-PSRI.is_missing(some_value)
+PSRI.is_missing(data, some_value)
 ```
 Returns `true` if the element at `index` is missing, `false` otherwise.
 """
