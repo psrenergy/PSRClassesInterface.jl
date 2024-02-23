@@ -126,13 +126,16 @@ function test_create_case_1()
         "id",
     ) == "R1"
 
-    @test PSRI.is_missing(db, PSRI.get_related(
+    @test PSRI.is_missing(
         db,
-        "Plant",
-        "Plant",
-        "Plant 2",
-        "turbine_to",
-    ))
+        PSRI.get_related(
+            db,
+            "Plant",
+            "Plant",
+            "Plant 2",
+            "turbine_to",
+        ),
+    )
 
     @test_throws PSRI.PSRDatabaseSQLite.DatabaseException PSRI.get_parm(
         db,

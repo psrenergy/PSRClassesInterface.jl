@@ -70,7 +70,6 @@ PSRI.get_vectors(db::DatabaseSQLite, collection::String, attribute::String) =
 PSRI.max_elements(db::DatabaseSQLite, collection::String) =
     length(PSRI.get_parms(db, collection, "id"))
 
-
 function PSRI.configuration_parameter(
     db::DatabaseSQLite,
     attribute::String;
@@ -78,11 +77,18 @@ function PSRI.configuration_parameter(
 )
     attribute_composite_type = _attribute_composite_type(db, "Configuration", attribute)
     if attribute_composite_type <: ScalarParameter
-        return PSRDatabaseSQLite.read_scalar_parameters(db, "Configuration", attribute; default)[1]
+        return PSRDatabaseSQLite.read_scalar_parameters(
+            db,
+            "Configuration",
+            attribute;
+            default,
+        )[1]
     elseif attribute_composite_type <: VectorParameter
         return PSRDatabaseSQLite.read_vector_parameters(db, "Configuration", attribute)[1]
     else
-        error("It is currently not possible to read a relation using the function `configuration_parameter`.")
+        error(
+            "It is currently not possible to read a relation using the function `configuration_parameter`.",
+        )
     end
 end
 
