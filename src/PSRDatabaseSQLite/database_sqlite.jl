@@ -154,8 +154,7 @@ function _get_attribute(
         error(
             """
             Attribute \"$attribute_id\" not found in collection \"$collection_id\". 
-            This is the list of attributes in this collection: 
-            # TODO
+            "This is the list of available attributes: $(_string_of_attributes(db, collection_id))
             """,
         )
     end

@@ -6,7 +6,6 @@ const READ_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
     TimeSeriesFile => "read_time_series_file",
 )
 
-# TODO rename to _get_id_of_element also it should pass a collection_id
 function _get_id(
     db::DatabaseSQLite,
     collection_id::String,

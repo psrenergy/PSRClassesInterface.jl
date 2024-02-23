@@ -13,13 +13,12 @@ function test_create_case_1()
         joinpath(case_path, "case1.sqlite");
         path_schema = joinpath(case_path, "toy_schema.sql"),
         force = true,
-        label = "Toy Case",
         value1 = 1.0,
     )
 
-    @test PSRI.get_parm(db, "Configuration", "label", "Toy Case") == "Toy Case"
-    @test PSRI.get_parm(db, "Configuration", "value1", "Toy Case") == 1.0
-    @test PSRI.get_parm(db, "Configuration", "enum1", "Toy Case") == "A"
+    @test PSRI.max_elements(db, "Configuration") == 1
+    @test PSRI.configuration_parameter(db, "value1") == 1.0
+    @test PSRI.configuration_parameter(db, "enum1") == "A"
 
     PSRI.create_element!(
         db,
@@ -196,7 +195,6 @@ function test_create_case_relation()
         joinpath(case_path, "case1.sqlite");
         path_schema = joinpath(case_path, "toy_schema.sql"),
         force = true,
-        label = "Toy Case",
         value1 = 1.0,
     )
 
