@@ -30,6 +30,18 @@ function test_create_parameters()
     return nothing
 end
 
+function test_create_empty_parameters()
+    path_schema = joinpath(@__DIR__, "test_create_parameters.sql")
+    db_path = joinpath(@__DIR__, "test_create_empty_parameters.sqlite")
+    db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
+    PSRDatabaseSQLite.create_element!(db, "Configuration")
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(db, "Resource")
+    PSRDatabaseSQLite.close!(db)
+    rm(db_path)
+    @test true
+    return nothing
+end
+
 function test_create_parameters_and_vectors()
     path_schema = joinpath(@__DIR__, "test_create_parameters_and_vectors.sql")
     db_path = joinpath(@__DIR__, "test_create_parameters_and_vectors.sqlite")

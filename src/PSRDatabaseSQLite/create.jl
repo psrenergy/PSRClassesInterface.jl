@@ -10,10 +10,14 @@ function _create_scalar_attributes!(
 
     table = _get_collection_scalar_attribute_tables(db.sqlite_db, collection_id)
 
-    cols = join(keys(scalar_attributes), ", ")
-    vals = join(values(scalar_attributes), "', '")
-
-    DBInterface.execute(db.sqlite_db, "INSERT INTO $table ($cols) VALUES ('$vals')")
+    if isempty(scalar_attributes)
+        DBInterface.execute(db.sqlite_db, "INSERT INTO $table DEFAULT VALUES")
+    else
+        cols = join(keys(scalar_attributes), ", ")
+        vals = join(values(scalar_attributes), "', '")
+    
+        DBInterface.execute(db.sqlite_db, "INSERT INTO $table ($cols) VALUES ('$vals')")
+    end
     return nothing
 end
 
@@ -210,7 +214,7 @@ function _get_label_or_id(
     elseif haskey(dict_scalar_attributes, :id)
         return dict_scalar_attributes[:id]
     else
-        psr_database_sqlite_error("No label or id was provided for collection $collection.")
+        psr_database_sqlite_error("No label or id was provided for collection $collection_id.")
     end
 end
 
