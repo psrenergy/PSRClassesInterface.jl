@@ -35,7 +35,10 @@ function test_create_empty_parameters()
     db_path = joinpath(@__DIR__, "test_create_empty_parameters.sqlite")
     db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
     PSRDatabaseSQLite.create_element!(db, "Configuration")
-    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(db, "Resource")
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
+        db,
+        "Resource",
+    )
     PSRDatabaseSQLite.close!(db)
     rm(db_path)
     @test true
