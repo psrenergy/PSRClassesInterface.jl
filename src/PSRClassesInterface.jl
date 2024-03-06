@@ -39,7 +39,7 @@ include("OpenBinary/OpenBinary.jl")
 include("OpenStudy/OpenStudy.jl")
 const OpenInterface = OpenStudy.OpenInterface
 
-include("OpenSQL/OpenSQL.jl")
-const SQLInterface = OpenSQL.SQLInterface
+include("PSRDatabaseSQLite/PSRDatabaseSQLite.jl")
+const PSRDatabaseSQLiteInterface = PSRDatabaseSQLite.PSRDatabaseSQLiteInterface
 
 end

@@ -1,0 +1,19 @@
+PRAGMA user_version = 1;
+PRAGMA foreign_keys = ON;
+
+CREATE TABLE Configuration (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    label TEXT UNIQUE,
+    value1 REAL NOT NULL DEFAULT 100,
+    enum1 TEXT NOT NULL DEFAULT 'A' CHECK(enum1 IN ('A', 'B', 'C'))
+) STRICT;
+
+CREATE TABLE Plant (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    label TEXT UNIQUE,
+    capacity REAL NOT NULL DEFAULT 0,
+    plant_turbine_to INTEGER NOT NULL,
+    plant_spill_to INTEGER,
+    FOREIGN KEY(plant_turbine_to) REFERENCES Plant(id) ON DELETE SET NULL ON UPDATE CASCADE,
+    FOREIGN KEY(plant_spill_to) REFERENCES Plant(id) ON DELETE SET NULL ON UPDATE CASCADE
+) STRICT;

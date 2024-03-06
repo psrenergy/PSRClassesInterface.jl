@@ -31,7 +31,7 @@ function _validate_attribute(
     attribute_struct = PSRI.get_attribute_struct(data, collection, attribute)
 
     if !attribute_struct.is_vector
-        error("Vectorial value '$value' assigned to scalar attribute '$attribute'")
+        error("vector value '$value' assigned to scalar attribute '$attribute'")
     end
 
     _, dim = PSRI._trim_multidimensional_attribute(attribute)

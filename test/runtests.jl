@@ -58,22 +58,7 @@ end
     @testset "Utils" begin
         @time include("utils.jl")
     end
-    @testset "OpenSQL" begin
-        @time include("OpenSQL/create_case.jl")
-        @time include("OpenSQL/time_series.jl")
-        @time include("OpenSQL/test_utils.jl")
-        @time include("OpenSQL/test_pragmas.jl")
-        @time include(
-            "OpenSQL/migrations_tests/test_chaining_migrations/test_chaining_migrations.jl",
-        )
-        @time include(
-            "OpenSQL/migrations_tests/test_create_table_migration/test_create_table_migration.jl",
-        )
-        @time include(
-            "OpenSQL/migrations_tests/test_invalid_migrations/test_invalid_migrations.jl",
-        )
-        @time include(
-            "OpenSQL/migrations_tests/test_some_common_errors/test_some_common_errors.jl",
-        )
+    @testset "PSRDatabaseSQLite" begin
+        include("PSRDatabaseSQLite/runtests.jl")
     end
 end
