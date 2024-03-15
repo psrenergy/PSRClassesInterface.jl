@@ -105,8 +105,14 @@ function column_names(db::SQLite.DB, table::String)
 end
 
 function table_names(db::SQLite.DB)
-    tbls = SQLite.tables(db) |> DataFrame
-    return tbls.name
+    tables = Vector{String}()
+    for table in SQLite.tables(db)
+        if table.name == "sqlite_sequence"
+            continue
+        end
+        push!(tables, table.name)
+    end
+    return tables
 end
 
 _timeseries_table_name(table::String) = table * "_timeseriesfiles"

@@ -49,8 +49,7 @@ function possible_database_versions(migrations::Vector{Migration})
     return vcat(0, migration_versions(migrations))
 end
 function db_is_empty(db::SQLite.DB)
-    tbls = SQLite.tables(db)
-    return length(tbls) == 0
+    return isempty(table_names(db))
 end
 
 function parse_version(migration::String)
