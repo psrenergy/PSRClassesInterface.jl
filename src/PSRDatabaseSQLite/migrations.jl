@@ -231,7 +231,7 @@ function test_migrations(path_migrations_directory::String)
             user_version = get_user_version(db)
             if expected_user_version != user_version
                 psr_database_sqlite_error(
-                    "The user version is not correct. Expected $user_version, got $expected_user_version",
+                    "The user version of migration $(migration.version) is not correct. Expected $expected_user_version, got $user_version.",
                 )
             end
         end
@@ -243,7 +243,7 @@ function test_migrations(path_migrations_directory::String)
             user_version = get_user_version(db)
             if expected_user_version != user_version
                 psr_database_sqlite_error(
-                    "The user version is not correct. Expected $user_version, got $expected_user_version",
+                    "The user version of migration $(migration.version) is not correct. Expected $expected_user_version, got $user_version",
                 )
             end
         end
