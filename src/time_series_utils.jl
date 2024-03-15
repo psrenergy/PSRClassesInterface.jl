@@ -155,21 +155,29 @@ function file_to_array_and_header(
         use_header = use_header,
         header = header,
     )
-    stages = max_stages(io)
-    scenarios = max_scenarios(io)
-    blocks = max_blocks(io)
-    agents = max_agents(io)
+
+    @show stages    = max_stages(io)
+    @show scenarios = max_scenarios(io)
+    @show blocks    = max_blocks(io)
+    @show agents    = max_agents(io)
+
+    # @show OpenBinary._get_bin_size(io)
+    
     out = zeros(agents, blocks, scenarios, stages)
+    
     for t in 1:stages, s in 1:scenarios, b in 1:blocks
         if b > blocks_in_stage(io, t)
             # leave a zero for ignored hours
             continue
         end
+
         for a in 1:agents
             out[a, b, s, t] = io[a]
         end
+
         next_registry(io)
     end
+
     names = copy(agent_names(io)) # hold data after close
     close(io)
     return out, names
