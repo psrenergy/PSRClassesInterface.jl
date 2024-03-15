@@ -142,10 +142,8 @@ function _apply_migrations!(
         from_version:-1:to_version+1
     end
 
-    SQLite.transaction(db) do
-        for migration in migrations[range_of_migrations]
-            _apply_migration!(db, migration, direction)
-        end
+    for migration in migrations[range_of_migrations]
+        _apply_migration!(db, migration, direction)
     end
 
     return db
