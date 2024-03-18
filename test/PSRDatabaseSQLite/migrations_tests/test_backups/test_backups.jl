@@ -20,7 +20,6 @@ function test_backups()
         label = "conf",
     )
 
-
     PSRDatabaseSQLite.create_element!(
         db,
         "TestOne";
@@ -62,10 +61,9 @@ function test_backups()
     PSRDatabaseSQLite.close!(db)
     PSRDatabaseSQLite.close!(db_copy)
 
-    rm((joinpath(@__DIR__, "_backups")), recursive = true)
-    rm(db_path, force = true)
+    rm((joinpath(@__DIR__, "_backups")); recursive = true)
+    rm(db_path; force = true)
 
-    
     return nothing
 end
 

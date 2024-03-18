@@ -115,7 +115,7 @@ function _save_database_backup(db::SQLite.DB, current_version::Int)
         file_ext = splitext(db.file)[end]
         new_copy = "_backup_version_$(current_version)_$(Dates.format(now(), "yyyy_mm_dd_T_HH_MM_SS"))$(file_ext)"
         cp(db.file, joinpath(backups, new_copy))
-    else 
+    else
         @warn "Database file does not exist. Not creating a backup."
     end
     return
