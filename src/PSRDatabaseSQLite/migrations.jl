@@ -102,6 +102,25 @@ function create_migration(path_migrations_directory::String, version::Int)
     return migration_folder
 end
 
+function _save_database_backup(db::SQLite.DB, current_version::Int)
+    if (current_version == 0)
+        return
+    end
+
+    if isfile(db.file)
+        backups = joinpath(dirname(db.file), "_backups")
+        if !isdir(backups)
+            mkpath(backups)
+        end
+        file_ext = splitext(db.file)[end]
+        new_copy = "_backup_version_$(current_version)_$(Dates.format(now(), "yyyy_mm_dd_T_HH_MM_SS"))$(file_ext)"
+        cp(db.file, joinpath(backups, new_copy))
+    else 
+        @warn "Database file does not exist. Not creating a backup."
+    end
+    return
+end
+
 function _apply_migrations!(
     db::SQLite.DB,
     migrations::Vector{Migration},
@@ -142,10 +161,10 @@ function _apply_migrations!(
         from_version:-1:to_version+1
     end
 
-    SQLite.transaction(db) do
-        for migration in migrations[range_of_migrations]
-            _apply_migration!(db, migration, direction)
-        end
+    _save_database_backup(db, from_version)
+
+    for migration in migrations[range_of_migrations]
+        _apply_migration!(db, migration, direction)
     end
 
     return db
