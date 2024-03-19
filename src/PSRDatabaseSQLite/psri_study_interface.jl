@@ -48,6 +48,12 @@ PSRI.load_study(
     data_path::String,
 ) = PSRDatabaseSQLite.load_db(data_path)
 
+PSRI.load_study(
+    ::PSRDatabaseSQLiteInterface,
+    data_path::String,
+    path_migrations::String,
+) = PSRDatabaseSQLite.load_db(data_path, path_migrations)
+
 # Read
 PSRI.get_vector(
     db::DatabaseSQLite,

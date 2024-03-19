@@ -83,6 +83,18 @@ function load_db(database_path::String)
     return db
 end
 
+function load_db(database_path::String, path_migrations::String)
+    db = try
+        DatabaseSQLite_from_migrations(
+            database_path;
+            path_migrations = path_migrations,
+        )
+    catch e
+        rethrow(e)
+    end
+    return db
+end
+
 function _throw_if_file_exists(file::String; force::Bool = false)
     if isfile(file)
         if force
