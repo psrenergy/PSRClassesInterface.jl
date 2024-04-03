@@ -19,13 +19,11 @@ function test_read_only()
         db,
         "Resource";
         label = "Resource 1",
-        some_value = [1, 2, 3.0],
     )
     PSRDatabaseSQLite.create_element!(
         db,
         "Resource";
         label = "Resource 2",
-        some_value = [1, 2, 4.0],
     )
 
     PSRDatabaseSQLite.close!(db)
@@ -43,7 +41,6 @@ function test_read_only()
         db,
         "Resource";
         label = "Resource 3",
-        some_value = [1, 2, 3.0],
     )
 
     PSRDatabaseSQLite.close!(db)
