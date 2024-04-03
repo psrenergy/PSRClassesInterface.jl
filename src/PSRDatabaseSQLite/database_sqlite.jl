@@ -60,8 +60,11 @@ end
 
 function DatabaseSQLite(
     database_path::String,
+    read_only::Bool = false,
 )
-    sqlite_db = SQLite.DB(database_path)
+    sqlite_db =
+        read_only ? SQLite.DB("file:" * database_path * "?mode=ro") :
+        SQLite.DB(database_path)
 
     collections_map = try
         _validate_database(sqlite_db)

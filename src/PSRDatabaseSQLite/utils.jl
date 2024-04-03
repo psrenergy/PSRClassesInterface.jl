@@ -72,10 +72,11 @@ function create_empty_db_from_migrations(
     return db
 end
 
-function load_db(database_path::String)
+function load_db(database_path::String, read_only::Bool = false)
     db = try
         DatabaseSQLite(
             database_path,
+            read_only,
         )
     catch e
         rethrow(e)
