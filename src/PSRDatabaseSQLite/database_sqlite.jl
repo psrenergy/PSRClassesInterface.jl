@@ -59,7 +59,7 @@ function DatabaseSQLite_from_migrations(
 end
 
 function DatabaseSQLite(
-    database_path::String,
+    database_path::String;
     read_only::Bool = false,
 )
     sqlite_db =

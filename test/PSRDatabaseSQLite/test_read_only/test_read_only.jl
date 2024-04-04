@@ -28,7 +28,7 @@ function test_read_only()
 
     PSRDatabaseSQLite.close!(db)
 
-    db = PSRDatabaseSQLite.load_db(db_path, true)
+    db = PSRDatabaseSQLite.load_db(db_path; read_only = true)
 
     @test PSRDatabaseSQLite.read_scalar_parameters(db, "Configuration", "label") ==
           ["Toy Case"]
