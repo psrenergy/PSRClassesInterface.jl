@@ -118,6 +118,13 @@ function test_create_case_1()
         "id",
     )
 
+    @test PSRI.get_references(
+        db,
+        "Plant",
+        "Resource",
+        "id",
+    ) == ["R1", "R2"]
+
     @test PSRI.get_related(
         db,
         "Plant",
@@ -245,6 +252,13 @@ function test_create_case_relation()
         ["Cost 1"],
         "id",
     )
+
+    @test PSRI.get_vector_references(
+        db,
+        "Plant",
+        "Cost",
+        "id",
+    ) == [["Cost 1"], ["Cost 1"]]
 
     @test PSRI.get_vector_related(
         db,

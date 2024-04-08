@@ -136,6 +136,24 @@ function PSRI.get_collections(db::DatabaseSQLite)
     return PSRDatabaseSQLite._get_collection_ids(db)
 end
 
+function PSRI.get_references(
+    db::DatabaseSQLite,
+    source::String,
+    target::String,
+    relation_type::String,
+)
+    return PSRDatabaseSQLite.read_scalar_relations(db, source, target, relation_type)
+end
+
+function PSRI.get_vector_references(
+    db::DatabaseSQLite,
+    source::String,
+    target::String,
+    relation_type::String,
+)
+    return PSRDatabaseSQLite.read_vector_relations(db, source, target, relation_type)
+end
+
 function PSRI.get_map(
     db::DatabaseSQLite,
     source::String,

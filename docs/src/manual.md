@@ -75,6 +75,8 @@ PSRClassesInterface.get_series
 ```@docs
 PSRClassesInterface.RelationType
 PSRClassesInterface.is_vector_relation
+PSRClassesInterface.get_references
+PSRClassesInterface.get_vector_references
 PSRClassesInterface.get_map
 PSRClassesInterface.get_vector_map
 PSRClassesInterface.get_reverse_map
