@@ -43,32 +43,37 @@ function _add_at_least_id_in_configurations_parameters(kwargs...)
     return dict_kwargs
 end
 
-PSRI.load_study(
+function PSRI.load_study(
     ::PSRDatabaseSQLiteInterface,
     data_path::String,
-) = PSRDatabaseSQLite.load_db(data_path)
+)
+    return PSRDatabaseSQLite.load_db(data_path)
+end
 
-PSRI.load_study(
+function PSRI.load_study(
     ::PSRDatabaseSQLiteInterface,
     data_path::String,
     path_migrations::String,
-) = PSRDatabaseSQLite.load_db(data_path, path_migrations)
+)
+    return PSRDatabaseSQLite.load_db(data_path, path_migrations)
+end
 
 # Read
-PSRI.get_vector(
+function PSRI.get_vector(
     db::DatabaseSQLite,
     collection::String,
     attribute::String,
     element_label::String;
     default::Union{Nothing, Any} = nothing,
-) =
-    PSRDatabaseSQLite.read_vector_parameter(
+)
+    return PSRDatabaseSQLite.read_vector_parameter(
         db,
         collection,
         attribute,
         element_label;
         default,
     )
+end
 
 PSRI.get_vectors(db::DatabaseSQLite, collection::String, attribute::String) =
     PSRDatabaseSQLite.read_vector_parameters(db, collection, attribute)
@@ -98,28 +103,30 @@ function PSRI.configuration_parameter(
     end
 end
 
-PSRI.get_parm(
+function PSRI.get_parm(
     db::DatabaseSQLite,
     collection::String,
     attribute::String,
     element_label::String;
     default::Union{Nothing, Any} = nothing,
-) =
-    PSRDatabaseSQLite.read_scalar_parameter(
+)
+    return PSRDatabaseSQLite.read_scalar_parameter(
         db,
         collection,
         attribute,
         element_label;
         default,
     )
+end
 
-PSRI.get_parms(
+function PSRI.get_parms(
     db::DatabaseSQLite,
     collection::String,
     attribute::String;
     default::Union{Nothing, Any} = nothing,
-) =
-    PSRDatabaseSQLite.read_scalar_parameters(db, collection, attribute; default)
+)
+    return PSRDatabaseSQLite.read_scalar_parameters(db, collection, attribute; default)
+end
 
 function PSRI.get_attributes(db::DatabaseSQLite, collection::String)
     return PSRDatabaseSQLite._get_attribute_ids(db, collection)

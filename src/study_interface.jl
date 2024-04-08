@@ -245,6 +245,8 @@ function max_elements end
     )
 
 Returns a `Vector{Int32}` with the map between collections given a certain [`RelationType`](@ref).
+If the map is a vector [3, 2, 1] it means that the element 1 of `lst_from` is related to the element 3 of `lst_to`.
+If the relation does not exist it might return -1 or some garbage value.
 
 Examples:
 
