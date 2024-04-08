@@ -74,6 +74,10 @@ function DatabaseSQLite(
         rethrow(e)
     end
 
+    if read_only 
+        SQLite.finalize_statements!(sqlite_db)
+    end
+
     db = DatabaseSQLite(
         sqlite_db,
         collections_map,
