@@ -205,7 +205,7 @@ function _get_scalar_relation_map(
     df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
     results = df[!, 1]
     num_results = length(results)
-    map_of_indexes = Vector{Int}(undef, num_results)
+    map_of_indexes = -1 * ones(Int, num_results)
     ids_in_collection_to = read_scalar_parameters(db, collection_to, "id")
     for i in 1:num_results
         if ismissing(results[i])
