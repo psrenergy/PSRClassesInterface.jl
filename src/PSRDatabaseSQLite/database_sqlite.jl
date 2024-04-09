@@ -9,6 +9,8 @@ function DatabaseSQLite_from_schema(
 )
     sqlite_db = SQLite.DB(database_path)
 
+    DBInterface.execute(sqlite_db, "PRAGMA busy_timeout = 5000;")
+
     collections_map = try
         execute_statements(sqlite_db, path_schema)
         _validate_database(sqlite_db)
@@ -31,6 +33,8 @@ function DatabaseSQLite_from_migrations(
     path_migrations::String = "",
 )
     sqlite_db = SQLite.DB(database_path)
+
+    DBInterface.execute(sqlite_db, "PRAGMA busy_timeout = 5000;")
 
     collections_map = try
         current_version = get_user_version(sqlite_db)
@@ -59,9 +63,14 @@ function DatabaseSQLite_from_migrations(
 end
 
 function DatabaseSQLite(
-    database_path::String,
+    database_path::String;
+    read_only::Bool = false,
 )
-    sqlite_db = SQLite.DB(database_path)
+    sqlite_db =
+        read_only ? SQLite.DB("file:" * database_path * "?mode=ro&immutable=1") :
+        SQLite.DB(database_path)
+
+    DBInterface.execute(sqlite_db, "PRAGMA busy_timeout = 5000;")
 
     collections_map = try
         _validate_database(sqlite_db)

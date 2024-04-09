@@ -45,9 +45,10 @@ end
 
 function PSRI.load_study(
     ::PSRDatabaseSQLiteInterface,
-    data_path::String,
+    data_path::String;
+    read_only::Bool = false,
 )
-    return PSRDatabaseSQLite.load_db(data_path)
+    return PSRDatabaseSQLite.load_db(data_path; read_only = read_only)
 end
 
 function PSRI.load_study(
