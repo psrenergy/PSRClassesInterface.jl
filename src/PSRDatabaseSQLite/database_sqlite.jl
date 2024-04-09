@@ -63,7 +63,7 @@ function DatabaseSQLite(
     read_only::Bool = false,
 )
     sqlite_db =
-        read_only ? SQLite.DB("file:" * database_path * "?mode=ro") :
+        read_only ? SQLite.DB("file:" * database_path * "?mode=ro&immutable=1") :
         SQLite.DB(database_path)
 
     collections_map = try
