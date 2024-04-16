@@ -20,13 +20,20 @@ makedocs(;
             "openstudy_files/relation_mapper.md",
             "openstudy_files/psrclasses.md",
         ],
-        "Examples" => String[
+        "PSRDatabaseSQLite Overview" => String[
+            "psrdatabasesqlite/introduction.md",
+            "psrdatabasesqlite/rules.md",
+        ],
+        "OpenStudy and OpenBinary Examples" => String[
             "examples/reading_parameters.md",
             "examples/reading_relations.md",
             "examples/graf_files.md",
             "examples/reading_demands.md",
             "examples/modification.md",
             "examples/custom_study.md",
+        ],
+        "PSRDatabaseSQLite Examples" => String[
+            "sqlite_examples/migrations.md",
         ],
     ],
 )
