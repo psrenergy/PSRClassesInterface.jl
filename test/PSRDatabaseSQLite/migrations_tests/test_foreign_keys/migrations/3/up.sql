@@ -51,7 +51,7 @@ PRAGMA foreign_keys = OFF;
 BEGIN TRANSACTION;
 CREATE TABLE Product_new (
     id INTEGER PRIMARY KEY,
-    label TEXT NOT NULL,
+    label TEXT UNIQUE NOT NULL,
     unit TEXT NOT NULL,
     initial_availability REAL DEFAULT 0.0 NOT NULL,
     sell_limit REAL,
@@ -65,7 +65,7 @@ ALTER TABLE Product_new
     RENAME TO Product;
 CREATE TABLE Process_new (
     id INTEGER PRIMARY KEY,
-    label TEXT NOT NULL,
+    label TEXT UNIQUE NOT NULL,
     capex REAL NOT NULL,
     opex REAL NOT NULL,
     base_capacity REAL NOT NULL,

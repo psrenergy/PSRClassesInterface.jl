@@ -3,12 +3,12 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE Configuration (
     id INTEGER PRIMARY KEY,
-    label TEXT
+    label TEXT UNIQUE NOT NULL
 );
 
 CREATE TABLE Plant (
     id INTEGER PRIMARY KEY,
-    label TEXT
+    label TEXT UNIQUE NOT NULL
 );
 
 CREATE TABLE Plant_timeseriesfiles (
@@ -17,7 +17,7 @@ CREATE TABLE Plant_timeseriesfiles (
 
 CREATE TABLE Resource (
     id INTEGER PRIMARY KEY,
-    label TEXT
+    label TEXT UNIQUE NOT NULL
 );
 
 CREATE TABLE Resource_timeseriesfiles (

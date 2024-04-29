@@ -10,7 +10,7 @@ CREATE TABLE Configuration (
 
 CREATE TABLE Product (
     id INTEGER PRIMARY KEY,
-    label TEXT NOT NULL,
+    label TEXT UNIQUE NOT NULL,
     unit TEXT NOT NULL,
     initial_availability REAL DEFAULT 0.0,
     sell_limit REAL,
@@ -19,7 +19,7 @@ CREATE TABLE Product (
 
 CREATE TABLE Process (
     id INTEGER PRIMARY KEY,
-    label TEXT NOT NULL,
+    label TEXT UNIQUE NOT NULL,
     capex REAL,
     opex REAL,
     base_capacity REAL,

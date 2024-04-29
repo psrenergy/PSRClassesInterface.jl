@@ -3,13 +3,13 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE Configuration (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT UNIQUE,
+    label TEXT UNIQUE NOT NULL,
     value1 REAL NOT NULL DEFAULT 100,
     enum1 TEXT NOT NULL DEFAULT 'A' CHECK(enum1 IN ('A', 'B', 'C'))
 ) STRICT;
 
 CREATE TABLE My_Wrong_Resource (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT UNIQUE,
+    label TEXT UNIQUE NOT NULL,
     type TEXT NOT NULL DEFAULT "D" CHECK(type IN ('D', 'E', 'F'))
 ) STRICT;

@@ -16,7 +16,7 @@ CREATE TABLE Product (
 
 CREATE TABLE Process (
     id INTEGER PRIMARY KEY,
-    label TEXT NOT NULL
+    label TEXT UNIQUE NOT NULL
 ) STRICT;
 
 CREATE TABLE Process_vector_inputs (

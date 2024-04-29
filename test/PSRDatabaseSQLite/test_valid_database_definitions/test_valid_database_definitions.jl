@@ -142,6 +142,18 @@ function test_invalid_relation_attribute()
     return nothing
 end
 
+function test_invalid_database_without_label_constraints()
+    path_schema = joinpath(@__DIR__, "test_invalid_database_without_label_constraints.sql")
+    db_path = joinpath(@__DIR__, "test_invalid_database_without_label_constraints.sqlite")
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_empty_db_from_schema(
+        db_path,
+        path_schema;
+        force = true,
+    )
+    rm(db_path)
+    return nothing
+end
+
 function runtests()
     Base.GC.gc()
     Base.GC.gc()

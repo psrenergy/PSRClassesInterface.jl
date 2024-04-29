@@ -3,13 +3,13 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE Configuration (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT UNIQUE,
+    label TEXT UNIQUE NOT NULL,
     value1 REAL NOT NULL DEFAULT 100
 ) STRICT;
 
 CREATE TABLE MultiFuelThermalPlant (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT UNIQUE,
+    label TEXT UNIQUE NOT NULL,
     capacity REAL NOT NULL DEFAULT 0
 ) STRICT;
 
