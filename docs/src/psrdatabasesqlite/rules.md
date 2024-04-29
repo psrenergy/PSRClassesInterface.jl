@@ -44,6 +44,7 @@ CREATE TABLE Configuration (
 ### Non-vector Attributes
 
 - The name of an Attribute should be in snake case and be in singular form.
+- If the attribute's name is `label`, it should be stored as a `TEXT` and have the `UNIQUE` and `NOT NULL` constraints.
 
 Example:
 ```sql

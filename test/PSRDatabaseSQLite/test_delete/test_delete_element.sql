@@ -3,14 +3,14 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE Configuration (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT UNIQUE,
+    label TEXT UNIQUE NOT NULL,
     value1 REAL NOT NULL DEFAULT 100
 ) STRICT;
 
 
 CREATE TABLE Resource (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT UNIQUE
+    label TEXT UNIQUE NOT NULL
 ) STRICT;
 
 CREATE TABLE Resource_vector_some_group (
@@ -25,7 +25,7 @@ CREATE TABLE Resource_vector_some_group (
 
 CREATE TABLE Plant (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT UNIQUE,
+    label TEXT UNIQUE NOT NULL,
     capacity REAL NOT NULL DEFAULT 0,
     resource_id INTEGER,
     plant_turbine_to INTEGER,

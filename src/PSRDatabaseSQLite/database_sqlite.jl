@@ -285,6 +285,53 @@ function table_info(db::SQLite.DB, table_name::String)
     return df
 end
 
+function _check_column_type(
+    db::SQLite.DB,
+    table_name::String,
+    column_name::String,
+    expected_type::String,
+)
+    df = table_info(db, table_name)
+    for row in eachrow(df)
+        if row.name == column_name
+            if row.type != expected_type
+                return false
+            else
+                return true
+            end
+            return
+        end
+    end
+    return error("Column $column_name not found in table $table_name.")
+end
+
+function _is_column_not_null(db::SQLite.DB, table_name::String, column_name::String)
+    df = table_info(db, table_name)
+    return any(x -> (x.name == column_name && x.notnull == 1), eachrow(df))
+end
+
+function _is_column_unique(db::SQLite.DB, table_name::String, column_name::String)
+    if !(table_name in table_names(db))
+        error("Table $table_name not found in database.")
+    end
+    if !(column_name in column_names(db, table_name))
+        error("Column $column_name not found in table $table_name.")
+    end
+    query_index_list = "PRAGMA index_list('$(table_name)');"
+    index_list = DBInterface.execute(db, query_index_list) |> DataFrame
+    if count(x -> x == 1, index_list.unique) == 0
+        false
+    end
+    for row in eachrow(index_list)
+        query_index_info = "PRAGMA index_info('$(row.name)');"
+        index_info = DBInterface.execute(db, query_index_info) |> DataFrame
+        if (index_info.name[1] == column_name)
+            return true
+        end
+    end
+    return false
+end
+
 function foreign_keys_list(db::SQLite.DB, table_name::String)
     query = "PRAGMA foreign_key_list($table_name);"
     df = DBInterface.execute(db, query) |> DataFrame

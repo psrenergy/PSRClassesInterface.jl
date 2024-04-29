@@ -3,7 +3,7 @@ PRAGMA foreign_keys = ON;
 
 CREATE TABLE Configuration (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT UNIQUE,
+    label TEXT UNIQUE NOT NULL,
     value1 REAL NOT NULL DEFAULT 100,
     enum1 TEXT NOT NULL DEFAULT 'A' CHECK(enum1 IN ('A', 'B', 'C'))
 ) STRICT;
@@ -11,7 +11,7 @@ CREATE TABLE Configuration (
 
 CREATE TABLE Resource (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT UNIQUE,
+    label TEXT UNIQUE NOT NULL,
     type TEXT NOT NULL DEFAULT "D" CHECK(type IN ('D', 'E', 'F'))
 ) STRICT;
 
@@ -25,13 +25,13 @@ CREATE TABLE Resource_vector_some_group (
 
 CREATE TABLE Cost (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT UNIQUE,
+    label TEXT UNIQUE NOT NULL,
     value REAL NOT NULL DEFAULT 100
 ) STRICT;
 
 CREATE TABLE Plant (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT UNIQUE,
+    label TEXT UNIQUE NOT NULL,
     capacity REAL NOT NULL DEFAULT 0,
     resource_id INTEGER,
     plant_turbine_to INTEGER,
@@ -60,7 +60,7 @@ CREATE TABLE Product (
 
 CREATE TABLE Process (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    label TEXT NOT NULL
+    label TEXT UNIQUE NOT NULL
 ) STRICT;
 
 CREATE TABLE Process_vector_inputs (

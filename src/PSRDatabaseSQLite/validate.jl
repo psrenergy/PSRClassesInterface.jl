@@ -47,6 +47,20 @@ function _validate_table(db::SQLite.DB, table::String)
         @error("Table $table does not have an \"id\" column.")
         num_errors += 1
     end
+    if ("label" in attributes)
+        if !_is_column_unique(db, table, "label")
+            @error("Table $table has a non-unique \"label\" column.")
+            num_errors += 1
+        end
+        if !_is_column_not_null(db, table, "label")
+            @error("Table $table has a nullable \"label\" column.")
+            num_errors += 1
+        end
+        if !_check_column_type(db, table, "label", "TEXT")
+            @error("Table $table has a non-text \"label\" column.")
+            num_errors += 1
+        end
+    end
     for attribute in attributes
         num_errors += _validate_column_name(table, attribute)
     end
