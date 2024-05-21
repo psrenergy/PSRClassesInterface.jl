@@ -236,6 +236,30 @@ PSRI.max_elements(data, "PSRThermalPlant")
 function max_elements end
 
 """
+    get_references(
+        data::AbstractData,
+        lst_from::String,
+        lst_to::String;
+        relation_type::RelationType = RELATION_1_TO_1, # type of the direct relation
+    )
+
+Retrurn a `Vector{String}` with the references between collections given a certain [`RelationType`](@ref).
+"""
+function get_references end
+
+"""
+    get_vector_references(
+        data::AbstractData,
+        lst_from::String,
+        lst_to::String;
+        relation_type::RelationType = RELATION_1_TO_N, # type of the direct relation
+    )
+
+Retrurn a `Vector{Vector{String}}` with the references between collections given a certain [`RelationType`](@ref).
+"""
+function get_vector_references end
+
+"""
     get_map(
         data::AbstractData,
         lst_from::String,
