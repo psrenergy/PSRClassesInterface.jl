@@ -181,6 +181,16 @@ function _apply_tag!(
             parser,
             "Unhandled '$tag' tag for '$(attribute)' within '$(collection)' definition",
         )
+    elseif tag == "@addyear_modification"
+        _warning(
+            parser,
+            "Unhandled '$tag' tag for '$(attribute)' within '$(collection)' definition",
+        )
+    elseif tag == "@addyear_chronological"
+        _warning(
+            parser,
+            "Unhandled '$tag' tag for '$(attribute)' within '$(collection)' definition",
+        )
     else
         _syntax_error(
             parser,
@@ -612,7 +622,7 @@ function _parse_attribute!(
     state::S,
 ) where {S <: Union{PMD_DEF_MODEL, PMD_DEF_CLASS, PMD_MERGE_CLASS}}
     m = match(
-        r"(PARM|VECTOR|VETOR)\s+(INTEGER|REAL|DATE|STRING)\s+(\S+)(\s+DIM\((\S+(,\S+)*)\))?(\s+INDEX\s+(\S+))?(\s+(\@\S+))?",
+        r"(PARM|VECTOR|VETOR)\s+(INTEGER|REAL|DATE|STRING)\s+(\S+)(\s+DIM\((\S+(,\S+)*)\))?(\s+INDEX\s+(\S+))?((\s+(\@\S+))+)?",
         line,
     )
 
@@ -622,7 +632,7 @@ function _parse_attribute!(
         name = m[3]
         dims = m[5]
         index = m[8]
-        tag = m[10]
+        tags = m[9]
 
         if haskey(parser.data_struct[state.collection], name)
             if PMD._is_vector(kind) != parser.data_struct[state.collection][name].is_vector
@@ -665,8 +675,12 @@ function _parse_attribute!(
             (index === nothing) ? "" : index,
         )
 
-        if tag !== nothing
-            _apply_tag!(parser, state.collection, name, tag)
+        if tags !== nothing
+            for tag in split(strip(tags), " ")
+                if !isempty(tag)
+                    _apply_tag!(parser, state.collection, name, tag)
+                end
+            end
         end
 
         return true

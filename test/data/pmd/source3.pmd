@@ -17,6 +17,7 @@ DEFINE_CLASS PSRBus
 END_CLASS
 
 DEFINE_CLASS PSRElement
+	VETOR  DATE		 Data        @addyear_modification
 	PARM   INTEGER   NumberUnits
 	PARM   INTEGER   Code        @id
 END_CLASS
@@ -28,7 +29,7 @@ DEFINE_CLASS PSRGeneratorUnit
     PARM   REFERENCE Bus         PSRBus
 	VECTOR REFERENCE Buses       PSRBus
 	VECTOR REFERENCE Element     PSRElement
-	VETOR  DATE      Date        @chronological
+	VETOR  DATE      Date        @chronological @addyear_chronological
 END_CLASS
 
 DEFINE_MODEL PSRTest
