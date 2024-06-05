@@ -370,6 +370,8 @@ function test_pmd_source_3()
                     PSRI.PMD.Attribute("name", false, String, 0, ""),
                 "Code" =>
                     PSRI.PMD.Attribute("Code", false, Int32, 0, ""),
+                "Data" =>
+                    PSRI.PMD.Attribute("Data", true, Dates.Date, 0, ""),
                 "code" =>
                     PSRI.PMD.Attribute("code", false, Int32, 0, ""),
                 "NumberUnits" => PSRI.PMD.Attribute(
