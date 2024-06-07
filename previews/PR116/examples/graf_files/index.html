@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Graf Files · PSRClassesInterface.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PSRClassesInterface.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../manual/">Manual</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../reading_parameters/">Reading parameters</a></li><li><a class="tocitem" href="../reading_relations/">Reading Relations</a></li><li class="is-active"><a class="tocitem" href>Graf Files</a><ul class="internal"><li><a class="tocitem" href="#Writing-a-time-series-into-a-file"><span>Writing a time series into a file</span></a></li><li><a class="tocitem" href="#Reading-a-time-series-into-a-file"><span>Reading a time series into a file</span></a></li></ul></li><li><a class="tocitem" href="../reading_demands/">Reading Demands</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Graf Files</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Graf Files</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/psrenergy/PSRClassesInterface.jl/blob/master/docs/src/examples/graf_files.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Graf-Files"><a class="docs-heading-anchor" href="#Graf-Files">Graf Files</a><a id="Graf-Files-1"></a><a class="docs-heading-anchor-permalink" href="#Graf-Files" title="Permalink"></a></h1><h2 id="Writing-a-time-series-into-a-file"><a class="docs-heading-anchor" href="#Writing-a-time-series-into-a-file">Writing a time series into a file</a><a id="Writing-a-time-series-into-a-file-1"></a><a class="docs-heading-anchor-permalink" href="#Writing-a-time-series-into-a-file" title="Permalink"></a></h2><p>In this example we will demonstrate how to save a time series into a csv or binary file.  The first step is to obtain the data that you wish to save</p><pre><code class="language-julia hljs">import PSRClassesInterface
+const PSRI = PSRClassesInterface
+
+#Creates dummy data
+n_blocks = 2
+n_scenarios = 3
+n_stages = 4
+n_agents = 5
+
+time_series_data = rand(Float64, n_agents, n_blocks, n_scenarios, n_stages)</code></pre><p>There are two ways of saving the data to a file, save the data in the file directly or iteratively. To save the data directly use the function <a href="../../manual/#PSRClassesInterface.array_to_file"><code>PSRI.array_to_file</code></a> by calling:</p><pre><code class="language-julia hljs">FILE_PATH = joinpath(&quot;.&quot;, &quot;example&quot;)
+
+PSRI.array_to_file(
+    PSRI.OpenBinary.Writer,
+    FILE_PATH,
+    time_series_data,
+    agents = [&quot;Agent 1&quot;, &quot;Agent 2&quot;, &quot;Agent 3&quot;, &quot;Agent 4&quot;, &quot;Agent 5&quot;],
+    unit = &quot;MW&quot;;
+    initial_stage = 3,
+    initial_year = 2006,
+)</code></pre><p>To save the data iteractively use the function <a href="../../manual/#PSRClassesInterface.open"><code>PSRI.open</code></a> to create an <a href="../../manual/#PSRClassesInterface.AbstractWriter"><code>PSRI.AbstractWriter</code></a>. Save the data of each registry to the file using the function <a href="../../manual/#PSRClassesInterface.write_registry"><code>PSRI.write_registry</code></a> and then close the data stream calling the function <a href="../../manual/#PSRClassesInterface.close"><code>PSRI.close</code></a>.</p><pre><code class="language-julia hljs">iow = PSRI.open(
+    PSRI.OpenBinary.Writer,
+    FILE_PATH,
+    blocks = n_blocks,
+    scenarios = n_scenarios,
+    stages = n_stages,
+    agents = [&quot;Agent 1&quot;, &quot;Agent 2&quot;, &quot;Agent 3&quot;, &quot;Agent 4&quot;, &quot;Agent 5&quot;],
+    unit = &quot;MW&quot;,
+    initial_stage = 1,
+    initial_year = 2006,
+)
+
+for stage = 1:n_stages, scenario = 1:n_scenarios, block = 1:n_blocks
+    PSRI.write_registry(
+        iow,
+        time_series_data[:, block, scenario, stage],
+        stage,
+        scenario,
+        block
+    )
+end
+
+PSRI.close(iow)</code></pre><p>A similar logic can be used to read the data from a file. You can read it directly or iteratively. To read the data directly use the function <a href="../../manual/#PSRClassesInterface.file_to_array"><code>PSRI.file_to_array</code></a> or <a href="../../manual/#PSRClassesInterface.file_to_array_and_header"><code>PSRI.file_to_array_and_header</code></a></p><pre><code class="language-julia hljs">data_from_file = PSRI.file_to_array(
+        PSRI.OpenBinary.Reader,
+        FILE_PATH;
+        use_header=false
+    )
+
+@assert all(isapprox.(data_from_file, time_series_data, atol=1E-7))
+
+data_from_file_and_header, header = PSRI.file_to_array_and_header(
+        PSRI.OpenBinary.Reader,
+        FILE_PATH;
+        use_header=false
+    )
+@assert all(isapprox.(data_from_file_and_header, time_series_data, atol=1E-7))</code></pre><h2 id="Reading-a-time-series-into-a-file"><a class="docs-heading-anchor" href="#Reading-a-time-series-into-a-file">Reading a time series into a file</a><a id="Reading-a-time-series-into-a-file-1"></a><a class="docs-heading-anchor-permalink" href="#Reading-a-time-series-into-a-file" title="Permalink"></a></h2><p>To read the data iteractively use the function <a href="../../manual/#PSRClassesInterface.open"><code>PSRI.open</code></a> to create an <a href="../../manual/#PSRClassesInterface.AbstractReader"><code>PSRI.AbstractReader</code></a> and read each registry iteratively. At the end you should close the <a href="../../manual/#PSRClassesInterface.AbstractReader"><code>PSRI.AbstractReader</code></a> by calling <a href="../../manual/#PSRClassesInterface.close"><code>PSRI.close</code></a></p><pre><code class="language-julia hljs">ior = PSRI.open(
+    PSRI.OpenBinary.Reader,
+    FILE_PATH;
+    use_header = false
+)
+
+data_from_file = zeros(n_agents, n_blocks, n_scenarios, n_stages)
+
+for stage = 1:n_stages, scenario = 1:n_scenarios, block = 1:n_blocks
+    PSRI.next_registry(ior)
+    data_from_file[:, block, scenario, stage] = ior.data
+end
+
+PSRI.close(ior)
+
+rm(FILE_PATH; force = true)</code></pre><p>To choose the agents order use <code>use_header</code> and <code>header</code></p><pre><code class="language-julia hljs">data_from_file = PSRI.file_to_array(
+        PSRI.OpenBinary.Reader,
+        FILE_PATH;
+        use_header=true,
+        header=[&quot;Agent 5&quot;, &quot;Agent 2&quot;, &quot;Agent 3&quot;, &quot;Agent 4&quot;, &quot;Agent 1&quot;]
+    )
+@assert all(isapprox.(data_from_file[1, :, :, :], time_series_data[end, :, :, :], atol=1E-7))
+@assert all(isapprox.(data_from_file[end, :, :, :], time_series_data[1, :, :, :], atol=1E-7))</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../reading_relations/">« Reading Relations</a><a class="docs-footer-nextpage" href="../reading_demands/">Reading Demands »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Thursday 16 March 2023 17:33">Thursday 16 March 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
