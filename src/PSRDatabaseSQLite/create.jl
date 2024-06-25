@@ -51,6 +51,7 @@ function _create_vector_group!(
     vector_index = collect(1:num_values)
     DataFrames.insertcols!(df, 1, :vector_index => vector_index)
     DataFrames.insertcols!(df, 1, :id => ids)
+    # Code to insert rows without using a transaction
     cols = join(string.(names(df)), ", ")
     num_cols = size(df, 2)
     for row in eachrow(df)
@@ -103,6 +104,45 @@ function _create_vectors!(
     return nothing
 end
 
+function _create_time_series!(
+    db::DatabaseSQLite,
+    collection_id::String,
+    id::Integer,
+    dict_timeseries_attributes,
+)
+    for (group, df) in dict_timeseries_attributes
+        timeseries_group_table_name = _timeseries_group_table_name(collection_id, string(group))
+        ids = fill(id, nrow(df))
+        DataFrames.insertcols!(df, 1, :id => ids)
+        # Convert datetime column to string
+        df[!, :date] = string.(df[!, :date])
+        # Add missing columns
+        missing_names_in_df = setdiff(_attributes_in_timeseries_group(db, collection_id, string(group)), string.(names(df)))
+        for missing_attribute in missing_names_in_df
+            df[!, Symbol(missing_attribute)] = fill(missing, nrow(df))
+        end
+
+        # Code to insert rows without using a transaction
+        cols = join(string.(names(df)), ", ")
+        num_cols = size(df, 2)
+        for row in eachrow(df)
+            query = "INSERT INTO $timeseries_group_table_name ($cols) VALUES ("
+            for (i, value) in enumerate(row)
+                if ismissing(value)
+                    query *= "NULL, "
+                else
+                    query *= "\'$value\', "
+                end
+                if i == num_cols
+                    query = query[1:end-2]
+                    query *= ")"
+                end
+            end
+            DBInterface.execute(db.sqlite_db, query)
+        end
+    end
+end
+
 function _create_element!(
     db::DatabaseSQLite,
     collection_id::String;
@@ -111,7 +151,9 @@ function _create_element!(
     _throw_if_collection_does_not_exist(db, collection_id)
     dict_scalar_attributes = Dict{Symbol, Any}()
     dict_vector_attributes = Dict{Symbol, Any}()
+    dict_timeseries_attributes = Dict{Symbol, Any}()
 
+    # Validate that the arguments will be valid
     for (key, value) in kwargs
         if isa(value, AbstractVector)
             _throw_if_not_vector_attribute(db, collection_id, string(key))
@@ -121,6 +163,10 @@ function _create_element!(
                 )
             end
             dict_vector_attributes[key] = value
+        elseif isa(value, DataFrame)
+            _throw_if_not_timeseries_group(db, collection_id, string(key))
+            @warn("Still not validating types of the time series on creation.")
+            dict_timeseries_attributes[key] = value
         else
             _throw_if_is_time_series_file(db, collection_id, string(key))
             _throw_if_not_scalar_attribute(db, collection_id, string(key))
@@ -144,6 +190,15 @@ function _create_element!(
             _get_id(db, collection_id, dict_scalar_attributes[:label]),
         )
         _create_vectors!(db, collection_id, id, dict_vector_attributes)
+    end
+
+    if !isempty(dict_timeseries_attributes)
+        id = get(
+            dict_scalar_attributes,
+            :id,
+            _get_id(db, collection_id, dict_scalar_attributes[:label]),
+        )
+        _create_time_series!(db, collection_id, id, dict_timeseries_attributes)
     end
 
     return nothing

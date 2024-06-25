@@ -18,7 +18,15 @@ _is_valid_table_vector_name(table::String) =
         ),
     )
 
-_is_valid_table_timeseries_name(table::String) =
+_is_valid_time_series_name(table::String) =
+    !isnothing(
+        match(
+            r"^(?:[A-Z][a-z]*)+_timeseries_[a-z][a-z0-9]*(?:_{1}[a-z0-9]+)*$",
+            table,
+        ),
+    )
+
+_is_valid_table_timeseriesfiles_name(table::String) =
     !isnothing(match(r"^(?:[A-Z][a-z]*)+_timeseriesfiles", table))
 
 _is_valid_time_series_attribute_value(value::String) =
@@ -68,6 +76,22 @@ function _validate_table(db::SQLite.DB, table::String)
 end
 
 function _validate_timeseries_table(db::SQLite.DB, table::String)
+    attributes = column_names(db, table)
+    num_errors = 0
+    if !("id" in attributes)
+        @error("Table $table is a timeseries table and does not have an \"id\" column.")
+        num_errors += 1
+    end
+    if !("date" in attributes)
+        @error(
+            "Table $table is a timeseries table and does not have an \"date\" column.",
+        )
+        num_errors += 1
+    end
+    return num_errors
+end
+
+function _validate_timeseriesfiles_table(db::SQLite.DB, table::String)
     attributes = column_names(db, table)
     num_errors = 0
     if ("id" in attributes)
@@ -124,7 +148,9 @@ function _validate_database(db::SQLite.DB)
         end
         if _is_valid_table_name(table)
             num_errors += _validate_table(db, table)
-        elseif _is_valid_table_timeseries_name(table)
+        elseif _is_valid_table_timeseriesfiles_name(table)
+            num_errors += _validate_timeseriesfiles_table(db, table)
+        elseif _is_valid_time_series_name(table)
             num_errors += _validate_timeseries_table(db, table)
         elseif _is_valid_table_vector_name(table)
             num_errors += _validate_vector_table(db, table)
@@ -134,7 +160,8 @@ function _validate_database(db::SQLite.DB)
                 Valid table name formats are:
                 - Collections: NameOfCollection
                 - Vector attributes: NameOfCollection_vector_group_id
-                - Time series: NameOfCollection_timeseriesfiles
+                - Time series: NameOfCollection_timeseries_group_id
+                - Time series files: NameOfCollection_timeseriesfiles
                 """)
             num_errors += 1
         end
@@ -313,6 +340,15 @@ function _throw_if_relation_does_not_exist(
         )
     end
 end
+
+function _throw_if_not_timeseries_group(
+    db::DatabaseSQLite,
+    collection::String,
+    group::String,
+)
+    @warn("We are not validating that if it is a valid group")
+    return nothing
+end 
 
 function _throw_if_is_time_series_file(
     db::DatabaseSQLite,

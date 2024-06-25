@@ -99,6 +99,17 @@ mutable struct VectorRelation{T} <: VectorAttribute
     end
 end
 
+mutable struct TimeSeries{T} <: VectorAttribute
+    id::String
+    type::Type{T}
+    default_value::Union{Missing, T}
+    not_null::Bool
+    group_id::String
+    parent_collection::String
+    table_where_is_located::String
+    dimension_names::Vector{String}
+end
+
 mutable struct TimeSeriesFile{T} <: ReferenceToFileAttribute
     id::String
     type::Type{T}

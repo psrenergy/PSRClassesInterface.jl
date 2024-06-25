@@ -240,8 +240,27 @@ function _map_of_groups_to_vector_attributes(
     return map_of_groups_to_vector_attributes
 end
 
+function _attributes_in_timeseries_group(
+    db::DatabaseSQLite,
+    collection_id::String,
+    group_id::String
+)
+    collection = _get_collection(db, collection_id)
+    attributes_in_timeseries_group = Vector{String}(undef, 0)
+    for (_, attribute) in collection.time_series
+        if attribute.group_id == group_id
+            push!(attributes_in_timeseries_group, attribute.id)
+        end
+    end
+    return attributes_in_timeseries_group
+end
+
 function _vectors_group_table_name(collection_id::String, group::String)
     return string(collection_id, "_vector_", group)
+end
+
+function _timeseries_group_table_name(collection_id::String, group::String)
+    return string(collection_id, "_timeseries_", group)
 end
 
 function _is_collection_id(name::String)
@@ -251,6 +270,10 @@ end
 
 function _is_collection_vector_table_name(name::String, collection_id::String)
     return startswith(name, "$(collection_id)_vector_")
+end
+
+function _is_collection_time_series_table_name(name::String, collection_id::String)
+    return startswith(name, "$(collection_id)_timeseries_")
 end
 
 _get_collection_ids(db::DatabaseSQLite) = collect(keys(db.collections_map))

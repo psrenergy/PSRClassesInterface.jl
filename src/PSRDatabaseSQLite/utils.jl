@@ -127,6 +127,3 @@ function table_names(db::SQLite.DB)
     end
     return tables
 end
-
-_timeseries_table_name(table::String) = table * "_timeseriesfiles"
-_relation_table_name(table_1::String, table_2::String) = table_1 * "_relation_" * table_2
