@@ -62,9 +62,7 @@ function read_scalar_parameter(
         :read,
     )
 
-    attribute = _get_attribute(db, collection_id, attribute_id)
-    table = _table_where_is_located(attribute)
-    id = _get_id(db, table, label)
+    id = _get_id(db, collection_id, label)
 
     return read_scalar_parameter(db, collection_id, attribute_id, id; default)
 end
@@ -144,6 +142,102 @@ function _query_vector(
     results = df[!, 1]
     results = _treat_query_result(results, attribute, default)
     return results
+end
+
+function read_time_series_dfs(
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute_id::String;
+    read_exact_date::Bool = false,
+    dimensions...,
+)
+    _throw_if_attribute_is_not_time_series(
+        db,
+        collection_id,
+        attribute_id,
+        :read,
+    )
+    attribute = _get_attribute(db, collection_id, attribute_id)
+    ids_in_table = read_scalar_parameters(db, collection_id, "id")
+
+    results = DataFrame[]
+    for id in ids_in_table
+        push!(results, _read_time_series_df(db, collection_id, attribute, id; read_exact_date, dimensions...))
+    end
+
+    return results
+end
+
+function read_time_series_df(
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute_id::String,
+    label::String;
+    read_exact_date::Bool = false,
+    dimensions...,
+)
+    _throw_if_attribute_is_not_time_series(
+        db,
+        collection_id,
+        attribute_id,
+        :read,
+    )
+    attribute = _get_attribute(db, collection_id, attribute_id)
+    id = _get_id(db, collection_id, label)
+
+    return _read_time_series_df(
+        db, 
+        collection_id, 
+        attribute, 
+        id;
+        read_exact_date,
+        dimensions...
+    )
+end
+
+function _read_time_series_df(
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute::Attribute,
+    id::Int;
+    read_exact_date::Bool = false,
+    dimensions...,
+)
+    _validate_time_series_dimensions(collection_id, attribute, dimensions)
+
+    query = string("SELECT ", join(attribute.dimension_names, ",", ", "), ", ", attribute.id)
+    query *= " FROM $(attribute.table_where_is_located) WHERE id = '$id'" 
+    if !isempty(dimensions)
+        query *= " AND "
+        i = 0
+        for (dim_name, dim_value) in dimensions
+            if dim_name == :date_time
+                if read_exact_date
+                    query *= "DATE($dim_name) = DATE('$(dim_value)')"
+                else
+                    # Query the nearest date before the provided date
+                    closest_date_query = "SELECT DISTINCT $dim_name FROM $(attribute.table_where_is_located) WHERE DATE($dim_name) <= DATE('$(dim_value)') ORDER BY DATE($dim_name) DESC LIMIT 1"
+                    closest_date = DBInterface.execute(db.sqlite_db, closest_date_query) |> DataFrame
+                    # If there is no date query the data with date 0 (which will probably return no data.)
+                    date_to_equal_in_query = if isempty(closest_date)
+                        DateTime(0)
+                    else
+                        closest_date[!, 1][1]
+                    end
+                    # query the closest date and make it equal to the provided date.
+                    query *= "DATE($dim_name) = DATE('$(date_to_equal_in_query)')"
+                end
+            else
+                query *= "$(dim_name) = '$dim_value'"
+            end
+            i += 1
+            if i < length(dimensions)
+                query *= " AND "
+            end
+        end
+    end
+
+    return DBInterface.execute(db.sqlite_db, query) |> DataFrame
 end
 
 """

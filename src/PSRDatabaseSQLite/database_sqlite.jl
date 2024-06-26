@@ -3,13 +3,18 @@ mutable struct DatabaseSQLite
     collections_map::OrderedDict{String, Collection}
 end
 
+function _set_default_pragmas!(sqlite_db::SQLite.DB)
+    DBInterface.execute(sqlite_db, "PRAGMA busy_timeout = 5000;")
+    return nothing
+end
+
 function DatabaseSQLite_from_schema(
     database_path::String;
     path_schema::String = "",
 )
     sqlite_db = SQLite.DB(database_path)
 
-    DBInterface.execute(sqlite_db, "PRAGMA busy_timeout = 5000;")
+    _set_default_pragmas!(sqlite_db)
 
     collections_map = try
         execute_statements(sqlite_db, path_schema)
@@ -34,7 +39,7 @@ function DatabaseSQLite_from_migrations(
 )
     sqlite_db = SQLite.DB(database_path)
 
-    DBInterface.execute(sqlite_db, "PRAGMA busy_timeout = 5000;")
+    _set_default_pragmas!(sqlite_db)
 
     collections_map = try
         current_version = get_user_version(sqlite_db)
@@ -70,7 +75,7 @@ function DatabaseSQLite(
         read_only ? SQLite.DB("file:" * database_path * "?mode=ro&immutable=1") :
         SQLite.DB(database_path)
 
-    DBInterface.execute(sqlite_db, "PRAGMA busy_timeout = 5000;")
+    _set_default_pragmas!(sqlite_db)
 
     collections_map = try
         _validate_database(sqlite_db)
@@ -123,6 +128,29 @@ function _is_vector_relation(
     return haskey(collection.vector_relations, attribute_id)
 end
 
+function _is_time_series(
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute_id::String,
+)
+    collection = _get_collection(db, collection_id)
+    return haskey(collection.time_series, attribute_id)
+end
+
+function _is_timeseries_group(
+    db::DatabaseSQLite,
+    collection_id::String,
+    group_id::String,
+)
+    collection = _get_collection(db, collection_id)
+    for (_, attribute) in collection.time_series
+        if attribute.group_id == group_id
+            return true
+        end
+    end
+    return false
+end
+
 function _is_time_series_file(
     db::DatabaseSQLite,
     collection_id::String,
@@ -157,6 +185,8 @@ function _get_attribute(
         return collection.scalar_relations[attribute_id]
     elseif _is_vector_relation(db, collection_id, attribute_id)
         return collection.vector_relations[attribute_id]
+    elseif _is_time_series(db, collection_id, attribute_id)
+        return collection.time_series[attribute_id]
     elseif _is_time_series_file(db, collection_id, attribute_id)
         return collection.time_series_files[attribute_id]
     else
@@ -206,6 +236,7 @@ function _attribute_exists(
            _is_vector_parameter(db, collection_id, attribute_id) ||
            _is_scalar_relation(db, collection_id, attribute_id) ||
            _is_vector_relation(db, collection_id, attribute_id) ||
+           _is_time_series(db, collection_id, attribute_id) ||
            _is_time_series_file(db, collection_id, attribute_id)
 end
 

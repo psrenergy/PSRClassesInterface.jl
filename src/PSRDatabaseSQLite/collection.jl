@@ -264,7 +264,7 @@ function _create_collection_time_series(db::SQLite.DB, collection_id::String)
         dimension_names = _get_timeseries_dimension_names(df_table_infos)
         for timeseries_attribute in eachrow(df_table_infos)
             id = timeseries_attribute.name
-            if id == "id" || id == "date"
+            if id == "id" || id == "date_time"
                 # These are obligatory for every vector table
                 # and have no point in being stored in the database definition.
                 if timeseries_attribute.pk == 0
@@ -302,6 +302,7 @@ function _create_collection_time_series(db::SQLite.DB, collection_id::String)
                 parent_collection,
                 table_where_is_located,
                 dimension_names,
+                length(dimension_names),
             )
         end
     end
@@ -478,7 +479,6 @@ function _validate_collections(collections_map::OrderedDict{String, Collection})
     num_errors = 0
     for (_, collection) in collections_map
         num_errors += _no_duplicated_attributes(collection)
-        num_errors += _no_duplicated_groups(collection)
         num_errors += _all_scalar_parameters_are_in_same_table(collection)
         num_errors += _relations_do_not_have_null_constraints(collection)
         num_errors += _relations_do_not_have_default_values(collection)
@@ -509,11 +509,6 @@ function _no_duplicated_attributes(collection::Collection)
         end
     end
     return num_errors
-end
-
-function _no_duplicated_groups(collection::Collection)
-    @warn "must write this function _no_duplicated_groups"
-    return 0
 end
 
 function _all_scalar_parameters_are_in_same_table(collection::Collection)

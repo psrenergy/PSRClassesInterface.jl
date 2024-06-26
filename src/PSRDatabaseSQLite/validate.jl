@@ -82,9 +82,9 @@ function _validate_timeseries_table(db::SQLite.DB, table::String)
         @error("Table $table is a timeseries table and does not have an \"id\" column.")
         num_errors += 1
     end
-    if !("date" in attributes)
+    if !("date_time" in attributes)
         @error(
-            "Table $table is a timeseries table and does not have an \"date\" column.",
+            "Table $table is a timeseries table and does not have an \"date_time\" column.",
         )
         num_errors += 1
     end
@@ -272,6 +272,27 @@ function _throw_if_attribute_is_not_vector_relation(
     return nothing
 end
 
+function _throw_if_attribute_is_not_time_series(
+    db::DatabaseSQLite,
+    collection::String,
+    attribute::String,
+    action::Symbol,
+)
+    _throw_if_collection_or_attribute_do_not_exist(db, collection, attribute)
+
+    if !_is_time_series(db, collection, attribute)
+        correct_composity_type =
+            _attribute_composite_type(db, collection, attribute)
+        string_of_composite_types = _string_for_composite_types(correct_composity_type)
+        correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
+        psr_database_sqlite_error(
+            "Attribute \"$attribute\" is not a time series. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.",
+        )
+    end
+    return nothing
+
+end
+
 function _throw_if_attribute_is_not_time_series_file(
     db::DatabaseSQLite,
     collection::String,
@@ -326,27 +347,16 @@ function _throw_if_not_vector_attribute(
     return nothing
 end
 
-function _throw_if_relation_does_not_exist(
-    collection_from::String,
-    collection_to::String,
-    relation_type::String,
-)
-    if !_scalar_relation_exists(collection_from, collection_to, relation_type) &&
-       !_vector_relation_exists(collection_from, collection_to, relation_type)
-        psr_database_sqlite_error(
-            "relation `$relation_type` between $collection_from and $collection_to does not exist. \n" *
-            "This is the list of relations that exist: " *
-            "$(_show_existing_relation_types(_list_of_relation_types(collection_from, collection_to)))",
-        )
-    end
-end
-
 function _throw_if_not_timeseries_group(
     db::DatabaseSQLite,
     collection::String,
     group::String,
 )
-    @warn("We are not validating that if it is a valid group")
+    if !_is_timeseries_group(db, collection, group)
+        psr_database_sqlite_error(
+            "Group \"$group\" is not a time series group. "
+        )
+    end
     return nothing
 end 
 
@@ -379,8 +389,8 @@ function _validate_attribute_types!(
     db::DatabaseSQLite,
     collection_id::String,
     label_or_id::Union{Integer, String},
-    dict_scalar_attributes,
-    dict_vector_attributes,
+    dict_scalar_attributes::AbstractDict,
+    dict_vector_attributes::AbstractDict,
 )
     for (key, value) in dict_scalar_attributes
         attribute = _get_attribute(db, collection_id, string(key))
@@ -450,6 +460,21 @@ function _validate_vector_relation_type(
             "The value of the attribute \"$(attribute.id)\" in element \"$label_or_id\" " *
             "of collection \"$(attribute.parent_collection)\" should be of type Vector{String} or Vector{Int64}. User inputed $(typeof(values)): $values.",
         )
+    end
+end
+
+function _validate_time_series_dimensions(
+    collection_id::String, 
+    attribute::Attribute, 
+    dimensions...
+)
+    for dim_name in keys(dimensions...)
+        if !(string(dim_name) in attribute.dimension_names)
+            psr_database_sqlite_error(
+                "The dimension \"$dim_name\" is not defined in the time series attribute \"$(attribute.id)\" of collection \"$collection_id\". " *
+                "The available dimensions are: $(attribute.dimension_names).",
+            )
+        end
     end
 end
 

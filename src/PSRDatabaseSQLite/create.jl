@@ -21,6 +21,32 @@ function _create_scalar_attributes!(
     return nothing
 end
 
+function _insert_vectors_from_df(
+    db::DatabaseSQLite,
+    df::DataFrame,
+    table_name::String
+)
+    # Code to insert rows without using a transaction
+    cols = join(string.(names(df)), ", ")
+    num_cols = size(df, 2)
+    for row in eachrow(df)
+        query = "INSERT INTO $table_name ($cols) VALUES ("
+        for (i, value) in enumerate(row)
+            if ismissing(value)
+                query *= "NULL, "
+            else
+                query *= "\'$value\', "
+            end
+            if i == num_cols
+                query = query[1:end-2]
+                query *= ")"
+            end
+        end
+        DBInterface.execute(db.sqlite_db, query)
+    end
+    return nothing
+end
+
 function _create_vector_group!(
     db::DatabaseSQLite,
     collection_id::String,
@@ -51,24 +77,7 @@ function _create_vector_group!(
     vector_index = collect(1:num_values)
     DataFrames.insertcols!(df, 1, :vector_index => vector_index)
     DataFrames.insertcols!(df, 1, :id => ids)
-    # Code to insert rows without using a transaction
-    cols = join(string.(names(df)), ", ")
-    num_cols = size(df, 2)
-    for row in eachrow(df)
-        query = "INSERT INTO $vectors_group_table_name ($cols) VALUES ("
-        for (i, value) in enumerate(row)
-            if ismissing(value)
-                query *= "NULL, "
-            else
-                query *= "\'$value\', "
-            end
-            if i == num_cols
-                query = query[1:end-2]
-                query *= ")"
-            end
-        end
-        DBInterface.execute(db.sqlite_db, query)
-    end
+    _insert_vectors_from_df(db, df, vectors_group_table_name)
     return nothing
 end
 
@@ -115,31 +124,13 @@ function _create_time_series!(
         ids = fill(id, nrow(df))
         DataFrames.insertcols!(df, 1, :id => ids)
         # Convert datetime column to string
-        df[!, :date] = string.(df[!, :date])
+        df[!, :date_time] = string.(df[!, :date_time])
         # Add missing columns
         missing_names_in_df = setdiff(_attributes_in_timeseries_group(db, collection_id, string(group)), string.(names(df)))
         for missing_attribute in missing_names_in_df
             df[!, Symbol(missing_attribute)] = fill(missing, nrow(df))
         end
-
-        # Code to insert rows without using a transaction
-        cols = join(string.(names(df)), ", ")
-        num_cols = size(df, 2)
-        for row in eachrow(df)
-            query = "INSERT INTO $timeseries_group_table_name ($cols) VALUES ("
-            for (i, value) in enumerate(row)
-                if ismissing(value)
-                    query *= "NULL, "
-                else
-                    query *= "\'$value\', "
-                end
-                if i == num_cols
-                    query = query[1:end-2]
-                    query *= ")"
-                end
-            end
-            DBInterface.execute(db.sqlite_db, query)
-        end
+        _insert_vectors_from_df(db, df, timeseries_group_table_name)
     end
 end
 
@@ -165,7 +156,6 @@ function _create_element!(
             dict_vector_attributes[key] = value
         elseif isa(value, DataFrame)
             _throw_if_not_timeseries_group(db, collection_id, string(key))
-            @warn("Still not validating types of the time series on creation.")
             dict_timeseries_attributes[key] = value
         else
             _throw_if_is_time_series_file(db, collection_id, string(key))
@@ -323,7 +313,7 @@ function _validate_attribute_types_on_creation!(
         collection_id,
         label_or_id,
         dict_scalar_attributes,
-        dict_vector_attributes,
+        dict_vector_attributes
     )
     return nothing
 end
