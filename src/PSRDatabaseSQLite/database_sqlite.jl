@@ -274,7 +274,7 @@ end
 function _attributes_in_timeseries_group(
     db::DatabaseSQLite,
     collection_id::String,
-    group_id::String
+    group_id::String,
 )
     collection = _get_collection(db, collection_id)
     attributes_in_timeseries_group = Vector{String}(undef, 0)

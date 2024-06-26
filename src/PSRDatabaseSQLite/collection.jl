@@ -280,7 +280,7 @@ function _create_collection_time_series(db::SQLite.DB, collection_id::String)
                 if _sql_type_to_julia_type(id, timeseries_attribute.type) != Int64
                     psr_database_sqlite_error(
                         "Invalid table \"$(table_name)\" of timeseries attributes of collection \"$(collection_id)\". " *
-                        "The column \"$(timeseries_attribute.name)\" is not an integer primary key but it should."
+                        "The column \"$(timeseries_attribute.name)\" is not an integer primary key but it should.",
                     )
                 end
                 continue

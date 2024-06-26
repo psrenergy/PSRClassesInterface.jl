@@ -24,7 +24,7 @@ end
 function _insert_vectors_from_df(
     db::DatabaseSQLite,
     df::DataFrame,
-    table_name::String
+    table_name::String,
 )
     # Code to insert rows without using a transaction
     cols = join(string.(names(df)), ", ")
@@ -313,7 +313,7 @@ function _validate_attribute_types_on_creation!(
         collection_id,
         label_or_id,
         dict_scalar_attributes,
-        dict_vector_attributes
+        dict_vector_attributes,
     )
     return nothing
 end

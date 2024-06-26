@@ -186,12 +186,12 @@ function read_time_series_df(
     id = _get_id(db, collection_id, label)
 
     return _read_time_series_df(
-        db, 
-        collection_id, 
-        attribute, 
+        db,
+        collection_id,
+        attribute,
         id;
         read_exact_date,
-        dimensions...
+        dimensions...,
     )
 end
 
@@ -206,7 +206,7 @@ function _read_time_series_df(
     _validate_time_series_dimensions(collection_id, attribute, dimensions)
 
     query = string("SELECT ", join(attribute.dimension_names, ",", ", "), ", ", attribute.id)
-    query *= " FROM $(attribute.table_where_is_located) WHERE id = '$id'" 
+    query *= " FROM $(attribute.table_where_is_located) WHERE id = '$id'"
     if !isempty(dimensions)
         query *= " AND "
         i = 0

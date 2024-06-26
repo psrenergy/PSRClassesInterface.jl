@@ -290,7 +290,6 @@ function _throw_if_attribute_is_not_time_series(
         )
     end
     return nothing
-
 end
 
 function _throw_if_attribute_is_not_time_series_file(
@@ -354,11 +353,11 @@ function _throw_if_not_timeseries_group(
 )
     if !_is_timeseries_group(db, collection, group)
         psr_database_sqlite_error(
-            "Group \"$group\" is not a time series group. "
+            "Group \"$group\" is not a time series group. ",
         )
     end
     return nothing
-end 
+end
 
 function _throw_if_is_time_series_file(
     db::DatabaseSQLite,
@@ -464,9 +463,9 @@ function _validate_vector_relation_type(
 end
 
 function _validate_time_series_dimensions(
-    collection_id::String, 
-    attribute::Attribute, 
-    dimensions...
+    collection_id::String,
+    attribute::Attribute,
+    dimensions...,
 )
     for dim_name in keys(dimensions...)
         if !(string(dim_name) in attribute.dimension_names)
