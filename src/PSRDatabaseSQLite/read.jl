@@ -215,11 +215,17 @@ function _read_time_series_df(
                 if read_exact_date
                     query *= "DATE($dim_name) = DATE('$(dim_value)')"
                 else
-                    # Query the nearest date before the provided date
-                    closest_date_query = "SELECT DISTINCT $dim_name FROM $(attribute.table_where_is_located) WHERE DATE($dim_name) <= DATE('$(dim_value)') ORDER BY DATE($dim_name) DESC LIMIT 1"
-                    closest_date = DBInterface.execute(db.sqlite_db, closest_date_query) |> DataFrame
+                    # First checks if the date or dimension value is within the range of the data.
+                    # Then it queries the closest date before the provided date.
                     # If there is no date query the data with date 0 (which will probably return no data.)
-                    date_to_equal_in_query = if isempty(closest_date)
+                    end_date_query = "SELECT MAX(DATE($dim_name)) FROM $(attribute.table_where_is_located)"
+                    end_date = DBInterface.execute(db.sqlite_db, end_date_query) |> DataFrame
+                    # Query the nearest date before the provided date
+                    closest_date_query_earlier = "SELECT DISTINCT $dim_name FROM $(attribute.table_where_is_located) WHERE DATE($dim_name) <= DATE('$(dim_value)') ORDER BY DATE($dim_name) DESC LIMIT 1"
+                    closest_date = DBInterface.execute(db.sqlite_db, closest_date_query_earlier) |> DataFrame
+                    date_to_equal_in_query = if dim_value > DateTime(end_date[!, 1][1])
+                        DateTime(0)
+                    elseif isempty(closest_date)
                         DateTime(0)
                     else
                         closest_date[!, 1][1]

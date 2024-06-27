@@ -272,7 +272,7 @@ function test_read_time_series_files()
     return rm(db_path)
 end
 
-function test_read_timeseries()
+function test_read_timeseries_single()
     path_schema = joinpath(@__DIR__, "test_read_time_series.sql")
     db_path = joinpath(@__DIR__, "test_read_time_series.sqlite")
     db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
@@ -315,6 +315,47 @@ function test_read_timeseries()
             group3 = df_timeseries_group3,
         )
     end
+
+    # some errors
+
+    df_empty = PSRDatabaseSQLite.read_time_series_df(
+        db,
+        "Resource",
+        "some_vector1",
+        "Resource 1";
+        date_time = DateTime(1998),
+    )
+    @test isempty(df_empty)
+
+    df_empty = PSRDatabaseSQLite.read_time_series_df(
+        db,
+        "Resource",
+        "some_vector1",
+        "Resource 1";
+        date_time = DateTime(2030),
+    )
+    @test isempty(df_empty)
+
+    df_empty = PSRDatabaseSQLite.read_time_series_df(
+        db,
+        "Resource",
+        "some_vector5",
+        "Resource 1";
+        date_time = DateTime(2030),
+        block = 20,
+    )
+    @test isempty(df_empty)
+
+    df_wrong_date = PSRDatabaseSQLite.read_time_series_df(
+        db,
+        "Resource",
+        "some_vector5",
+        "Resource 1";
+        date_time = DateTime(2003),
+    )
+    @test df_wrong_date.date_time[1] == string(DateTime(2001))
+
+    # return single dataframe
 
     for i in 1:3
         df_timeseries_group1 = DataFrame(;
@@ -555,6 +596,92 @@ function test_read_timeseries()
                 @test df.segment[df_i] == df_timeseries_group3.segment[df_i]
                 @test df.date_time[df_i] == string.(df_timeseries_group3.date_time[df_i])
             end
+        end
+    end
+
+    PSRDatabaseSQLite.close!(db)
+    GC.gc()
+    GC.gc()
+    rm(db_path)
+    @test true
+    return nothing
+end
+
+function test_read_timeseries_multiple()
+    path_schema = joinpath(@__DIR__, "test_read_time_series.sql")
+    db_path = joinpath(@__DIR__, "test_read_time_series.sqlite")
+    db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
+
+    PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
+
+    for i in 1:3
+        df_timeseries_group1 = DataFrame(;
+            date_time = [DateTime(2000), DateTime(2001)],
+            some_vector1 = [1.0, 2.0] .* i,
+            some_vector2 = [2.0, 3.0] .* i,
+        )
+        df_timeseries_group2 = DataFrame(;
+            date_time = [DateTime(2000), DateTime(2000), DateTime(2001), DateTime(2001)],
+            block = [1, 2, 1, 2],
+            some_vector3 = [1.0, missing, 3.0, 4.0] .* i,
+        )
+        df_timeseries_group3 = DataFrame(;
+            date_time = [
+                DateTime(2000),
+                DateTime(2000),
+                DateTime(2000),
+                DateTime(2000),
+                DateTime(2001),
+                DateTime(2001),
+                DateTime(2001),
+                DateTime(2009),
+            ],
+            block = [1, 1, 1, 1, 2, 2, 2, 2],
+            segment = [1, 2, 3, 4, 1, 2, 3, 4],
+            some_vector5 = [1.0, 2.0, 3.0, 4.0, 1, 2, 3, 4] .* i,
+            some_vector6 = [1.0, 2.0, 3.0, 4.0, 1, 2, 3, 4] .* i,
+        )
+        PSRDatabaseSQLite.create_element!(
+            db,
+            "Resource";
+            label = "Resource $i",
+            group1 = df_timeseries_group1,
+            group2 = df_timeseries_group2,
+            group3 = df_timeseries_group3,
+        )
+    end
+
+    # return multiple DataFrames
+
+    dates_df1 = [DateTime(2000), DateTime(2001)]
+    some_vector1 = [[1.0, 2.0, 3.0] .* i for i in 1:3]
+    some_vector2 = [[2.0, 3.0, 4.0] .* i for i in 1:3]
+
+    for i in eachindex(dates_df1)
+        dfs = PSRDatabaseSQLite.read_time_series_dfs(
+            db,
+            "Resource",
+            "some_vector1";
+            date_time = dates_df1[i],
+        )
+
+        for j in 1:3
+            df = dfs[j]
+            @test df.date_time == string.([dates_df1[i]])
+            @test df.some_vector1 == [some_vector1[j][i]]
+        end
+
+        dfs = PSRDatabaseSQLite.read_time_series_dfs(
+            db,
+            "Resource",
+            "some_vector2";
+            date_time = dates_df1[i],
+        )
+
+        for j in 1:3
+            df = dfs[j]
+            @test df.date_time == string.([dates_df1[i]])
+            @test df.some_vector2 == [some_vector2[j][i]]
         end
     end
 
