@@ -3,8 +3,25 @@ mutable struct DatabaseSQLite
     collections_map::OrderedDict{String, Collection}
 end
 
-function _set_default_pragmas!(sqlite_db::SQLite.DB)
-    DBInterface.execute(sqlite_db, "PRAGMA busy_timeout = 5000;")
+function _set_default_pragmas!(db::SQLite.DB)
+    _set_foreign_keys_on!(db)
+    _set_busy_timeout!(db, 5000)
+    return nothing
+end
+
+function _set_foreign_keys_on!(db::SQLite.DB)
+    # https://www.sqlite.org/foreignkeys.html#fk_enable
+    # Foreign keys are enabled per connection, they are not something 
+    # that can be stored in the database itself like user_version.
+    # This is needed to ensure that the foreign keys are enabled
+    # behaviours like cascade delete and update are enabled.
+    DBInterface.execute(db, "PRAGMA foreign_keys = ON;")
+    return nothing
+end
+
+function _set_busy_timeout!(db::SQLite.DB, timeout::Int)
+    # https://www.sqlite.org/pragma.html#pragma_busy_timeout
+    DBInterface.execute(db, "PRAGMA busy_timeout = $timeout;")
     return nothing
 end
 
