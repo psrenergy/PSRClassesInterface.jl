@@ -1,7 +1,16 @@
-mutable struct DatabaseSQLite
+Base.@kwdef mutable struct DatabaseSQLite
     sqlite_db::SQLite.DB
     collections_map::OrderedDict{String, Collection}
+    read_only::Bool = false
+    # TimeController is a cache that allows PSRDatabaseSQLite to
+    # store information about the last timeseries query. This is useful for avoiding to
+    # re-query the database when the same query is made multiple times.
+    # The TimeController is a private behaviour and whenever it is used
+    # it changes the database mode to read-only.
+    _time_controller::TimeController = TimeController()
 end
+
+_is_read_only(db::DatabaseSQLite) = db.read_only
 
 function _set_default_pragmas!(db::SQLite.DB)
     _set_foreign_keys_on!(db)
@@ -42,7 +51,7 @@ function DatabaseSQLite_from_schema(
         rethrow(e)
     end
 
-    db = DatabaseSQLite(
+    db = DatabaseSQLite(;
         sqlite_db,
         collections_map,
     )
@@ -76,7 +85,7 @@ function DatabaseSQLite_from_migrations(
         rethrow(e)
     end
 
-    db = DatabaseSQLite(
+    db = DatabaseSQLite(;
         sqlite_db,
         collections_map,
     )
@@ -89,7 +98,7 @@ function DatabaseSQLite(
     read_only::Bool = false,
 )
     sqlite_db =
-        read_only ? SQLite.DB("file:" * database_path * "?mode=ro&immutable=1") :
+        # read_only ? SQLite.DB("file:" * database_path * "?mode=ro&immutable=1") :
         SQLite.DB(database_path)
 
     _set_default_pragmas!(sqlite_db)
@@ -102,9 +111,10 @@ function DatabaseSQLite(
         rethrow(e)
     end
 
-    db = DatabaseSQLite(
+    db = DatabaseSQLite(;
         sqlite_db,
         collections_map,
+        read_only
     )
     return db
 end

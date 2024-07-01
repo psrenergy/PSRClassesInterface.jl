@@ -1,68 +1,180 @@
 abstract type TimeSeriesRequestStatus end
 
-const CollectionAttributeElement = Tuple{String, String, Int}
-
 struct TimeSeriesDidNotChange <: TimeSeriesRequestStatus end
 struct TimeSeriesChanged <: TimeSeriesRequestStatus end
 
-# TODOs
-# We need to write a query function that will return a certain data for all ids
-# If an id does not exist it will simply return missing. The query must return 
-# the closest previous date for each id.
+const CollectionAttribute = Tuple{String, String}
 
-mutable struct TimeSeriesElementCache
-    # The last date requested by the user
+mutable struct TimeControllerCache{T}
+    data::Vector{T}
+    # Control of dates requested per element in a given pair collection attribute
+    closest_previous_date_with_data::Vector{DateTime}
     last_date_requested::DateTime
-    # The next available date after the last date requested
-    next_date_possible::DateTime
+    closest_next_date_with_data::Vector{DateTime}
+
+    # Private caches with the closest previous and next dates
+    # _closest_previous_date_with_data = maximum(closest_previous_date_with_data)
+    # _closest_next_date_with_data = minimum(closest_next_date_with_data)
+    _closest_previous_date_with_data::DateTime
+    _closest_next_date_with_data::DateTime
+
+    # Cache of collection_ids
+    _collection_ids::Vector{Int}
 end
 
-mutable struct TimeSeriesCache{T, N}
-    # Tell which dimensions were mapped in a given vector
-    # This is probably wrong
-    dimensions_mapped
-    data::Array{T, N} = fill(_psrdatabasesqlite_null_value(T), zeros(Int, N)...)
-end
-
-"""
-    TimeController
-
-TimeController in PSRDatabaseSQLite is a cache that allows PSRDatabaseSQLite to
-store information about the last timeseries query. This is useful for avoiding to 
-re-query the database when the same query is made multiple times. TimeController
-is a private behaviour and it only exists when querying all labels from a TimeSeries
-element.
-"""
 Base.@kwdef mutable struct TimeController
-    # The tuple stores the cache for a given collection id, attribute id and id of the element in a database
-    element_cache::Dict{CollectionAttributeElement, TimeSeriesElementCache} = Dict{CollectionAttributeElement, TimeSeriesElementCache}()
+    cache::Dict{CollectionAttribute, TimeControllerCache} = Dict{CollectionAttribute, TimeControllerCache}()
 end
 
-function closest_previous_date(
-    db::DatabaseSQLite,
+function _collection_attribute(collection_id::String, attribute_id::String)::CollectionAttribute
+    return (collection_id, attribute_id)
+end
+
+function _closes_previous_date_with_data(
+    db,
     attribute::Attribute,
+    id::Int,
     date_time::DateTime
-)::DateTime
-    closest_previous_date_query = string(
-        "SELECT DISTINCT date_time FROM", 
-        attribute.table_where_is_located,
-        "WHERE DATE(date_time) <= DATE('", date_time, "') ORDER BY DATE(date_time) DESC LIMIT 1")
-    result = DBInterface.execute(db.sqlite_db, closest_previous_date_query)
-    
-end
-
-function closest_next_date(
-    db::DatabaseSQLite,
-    attribute::Attribute,
-    date_time::DateTime
-)::DateTime
-    closest_date_query_later = "SELECT DISTINCT date_time FROM $(attribute.table_where_is_located) WHERE DATE(date_time) > DATE('$(date_time)') ORDER BY DATE(date_time) ASC LIMIT 1"
-end
-
-function read_mapped_time_series(
-    db::DatabaseSQLite,
-    collection_id::String,
-    attribute_id::String,
 )
+    # TODO this query could probably be optimized
+    # It is reading many things that are not necessary
+    # And filtering and sorting in the end
+    query = """
+    SELECT date_time
+    FROM $(attribute.table_where_is_located)
+    WHERE $(attribute.id) IS NOT NULL AND DATE(date_time) < DATE('$date_time') AND id = '$id'
+    ORDER BY date_time DESC
+    LIMIT 1
+    """
+    result = DBInterface.execute(db.sqlite_db, query)
+    # See how to get the query without the need to convert into DataFrame
+    # If it is empty what should we return?
+    return result
+end
 
+function _closes_next_date_with_data(
+    db,
+    attribute::Attribute,
+    id::Int,
+    date_time::DateTime
+)
+    # TODO this query could probably be optimized
+    # It is reading many things that are not necessary
+    # And filtering and sorting in the end
+    query = """
+    SELECT date_time
+    FROM $(attribute.table_where_is_located)
+    WHERE $(attribute.id) IS NOT NULL AND DATE(date_time) > DATE('$date_time') AND id = '$id'
+    ORDER BY date_time ASC
+    LIMIT 1
+    """
+    result = DBInterface.execute(db.sqlite_db, query)
+    # See how to get the query without the need to convert into DataFrame
+    # If it is empty what should we return?
+    return result
+end
+
+function _update_global_closest_dates_with_data!(
+    cache::TimeControllerCache
+)
+    cache._closest_previous_date_with_data = maximum(closest_previous_date_with_data)
+    cache._closest_next_date_with_data = minimum(closest_next_date_with_data)
+end
+
+function _start_time_controller_cache(
+    db,
+    attribute::Attribute,
+    date_time::DateTime
+)
+    ids = read_scalar_parameters(db, attribute.parent_collection, "id")
+    closest_previous_date_with_data = Vector{DateTime}(undef, length(ids))
+    closest_next_date_with_data = Vector{DateTime}(undef, length(ids))
+    for (i, id) in enumerate(ids)
+        closest_previous_date_with_data[i] = _closes_previous_date_with_data(db, attribute, id, date_time)
+        closest_next_date_with_data[i] = _closes_next_date_with_data(db, attribute, id, date_time)
+        _collection_ids[i] = id
+    end
+    _closest_previous_date_with_data = maximum(closest_previous_date_with_data)
+    _closest_next_date_with_data = minimum(closest_next_date_with_data)
+    
+    # Query the data for the first time
+    for (i, id) in enumerate(ids)
+        data = _request_time_series_data_for_time_controller_cache(db, attribute, id, closest_previous_date_with_data[i])
+        cache.data[i] = data
+    end
+
+    return TimeControllerCache(
+        data,
+        closest_previous_date_with_data,
+        date_time,
+        closest_next_date_with_data,
+        _closest_previous_date_with_data,
+        _closest_next_date_with_data,
+        _collection_ids,
+    )
+end
+
+function _request_time_series_data_for_time_controller_cache(
+    db,
+    attribute::Attribute,
+    id::Int,
+    date_time::DateTime
+)
+    query = """
+    SELECT $(attribute.id)
+    FROM $(attribute.table_where_is_located)
+    WHERE id = $id AND date_time = $date_time
+    """
+    result = DBInterface.execute(db.sqlite_db, query)
+    # See how to get the query without the need to convert into DataFrame
+    # If it is empty what should we return?
+    return result
+end
+
+function _update_time_controller_cache!(
+    cache::TimeControllerCache,
+    db,
+    date_time::DateTime
+)
+    cache.last_date_requested = date_time
+    for (i, id) in enumerate(cache._collection_ids)
+        # If date is whitin the range we do not need to update anything
+        if cache.closest_previous_date_with_data[i] < date_time < cache.closest_previous_date_with_data[i]
+            continue
+        end
+        cache.closest_previous_date_with_data[i] = _closes_previous_date_with_data(db, attribute, id, date_time)
+        cache.closest_next_date_with_data[i] = _closes_next_date_with_data(db, attribute, id, date_time)
+        cache.data[i] = _request_time_series_data_for_time_controller_cache(db, attribute, id, closest_previous_date_with_data[i])
+    end
+    _update_global_closest_dates_with_data!(cache)
+    return nothing
+end
+
+function read_mapped_timeseries(
+    db,
+    collection_id::String,
+    attribute_id::String;
+    date_time::DateTime
+)
+    _throw_if_attribute_is_not_time_series(
+        db,
+        collection_id,
+        attribute_id,
+        :read,
+    )
+    @assert _is_read_only(db) "Time series mapping only works in read only databases"
+    collection_attribute = _collection_attribute(collection_id, attribute_id)
+    attribute = _get_attribute(db, collection_id, attribute_id)
+    if !haskey(db._time_controller.cache, collection_attribute)
+        db._time_controller.cache[collection_attribute] = _start_time_controller_cache(db, attribute, date_time)
+    end
+    cache = db._time_controller.cache[collection_attribute]
+    # If we don`t need to update anything we just return the data
+    if cache._closest_previous_date_with_data < date_time < cache._closest_next_date_with_data
+        cache.last_date_requested = date_time
+        return cache.data
+    end
+    # If we need to update the cache we update the dates and the data
+    _update_time_controller_cache!(cache, db, date_time)
+    return cache.data
 end

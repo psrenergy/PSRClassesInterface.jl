@@ -26,4 +26,5 @@ Manifest.toml
 *.out
 *.ok
 debug_psrclasses
+*.gz
 *.sqlite

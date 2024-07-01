@@ -75,7 +75,7 @@ end
 function load_db(database_path::String; read_only::Bool = false)
     db = try
         DatabaseSQLite(
-            database_path;
+            database_path,
             read_only = read_only,
         )
     catch e

@@ -70,17 +70,6 @@ function test_create_time_series()
     )
     @show results
 
-    @show labels = PSRDatabaseSQLite.read_scalar_parameters(db, "Resource", "label")
-
-    results = PSRDatabaseSQLite.read_time_series_dfs(
-        db,
-        "Resource",
-        "some_vector5";
-        date_time = DateTime(2010)
-    )
-    @show results
-
-
     PSRDatabaseSQLite.close!(db)
     rm(db_path)
     @test true

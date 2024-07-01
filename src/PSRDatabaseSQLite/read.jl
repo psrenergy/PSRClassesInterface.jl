@@ -195,6 +195,27 @@ function read_time_series_df(
     )
 end
 
+function end_date_query(db::DatabaseSQLite, attribute::Attribute)
+     # First checks if the date or dimension value is within the range of the data.
+    # Then it queries the closest date before the provided date.
+    # If there is no date query the data with date 0 (which will probably return no data.)
+    end_date_query = "SELECT MAX(DATE(date_time)) FROM $(attribute.table_where_is_located)"
+    end_date = DBInterface.execute(db.sqlite_db, end_date_query) |> DataFrame
+    if isempty(end_date)
+        return DateTime(0)
+    end
+    return DateTime(end_date[!, 1][1])
+end
+
+function closest_date_query(db::DatabaseSQLite, attribute::Attribute, dim_value::DateTime)
+    closest_date_query_earlier = "SELECT DISTINCT date_time FROM $(attribute.table_where_is_located) WHERE $(attribute.id) IS NOT NULL AND DATE(date_time) <= DATE('$(dim_value)') ORDER BY DATE(date_time) DESC LIMIT 1"
+    closest_date = DBInterface.execute(db.sqlite_db, closest_date_query_earlier) |> DataFrame
+    if isempty(closest_date)
+        return DateTime(0)
+    end
+    return DateTime(closest_date[!, 1][1])
+end
+
 function _read_time_series_df(
     db::DatabaseSQLite,
     collection_id::String,
@@ -215,20 +236,12 @@ function _read_time_series_df(
                 if read_exact_date
                     query *= "DATE($dim_name) = DATE('$(dim_value)')"
                 else
-                    # First checks if the date or dimension value is within the range of the data.
-                    # Then it queries the closest date before the provided date.
-                    # If there is no date query the data with date 0 (which will probably return no data.)
-                    end_date_query = "SELECT MAX(DATE($dim_name)) FROM $(attribute.table_where_is_located)"
-                    end_date = DBInterface.execute(db.sqlite_db, end_date_query) |> DataFrame
-                    # Query the nearest date before the provided date
-                    closest_date_query_earlier = "SELECT DISTINCT $dim_name FROM $(attribute.table_where_is_located) WHERE $(attribute.id) IS NOT NULL AND DATE($dim_name) <= DATE('$(dim_value)') ORDER BY DATE($dim_name) DESC LIMIT 1"
-                    closest_date = DBInterface.execute(db.sqlite_db, closest_date_query_earlier) |> DataFrame
-                    date_to_equal_in_query = if dim_value > DateTime(end_date[!, 1][1])
-                        DateTime(0)
-                    elseif isempty(closest_date)
+                    end_date = end_date_query(db, attribute)
+                    closest_date = closest_date_query(db, attribute, dim_value)
+                    date_to_equal_in_query = if dim_value > end_date
                         DateTime(0)
                     else
-                        closest_date[!, 1][1]
+                        closest_date
                     end
                     # query the closest date and make it equal to the provided date.
                     query *= "DATE($dim_name) = DATE('$(date_to_equal_in_query)')"
