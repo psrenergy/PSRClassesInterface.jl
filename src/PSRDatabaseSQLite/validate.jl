@@ -140,7 +140,6 @@ function _validate_database(db::SQLite.DB)
         psr_database_sqlite_error("Database does not have a \"Configuration\" table.")
     end
     _validate_database_pragmas(db)
-    _set_default_pragmas!(db)
     num_errors = 0
     for table in tables
         if table == "sqlite_sequence"
@@ -319,8 +318,8 @@ function _throw_if_not_scalar_attribute(
 )
     _throw_if_collection_or_attribute_do_not_exist(db, collection, attribute)
 
-    if _is_vector_parameter(db, collection, attribute) ||
-       _is_vector_relation(db, collection, attribute)
+    if !_is_scalar_parameter(db, collection, attribute) &&
+       !_is_scalar_relation(db, collection, attribute)
         psr_database_sqlite_error(
             "Attribute \"$attribute\" is not a scalar attribute. You must input a vector for this attribute.",
         )
@@ -475,21 +474,6 @@ function _validate_time_series_dimensions(
             )
         end
     end
-end
-
-function _set_default_pragmas!(db::SQLite.DB)
-    _set_foreign_keys_on!(db)
-    return nothing
-end
-
-function _set_foreign_keys_on!(db::SQLite.DB)
-    # https://www.sqlite.org/foreignkeys.html#fk_enable
-    # Foreign keys are enabled per connection, they are not something 
-    # that can be stored in the database itself like user_version.
-    # This is needed to ensure that the foreign keys are enabled
-    # behaviours like cascade delete and update are enabled.
-    DBInterface.execute(db, "PRAGMA foreign_keys = ON;")
-    return nothing
 end
 
 function _validate_database_pragmas(db::SQLite.DB)
