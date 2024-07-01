@@ -318,8 +318,8 @@ function _throw_if_not_scalar_attribute(
 )
     _throw_if_collection_or_attribute_do_not_exist(db, collection, attribute)
 
-    if _is_vector_parameter(db, collection, attribute) ||
-       _is_vector_relation(db, collection, attribute)
+    if !_is_scalar_parameter(db, collection, attribute) &&
+       !_is_scalar_relation(db, collection, attribute)
         psr_database_sqlite_error(
             "Attribute \"$attribute\" is not a scalar attribute. You must input a vector for this attribute.",
         )
