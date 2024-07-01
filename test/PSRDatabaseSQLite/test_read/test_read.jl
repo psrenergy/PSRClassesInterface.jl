@@ -434,7 +434,7 @@ function test_read_timeseries_single()
                 row.date_time,
                 block = row.block,
             )
-            @test ismissing(df.some_vector4[1])
+            @test isempty(df.some_vector4)
 
             # two-element query
 
@@ -602,7 +602,7 @@ function test_read_timeseries_single()
     PSRDatabaseSQLite.close!(db)
     GC.gc()
     GC.gc()
-    rm(db_path)
+    # rm(db_path)
     @test true
     return nothing
 end
@@ -691,6 +691,38 @@ function test_read_timeseries_multiple()
     rm(db_path)
     @test true
     return nothing
+end
+
+function test_read_wrong_date()
+    path_schema = joinpath(@__DIR__, "test_read_time_series.sql")
+    db_path = joinpath(@__DIR__, "test_read_time_series.sqlite")
+    db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
+
+    PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
+
+    df = DataFrame(;
+        date_time = [DateTime(2000), DateTime(2001), DateTime(2002)],
+        some_vector1 = [1.0, 2.0, missing],
+        some_vector2 = [2.0, 3.0, 4.0],
+    )
+
+    PSRDatabaseSQLite.create_element!(
+        db,
+        "Resource";
+        label = "Resource 1",
+        group1 = df,
+    )
+
+    df = PSRDatabaseSQLite.read_time_series_df(
+        db,
+        "Resource",
+        "some_vector1",
+        "Resource 1";
+        date_time = DateTime(2002),
+    )
+
+    @test df.date_time == string.([DateTime(2001)])
+    @test df.some_vector1 == [2.0]
 end
 
 function runtests()

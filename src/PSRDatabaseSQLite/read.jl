@@ -221,7 +221,7 @@ function _read_time_series_df(
                     end_date_query = "SELECT MAX(DATE($dim_name)) FROM $(attribute.table_where_is_located)"
                     end_date = DBInterface.execute(db.sqlite_db, end_date_query) |> DataFrame
                     # Query the nearest date before the provided date
-                    closest_date_query_earlier = "SELECT DISTINCT $dim_name FROM $(attribute.table_where_is_located) WHERE DATE($dim_name) <= DATE('$(dim_value)') ORDER BY DATE($dim_name) DESC LIMIT 1"
+                    closest_date_query_earlier = "SELECT DISTINCT $dim_name FROM $(attribute.table_where_is_located) WHERE $(attribute.id) IS NOT NULL AND DATE($dim_name) <= DATE('$(dim_value)') ORDER BY DATE($dim_name) DESC LIMIT 1"
                     closest_date = DBInterface.execute(db.sqlite_db, closest_date_query_earlier) |> DataFrame
                     date_to_equal_in_query = if dim_value > DateTime(end_date[!, 1][1])
                         DateTime(0)
