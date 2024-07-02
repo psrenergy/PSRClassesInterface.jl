@@ -6,9 +6,21 @@ using Dates
 using DataFrames
 using Test
 
+function _test_cache(cached_data, answer)
+    @test length(cached_data) == length(answer)
+    for i in eachindex(cached_data)
+        if isnan(answer[i])
+            @test isnan(cached_data[i])
+        else
+            @test cached_data[i] == answer[i]
+        end
+    end
+end
+
+# For each date, test the returned value with the expected value
 function test_time_controller_read()
     path_schema = joinpath(@__DIR__, "test_time_controller.sql")
-    db_path = joinpath(@__DIR__, "test_time_controller.sqlite")
+    db_path = joinpath(@__DIR__, "test_time_controller_read.sqlite")
     GC.gc()
     GC.gc()
     if isfile(db_path)
@@ -17,95 +29,211 @@ function test_time_controller_read()
 
     db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
     PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
-    PSRDatabaseSQLite.SQLite.transaction(db.sqlite_db) do
-        for i in 1:500
-            df_timeseries_group1 = DataFrame(;
-                date_time = vcat([DateTime(0)], [DateTime(i) for i in 1900:1979]),
-                some_vector1 = vcat([missing], [j for j in 1:80] .* i),
-                some_vector2 = vcat([1.0], [missing for j in 1:10], [j for j in 1:10] .* i, [missing for j in 1:60]),
-                some_vector3 = vcat([1.0], [missing for j in 1:80]),
-                some_vector4 = vcat([missing], [missing for j in 1:80]),
-            )
-            PSRDatabaseSQLite.create_element!(
-                db,
-                "Resource";
-                label = "Resource $i",
-                group1 = df_timeseries_group1,
-            )
-        end
-    end
+
+    df = DataFrame(;
+        date_time = [DateTime(2000), DateTime(2001), DateTime(2002)],
+        some_vector1 = [missing, 1.0, 2.0],
+        some_vector2 = [1.0, 2.0, 3.0],
+        some_vector3 = [3.0, 2.0, 1.0],
+        some_vector4 = [1.0, missing, 5.0],
+        some_vector5 = [missing, missing, missing],
+        some_vector6 = [6.0, missing, missing],
+    )
+    PSRDatabaseSQLite.create_element!(
+        db,
+        "Resource";
+        label = "Resource 1",
+        group1 = df,
+    )
 
     PSRDatabaseSQLite.close!(db)
     db = PSRDatabaseSQLite.load_db(db_path; read_only = true)
 
-    for (j, date_time) in enumerate([DateTime(i) for i in 1900:1979])
-        some_vector1_check = vcat(Float64[j * k for k in 1:500])
+    some_vector1_answer = [[NaN], [1.0], [2.0]]
+    some_vector2_answer = [[1.0], [2.0], [3.0]]
+    some_vector3_answer = [[3.0], [2.0], [1.0]]
+    some_vector4_answer = [[1.0], [1.0], [5.0]]
+    some_vector5_answer = [[NaN], [NaN], [NaN]]
+    some_vector6_answer = [[6.0], [6.0], [6.0]]
 
-        some_vector2_check = if j <= 10
-            vcat([1.0 for k in 1:500])
-        elseif j <= 20 && j > 10
-            l_idx = indexin(j, 11:20)[1]
-            vcat(Float64[l_idx * k for k in 1:500])
-        else
-            vcat([10.0 * k for k in 1:500])
-        end
-        some_vector3_check = vcat([1.0 for k in 1:500])
-        some_vector4_check = vcat([missing for k in 1:500])
-
-        cached_data_new = PSRDatabaseSQLite.read_mapped_timeseries(
+    # test for dates in correct sequence
+    for d_i in eachindex(df.date_time)
+        cached_1 = PSRDatabaseSQLite.read_mapped_timeseries(
             db,
             "Resource",
             "some_vector1",
             Float64;
-            date_time = date_time,
+            date_time = DateTime(df.date_time[d_i]),
         )
-        for k in 1:500
-            @test cached_data_new[k] == some_vector1_check[k]
-        end
+        _test_cache(cached_1, some_vector1_answer[d_i])
 
-        cached_data_new = PSRDatabaseSQLite.read_mapped_timeseries(
+        cached_2 = PSRDatabaseSQLite.read_mapped_timeseries(
             db,
             "Resource",
             "some_vector2",
             Float64;
-            date_time = date_time,
+            date_time = DateTime(df.date_time[d_i]),
         )
-        for k in 1:500
-            @test cached_data_new[k] == some_vector2_check[k]
-        end
+        _test_cache(cached_2, some_vector2_answer[d_i])
 
-        cached_data_new = PSRDatabaseSQLite.read_mapped_timeseries(
+        cached_3 = PSRDatabaseSQLite.read_mapped_timeseries(
             db,
             "Resource",
             "some_vector3",
             Float64;
-            date_time = date_time,
+            date_time = DateTime(df.date_time[d_i]),
         )
+        _test_cache(cached_3, some_vector3_answer[d_i])
 
-        for k in 1:500
-            @test cached_data_new[k] == some_vector3_check[k]
-        end
-
-        cached_data_new = PSRDatabaseSQLite.read_mapped_timeseries(
+        cached_4 = PSRDatabaseSQLite.read_mapped_timeseries(
             db,
             "Resource",
             "some_vector4",
             Float64;
-            date_time = date_time,
+            date_time = DateTime(df.date_time[d_i]),
         )
+        _test_cache(cached_4, some_vector4_answer[d_i])
 
-        for k in 1:500
-            @test isnan(cached_data_new[k])
-        end
+        cached_5 = PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector5",
+            Float64;
+            date_time = DateTime(df.date_time[d_i]),
+        )
+        _test_cache(cached_5, some_vector5_answer[d_i])
+
+        cached_6 = PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector6",
+            Float64;
+            date_time = DateTime(df.date_time[d_i]),
+        )
+        _test_cache(cached_6, some_vector6_answer[d_i])
+    end
+
+    # test for dates in reverse sequence
+    for d_i in reverse(eachindex(df.date_time))
+        cached_1 = PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector1",
+            Float64;
+            date_time = DateTime(df.date_time[d_i]),
+        )
+        _test_cache(cached_1, some_vector1_answer[d_i])
+
+        cached_2 = PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector2",
+            Float64;
+            date_time = DateTime(df.date_time[d_i]),
+        )
+        _test_cache(cached_2, some_vector2_answer[d_i])
+
+        cached_3 = PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector3",
+            Float64;
+            date_time = DateTime(df.date_time[d_i]),
+        )
+        _test_cache(cached_3, some_vector3_answer[d_i])
+
+        cached_4 = PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector4",
+            Float64;
+            date_time = DateTime(df.date_time[d_i]),
+        )
+        _test_cache(cached_4, some_vector4_answer[d_i])
+
+        cached_5 = PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector5",
+            Float64;
+            date_time = DateTime(df.date_time[d_i]),
+        )
+        _test_cache(cached_5, some_vector5_answer[d_i])
+
+        cached_6 = PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector6",
+            Float64;
+            date_time = DateTime(df.date_time[d_i]),
+        )
+        _test_cache(cached_6, some_vector6_answer[d_i])
+    end
+
+    # test for dates in random sequence
+    for d_i in [2, 1, 3]
+        cached_1 = PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector1",
+            Float64;
+            date_time = DateTime(df.date_time[d_i]),
+        )
+        _test_cache(cached_1, some_vector1_answer[d_i])
+
+        cached_2 = PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector2",
+            Float64;
+            date_time = DateTime(df.date_time[d_i]),
+        )
+        _test_cache(cached_2, some_vector2_answer[d_i])
+
+        cached_3 = PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector3",
+            Float64;
+            date_time = DateTime(df.date_time[d_i]),
+        )
+        _test_cache(cached_3, some_vector3_answer[d_i])
+
+        cached_4 = PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector4",
+            Float64;
+            date_time = DateTime(df.date_time[d_i]),
+        )
+        _test_cache(cached_4, some_vector4_answer[d_i])
+
+        cached_5 = PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector5",
+            Float64;
+            date_time = DateTime(df.date_time[d_i]),
+        )
+        _test_cache(cached_5, some_vector5_answer[d_i])
+
+        cached_6 = PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector6",
+            Float64;
+            date_time = DateTime(df.date_time[d_i]),
+        )
+        _test_cache(cached_6, some_vector6_answer[d_i])
     end
 
     PSRDatabaseSQLite.close!(db)
     return rm(db_path)
 end
 
-function test_time_controller_missing()
+function test_time_controller_read_more_agents()
     path_schema = joinpath(@__DIR__, "test_time_controller.sql")
-    db_path = joinpath(@__DIR__, "test_time_controller_missing.sqlite")
+    db_path = joinpath(@__DIR__, "test_time_controller_read_multiple.sqlite")
     GC.gc()
     GC.gc()
     if isfile(db_path)
@@ -114,90 +242,57 @@ function test_time_controller_missing()
 
     db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
     PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
-    PSRDatabaseSQLite.SQLite.transaction(db.sqlite_db) do
-        df_timeseries_group1 = DataFrame(;
-            date_time = vcat([DateTime(0)], [DateTime(2000), DateTime(2001), DateTime(2002)]),
-            some_vector1 = vcat([missing], [3.0, 2.0, 1.0]),
-        )
-        PSRDatabaseSQLite.create_element!(
-            db,
-            "Resource";
-            label = "Resource 1",
-            group1 = df_timeseries_group1,
-        )
 
-        df_timeseries_group1 = DataFrame(;
-            date_time = vcat([DateTime(0)], [DateTime(2000), DateTime(2001), DateTime(2002)]),
-            some_vector1 = vcat([missing], [3.0, missing, 1.0]),
-        )
-        PSRDatabaseSQLite.create_element!(
-            db,
-            "Resource";
-            label = "Resource 2",
-            group1 = df_timeseries_group1,
-        )
+    df = DataFrame(;
+        date_time = [DateTime(2000), DateTime(2001), DateTime(2002)],
+        some_vector1 = [missing, 1.0, 2.0],
+        some_vector2 = [1.0, missing, 5.0],
+    )
+    PSRDatabaseSQLite.create_element!(
+        db,
+        "Resource";
+        label = "Resource 1",
+        group1 = df,
+    )
 
-        df_timeseries_group1 = DataFrame(;
-            date_time = vcat([DateTime(0)], [DateTime(2000), DateTime(2002)]),
-            some_vector1 = vcat([missing], [1.0, 3.0]),
-        )
-        PSRDatabaseSQLite.create_element!(
-            db,
-            "Resource";
-            label = "Resource 3",
-            group1 = df_timeseries_group1,
-        )
-
-        df_timeseries_group1 = DataFrame(;
-            date_time = vcat([DateTime(0)], [DateTime(2000), DateTime(2001), DateTime(2002)]),
-            some_vector1 = [missing for i in 1:4],
-        )
-        return PSRDatabaseSQLite.create_element!(
-            db,
-            "Resource";
-            label = "Resource 4",
-            group1 = df_timeseries_group1,
-        )
-    end
+    df2 = DataFrame(;
+        date_time = [DateTime(2000), DateTime(2001), DateTime(2002)],
+        some_vector1 = [missing, 10.0, 20.0],
+        some_vector2 = [10.0, missing, 50.0],
+    )
+    PSRDatabaseSQLite.create_element!(
+        db,
+        "Resource";
+        label = "Resource 2",
+        group1 = df2,
+    )
 
     PSRDatabaseSQLite.close!(db)
     db = PSRDatabaseSQLite.load_db(db_path; read_only = true)
 
-    cached_data_new = PSRDatabaseSQLite.read_mapped_timeseries(
-        db,
-        "Resource",
-        "some_vector1",
-        Float64;
-        date_time = DateTime(2000),
-    )
-    @test cached_data_new[1] == 3.0
-    @test cached_data_new[2] == 3.0
-    @test cached_data_new[3] == 1.0
-    @test isnan(cached_data_new[4])
+    some_vector1_answer = [[NaN, NaN], [1.0, 10.0], [2.0, 20.0]]
+    some_vector2_answer = [[1.0, 10.0], [1.0, 10.0], [5.0, 50.0]]
 
-    cached_data_new = PSRDatabaseSQLite.read_mapped_timeseries(
-        db,
-        "Resource",
-        "some_vector1",
-        Float64;
-        date_time = DateTime(2001),
-    )
-    @test cached_data_new[1] == 2.0
-    @test cached_data_new[2] == 3.0
-    @test cached_data_new[3] == 1.0
-    @test isnan(cached_data_new[4])
+    # test for dates in correct sequence
+    for d_i in eachindex(df.date_time)
+        cached_1 = PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector1",
+            Float64;
+            date_time = DateTime(df.date_time[d_i]),
+        )
+        _test_cache(cached_1, some_vector1_answer[d_i])
 
-    cached_data_new = PSRDatabaseSQLite.read_mapped_timeseries(
-        db,
-        "Resource",
-        "some_vector1",
-        Float64;
-        date_time = DateTime(2002),
-    )
-    @test cached_data_new[1] == 1.0
-    @test cached_data_new[2] == 1.0
-    @test cached_data_new[3] == 3.0
-    @test isnan(cached_data_new[4])
+        cached_2 = PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector2",
+            Float64;
+            date_time = DateTime(df.date_time[d_i]),
+        )
+        _test_cache(cached_2, some_vector2_answer[d_i])
+    end
 
     PSRDatabaseSQLite.close!(db)
     return rm(db_path)

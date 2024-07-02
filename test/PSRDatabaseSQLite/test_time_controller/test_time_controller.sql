@@ -21,6 +21,8 @@ CREATE TABLE Resource_timeseries_group1 (
     some_vector2 REAL,
     some_vector3 REAL,
     some_vector4 REAL,  
+    some_vector5 REAL,
+    some_vector6 REAL,    
     FOREIGN KEY(id) REFERENCES Resource(id) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY (id, date_time)
 ) STRICT; 
