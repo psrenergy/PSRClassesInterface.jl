@@ -5,8 +5,6 @@ struct TimeSeriesChanged <: TimeSeriesRequestStatus end
 
 const CollectionAttribute = Tuple{String, String}
 
-const DATETIME_FORMAT = "yyyy-mm-dd HH:MM:SS"
-
 mutable struct TimeControllerCache{T}
     data::Vector{T}
     # Control of dates requested per element in a given pair collection attribute
@@ -22,6 +20,9 @@ mutable struct TimeControllerCache{T}
 
     # Cache of collection_ids
     _collection_ids::Vector{Int}
+
+    # Cache prepared statement for querying the data
+    _prepared_statement::SQLite.Stmt
 end
 
 Base.@kwdef mutable struct TimeController
@@ -32,59 +33,51 @@ function _collection_attribute(collection_id::String, attribute_id::String)::Col
     return (collection_id, attribute_id)
 end
 
-function _closest_previous_date_with_data(
+function _update_time_controller_cache!(
+    cache::TimeControllerCache,
     db,
     attribute::Attribute,
-    id::Int,
     date_time::DateTime
-)::DateTime
-    # TODO this query could probably be optimized
-    # It is reading many things that are not necessary
-    # And filtering and sorting in the end
-    query = """
-    SELECT MAX(DATETIME(date_time))
-    FROM $(attribute.table_where_is_located)
-    WHERE $(attribute.id) IS NOT NULL AND DATETIME(date_time) <= DATETIME('$date_time') AND id = '$id'
-    """
-    result = DBInterface.execute(db.sqlite_db, query)
-    for row in result
-        answer = row[1]
-        if ismissing(answer)
-            return typemin(DateTime)
-        end
-        return DateTime(answer, DATETIME_FORMAT)
-    end
-end
-
-function _closest_next_date_with_data(
-    db,
-    attribute::Attribute,
-    id::Int,
-    date_time::DateTime
-)::DateTime
-    # TODO this query could probably be optimized
-    # It is reading many things that are not necessary
-    # And filtering and sorting in the end
-    query = """
-    SELECT MIN(DATETIME(date_time))
-    FROM $(attribute.table_where_is_located)
-    WHERE $(attribute.id) IS NOT NULL AND DATETIME(date_time) > DATETIME('$date_time') AND id = '$id'
-    """
-    result = DBInterface.execute(db.sqlite_db, query)
-    for row in result
-        answer = row[1]
-        if ismissing(answer)
-            return typemax(DateTime)
-        end
-        return DateTime(answer, DATETIME_FORMAT)
-    end
-end
-
-function _update_global_closest_dates_with_data!(
-    cache::TimeControllerCache
 )
+    cache.last_date_requested = date_time
+    query = """
+        SELECT 
+            id, 
+            MAX(CASE WHEN DATETIME(date_time) <= DATETIME('$date_time') THEN date_time ELSE NULL END) AS closest_previous_date_with_data,
+            MIN(CASE WHEN DATETIME(date_time) > DATETIME('$date_time') THEN date_time ELSE NULL END) AS closest_next_date_with_data,
+            $(attribute.id)
+        FROM $(attribute.table_where_is_located)
+        WHERE $(attribute.id) IS NOT NULL
+        GROUP BY id
+        ORDER BY id
+    """
+    result = DBInterface.execute(db.sqlite_db, query)
+    # @show result
+    for (i, row) in enumerate(result)
+        id = row[1]
+        @assert id == cache._collection_ids[i] "The id in the database is different from the one in the cache"
+        closest_previous_date_with_data = row[2]
+        closest_next_date_with_data = row[3]
+        data = row[4]
+        if ismissing(closest_previous_date_with_data)
+            cache.closest_previous_date_with_data[i] = typemin(DateTime)
+        else
+            cache.closest_previous_date_with_data[i] = DateTime(closest_previous_date_with_data)
+        end
+        if ismissing(closest_next_date_with_data)
+            cache.closest_next_date_with_data[i] = typemax(DateTime)
+        else
+            cache.closest_next_date_with_data[i] = DateTime(closest_next_date_with_data)
+        end
+        if ismissing(data)
+            cache.data[i] = _psrdatabasesqlite_null_value(eltype(cache.data))
+        else
+            cache.data[i] = data
+        end
+    end
     cache._closest_global_previous_date_with_data = maximum(cache.closest_previous_date_with_data)
     cache._closest_global_next_date_with_data = minimum(cache.closest_next_date_with_data)
+    return cache
 end
 
 function _no_need_to_query_any_id(
@@ -101,22 +94,25 @@ function _start_time_controller_cache(
     ::Type{T}
 ) where T
     _collection_ids = read_scalar_parameters(db, attribute.parent_collection, "id")
-    data = Vector{T}(undef, length(_collection_ids))
-    closest_previous_date_with_data = Vector{DateTime}(undef, length(_collection_ids))
-    closest_next_date_with_data = Vector{DateTime}(undef, length(_collection_ids))
-    for (i, id) in enumerate(_collection_ids)
-        closest_previous_date_with_data[i] = _closest_previous_date_with_data(db, attribute, id, date_time)
-        closest_next_date_with_data[i] = _closest_next_date_with_data(db, attribute, id, date_time)
-    end
+    data = fill(_psrdatabasesqlite_null_value(T), length(_collection_ids))
+    closest_previous_date_with_data = fill(typemin(DateTime), length(_collection_ids))
+    closest_next_date_with_data = fill(typemax(DateTime), length(_collection_ids))
     _closest_global_previous_date_with_data = maximum(closest_previous_date_with_data)
     _closest_global_next_date_with_data = minimum(closest_next_date_with_data)
-    
-    # Query the data for the first time
-    for (i, id) in enumerate(_collection_ids)
-        data[i] = _request_time_series_data_for_time_controller_cache(db, attribute, id, closest_previous_date_with_data[i], T)
-    end
 
-    return TimeControllerCache{T}(
+    _prepared_statement = SQLite.Stmt(db.sqlite_db, """
+        SELECT 
+            id, 
+            MAX(CASE WHEN DATETIME(date_time) <= DATETIME(':date_time') THEN date_time ELSE NULL END) AS closest_previous_date_with_data,
+            MIN(CASE WHEN DATETIME(date_time) > DATETIME(':date_time') THEN date_time ELSE NULL END) AS closest_next_date_with_data,
+            $(attribute.id)
+        FROM $(attribute.table_where_is_located)
+        WHERE $(attribute.id) IS NOT NULL
+        GROUP BY id
+        ORDER BY id
+    """)
+
+    cache = TimeControllerCache{T}(
         data,
         closest_previous_date_with_data,
         date_time,
@@ -124,47 +120,12 @@ function _start_time_controller_cache(
         _closest_global_previous_date_with_data,
         _closest_global_next_date_with_data,
         _collection_ids,
+        _prepared_statement
     )
-end
 
-function _request_time_series_data_for_time_controller_cache(
-    db,
-    attribute::Attribute,
-    id::Int,
-    date_time::DateTime,
-    ::Type{T}
-) where T
-    query = """
-    SELECT $(attribute.id)
-    FROM $(attribute.table_where_is_located)
-    WHERE id = $id AND DATETIME(date_time) = DATETIME('$date_time')
-    """
-    result = DBInterface.execute(db.sqlite_db, query)
-    for row in result
-        return T(row[1])
-    end
-    return _psrdatabasesqlite_null_value(T)
-end
+    _update_time_controller_cache!(cache, db, attribute, date_time)
 
-function _update_time_controller_cache!(
-    cache::TimeControllerCache,
-    db,
-    attribute::Attribute,
-    date_time::DateTime,
-    ::Type{T}
-) where T
-    cache.last_date_requested = date_time
-    for (i, id) in enumerate(cache._collection_ids)
-        # If date is whitin the range we do not need to update anything
-        if cache.closest_previous_date_with_data[i] <= date_time < cache.closest_previous_date_with_data[i]
-            continue
-        end
-        cache.closest_previous_date_with_data[i] = _closest_previous_date_with_data(db, attribute, id, date_time)
-        cache.closest_next_date_with_data[i] = _closest_next_date_with_data(db, attribute, id, date_time)
-        cache.data[i] = _request_time_series_data_for_time_controller_cache(db, attribute, id, cache.closest_previous_date_with_data[i], T)
-    end
-    _update_global_closest_dates_with_data!(cache)
-    return nothing
+    return cache
 end
 
 function read_mapped_timeseries(
@@ -193,6 +154,6 @@ function read_mapped_timeseries(
         return cache.data
     end
     # If we need to update the cache we update the dates and the data
-    _update_time_controller_cache!(cache, db,  attribute, date_time, T)
+    _update_time_controller_cache!(cache, db, attribute, date_time)
     return cache.data
 end

@@ -46,41 +46,40 @@ function test_read_time_series()
 
     for (j, date_time) in enumerate([DateTime(i) for i in 1900:1901])
         @show date_time
-        for i in 1:50
-            t1 = @timed PSRDatabaseSQLite.read_mapped_timeseries(
-                db,
-                "Resource",
-                "some_vector1",
-                Float64,
-                date_time = date_time
-            )
+        t1 = @timed PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector1",
+            Float64,
+            date_time = date_time
+        )
+        # @show t1.value
 
-            t2 = @timed PSRDatabaseSQLite.read_mapped_timeseries(
-                db,
-                "Resource",
-                "some_vector2",
-                Float64,
-                date_time = date_time
-            )
+        t2 = @timed PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector2",
+            Float64,
+            date_time = date_time
+        )
 
-            t3 = @timed PSRDatabaseSQLite.read_mapped_timeseries(
-                db,
-                "Resource",
-                "some_vector3",
-                Float64,
-                date_time = date_time
-            )
+        t3 = @timed PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector3",
+            Float64,
+            date_time = date_time
+        )
 
-            t4 = @timed PSRDatabaseSQLite.read_mapped_timeseries(
-                db,
-                "Resource",
-                "some_vector4",
-                Float64,
-                date_time = date_time
-            )
+        t4 = @timed PSRDatabaseSQLite.read_mapped_timeseries(
+            db,
+            "Resource",
+            "some_vector4",
+            Float64,
+            date_time = date_time
+        )
 
-            times .+= [t1.time, t2.time, t3.time, t4.time]
-        end
+        times .+= [t1.time, t2.time, t3.time, t4.time]
     end
 
     @show times
