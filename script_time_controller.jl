@@ -41,36 +41,56 @@ function test_read_time_series()
 
     db = PSRDatabaseSQLite.load_db(db_path; read_only = true)
 
-    for date_time in [DateTime(i) for i in 1900:1901]
+    times = zeros(4)
+
+
+    for (j, date_time) in enumerate([DateTime(i) for i in 1900:1901])
         @show date_time
         for i in 1:50
-            PSRDatabaseSQLite.read_mapped_timeseries(
+            t1 = @timed PSRDatabaseSQLite.read_mapped_timeseries(
                 db,
                 "Resource",
                 "some_vector1",
+                Float64,
                 date_time = date_time
             )
 
-            PSRDatabaseSQLite.read_mapped_timeseries(
+            t2 = @timed PSRDatabaseSQLite.read_mapped_timeseries(
                 db,
                 "Resource",
                 "some_vector2",
+                Float64,
                 date_time = date_time
             )
 
-            PSRDatabaseSQLite.read_mapped_timeseries(
+            t3 = @timed PSRDatabaseSQLite.read_mapped_timeseries(
                 db,
                 "Resource",
                 "some_vector3",
+                Float64,
                 date_time = date_time
             )
+
+            t4 = @timed PSRDatabaseSQLite.read_mapped_timeseries(
+                db,
+                "Resource",
+                "some_vector4",
+                Float64,
+                date_time = date_time
+            )
+
+            times .+= [t1.time, t2.time, t3.time, t4.time]
         end
     end
+
+    @show times
 
 
     PSRDatabaseSQLite.close!(db)
     rm(db_path)
 end
 
-test_create_time_series()
-test_read_time_series()
+@testset "Time Controller" begin
+    test_create_time_series()
+    test_read_time_series()
+end
