@@ -117,7 +117,7 @@ function test_time_controller_missing()
     PSRDatabaseSQLite.SQLite.transaction(db.sqlite_db) do
         df_timeseries_group1 = DataFrame(;
             date_time = vcat([DateTime(0)], [DateTime(2000), DateTime(2001), DateTime(2002)]),
-            some_vector1 = vcat([missing], [1.0, 2.0, 3.0]),
+            some_vector1 = vcat([missing], [3.0, 2.0, 1.0]),
         )
         PSRDatabaseSQLite.create_element!(
             db,
@@ -128,7 +128,7 @@ function test_time_controller_missing()
 
         df_timeseries_group1 = DataFrame(;
             date_time = vcat([DateTime(0)], [DateTime(2000), DateTime(2001), DateTime(2002)]),
-            some_vector1 = vcat([missing], [1.0, missing, 3.0]),
+            some_vector1 = vcat([missing], [3.0, missing, 1.0]),
         )
         PSRDatabaseSQLite.create_element!(
             db,
@@ -170,8 +170,8 @@ function test_time_controller_missing()
         Float64;
         date_time = DateTime(2000),
     )
-    @test cached_data_new[1] == 1.0
-    @test cached_data_new[2] == 1.0
+    @test cached_data_new[1] == 3.0
+    @test cached_data_new[2] == 3.0
     @test cached_data_new[3] == 1.0
     @test isnan(cached_data_new[4])
 
@@ -183,7 +183,7 @@ function test_time_controller_missing()
         date_time = DateTime(2001),
     )
     @test cached_data_new[1] == 2.0
-    @test cached_data_new[2] == 1.0
+    @test cached_data_new[2] == 3.0
     @test cached_data_new[3] == 1.0
     @test isnan(cached_data_new[4])
 
@@ -194,8 +194,8 @@ function test_time_controller_missing()
         Float64;
         date_time = DateTime(2002),
     )
-    @test cached_data_new[1] == 3.0
-    @test cached_data_new[2] == 3.0
+    @test cached_data_new[1] == 1.0
+    @test cached_data_new[2] == 1.0
     @test cached_data_new[3] == 3.0
     @test isnan(cached_data_new[4])
 
