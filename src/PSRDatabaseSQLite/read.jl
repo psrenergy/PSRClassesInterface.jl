@@ -6,6 +6,18 @@ const READ_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
     TimeSeriesFile => "read_time_series_file",
 )
 
+function number_of_elements(db::DatabaseSQLite, collection_id::String)::Int
+    query = "SELECT COUNT(*) FROM $collection_id"
+    result = DBInterface.execute(db.sqlite_db, query)
+    for row in result
+        return row[1]
+    end
+end
+
+function _collection_has_any_data(db::DatabaseSQLite, collection_id::String)::Bool
+    return number_of_elements(db, collection_id) > 0
+end
+
 function _get_id(
     db::DatabaseSQLite,
     collection_id::String,

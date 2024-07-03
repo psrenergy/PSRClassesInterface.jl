@@ -160,6 +160,9 @@ function read_mapped_timeseries(
         :read,
     )
     @assert _is_read_only(db) "Time series mapping only works in read only databases"
+    if !(_collection_has_any_data(db, collection_id))
+        return Vector{T}(undef, 0)
+    end
     collection_attribute = _collection_attribute(collection_id, attribute_id)
     attribute = _get_attribute(db, collection_id, attribute_id)
     if !haskey(db._time_controller.cache, collection_attribute)
