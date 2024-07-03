@@ -23,6 +23,7 @@ makedocs(;
         "PSRDatabaseSQLite Overview" => String[
             "psrdatabasesqlite/introduction.md",
             "psrdatabasesqlite/rules.md",
+            "psrdatabasesqlite/time_controller.md",
         ],
         "OpenStudy and OpenBinary Examples" => String[
             "examples/reading_parameters.md",
