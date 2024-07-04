@@ -327,3 +327,54 @@ function set_time_series_file!(
     end
     return nothing
 end
+
+function _update_time_series!(
+    db::DatabaseSQLite,
+    attribute::Attribute,
+    id::Integer,
+    val,
+    dimensions,
+)
+    query = "UPDATE $(attribute.table_where_is_located) SET $(attribute.id) = '$val'"
+    query *= " WHERE id = '$id' AND "
+    for (i, (key, value)) in enumerate(dimensions)
+        if key == "date_time"
+            query *= "$(key) = DATE('$(value)')"
+        else
+            query *= "$(key) = '$(value)'"
+        end
+        if i < length(dimensions)
+            query *= " AND "
+        end
+    end
+    DBInterface.execute(db.sqlite_db, query)
+    return nothing
+end
+
+function update_time_series!(
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute_id::String,
+    label::String,
+    val;
+    dimensions...,
+)
+    _throw_if_attribute_is_not_time_series(
+        db,
+        collection_id,
+        attribute_id,
+        :update,
+    )
+    attribute = _get_attribute(db, collection_id, attribute_id)
+    _validate_time_series_dimensions(collection_id, attribute, dimensions)
+
+    if length(dimensions) != length(attribute.dimension_names)
+        psr_database_sqlite_error(
+            "The number of dimensions in the time series does not match the number of dimensions in the attribute. " *
+            "The attribute has $(attribute.num_dimensions) dimensions: $(join(attribute.dimension_names, ", ")).",
+        )
+    end
+
+    id = _get_id(db, collection_id, label)
+    return _update_time_series!(db, attribute, id, val, dimensions)
+end

@@ -515,6 +515,204 @@ function test_time_controller_filled_then_empty()
     return rm(db_path)
 end
 
+function test_update_time_series()
+    path_schema = joinpath(@__DIR__, "test_read_time_series.sql")
+    db_path = joinpath(@__DIR__, "test_update_time_series.sqlite")
+    db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
+
+    PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
+
+    df_time_series_group1 = DataFrame(;
+        date_time = [DateTime(2000), DateTime(2001)],
+        some_vector1 = [1.0, 2.0],
+        some_vector2 = [2.0, 3.0],
+    )
+
+    df_time_series_group3 = DataFrame(;
+        date_time = [
+            DateTime(2000),
+            DateTime(2000),
+            DateTime(2000),
+            DateTime(2000),
+            DateTime(2001),
+            DateTime(2001),
+            DateTime(2001),
+            DateTime(2009),
+        ],
+        block = [1, 1, 1, 1, 2, 2, 2, 2],
+        segment = [1, 2, 3, 4, 1, 2, 3, 4],
+        some_vector5 = [1.0, 2.0, 3.0, 4.0, 1, 2, 3, 4],
+        some_vector6 = [1.0, 2.0, 3.0, 4.0, 1, 2, 3, 4],
+    )
+    PSRDatabaseSQLite.create_element!(
+        db,
+        "Resource";
+        label = "Resource 1",
+        group1 = df_time_series_group1,
+        group3 = df_time_series_group3,
+    )
+
+    PSRDatabaseSQLite.update_time_series!(
+        db,
+        "Resource",
+        "some_vector1",
+        "Resource 1",
+        10.0;
+        date_time = DateTime(2001),
+    )
+
+    PSRDatabaseSQLite.update_time_series!(
+        db,
+        "Resource",
+        "some_vector2",
+        "Resource 1",
+        50.0;
+        date_time = DateTime(2001),
+    )
+
+    PSRDatabaseSQLite.update_time_series!(
+        db,
+        "Resource",
+        "some_vector5",
+        "Resource 1",
+        10.0;
+        date_time = DateTime(2000),
+        block = 1,
+        segment = 2,
+    )
+
+    PSRDatabaseSQLite.update_time_series!(
+        db,
+        "Resource",
+        "some_vector5",
+        "Resource 1",
+        3.0;
+        date_time = DateTime(2000),
+        block = 1,
+        segment = 1,
+    )
+
+    PSRDatabaseSQLite.update_time_series!(
+        db,
+        "Resource",
+        "some_vector6",
+        "Resource 1",
+        33.0;
+        date_time = DateTime(2000),
+        block = 1,
+        segment = 3,
+    )
+
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.update_time_series!(
+        db,
+        "Resource",
+        "some_vector6",
+        "Resource 1",
+        10.0;
+        date_time = DateTime(2000),
+        segment = 2,
+    )
+
+    df_group1_answer = DataFrame(;
+        date_time = [DateTime(2000), DateTime(2001)],
+        some_vector1 = [1.0, 10.0],
+        some_vector2 = [2.0, 50.0],
+    )
+    df_group3_answer = DataFrame(;
+        date_time = [
+            DateTime(2000),
+            DateTime(2000),
+            DateTime(2000),
+            DateTime(2000),
+            DateTime(2001),
+            DateTime(2001),
+            DateTime(2001),
+            DateTime(2009),
+        ],
+        block = [1, 1, 1, 1, 2, 2, 2, 2],
+        segment = [1, 2, 3, 4, 1, 2, 3, 4],
+        some_vector5 = [3.0, 10.0, 3.0, 4.0, 1, 2, 3, 4],
+        some_vector6 = [1.0, 2.0, 33.0, 4.0, 1, 2, 3, 4],
+    )
+
+    all_answers = [df_group1_answer, df_group3_answer]
+
+    # iterating over the three groups
+
+    for df_answer in all_answers
+        for col in names(df_answer)
+            if startswith(col, "some_vector")
+                df = PSRDatabaseSQLite.read_time_series_table(
+                    db,
+                    "Resource",
+                    col,
+                    "Resource 1",
+                )
+                _test_table(df, df_answer)
+            end
+        end
+    end
+
+    PSRDatabaseSQLite.close!(db)
+    GC.gc()
+    GC.gc()
+    rm(db_path)
+    @test true
+    return nothing
+end
+
+function test_delete_time_series()
+    path_schema = joinpath(@__DIR__, "test_read_time_series.sql")
+    db_path = joinpath(@__DIR__, "test_delete_time_series.sqlite")
+    db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
+
+    PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
+
+    df_time_series_group1 = DataFrame(;
+        date_time = [DateTime(2000), DateTime(2001)],
+        some_vector1 = [1.0, 2.0],
+        some_vector2 = [2.0, 3.0],
+    )
+    PSRDatabaseSQLite.create_element!(
+        db,
+        "Resource";
+        label = "Resource 1",
+        group1 = df_time_series_group1,
+    )
+
+    PSRDatabaseSQLite.delete_time_series!(
+        db,
+        "Resource",
+        "group1",
+        "Resource 1",
+    )
+
+    df = PSRDatabaseSQLite.read_time_series_table(
+        db,
+        "Resource",
+        "some_vector1",
+        "Resource 1",
+    )
+
+    @test isempty(df)
+
+    df = PSRDatabaseSQLite.read_time_series_table(
+        db,
+        "Resource",
+        "some_vector2",
+        "Resource 1",
+    )
+
+    @test isempty(df)
+
+    PSRDatabaseSQLite.close!(db)
+    GC.gc()
+    GC.gc()
+    rm(db_path)
+    @test true
+    return nothing
+end
+
 function runtests()
     Base.GC.gc()
     Base.GC.gc()
