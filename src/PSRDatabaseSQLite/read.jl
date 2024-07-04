@@ -156,59 +156,8 @@ function _query_vector(
     return results
 end
 
-function read_time_series_dfs(
-    db::DatabaseSQLite,
-    collection_id::String,
-    attribute_id::String;
-    read_exact_date::Bool = false,
-    dimensions...,
-)
-    _throw_if_attribute_is_not_time_series(
-        db,
-        collection_id,
-        attribute_id,
-        :read,
-    )
-    attribute = _get_attribute(db, collection_id, attribute_id)
-    ids_in_table = read_scalar_parameters(db, collection_id, "id")
-
-    results = DataFrame[]
-    for id in ids_in_table
-        push!(results, _read_time_series_df(db, collection_id, attribute, id; read_exact_date, dimensions...))
-    end
-
-    return results
-end
-
-function read_time_series_df(
-    db::DatabaseSQLite,
-    collection_id::String,
-    attribute_id::String,
-    label::String;
-    read_exact_date::Bool = false,
-    dimensions...,
-)
-    _throw_if_attribute_is_not_time_series(
-        db,
-        collection_id,
-        attribute_id,
-        :read,
-    )
-    attribute = _get_attribute(db, collection_id, attribute_id)
-    id = _get_id(db, collection_id, label)
-
-    return _read_time_series_df(
-        db,
-        collection_id,
-        attribute,
-        id;
-        read_exact_date,
-        dimensions...,
-    )
-end
-
 function end_date_query(db::DatabaseSQLite, attribute::Attribute)
-     # First checks if the date or dimension value is within the range of the data.
+    # First checks if the date or dimension value is within the range of the data.
     # Then it queries the closest date before the provided date.
     # If there is no date query the data with date 0 (which will probably return no data.)
     end_date_query = "SELECT MAX(DATE(date_time)) FROM $(attribute.table_where_is_located)"
@@ -226,49 +175,6 @@ function closest_date_query(db::DatabaseSQLite, attribute::Attribute, dim_value:
         return DateTime(0)
     end
     return DateTime(closest_date[!, 1][1])
-end
-
-function _read_time_series_df(
-    db::DatabaseSQLite,
-    collection_id::String,
-    attribute::Attribute,
-    id::Int;
-    read_exact_date::Bool = false,
-    dimensions...,
-)
-    _validate_time_series_dimensions(collection_id, attribute, dimensions)
-
-    query = string("SELECT ", join(attribute.dimension_names, ",", ", "), ", ", attribute.id)
-    query *= " FROM $(attribute.table_where_is_located) WHERE id = '$id'"
-    if !isempty(dimensions)
-        query *= " AND "
-        i = 0
-        for (dim_name, dim_value) in dimensions
-            if dim_name == :date_time
-                if read_exact_date
-                    query *= "DATE($dim_name) = DATE('$(dim_value)')"
-                else
-                    end_date = end_date_query(db, attribute)
-                    closest_date = closest_date_query(db, attribute, dim_value)
-                    date_to_equal_in_query = if dim_value > end_date
-                        DateTime(0)
-                    else
-                        closest_date
-                    end
-                    # query the closest date and make it equal to the provided date.
-                    query *= "DATE($dim_name) = DATE('$(date_to_equal_in_query)')"
-                end
-            else
-                query *= "$(dim_name) = '$dim_value'"
-            end
-            i += 1
-            if i < length(dimensions)
-                query *= " AND "
-            end
-        end
-    end
-
-    return DBInterface.execute(db.sqlite_db, query) |> DataFrame
 end
 
 """
@@ -463,6 +369,74 @@ function read_time_series_file(
     else
         return result[1]
     end
+end
+
+function read_time_series_row(
+    db,
+    collection_id::String,
+    attribute_id::String;
+    date_time::DateTime,
+)
+    _throw_if_attribute_is_not_time_series(
+        db,
+        collection_id,
+        attribute_id,
+        :read,
+    )
+    @assert _is_read_only(db) "Time series mapping only works in read only databases"
+
+    collection_attribute = _collection_attribute(collection_id, attribute_id)
+    attribute = _get_attribute(db, collection_id, attribute_id)
+
+    T = attribute.type
+
+    if !(_collection_has_any_data(db, collection_id))
+        return Vector{T}(undef, 0)
+    end
+    if !haskey(db._time_controller.cache, collection_attribute)
+        db._time_controller.cache[collection_attribute] = _start_time_controller_cache(db, attribute, date_time, T)
+    end
+    cache = db._time_controller.cache[collection_attribute]
+    # If we don`t need to update anything we just return the data
+    if _no_need_to_query_any_id(cache, date_time)
+        cache.last_date_requested = date_time
+        return cache.data
+    end
+    # If we need to update the cache we update the dates and the data
+    _update_time_controller_cache!(cache, db, attribute, date_time)
+    return cache.data
+end
+
+function _read_time_series_table(
+    db::DatabaseSQLite,
+    attribute::Attribute,
+    id::Int,
+)
+    query = string("SELECT ", join(attribute.dimension_names, ",", ", "), ", ", attribute.id)
+    query *= " FROM $(attribute.table_where_is_located) WHERE id = '$id'"
+    return DBInterface.execute(db.sqlite_db, query) |> DataFrame
+end
+
+function read_time_series_table(
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute_id::String,
+    label::String,
+)
+    _throw_if_attribute_is_not_time_series(
+        db,
+        collection_id,
+        attribute_id,
+        :read,
+    )
+    attribute = _get_attribute(db, collection_id, attribute_id)
+    id = _get_id(db, collection_id, label)
+
+    return _read_time_series_table(
+        db,
+        attribute,
+        id,
+    )
 end
 
 function _treat_query_result(

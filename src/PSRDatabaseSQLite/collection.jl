@@ -240,14 +240,14 @@ function _create_collection_vector_relations(db::SQLite.DB, collection_id::Strin
     return vector_relations
 end
 
-function _get_timeseries_dimension_names(df_table_infos::DataFrame)
+function _get_time_series_dimension_names(df_table_infos::DataFrame)
     dimension_names = Vector{String}(undef, 0)
-    for timeseries_attribute in eachrow(df_table_infos)
-        if timeseries_attribute.name == "id"
+    for time_series_attribute in eachrow(df_table_infos)
+        if time_series_attribute.name == "id"
             continue
         end
-        if timeseries_attribute.pk != 0
-            push!(dimension_names, timeseries_attribute.name)
+        if time_series_attribute.pk != 0
+            push!(dimension_names, time_series_attribute.name)
         end
     end
     return dimension_names
@@ -258,39 +258,39 @@ function _create_collection_time_series(db::SQLite.DB, collection_id::String)
     time_series = OrderedDict{String, TimeSeries}()
     parent_collection = collection_id
     for table_name in time_series_tables
-        group_id = _id_of_timeseries_group(table_name)
+        group_id = _id_of_time_series_group(table_name)
         table_where_is_located = table_name
         df_table_infos = table_info(db, table_name)
-        dimension_names = _get_timeseries_dimension_names(df_table_infos)
-        for timeseries_attribute in eachrow(df_table_infos)
-            id = timeseries_attribute.name
+        dimension_names = _get_time_series_dimension_names(df_table_infos)
+        for time_series_attribute in eachrow(df_table_infos)
+            id = time_series_attribute.name
             if id == "id" || id == "date_time"
                 # These are obligatory for every vector table
                 # and have no point in being stored in the database definition.
-                if timeseries_attribute.pk == 0
+                if time_series_attribute.pk == 0
                     psr_database_sqlite_error(
-                        "Invalid table \"$(table_name)\" of timeseries attributes of collection \"$(collection_id)\". " *
-                        "The column \"$(timeseries_attribute.name)\" is not a primary key but it should.",
+                        "Invalid table \"$(table_name)\" of time_series attributes of collection \"$(collection_id)\". " *
+                        "The column \"$(time_series_attribute.name)\" is not a primary key but it should.",
                     )
                 end
                 continue
             end
             # There is no point in storing the other primary keys of these tables
-            if timeseries_attribute.pk != 0
-                if _sql_type_to_julia_type(id, timeseries_attribute.type) != Int64
+            if time_series_attribute.pk != 0
+                if _sql_type_to_julia_type(id, time_series_attribute.type) != Int64
                     psr_database_sqlite_error(
-                        "Invalid table \"$(table_name)\" of timeseries attributes of collection \"$(collection_id)\". " *
-                        "The column \"$(timeseries_attribute.name)\" is not an integer primary key but it should.",
+                        "Invalid table \"$(table_name)\" of time_series attributes of collection \"$(collection_id)\". " *
+                        "The column \"$(time_series_attribute.name)\" is not an integer primary key but it should.",
                     )
                 end
                 continue
             end
-            type = _sql_type_to_julia_type(id, timeseries_attribute.type)
-            default_value = _get_default_value(type, timeseries_attribute.dflt_value)
-            not_null = Bool(timeseries_attribute.notnull)
+            type = _sql_type_to_julia_type(id, time_series_attribute.type)
+            default_value = _get_default_value(type, time_series_attribute.dflt_value)
+            not_null = Bool(time_series_attribute.notnull)
             if haskey(time_series, id)
                 psr_database_sqlite_error(
-                    "Duplicated timeseries attribute \"$id\" in collection \"$collection_id\"",
+                    "Duplicated time_series attribute \"$id\" in collection \"$collection_id\"",
                 )
             end
             time_series[id] = TimeSeries(
@@ -404,8 +404,8 @@ function _id_of_vector_group(table_name::String)
     return string(matches.captures[1])
 end
 
-function _id_of_timeseries_group(table_name::String)
-    matches = match(r"_timeseries_(.*)", table_name)
+function _id_of_time_series_group(table_name::String)
+    matches = match(r"_time_series_(.*)", table_name)
     return string(matches.captures[1])
 end
 
@@ -425,7 +425,7 @@ function _get_collection_time_series_tables(
 end
 
 function _get_collection_time_series_files_tables(::SQLite.DB, collection_id::String)
-    return string(collection_id, "_timeseriesfiles")
+    return string(collection_id, "_time_series_files")
 end
 
 function _validate_actions_on_foreign_key(

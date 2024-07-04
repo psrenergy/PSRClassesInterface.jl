@@ -8,7 +8,7 @@ CREATE TABLE Resource (
     label TEXT UNIQUE NOT NULL
 ) STRICT;
 
-CREATE TABLE Resource_timeseries_group1 (
+CREATE TABLE Resource_time_series_group1 (
     id INTEGER, 
     date_time TEXT NOT NULL,
     some_vector1 REAL,
@@ -25,12 +25,12 @@ using Dates
 date = DateTime(2024, 3, 1) # 2024-03-01T00:00:00 (March 1st, 2024)
 ```
 
-Notice that in this example, there are two value columns `some_vector1` and `some_vector2`. You can have as many value columns as you want. You can also separate the time series data into different tables, by creating a table `Resource_timeseries_group2` for example.
+Notice that in this example, there are two value columns `some_vector1` and `some_vector2`. You can have as many value columns as you want. You can also separate the time series data into different tables, by creating a table `Resource_time_series_group2` for example.
 
 It is also possible to add more dimensions to your time series, such as `block` and `scenario`.
 
 ```sql	
-CREATE TABLE Resource_timeseries_group2 (
+CREATE TABLE Resource_time_series_group2 (
     id INTEGER, 
     date_time TEXT NOT NULL,
     block INTEGER NOT NULL,
@@ -70,7 +70,7 @@ For example, if you have the following data:
 
 ## Inserting data
 
-When creating a new element that has a time series, you can pass this information via a `DataFrame`. Consider the collection `Resource` with the two time series tables `Resource_timeseries_group1` and `Resource_timeseries_group2`.
+When creating a new element that has a time series, you can pass this information via a `DataFrame`. Consider the collection `Resource` with the two time series tables `Resource_time_series_group1` and `Resource_time_series_group2`.
 
 ```julia
 using DataFrames
@@ -121,7 +121,7 @@ First, you can read the information as a `DataFrame`. This dataframe can be filt
 
 ### Filtering by element and `date_time` dimension
 ```julia
-df = PSRDatabaseSQLite.read_time_series_df(
+df = PSRDatabaseSQLite.read_time_series_table(
         db,
         "Resource",
         "some_vector1",
@@ -132,7 +132,7 @@ df = PSRDatabaseSQLite.read_time_series_df(
 
 ### No filtering by `date_time`
 ```julia
-df = PSRDatabaseSQLite.read_time_series_df(
+df = PSRDatabaseSQLite.read_time_series_table(
         db,
         "Resource",
         "some_vector1",
@@ -142,7 +142,7 @@ df = PSRDatabaseSQLite.read_time_series_df(
 
 ### Filtering by `block` and `date_time` for an element
 ```julia
-df = PSRDatabaseSQLite.read_time_series_df(
+df = PSRDatabaseSQLite.read_time_series_table(
         db,
         "Resource",
         "some_vector3",
@@ -154,7 +154,7 @@ df = PSRDatabaseSQLite.read_time_series_df(
 
 ### No filter and returing all elements
 ```julia
-dfs = PSRDatabaseSQLite.read_time_series_dfs(
+dfs = PSRDatabaseSQLite.read_time_series_tables(
         db,
         "Resource",
         "some_vector1"
@@ -181,7 +181,7 @@ For example, consider the following table for `some_vector1`:
 If you query the following:
 
 ```julia
-values = PSRDatabaseSQLite.read_mapped_timeseries(
+values = PSRDatabaseSQLite.read_time_series_row(
     db,
     "Resource",
     "some_vector1",

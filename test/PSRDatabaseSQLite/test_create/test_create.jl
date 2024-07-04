@@ -274,17 +274,17 @@ function test_create_time_series()
     PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
 
     for i in 1:3
-        df_timeseries_group1 = DataFrame(;
+        df_time_series_group1 = DataFrame(;
             date_time = [DateTime(2000), DateTime(2001)],
             some_vector1 = [1.0, 2.0] .* i,
             some_vector2 = [2.0, 3.0] .* i,
         )
-        df_timeseries_group2 = DataFrame(;
+        df_time_series_group2 = DataFrame(;
             date_time = [DateTime(2000), DateTime(2000), DateTime(2001), DateTime(2001)],
             block = [1, 2, 1, 2],
             some_vector3 = [1.0, missing, 3.0, 4.0] .* i,
         )
-        df_timeseries_group3 = DataFrame(;
+        df_time_series_group3 = DataFrame(;
             date_time = [
                 DateTime(2000),
                 DateTime(2000),
@@ -304,13 +304,13 @@ function test_create_time_series()
             db,
             "Resource";
             label = "Resource $i",
-            group1 = df_timeseries_group1,
-            group2 = df_timeseries_group2,
-            group3 = df_timeseries_group3,
+            group1 = df_time_series_group1,
+            group2 = df_time_series_group2,
+            group3 = df_time_series_group3,
         )
     end
 
-    df_timeseries_group5 = DataFrame(;
+    df_time_series_group5 = DataFrame(;
         date_time = [DateTime(2000), DateTime(2001)],
         some_vector1 = [1.0, 2.0],
         some_vector2 = [2.0, 3.0],
@@ -320,7 +320,7 @@ function test_create_time_series()
         db,
         "Resource";
         label = "Resource 4",
-        group5 = df_timeseries_group5,
+        group5 = df_time_series_group5,
     )
 
     PSRDatabaseSQLite.close!(db)

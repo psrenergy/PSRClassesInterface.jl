@@ -11,7 +11,7 @@ CREATE TABLE Plant (
     label TEXT UNIQUE NOT NULL
 );
 
-CREATE TABLE Plant_timeseriesfiles (
+CREATE TABLE Plant_time_series_files (
     generation TEXT
 );
 
@@ -20,7 +20,7 @@ CREATE TABLE Resource (
     label TEXT UNIQUE NOT NULL
 );
 
-CREATE TABLE Resource_timeseriesfiles (
+CREATE TABLE Resource_time_series_files (
     generation TEXT,
     other_generation TEXT
 );

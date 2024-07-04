@@ -117,20 +117,20 @@ function _create_time_series!(
     db::DatabaseSQLite,
     collection_id::String,
     id::Integer,
-    dict_timeseries_attributes,
+    dict_time_series_attributes,
 )
-    for (group, df) in dict_timeseries_attributes
-        timeseries_group_table_name = _timeseries_group_table_name(collection_id, string(group))
+    for (group, df) in dict_time_series_attributes
+        time_series_group_table_name = _time_series_group_table_name(collection_id, string(group))
         ids = fill(id, nrow(df))
         DataFrames.insertcols!(df, 1, :id => ids)
         # Convert datetime column to string
         df[!, :date_time] = string.(df[!, :date_time])
         # Add missing columns
-        missing_names_in_df = setdiff(_attributes_in_timeseries_group(db, collection_id, string(group)), string.(names(df)))
+        missing_names_in_df = setdiff(_attributes_in_time_series_group(db, collection_id, string(group)), string.(names(df)))
         for missing_attribute in missing_names_in_df
             df[!, Symbol(missing_attribute)] = fill(missing, nrow(df))
         end
-        _insert_vectors_from_df(db, df, timeseries_group_table_name)
+        _insert_vectors_from_df(db, df, time_series_group_table_name)
     end
 end
 
@@ -142,7 +142,7 @@ function _create_element!(
     _throw_if_collection_does_not_exist(db, collection_id)
     dict_scalar_attributes = Dict{Symbol, Any}()
     dict_vector_attributes = Dict{Symbol, Any}()
-    dict_timeseries_attributes = Dict{Symbol, Any}()
+    dict_time_series_attributes = Dict{Symbol, Any}()
 
     # Validate that the arguments will be valid
     for (key, value) in kwargs
@@ -155,8 +155,8 @@ function _create_element!(
             end
             dict_vector_attributes[key] = value
         elseif isa(value, DataFrame)
-            _throw_if_not_timeseries_group(db, collection_id, string(key))
-            dict_timeseries_attributes[key] = value
+            _throw_if_not_time_series_group(db, collection_id, string(key))
+            dict_time_series_attributes[key] = value
         else
             _throw_if_is_time_series_file(db, collection_id, string(key))
             _throw_if_not_scalar_attribute(db, collection_id, string(key))
@@ -182,13 +182,13 @@ function _create_element!(
         _create_vectors!(db, collection_id, id, dict_vector_attributes)
     end
 
-    if !isempty(dict_timeseries_attributes)
+    if !isempty(dict_time_series_attributes)
         id = get(
             dict_scalar_attributes,
             :id,
             _get_id(db, collection_id, dict_scalar_attributes[:label]),
         )
-        _create_time_series!(db, collection_id, id, dict_timeseries_attributes)
+        _create_time_series!(db, collection_id, id, dict_time_series_attributes)
     end
 
     return nothing

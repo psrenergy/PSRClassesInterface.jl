@@ -15,7 +15,7 @@ CREATE TABLE Resource (
     type TEXT NOT NULL DEFAULT "D"
 ) STRICT;
 
-CREATE TABLE Resource_timeseries_group1 (
+CREATE TABLE Resource_time_series_group1 (
     id INTEGER, 
     date_time TEXT NOT NULL,
     some_vector1 REAL,
@@ -24,7 +24,7 @@ CREATE TABLE Resource_timeseries_group1 (
     PRIMARY KEY (id, date_time)
 ) STRICT; 
 
-CREATE TABLE Resource_timeseries_group2 (
+CREATE TABLE Resource_time_series_group2 (
     id INTEGER, 
     date_time TEXT NOT NULL,
     block INTEGER NOT NULL,
@@ -34,7 +34,7 @@ CREATE TABLE Resource_timeseries_group2 (
     PRIMARY KEY (id, date_time, block)
 ) STRICT; 
 
-CREATE TABLE Resource_timeseries_group3 (
+CREATE TABLE Resource_time_series_group3 (
     id INTEGER, 
     date_time TEXT NOT NULL,
     block INTEGER NOT NULL,
@@ -45,7 +45,7 @@ CREATE TABLE Resource_timeseries_group3 (
     PRIMARY KEY (id, date_time, block, segment)
 ) STRICT; 
 
-CREATE TABLE Resource_timeseries_group4 (
+CREATE TABLE Resource_time_series_group4 (
     id INTEGER, 
     date_time TEXT NOT NULL,
     block INTEGER NOT NULL,

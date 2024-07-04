@@ -14,7 +14,7 @@ CREATE TABLE Resource (
     type TEXT NOT NULL DEFAULT "D" CHECK(type IN ('D', 'E', 'F'))
 ) STRICT;
 
-CREATE TABLE Resource_timeseriesfiles (
+CREATE TABLE Resource_time_series_files (
     wind_speed TEXT,
     wind_direction TEXT
 ) STRICT;

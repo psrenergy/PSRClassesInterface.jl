@@ -3,7 +3,7 @@ Base.@kwdef mutable struct DatabaseSQLite
     collections_map::OrderedDict{String, Collection}
     read_only::Bool = false
     # TimeController is a cache that allows PSRDatabaseSQLite to
-    # store information about the last timeseries query. This is useful for avoiding to
+    # store information about the last time_series query. This is useful for avoiding to
     # re-query the database when the same query is made multiple times.
     # The TimeController is a private behaviour and whenever it is used
     # it changes the database mode to read-only.
@@ -98,8 +98,7 @@ function DatabaseSQLite(
     read_only::Bool = false,
 )
     sqlite_db =
-        # read_only ? SQLite.DB("file:" * database_path * "?mode=ro&immutable=1") :
-        SQLite.DB(database_path)
+        read_only ? SQLite.DB("file:" * database_path * "?mode=ro&immutable=1") : SQLite.DB(database_path)
 
     _set_default_pragmas!(sqlite_db)
 
@@ -114,7 +113,7 @@ function DatabaseSQLite(
     db = DatabaseSQLite(;
         sqlite_db,
         collections_map,
-        read_only
+        read_only,
     )
     return db
 end
@@ -164,7 +163,7 @@ function _is_time_series(
     return haskey(collection.time_series, attribute_id)
 end
 
-function _is_timeseries_group(
+function _is_time_series_group(
     db::DatabaseSQLite,
     collection_id::String,
     group_id::String,
@@ -298,27 +297,27 @@ function _map_of_groups_to_vector_attributes(
     return map_of_groups_to_vector_attributes
 end
 
-function _attributes_in_timeseries_group(
+function _attributes_in_time_series_group(
     db::DatabaseSQLite,
     collection_id::String,
     group_id::String,
 )
     collection = _get_collection(db, collection_id)
-    attributes_in_timeseries_group = Vector{String}(undef, 0)
+    attributes_in_time_series_group = Vector{String}(undef, 0)
     for (_, attribute) in collection.time_series
         if attribute.group_id == group_id
-            push!(attributes_in_timeseries_group, attribute.id)
+            push!(attributes_in_time_series_group, attribute.id)
         end
     end
-    return attributes_in_timeseries_group
+    return attributes_in_time_series_group
 end
 
 function _vectors_group_table_name(collection_id::String, group::String)
     return string(collection_id, "_vector_", group)
 end
 
-function _timeseries_group_table_name(collection_id::String, group::String)
-    return string(collection_id, "_timeseries_", group)
+function _time_series_group_table_name(collection_id::String, group::String)
+    return string(collection_id, "_time_series_", group)
 end
 
 function _is_collection_id(name::String)
@@ -331,7 +330,7 @@ function _is_collection_vector_table_name(name::String, collection_id::String)
 end
 
 function _is_collection_time_series_table_name(name::String, collection_id::String)
-    return startswith(name, "$(collection_id)_timeseries_")
+    return startswith(name, "$(collection_id)_time_series_") && !endswith(name, "_time_series_files")
 end
 
 _get_collection_ids(db::DatabaseSQLite) = collect(keys(db.collections_map))

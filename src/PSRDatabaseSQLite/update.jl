@@ -272,7 +272,7 @@ function set_time_series_file!(
     kwargs...,
 )
     _throw_if_collection_does_not_exist(db, collection_id)
-    table_name = collection_id * "_timeseriesfiles"
+    table_name = collection_id * "_time_series_files"
     dict_time_series = Dict()
     for (key, value) in kwargs
         if !isa(value, AbstractString)

@@ -14,7 +14,7 @@ CREATE TABLE Resource (
     type TEXT NOT NULL DEFAULT "D"
 ) STRICT;
 
-CREATE TABLE Resource_timeseries_group1 (
+CREATE TABLE Resource_time_series_group1 (
     id INTEGER, 
     date_time TEXT NOT NULL,
     some_vector1 REAL,

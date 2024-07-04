@@ -135,7 +135,7 @@ CREATE TABLE HydroPlant_vector_GaugingStation(
 ### Time Series
 
 - All Time Series for the elements from a Collection should be stored in a Table
-- The Table name should be the same as the name of the Collection followed by `_timeseriesfiles`, as presented below
+- The Table name should be the same as the name of the Collection followed by `_time_series_files`, as presented below
 
 <p style="text-align: center"> COLLECTION_vector_ATTRIBUTE</p>
 
@@ -145,7 +145,7 @@ CREATE TABLE HydroPlant_vector_GaugingStation(
 Example:
 
 ```sql
-CREATE TABLE Plant_timeseriesfiles (
+CREATE TABLE Plant_time_series_files (
     generation TEXT,
     cost TEXT
 ) STRICT;

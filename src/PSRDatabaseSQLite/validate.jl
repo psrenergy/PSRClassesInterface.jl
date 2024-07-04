@@ -1,6 +1,6 @@
 # just for reference this are the main regexes
 # the functions not commented implement combinations of them
-# with other reserved words such as vector, relation and timeseries.
+# with other reserved words such as vector, relation and time_series.
 # _regex_table_name() = Regex("(?:[A-Z][a-z]*)+")
 # _regex_column_name() = Regex("[a-z][a-z0-9]*(?:_{1}[a-z0-9]+)*")
 
@@ -21,13 +21,12 @@ _is_valid_table_vector_name(table::String) =
 _is_valid_time_series_name(table::String) =
     !isnothing(
         match(
-            r"^(?:[A-Z][a-z]*)+_timeseries_[a-z][a-z0-9]*(?:_{1}[a-z0-9]+)*$",
+            r"^(?:[A-Z][a-z]*)+_time_series_[a-z][a-z0-9]*(?:_{1}[a-z0-9]+)*$",
             table,
         ),
     )
 
-_is_valid_table_timeseriesfiles_name(table::String) =
-    !isnothing(match(r"^(?:[A-Z][a-z]*)+_timeseriesfiles", table))
+_is_valid_table_time_series_files_name(table::String) = !isnothing(match(r"^(?:[A-Z][a-z]*)+_time_series_files", table))
 
 _is_valid_time_series_attribute_value(value::String) =
     !isnothing(
@@ -75,23 +74,23 @@ function _validate_table(db::SQLite.DB, table::String)
     return num_errors
 end
 
-function _validate_timeseries_table(db::SQLite.DB, table::String)
+function _validate_time_series_table(db::SQLite.DB, table::String)
     attributes = column_names(db, table)
     num_errors = 0
     if !("id" in attributes)
-        @error("Table $table is a timeseries table and does not have an \"id\" column.")
+        @error("Table $table is a time_series table and does not have an \"id\" column.")
         num_errors += 1
     end
     if !("date_time" in attributes)
         @error(
-            "Table $table is a timeseries table and does not have an \"date_time\" column.",
+            "Table $table is a time_series table and does not have an \"date_time\" column.",
         )
         num_errors += 1
     end
     return num_errors
 end
 
-function _validate_timeseriesfiles_table(db::SQLite.DB, table::String)
+function _validate_time_series_files_table(db::SQLite.DB, table::String)
     attributes = column_names(db, table)
     num_errors = 0
     if ("id" in attributes)
@@ -147,10 +146,10 @@ function _validate_database(db::SQLite.DB)
         end
         if _is_valid_table_name(table)
             num_errors += _validate_table(db, table)
-        elseif _is_valid_table_timeseriesfiles_name(table)
-            num_errors += _validate_timeseriesfiles_table(db, table)
+        elseif _is_valid_table_time_series_files_name(table)
+            num_errors += _validate_time_series_files_table(db, table)
         elseif _is_valid_time_series_name(table)
-            num_errors += _validate_timeseries_table(db, table)
+            num_errors += _validate_time_series_table(db, table)
         elseif _is_valid_table_vector_name(table)
             num_errors += _validate_vector_table(db, table)
         else
@@ -159,8 +158,8 @@ function _validate_database(db::SQLite.DB)
                 Valid table name formats are:
                 - Collections: NameOfCollection
                 - Vector attributes: NameOfCollection_vector_group_id
-                - Time series: NameOfCollection_timeseries_group_id
-                - Time series files: NameOfCollection_timeseriesfiles
+                - Time series: NameOfCollection_time_series_group_id
+                - Time series files: NameOfCollection_time_series_files
                 """)
             num_errors += 1
         end
@@ -345,12 +344,12 @@ function _throw_if_not_vector_attribute(
     return nothing
 end
 
-function _throw_if_not_timeseries_group(
+function _throw_if_not_time_series_group(
     db::DatabaseSQLite,
     collection::String,
     group::String,
 )
-    if !_is_timeseries_group(db, collection, group)
+    if !_is_time_series_group(db, collection, group)
         psr_database_sqlite_error(
             "Group \"$group\" is not a time series group. ",
         )

@@ -81,7 +81,7 @@ CREATE TABLE Process_vector_outputs (
     PRIMARY KEY (id, vector_index)
 ) STRICT;
 
-CREATE TABLE Plant_timeseriesfiles (
+CREATE TABLE Plant_time_series_files (
     generation TEXT,
     prices TEXT
 ) STRICT;
