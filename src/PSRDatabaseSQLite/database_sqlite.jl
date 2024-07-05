@@ -1,5 +1,6 @@
 Base.@kwdef mutable struct DatabaseSQLite
     sqlite_db::SQLite.DB
+    database_path::String = ""
     collections_map::OrderedDict{String, Collection}
     read_only::Bool = false
     # TimeController is a cache that allows PSRDatabaseSQLite to
@@ -11,6 +12,9 @@ Base.@kwdef mutable struct DatabaseSQLite
 end
 
 _is_read_only(db::DatabaseSQLite) = db.read_only
+function database_path(db::DatabaseSQLite)
+    return db.database_path
+end
 
 function _set_default_pragmas!(db::SQLite.DB)
     _set_foreign_keys_on!(db)
@@ -53,6 +57,7 @@ function DatabaseSQLite_from_schema(
 
     db = DatabaseSQLite(;
         sqlite_db,
+        database_path,
         collections_map,
     )
 
@@ -87,6 +92,7 @@ function DatabaseSQLite_from_migrations(
 
     db = DatabaseSQLite(;
         sqlite_db,
+        database_path,
         collections_map,
     )
 
@@ -112,6 +118,7 @@ function DatabaseSQLite(
 
     db = DatabaseSQLite(;
         sqlite_db,
+        database_path,
         collections_map,
         read_only,
     )
