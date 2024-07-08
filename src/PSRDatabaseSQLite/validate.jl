@@ -21,7 +21,7 @@ _is_valid_table_vector_name(table::String) =
 _is_valid_time_series_name(table::String) =
     !isnothing(
         match(
-            r"^(?:[A-Z][a-z]*)+_time_series_[a-z][a-z0-9]*(?:_{1}[a-z0-9]+)*$",
+            r"^(?:[A-Z][a-z]*)+_time_series_(?!files$)[a-z][a-z0-9]*(?:_{1}[a-z0-9]+)*$",
             table,
         ),
     )
