@@ -1,6 +1,8 @@
 # Time Series
 
-It is possible to store time series data in the database. For that, there is a specific table format that must be followed. Consider the following example:
+It is possible to store time series data in your database. Time series in `PSRDatabaseSQLite` are very flexible. You can have missing values, and you can have sparse data. 
+
+There is a specific table format that must be followed. Consider the following example:
 
 ```sql
 CREATE TABLE Resource (
@@ -43,9 +45,9 @@ CREATE TABLE Resource_time_series_group2 (
 
 ## Rules 
 
-Time series in `PSRDatabaseSQLite` are very flexible. You can have missing values, and you can have sparse data.
+Time series in `PSRDatabaseSQLite` are very flexible. You can have missing values, and you can have sparse data. 
 
-If you are querying for a time series entry that has a missing value, it first checks if there is a data with a `date_time` earlier than the queried `date_time`. If there is, it returns the value of the previous data. If there is no data earlier than the queried `date_time`, it returns a specified value according to the type of data you are querying.
+If you are querying for a time series row entry that has a missing value, it first checks if there is a data with a `date_time` earlier than the queried `date_time`. If there is, it returns the value of the previous data. If there is no data earlier than the queried `date_time`, it returns a specified value according to the type of data you are querying.
 
 - For `Float64`, it returns `NaN`.
 - For `Int64`, it returns `typemin(Int)`.
@@ -116,69 +118,24 @@ PSRDatabaseSQLite.create_element!(
 
 ## Reading data
 
-You can read the information from the time series in different ways.
-First, you can read the information as a `DataFrame`. This dataframe can be filtered according to the desired dimension values. It can be also specific for an element or for all elements. In the last case, an array of dataframes is returned.
+You can read the information from the time series in two different ways.
 
-### Filtering by element and `date_time` dimension
+### Reading as a table
+First, you can read the whole time series table for a given value, as a `DataFrame`.
+
 ```julia
 df = PSRDatabaseSQLite.read_time_series_table(
-        db,
-        "Resource",
-        "some_vector1",
-        "Resource 1";
-        date_time = DateTime(2001), 
-    )
+    db,
+    "Resource",
+    "some_vector1",
+    "Resource 1",
+)
 ```
 
-### No filtering by `date_time`
-```julia
-df = PSRDatabaseSQLite.read_time_series_table(
-        db,
-        "Resource",
-        "some_vector1",
-        "Resource 1"
-    )
-``` 
+### Reading a single row
 
-### Filtering by `block` and `date_time` for an element
-```julia
-df = PSRDatabaseSQLite.read_time_series_table(
-        db,
-        "Resource",
-        "some_vector3",
-        "Resource 1";
-        date_time = DateTime(2000),
-        block = 1,
-    )
-```
-
-### No filter and returing all elements
-```julia
-dfs = PSRDatabaseSQLite.read_time_series_tables(
-        db,
-        "Resource",
-        "some_vector1"
-    )
-```
-
-
-## Reading data via a `TimeController`
-
-Reading time series data from the database can lead to performance issues when the time series is too large. To avoid this, you can use the `TimeController` to cache the previous and next non-missing values, according to the dimensions you are indexing the data. 
-
-The `TimeController` is initialized automatically. You just need to use a different function when reading the data and always pass the dimensions values that you want.
-
-Also, the returned data for this type of function is a vector containing the values for all elements that contain the time series, for the queried dimensions.
-
-For example, consider the following table for `some_vector1`:
-
-| **Date** | **Resource 1** | **Resource 2** |
-|:--------:|:-----------:|:-----------:|
-|   2020   |      1.0      |   missing   |
-|   2021   |   missing   |      1.0      |
-|   2022   |      3.0      |   missing   |
-
-If you query the following:
+It is also possible to read a single row of the time series in the form of an array. This is useful when you want to query a specific dimension entry.
+For this function, there are performance improvements when reading the data via caching the previous and next non-missing values. 
 
 ```julia
 values = PSRDatabaseSQLite.read_time_series_row(
@@ -190,4 +147,71 @@ values = PSRDatabaseSQLite.read_time_series_row(
 )
 ```
 
-It will return `[1.0, NaN]`.
+When querying a row, all values should non-missing. However, if there is a missing value, the function will return the previous non-missing value. And if even the previous value is missing, it will return a specified value according to the type of data you are querying.
+
+
+- For `Float64`, it returns `NaN`.
+- For `Int64`, it returns `typemin(Int)`.
+- For `String`, it returns `""` (empty String).
+- For `DateTime`, it returns `typemin(DateTime)`.
+
+For example, if you have the following data for the time series `some_vector1`:
+
+| **Date** | **Resource 1** | **Resource 2** |
+|:--------:|:-----------:|:-----------:|
+|   2020   |      1.0      |   missing   |
+|   2021   |   missing   |      1.0      |
+|   2022   |      3.0      |   missing   |
+
+1. If you query at `2020`, it returns `[1.0, NaN]`. 
+3. If you query at `2021`, it returns `[1.0, 1.0]`. 
+5. If you query at `2022`, it returns `[3.0, 1.0]`. 
+
+
+## Updating data
+
+When updating one of the entries of a time series for a given element and attribute, you need to specify the exact dimension values of the row you want to update. 
+
+
+For example, consider a time series that has `block` and `data_time` dimensions.
+
+```julia
+PSRDatabaseSQLite.update_time_series!(
+    db,
+    "Resource",
+    "some_vector3",
+    "Resource 1",
+    10.0; # new value
+    date_time = DateTime(2000),
+    block = 1
+)
+```
+
+## Deleting data
+
+You can delete the whole time series of an element for a given time series group.
+Consider the following table:
+
+```sql
+CREATE TABLE Resource_time_series_group1 (
+    id INTEGER, 
+    date_time TEXT NOT NULL,
+    some_vector1 REAL,
+    some_vector2 REAL,
+    FOREIGN KEY(id) REFERENCES Resource(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    PRIMARY KEY (id, date_time)
+) STRICT; 
+```
+
+This table represents a "group" that stores two time series `some_vector1` and `some_vector2`. You can delete all the data from this group by calling the following function:
+
+```julia
+PSRDatabaseSQLite.delete_time_series!(
+    db,
+    "Resource",
+    "group1",
+    "Resource 1",
+)
+```
+
+When trying to read a time series that has been deleted, the function will return an empty `DataFrame`.
