@@ -357,6 +357,47 @@ function _throw_if_not_time_series_group(
     return nothing
 end
 
+function _throw_if_data_does_not_match_group(
+    db::DatabaseSQLite,
+    collection_id::String,
+    group::String,
+    df::DataFrame,
+)
+    collection = _get_collection(db, collection_id)
+    dimensions_in_df = []
+    attributes_in_df = []
+
+    for column in names(df)
+        if column in keys(collection.time_series)
+            # should be an attribute
+            push!(attributes_in_df, column)
+        else
+            # should be a dimension
+            push!(dimensions_in_df, column)
+        end
+    end
+
+    # validate if the attributes belong to the same group and if the dimensions are valid for this group
+    for attribute_id in attributes_in_df
+        attribute = _get_attribute(db, collection_id, attribute_id)
+        if attribute.group_id != group
+            psr_database_sqlite_error(
+                "Attribute \"$attribute_id\" is not in the time series group \"$group\".",
+            )
+        end
+    end
+
+    for dimension in dimensions_in_df
+        if !(dimension in collection.time_series[attributes_in_df[1]].dimension_names)
+            psr_database_sqlite_error(
+                "The dimension \"$dimension\" is not defined in the time series group \"$group\".",
+            )
+        end
+    end
+
+    return nothing
+end
+
 function _throw_if_is_time_series_file(
     db::DatabaseSQLite,
     collection::String,

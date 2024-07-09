@@ -613,6 +613,17 @@ function test_update_time_series()
         segment = 2,
     )
 
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.update_time_series!(
+        db,
+        "Resource",
+        "some_vector5",
+        "Resource 1",
+        3.0;
+        date_time = DateTime(1890),
+        block = 999,
+        segment = 2,
+    )
+
     df_group1_answer = DataFrame(;
         date_time = [DateTime(2000), DateTime(2001)],
         some_vector1 = [1.0, 10.0],
@@ -704,6 +715,82 @@ function test_delete_time_series()
     )
 
     @test isempty(df)
+
+    PSRDatabaseSQLite.close!(db)
+    GC.gc()
+    GC.gc()
+    rm(db_path)
+    @test true
+    return nothing
+end
+
+function test_create_wrong_time_series()
+    path_schema = joinpath(@__DIR__, "test_read_time_series.sql")
+    db_path = joinpath(@__DIR__, "test_create_wrong_time_series.sqlite")
+    db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
+
+    PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
+
+    df_time_series_group1_wrong = DataFrame(;
+        date_time = [DateTime(2000), DateTime(2001)],
+        some_vector1 = [1.0, 2.0],
+        some_vector20 = [2.0, 3.0],
+    )
+
+    df_time_series_group1_wrong2 = DataFrame(;
+        date_time = [DateTime(2000), DateTime(2001)],
+        block = [1, 2],
+        some_vector1 = [1.0, 2.0],
+        some_vector2 = [2.0, 3.0],
+    )
+
+    df_time_series_group1_wrong3 = DataFrame(;
+        date_time = [DateTime(2000), DateTime(2001)],
+        something = [1, 2],
+        some_vector1 = [1.0, 2.0],
+        some_vector2 = [2.0, 3.0],
+    )
+
+    df_time_series_group1 = DataFrame(;
+        date_time = [DateTime(2000), DateTime(2001)],
+        some_vector1 = [1.0, 2.0],
+        some_vector2 = [2.0, 3.0],
+    )
+
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
+        db,
+        "Resource";
+        label = "Resource 1",
+        group1 = df_time_series_group1_wrong,
+    )
+
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
+        db,
+        "Resource";
+        label = "Resource 1",
+        group1 = df_time_series_group1_wrong2,
+    )
+
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
+        db,
+        "Resource";
+        label = "Resource 1",
+        group1 = df_time_series_group1_wrong3,
+    )
+
+    PSRDatabaseSQLite.create_element!(
+        db,
+        "Resource";
+        label = "Resource 1",
+        group1 = df_time_series_group1,
+    )
+
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
+        db,
+        "Resource";
+        label = "Resource 2",
+        group1 = DataFrame(),
+    )
 
     PSRDatabaseSQLite.close!(db)
     GC.gc()

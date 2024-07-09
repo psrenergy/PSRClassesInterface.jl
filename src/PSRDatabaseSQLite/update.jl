@@ -328,6 +328,30 @@ function set_time_series_file!(
     return nothing
 end
 
+function _dimension_value_exists(
+    db::DatabaseSQLite,
+    attribute::Attribute,
+    id::Integer,
+    dimensions...,
+)
+    query = "SELECT $(attribute.id) FROM $(attribute.table_where_is_located) WHERE id = $id AND "
+    for (i, (key, value)) in enumerate(dimensions)
+        if key == "date_time"
+            query *= "$(key) = DATE('$(value)')"
+        else
+            query *= "$(key) = '$(value)'"
+        end
+        if i < length(dimensions)
+            query *= " AND "
+        end
+    end
+    results = DBInterface.execute(db.sqlite_db, query) |> DataFrame
+    if isempty(results)
+        return false
+    end
+    return true
+end
+
 function _update_time_series!(
     db::DatabaseSQLite,
     attribute::Attribute,
@@ -366,7 +390,14 @@ function update_time_series!(
         :update,
     )
     attribute = _get_attribute(db, collection_id, attribute_id)
+    id = _get_id(db, collection_id, label)
     _validate_time_series_dimensions(collection_id, attribute, dimensions)
+
+    if !_dimension_value_exists(db, attribute, id, dimensions...)
+        psr_database_sqlite_error(
+            "The chosen values for dimensions $(join(keys(dimensions), ", ")) do not exist in the time series for element $(label) in collection $(collection_id).",
+        )
+    end
 
     if length(dimensions) != length(attribute.dimension_names)
         psr_database_sqlite_error(
@@ -375,6 +406,5 @@ function update_time_series!(
         )
     end
 
-    id = _get_id(db, collection_id, label)
     return _update_time_series!(db, attribute, id, val, dimensions)
 end
