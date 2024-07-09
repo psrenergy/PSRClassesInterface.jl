@@ -792,6 +792,12 @@ function test_create_wrong_time_series()
         group1 = DataFrame(),
     )
 
+    PSRDatabaseSQLite.create_element!(
+        db,
+        "Resource";
+        label = "Resource 2",
+    )
+
     PSRDatabaseSQLite.close!(db)
     GC.gc()
     GC.gc()

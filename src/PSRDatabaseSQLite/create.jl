@@ -120,11 +120,6 @@ function _create_time_series!(
     dict_time_series_attributes,
 )
     for (group, df) in dict_time_series_attributes
-        if isempty(df) # user passed an empty DataFrame
-            psr_database_sqlite_error(
-                "Cannot create an empty time series group \"$group\" in collection \"$collection_id\".",
-            )
-        end
         time_series_group_table_name = _time_series_group_table_name(collection_id, string(group))
         ids = fill(id, nrow(df))
         DataFrames.insertcols!(df, 1, :id => ids)
@@ -162,6 +157,11 @@ function _create_element!(
         elseif isa(value, DataFrame)
             _throw_if_not_time_series_group(db, collection_id, string(key))
             _throw_if_data_does_not_match_group(db, collection_id, string(key), value)
+            if isempty(value)
+                psr_database_sqlite_error(
+                    "Cannot create the time series group \"$key\" with an empty DataFrame.",
+                )
+            end
             dict_time_series_attributes[key] = value
         else
             _throw_if_is_time_series_file(db, collection_id, string(key))
