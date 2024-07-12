@@ -84,10 +84,9 @@ function _update_time_controller_cache_dates!(
     query = """
     SELECT 
         id, 
-        MAX(CASE WHEN DATETIME(date_time) <= DATETIME('$date_time') THEN date_time ELSE NULL END) AS closest_previous_date_with_data,
-        MIN(CASE WHEN DATETIME(date_time) > DATETIME('$date_time') THEN date_time ELSE NULL END) AS closest_next_date_with_data
+        MAX(CASE WHEN DATETIME(date_time) <= DATETIME('$date_time') AND $(attribute.id) IS NOT NULL THEN date_time ELSE NULL END) AS closest_previous_date_with_data,
+        MIN(CASE WHEN DATETIME(date_time) > DATETIME('$date_time')  AND $(attribute.id) IS NOT NULL THEN date_time ELSE NULL END) AS closest_next_date_with_data
     FROM $(attribute.table_where_is_located)
-    WHERE $(attribute.id) IS NOT NULL
     GROUP BY id
     ORDER BY id
     """

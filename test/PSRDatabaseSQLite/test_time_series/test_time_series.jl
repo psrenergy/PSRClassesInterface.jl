@@ -403,6 +403,71 @@ function test_time_controller_read_more_agents()
     return rm(db_path)
 end
 
+function test_time_controller_read_more_agents_2()
+    path_schema = joinpath(@__DIR__, "test_time_controller.sql")
+    db_path = joinpath(@__DIR__, "test_time_controller_read_multiple_2.sqlite")
+    GC.gc()
+    GC.gc()
+    if isfile(db_path)
+        rm(db_path)
+    end
+
+    db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
+    PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
+
+    df = DataFrame(;
+        date_time = [DateTime(2000)],
+        some_vector1 = [missing],
+        some_vector2 = [1.0],
+    )
+    PSRDatabaseSQLite.create_element!(
+        db,
+        "Resource";
+        label = "Resource 1",
+        group1 = df,
+    )
+
+    df2 = DataFrame(;
+        date_time = [DateTime(2000)],
+        some_vector1 = [1.0],
+        some_vector2 = [10.0],
+    )
+    PSRDatabaseSQLite.create_element!(
+        db,
+        "Resource";
+        label = "Resource 2",
+        group1 = df2,
+    )
+
+    PSRDatabaseSQLite.close!(db)
+    db = PSRDatabaseSQLite.load_db(db_path; read_only = true)
+
+    some_vector1_answer = [[NaN, 1.0]]
+    some_vector2_answer = [[1.0, 10.0]]
+
+    # test for dates in correct sequence
+    for d_i in eachindex(df.date_time)
+        cached_1 = PSRDatabaseSQLite.read_time_series_row(
+            db,
+            "Resource",
+            "some_vector1";
+            date_time = DateTime(df.date_time[d_i]),
+        )
+        _test_row(cached_1, some_vector1_answer[d_i])
+
+        cached_2 = PSRDatabaseSQLite.read_time_series_row(
+            db,
+            "Resource",
+            "some_vector2";
+            date_time = DateTime(df.date_time[d_i]),
+        )
+        _test_row(cached_2, some_vector2_answer[d_i])
+    end
+
+    PSRDatabaseSQLite.close!(db)
+    return rm(db_path)
+end
+
 function test_time_controller_empty()
     path_schema = joinpath(@__DIR__, "test_time_controller.sql")
     db_path = joinpath(@__DIR__, "test_time_controller_read_empty.sqlite")
