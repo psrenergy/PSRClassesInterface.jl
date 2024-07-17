@@ -240,19 +240,6 @@ function _create_collection_vector_relations(db::SQLite.DB, collection_id::Strin
     return vector_relations
 end
 
-function _get_time_series_dimension_names(df_table_infos::DataFrame)
-    dimension_names = Vector{String}(undef, 0)
-    for time_series_attribute in eachrow(df_table_infos)
-        if time_series_attribute.name == "id"
-            continue
-        end
-        if time_series_attribute.pk != 0
-            push!(dimension_names, time_series_attribute.name)
-        end
-    end
-    return dimension_names
-end
-
 function _create_collection_time_series(db::SQLite.DB, collection_id::String)
     time_series_tables = _get_collection_time_series_tables(db, collection_id)
     time_series = OrderedDict{String, TimeSeries}()
@@ -261,8 +248,43 @@ function _create_collection_time_series(db::SQLite.DB, collection_id::String)
         group_id = _id_of_time_series_group(table_name)
         table_where_is_located = table_name
         df_table_infos = table_info(db, table_name)
-        dimension_names = _get_time_series_dimension_names(df_table_infos)
+        dimensions = Dict{String, VectorParameter}()
         for time_series_attribute in eachrow(df_table_infos)
+            if time_series_attribute.pk != 0
+                # it is a dimension if it is not id
+                if time_series_attribute.name != "id"
+                    id = time_series_attribute.name
+                    type = _sql_type_to_julia_type(id, time_series_attribute.type)
+                    default_value = _get_default_value(type, time_series_attribute.dflt_value)
+                    not_null = true
+                    if haskey(dimensions, id)
+                        psr_database_sqlite_error(
+                            "Duplicated time_series attribute \"$id\" in collection \"$collection_id\"",
+                        )
+                    end
+                    if id == "date_time"
+                        dimensions[id] = VectorParameter(
+                            id,
+                            DateTime,
+                            default_value,
+                            not_null,
+                            group_id,
+                            parent_collection,
+                            table_where_is_located,
+                        )
+                    else
+                        dimensions[id] = VectorParameter(
+                            id,
+                            type,
+                            default_value,
+                            not_null,
+                            group_id,
+                            parent_collection,
+                            table_where_is_located,
+                        )
+                    end
+                end
+            end
             id = time_series_attribute.name
             if id == "id" || id == "date_time"
                 # These are obligatory for every vector table
@@ -301,8 +323,7 @@ function _create_collection_time_series(db::SQLite.DB, collection_id::String)
                 group_id,
                 parent_collection,
                 table_where_is_located,
-                dimension_names,
-                length(dimension_names),
+                dimensions,
             )
         end
     end

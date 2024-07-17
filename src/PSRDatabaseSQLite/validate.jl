@@ -388,7 +388,7 @@ function _throw_if_data_does_not_match_group(
     end
 
     for dimension in dimensions_in_df
-        if !(dimension in collection.time_series[attributes_in_df[1]].dimension_names)
+        if !(dimension in keys(collection.time_series[attributes_in_df[1]].dimensions))
             psr_database_sqlite_error(
                 "The dimension \"$dimension\" is not defined in the time series group \"$group\".",
             )
@@ -507,10 +507,10 @@ function _validate_time_series_dimensions(
     dimensions...,
 )
     for dim_name in keys(dimensions...)
-        if !(string(dim_name) in attribute.dimension_names)
+        if !(string(dim_name) in keys(attribute.dimensions))
             psr_database_sqlite_error(
                 "The dimension \"$dim_name\" is not defined in the time series attribute \"$(attribute.id)\" of collection \"$collection_id\". " *
-                "The available dimensions are: $(attribute.dimension_names).",
+                "The available dimensions are: $(keys(attribute.dimensions)).",
             )
         end
     end

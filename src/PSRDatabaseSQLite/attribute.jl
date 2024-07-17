@@ -107,8 +107,7 @@ mutable struct TimeSeries{T} <: VectorAttribute
     group_id::String
     parent_collection::String
     table_where_is_located::String
-    dimension_names::Vector{String}
-    num_dimensions::Int
+    dimensions::Dict{String, VectorParameter}
 end
 
 mutable struct TimeSeriesFile{T} <: ReferenceToFileAttribute

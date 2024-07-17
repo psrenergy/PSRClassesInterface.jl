@@ -412,7 +412,7 @@ function _read_time_series_table(
     attribute::Attribute,
     id::Int,
 )
-    query = string("SELECT ", join(attribute.dimension_names, ",", ", "), ", ", attribute.id)
+    query = string("SELECT ", join(keys(attribute.dimensions), ",", ", "), ", ", attribute.id)
     query *= " FROM $(attribute.table_where_is_located) WHERE id = '$id'"
     return DBInterface.execute(db.sqlite_db, query) |> DataFrame
 end
