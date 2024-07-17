@@ -132,9 +132,9 @@ CREATE TABLE HydroPlant_vector_GaugingStation(
 
 ```
 
-### Time Series
+### Time Series Files
 
-- All Time Series for the elements from a Collection should be stored in a Table
+- All Time Series files for the elements from a Collection should be stored in a Table
 - The Table name should be the same as the name of the Collection followed by `_time_series_files`, as presented below
 
 <p style="text-align: center"> COLLECTION_vector_ATTRIBUTE</p>
@@ -150,6 +150,30 @@ CREATE TABLE Plant_time_series_files (
     cost TEXT
 ) STRICT;
 ```
+
+### Time Series
+- Time Series stored in the database should be stored in a table with the name of the Collection followed by `_time_series_` and the name of the attribute group, as presented below.
+
+<p style="text-align: center"> COLLECTION_time_series_GROUP_OF_ATTRIBUTES</p>
+
+Notice that it is quite similar to the vector attributes, but without the `vector_index` column.
+Instead, a mandatory column named `date_time` should be created to store the date of the time series data.
+
+Example:
+
+```sql
+CREATE TABLE Resource_time_series_group1 (
+    id INTEGER, 
+    date_time TEXT NOT NULL,
+    some_vector1 REAL,
+    some_vector2 REAL,
+    FOREIGN KEY(id) REFERENCES Resource(id) ON DELETE CASCADE ON UPDATE CASCADE,
+    PRIMARY KEY (id, date_time)
+) STRICT; 
+```
+
+!!! tip
+For more information on how to handle time series data, please refer to the [Time Series](./time_series.md) section.
 
 ## Migrations
 
