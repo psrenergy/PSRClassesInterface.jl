@@ -399,10 +399,10 @@ function update_time_series!(
         )
     end
 
-    if length(dimensions) != length(attribute.dimensions)
+    if length(dimensions) != length(attribute.dimension_names)
         psr_database_sqlite_error(
             "The number of dimensions in the time series does not match the number of dimensions in the attribute. " *
-            "The attribute has $(length(attribute.dimensions)) dimensions: $(join(keys(attribute.dimensions), ", ")).",
+            "The attribute has $(attribute.num_dimensions) dimensions: $(join(attribute.dimension_names, ", ")).",
         )
     end
 
