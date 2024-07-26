@@ -352,7 +352,7 @@ function _dimension_value_exists(
     return true
 end
 
-function _update_time_series!(
+function _update_time_series_row!(
     db::DatabaseSQLite,
     attribute::Attribute,
     id::Integer,
@@ -375,7 +375,7 @@ function _update_time_series!(
     return nothing
 end
 
-function update_time_series!(
+function update_time_series_row!(
     db::DatabaseSQLite,
     collection_id::String,
     attribute_id::String,
@@ -406,5 +406,5 @@ function update_time_series!(
         )
     end
 
-    return _update_time_series!(db, attribute, id, val, dimensions)
+    return _update_time_series_row!(db, attribute, id, val, dimensions)
 end

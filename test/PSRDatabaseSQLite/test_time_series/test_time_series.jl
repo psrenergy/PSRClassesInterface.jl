@@ -617,7 +617,7 @@ function test_update_time_series()
         group3 = df_time_series_group3,
     )
 
-    PSRDatabaseSQLite.update_time_series!(
+    PSRDatabaseSQLite.update_time_series_row!(
         db,
         "Resource",
         "some_vector1",
@@ -626,7 +626,7 @@ function test_update_time_series()
         date_time = DateTime(2001),
     )
 
-    PSRDatabaseSQLite.update_time_series!(
+    PSRDatabaseSQLite.update_time_series_row!(
         db,
         "Resource",
         "some_vector2",
@@ -635,7 +635,7 @@ function test_update_time_series()
         date_time = DateTime(2001),
     )
 
-    PSRDatabaseSQLite.update_time_series!(
+    PSRDatabaseSQLite.update_time_series_row!(
         db,
         "Resource",
         "some_vector5",
@@ -646,7 +646,7 @@ function test_update_time_series()
         segment = 2,
     )
 
-    PSRDatabaseSQLite.update_time_series!(
+    PSRDatabaseSQLite.update_time_series_row!(
         db,
         "Resource",
         "some_vector5",
@@ -657,7 +657,7 @@ function test_update_time_series()
         segment = 1,
     )
 
-    PSRDatabaseSQLite.update_time_series!(
+    PSRDatabaseSQLite.update_time_series_row!(
         db,
         "Resource",
         "some_vector6",
@@ -668,7 +668,7 @@ function test_update_time_series()
         segment = 3,
     )
 
-    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.update_time_series!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.update_time_series_row!(
         db,
         "Resource",
         "some_vector6",
@@ -678,7 +678,7 @@ function test_update_time_series()
         segment = 2,
     )
 
-    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.update_time_series!(
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.update_time_series_row!(
         db,
         "Resource",
         "some_vector5",

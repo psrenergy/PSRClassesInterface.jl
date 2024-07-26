@@ -176,7 +176,7 @@ When updating one of the entries of a time series for a given element and attrib
 For example, consider a time series that has `block` and `data_time` dimensions.
 
 ```julia
-PSRDatabaseSQLite.update_time_series!(
+PSRDatabaseSQLite.update_time_series_row!(
     db,
     "Resource",
     "some_vector3",
