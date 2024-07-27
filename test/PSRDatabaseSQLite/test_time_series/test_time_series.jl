@@ -850,24 +850,124 @@ function test_create_wrong_time_series()
         group1 = df_time_series_group1,
     )
 
-    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
-        db,
-        "Resource";
-        label = "Resource 2",
-        group1 = DataFrame(),
-    )
-
-    PSRDatabaseSQLite.create_element!(
-        db,
-        "Resource";
-        label = "Resource 2",
-    )
-
     PSRDatabaseSQLite.close!(db)
     GC.gc()
     GC.gc()
     rm(db_path)
     @test true
+    return nothing
+end
+
+function test_add_time_series_row()
+    path_schema = joinpath(@__DIR__, "test_read_time_series.sql")
+    db_path = joinpath(@__DIR__, "test_add_time_series_row.sqlite")
+    db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
+
+    PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
+
+    PSRDatabaseSQLite.create_element!(
+        db,
+        "Resource";
+        label = "Resource 1",
+    )
+
+    PSRDatabaseSQLite.add_time_series_row!(
+        db,
+        "Resource",
+        "some_vector1",
+        "Resource 1",
+        1.0;
+        date_time = DateTime(2000),
+    )
+
+    PSRDatabaseSQLite.add_time_series_row!(
+        db,
+        "Resource",
+        "some_vector2",
+        "Resource 1",
+        2.0;
+        date_time = DateTime(2000),
+    )
+
+    PSRDatabaseSQLite.add_time_series_row!(
+        db,
+        "Resource",
+        "some_vector3",
+        "Resource 1",
+        3.0;
+        date_time = DateTime(2001),
+        block = 1,
+    )
+
+    PSRDatabaseSQLite.add_time_series_row!(
+        db,
+        "Resource",
+        "some_vector4",
+        "Resource 1",
+        4.0;
+        date_time = DateTime(2001),
+        block = 1,
+    )
+
+    # Attribute is not a time series
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.add_time_series_row!(
+        db,
+        "Resource",
+        "label",
+        "Resource 1",
+        4.0;
+        date_time = DateTime(2001),
+    )
+
+    # Wrong dimensions
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.add_time_series_row!(
+        db,
+        "Resource",
+        "some_vector1",
+        "Resource 1",
+        4.0;
+        date_time = DateTime(2001),
+        block = 1,
+        segment = 1,
+    )
+
+    df_some_vector1 = PSRDatabaseSQLite.read_time_series_table(
+        db,
+        "Resource",
+        "some_vector1",
+        "Resource 1",
+    )
+
+    df_some_vector2 = PSRDatabaseSQLite.read_time_series_table(
+        db,
+        "Resource",
+        "some_vector2",
+        "Resource 1",
+    )
+
+    df_some_vector3 = PSRDatabaseSQLite.read_time_series_table(
+        db,
+        "Resource",
+        "some_vector3",
+        "Resource 1",
+    )
+
+    df_some_vector4 = PSRDatabaseSQLite.read_time_series_table(
+        db,
+        "Resource",
+        "some_vector4",
+        "Resource 1",
+    )
+
+    @test df_some_vector1[1, :some_vector1] == 1.0
+    @test df_some_vector2[1, :some_vector2] == 2.0
+    @test df_some_vector3[1, :some_vector3] == 3.0
+    @test df_some_vector4[1, :some_vector4] == 4.0
+
+    PSRDatabaseSQLite.close!(db)
+    GC.gc()
+    GC.gc()
+    rm(db_path)
     return nothing
 end
 

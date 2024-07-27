@@ -3,6 +3,7 @@ const READ_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
     ScalarRelation => "read_scalar_relations",
     VectorParameter => "read_vector_parameters",
     VectorRelation => "read_vector_relations",
+    TimeSeries => "read_time_series_row",
     TimeSeriesFile => "read_time_series_file",
 )
 

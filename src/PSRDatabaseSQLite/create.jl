@@ -323,3 +323,57 @@ function _validate_attribute_types_on_creation!(
     )
     return nothing
 end
+
+function _add_time_series_row!(
+    db::DatabaseSQLite,
+    attribute::Attribute,
+    id::Integer,
+    val,
+    dimensions,
+)
+    # Adding a time series element column by column as it is implemented on this function 
+    # is not the most efficient way to do it. In any case if the user wants to add a time
+    # series column by column, this function can only be implemented as an upsert statements
+    # for each column. This is because the user can add a value in a primary key that already
+    # exists in the time series. In that case the column should be updated instead of inserted.
+    dimensions_string = join(keys(dimensions), ", ")
+    values_string = "$id, "
+    for dim in dimensions
+        values_string *= "'$(dim[2])', "
+    end
+    values_string *= "'$val'"
+    query = """ 
+        INSERT INTO $(attribute.table_where_is_located) (id, $dimensions_string, $(attribute.id)) 
+        VALUES ($values_string)
+        ON CONFLICT(id, $dimensions_string) DO UPDATE SET $(attribute.id) = '$val'
+    """
+    DBInterface.execute(db.sqlite_db, query)
+    return nothing
+end
+
+function add_time_series_row!(
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute_id::String,
+    label::String,
+    val;
+    dimensions...,
+)
+    if !_is_time_series(db, collection_id, attribute_id)
+        psr_database_sqlite_error(
+            "The attribute $attribute_id is not a time series.",
+        )
+    end
+    attribute = _get_attribute(db, collection_id, attribute_id)
+    id = _get_id(db, collection_id, label)
+    _validate_time_series_dimensions(collection_id, attribute, dimensions)
+
+    if length(dimensions) != length(attribute.dimension_names)
+        psr_database_sqlite_error(
+            "The number of dimensions in the time series does not match the number of dimensions in the attribute. " *
+            "The attribute has $(attribute.num_dimensions) dimensions: $(join(attribute.dimension_names, ", ")).",
+        )
+    end
+
+    return _add_time_series_row!(db, attribute, id, val, dimensions)
+end

@@ -116,6 +116,43 @@ PSRDatabaseSQLite.create_element!(
 )
 ```
 
+It is also possible to insert a single row of a time series. This is useful when you want to insert a specific dimension entry. This way of inserting time series is less efficient than inserting a whole `DataFrame`.
+
+```julia
+using DataFrames
+using Dates
+using PSRClassesInterface
+PSRDatabaseSQLite = PSRClassesInterface.PSRDatabaseSQLite
+
+db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
+
+PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
+
+PSRDatabaseSQLite.create_element!(
+    db,
+    "Resource";
+    label = "Resource 1"
+)
+
+PSRDatabaseSQLite.add_time_series_row!(
+    db,
+    "Resource",
+    "some_vector1",
+    "Resource 1",
+    10.0; # new value
+    date_time = DateTime(2000)
+)
+
+PSRDatabaseSQLite.add_time_series_row!(
+    db,
+    "Resource",
+    "some_vector1",
+    "Resource 1",
+    11.0; # new value
+    date_time = DateTime(2001)
+)
+```
+
 ## Reading data
 
 You can read the information from the time series in two different ways.
