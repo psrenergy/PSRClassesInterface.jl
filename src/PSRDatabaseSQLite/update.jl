@@ -3,6 +3,7 @@ const UPDATE_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
     ScalarRelation => "set_scalar_relation!",
     VectorParameter => "update_vector_parameter!",
     VectorRelation => "set_vector_relation!",
+    TimeSeries => "update_time_series_row!",
     TimeSeriesFile => "set_time_series_file!",
 )
 
@@ -272,7 +273,7 @@ function set_time_series_file!(
     kwargs...,
 )
     _throw_if_collection_does_not_exist(db, collection_id)
-    table_name = collection_id * "_timeseriesfiles"
+    table_name = collection_id * "_time_series_files"
     dict_time_series = Dict()
     for (key, value) in kwargs
         if !isa(value, AbstractString)
@@ -326,4 +327,85 @@ function set_time_series_file!(
         )
     end
     return nothing
+end
+
+function _dimension_value_exists(
+    db::DatabaseSQLite,
+    attribute::Attribute,
+    id::Integer,
+    dimensions...,
+)
+    query = "SELECT $(attribute.id) FROM $(attribute.table_where_is_located) WHERE id = $id AND "
+    for (i, (key, value)) in enumerate(dimensions)
+        if key == "date_time"
+            query *= "$(key) = DATE('$(value)')"
+        else
+            query *= "$(key) = '$(value)'"
+        end
+        if i < length(dimensions)
+            query *= " AND "
+        end
+    end
+    results = DBInterface.execute(db.sqlite_db, query) |> DataFrame
+    if isempty(results)
+        return false
+    end
+    return true
+end
+
+function _update_time_series_row!(
+    db::DatabaseSQLite,
+    attribute::Attribute,
+    id::Integer,
+    val,
+    dimensions,
+)
+    query = "UPDATE $(attribute.table_where_is_located) SET $(attribute.id) = '$val'"
+    query *= " WHERE id = '$id' AND "
+    for (i, (key, value)) in enumerate(dimensions)
+        if key == "date_time"
+            query *= "$(key) = DATE('$(value)')"
+        else
+            query *= "$(key) = '$(value)'"
+        end
+        if i < length(dimensions)
+            query *= " AND "
+        end
+    end
+    DBInterface.execute(db.sqlite_db, query)
+    return nothing
+end
+
+function update_time_series_row!(
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute_id::String,
+    label::String,
+    val;
+    dimensions...,
+)
+    _throw_if_attribute_is_not_time_series(
+        db,
+        collection_id,
+        attribute_id,
+        :update,
+    )
+    attribute = _get_attribute(db, collection_id, attribute_id)
+    id = _get_id(db, collection_id, label)
+    _validate_time_series_dimensions(collection_id, attribute, dimensions)
+
+    if !_dimension_value_exists(db, attribute, id, dimensions...)
+        psr_database_sqlite_error(
+            "The chosen values for dimensions $(join(keys(dimensions), ", ")) do not exist in the time series for element $(label) in collection $(collection_id).",
+        )
+    end
+
+    if length(dimensions) != length(attribute.dimension_names)
+        psr_database_sqlite_error(
+            "The number of dimensions in the time series does not match the number of dimensions in the attribute. " *
+            "The attribute has $(attribute.num_dimensions) dimensions: $(join(attribute.dimension_names, ", ")).",
+        )
+    end
+
+    return _update_time_series_row!(db, attribute, id, val, dimensions)
 end

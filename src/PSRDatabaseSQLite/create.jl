@@ -21,6 +21,32 @@ function _create_scalar_attributes!(
     return nothing
 end
 
+function _insert_vectors_from_df(
+    db::DatabaseSQLite,
+    df::DataFrame,
+    table_name::String,
+)
+    # Code to insert rows without using a transaction
+    cols = join(string.(names(df)), ", ")
+    num_cols = size(df, 2)
+    for row in eachrow(df)
+        query = "INSERT INTO $table_name ($cols) VALUES ("
+        for (i, value) in enumerate(row)
+            if ismissing(value)
+                query *= "NULL, "
+            else
+                query *= "\'$value\', "
+            end
+            if i == num_cols
+                query = query[1:end-2]
+                query *= ")"
+            end
+        end
+        DBInterface.execute(db.sqlite_db, query)
+    end
+    return nothing
+end
+
 function _create_vector_group!(
     db::DatabaseSQLite,
     collection_id::String,
@@ -51,23 +77,7 @@ function _create_vector_group!(
     vector_index = collect(1:num_values)
     DataFrames.insertcols!(df, 1, :vector_index => vector_index)
     DataFrames.insertcols!(df, 1, :id => ids)
-    cols = join(string.(names(df)), ", ")
-    num_cols = size(df, 2)
-    for row in eachrow(df)
-        query = "INSERT INTO $vectors_group_table_name ($cols) VALUES ("
-        for (i, value) in enumerate(row)
-            if ismissing(value)
-                query *= "NULL, "
-            else
-                query *= "\'$value\', "
-            end
-            if i == num_cols
-                query = query[1:end-2]
-                query *= ")"
-            end
-        end
-        DBInterface.execute(db.sqlite_db, query)
-    end
+    _insert_vectors_from_df(db, df, vectors_group_table_name)
     return nothing
 end
 
@@ -103,6 +113,27 @@ function _create_vectors!(
     return nothing
 end
 
+function _create_time_series!(
+    db::DatabaseSQLite,
+    collection_id::String,
+    id::Integer,
+    dict_time_series_attributes,
+)
+    for (group, df) in dict_time_series_attributes
+        time_series_group_table_name = _time_series_group_table_name(collection_id, string(group))
+        ids = fill(id, nrow(df))
+        DataFrames.insertcols!(df, 1, :id => ids)
+        # Convert datetime column to string
+        df[!, :date_time] = string.(df[!, :date_time])
+        # Add missing columns
+        missing_names_in_df = setdiff(_attributes_in_time_series_group(db, collection_id, string(group)), string.(names(df)))
+        for missing_attribute in missing_names_in_df
+            df[!, Symbol(missing_attribute)] = fill(missing, nrow(df))
+        end
+        _insert_vectors_from_df(db, df, time_series_group_table_name)
+    end
+end
+
 function _create_element!(
     db::DatabaseSQLite,
     collection_id::String;
@@ -111,7 +142,9 @@ function _create_element!(
     _throw_if_collection_does_not_exist(db, collection_id)
     dict_scalar_attributes = Dict{Symbol, Any}()
     dict_vector_attributes = Dict{Symbol, Any}()
+    dict_time_series_attributes = Dict{Symbol, Any}()
 
+    # Validate that the arguments will be valid
     for (key, value) in kwargs
         if isa(value, AbstractVector)
             _throw_if_not_vector_attribute(db, collection_id, string(key))
@@ -121,6 +154,15 @@ function _create_element!(
                 )
             end
             dict_vector_attributes[key] = value
+        elseif isa(value, DataFrame)
+            _throw_if_not_time_series_group(db, collection_id, string(key))
+            _throw_if_data_does_not_match_group(db, collection_id, string(key), value)
+            if isempty(value)
+                psr_database_sqlite_error(
+                    "Cannot create the time series group \"$key\" with an empty DataFrame.",
+                )
+            end
+            dict_time_series_attributes[key] = value
         else
             _throw_if_is_time_series_file(db, collection_id, string(key))
             _throw_if_not_scalar_attribute(db, collection_id, string(key))
@@ -144,6 +186,15 @@ function _create_element!(
             _get_id(db, collection_id, dict_scalar_attributes[:label]),
         )
         _create_vectors!(db, collection_id, id, dict_vector_attributes)
+    end
+
+    if !isempty(dict_time_series_attributes)
+        id = get(
+            dict_scalar_attributes,
+            :id,
+            _get_id(db, collection_id, dict_scalar_attributes[:label]),
+        )
+        _create_time_series!(db, collection_id, id, dict_time_series_attributes)
     end
 
     return nothing
@@ -271,4 +322,58 @@ function _validate_attribute_types_on_creation!(
         dict_vector_attributes,
     )
     return nothing
+end
+
+function _add_time_series_row!(
+    db::DatabaseSQLite,
+    attribute::Attribute,
+    id::Integer,
+    val,
+    dimensions,
+)
+    # Adding a time series element column by column as it is implemented on this function 
+    # is not the most efficient way to do it. In any case if the user wants to add a time
+    # series column by column, this function can only be implemented as an upsert statements
+    # for each column. This is because the user can add a value in a primary key that already
+    # exists in the time series. In that case the column should be updated instead of inserted.
+    dimensions_string = join(keys(dimensions), ", ")
+    values_string = "$id, "
+    for dim in dimensions
+        values_string *= "'$(dim[2])', "
+    end
+    values_string *= "'$val'"
+    query = """ 
+        INSERT INTO $(attribute.table_where_is_located) (id, $dimensions_string, $(attribute.id)) 
+        VALUES ($values_string)
+        ON CONFLICT(id, $dimensions_string) DO UPDATE SET $(attribute.id) = '$val'
+    """
+    DBInterface.execute(db.sqlite_db, query)
+    return nothing
+end
+
+function add_time_series_row!(
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute_id::String,
+    label::String,
+    val;
+    dimensions...,
+)
+    if !_is_time_series(db, collection_id, attribute_id)
+        psr_database_sqlite_error(
+            "The attribute $attribute_id is not a time series.",
+        )
+    end
+    attribute = _get_attribute(db, collection_id, attribute_id)
+    id = _get_id(db, collection_id, label)
+    _validate_time_series_dimensions(collection_id, attribute, dimensions)
+
+    if length(dimensions) != length(attribute.dimension_names)
+        psr_database_sqlite_error(
+            "The number of dimensions in the time series does not match the number of dimensions in the attribute. " *
+            "The attribute has $(attribute.num_dimensions) dimensions: $(join(attribute.dimension_names, ", ")).",
+        )
+    end
+
+    return _add_time_series_row!(db, attribute, id, val, dimensions)
 end

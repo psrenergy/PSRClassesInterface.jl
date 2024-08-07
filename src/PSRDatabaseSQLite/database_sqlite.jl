@@ -1,6 +1,41 @@
-mutable struct DatabaseSQLite
+Base.@kwdef mutable struct DatabaseSQLite
     sqlite_db::SQLite.DB
+    database_path::String = ""
     collections_map::OrderedDict{String, Collection}
+    read_only::Bool = false
+    # TimeController is a cache that allows PSRDatabaseSQLite to
+    # store information about the last time_series query. This is useful for avoiding to
+    # re-query the database when the same query is made multiple times.
+    # The TimeController is a private behaviour and whenever it is used
+    # it changes the database mode to read-only.
+    _time_controller::TimeController = TimeController()
+end
+
+_is_read_only(db::DatabaseSQLite) = db.read_only
+function database_path(db::DatabaseSQLite)
+    return db.database_path
+end
+
+function _set_default_pragmas!(db::SQLite.DB)
+    _set_foreign_keys_on!(db)
+    _set_busy_timeout!(db, 5000)
+    return nothing
+end
+
+function _set_foreign_keys_on!(db::SQLite.DB)
+    # https://www.sqlite.org/foreignkeys.html#fk_enable
+    # Foreign keys are enabled per connection, they are not something 
+    # that can be stored in the database itself like user_version.
+    # This is needed to ensure that the foreign keys are enabled
+    # behaviours like cascade delete and update are enabled.
+    DBInterface.execute(db, "PRAGMA foreign_keys = ON;")
+    return nothing
+end
+
+function _set_busy_timeout!(db::SQLite.DB, timeout::Int)
+    # https://www.sqlite.org/pragma.html#pragma_busy_timeout
+    DBInterface.execute(db, "PRAGMA busy_timeout = $timeout;")
+    return nothing
 end
 
 function DatabaseSQLite_from_schema(
@@ -9,7 +44,7 @@ function DatabaseSQLite_from_schema(
 )
     sqlite_db = SQLite.DB(database_path)
 
-    DBInterface.execute(sqlite_db, "PRAGMA busy_timeout = 5000;")
+    _set_default_pragmas!(sqlite_db)
 
     collections_map = try
         execute_statements(sqlite_db, path_schema)
@@ -20,8 +55,9 @@ function DatabaseSQLite_from_schema(
         rethrow(e)
     end
 
-    db = DatabaseSQLite(
+    db = DatabaseSQLite(;
         sqlite_db,
+        database_path,
         collections_map,
     )
 
@@ -34,7 +70,7 @@ function DatabaseSQLite_from_migrations(
 )
     sqlite_db = SQLite.DB(database_path)
 
-    DBInterface.execute(sqlite_db, "PRAGMA busy_timeout = 5000;")
+    _set_default_pragmas!(sqlite_db)
 
     collections_map = try
         current_version = get_user_version(sqlite_db)
@@ -54,8 +90,9 @@ function DatabaseSQLite_from_migrations(
         rethrow(e)
     end
 
-    db = DatabaseSQLite(
+    db = DatabaseSQLite(;
         sqlite_db,
+        database_path,
         collections_map,
     )
 
@@ -67,10 +104,9 @@ function DatabaseSQLite(
     read_only::Bool = false,
 )
     sqlite_db =
-        read_only ? SQLite.DB("file:" * database_path * "?mode=ro&immutable=1") :
-        SQLite.DB(database_path)
+        read_only ? SQLite.DB("file:" * database_path * "?mode=ro&immutable=1") : SQLite.DB(database_path)
 
-    DBInterface.execute(sqlite_db, "PRAGMA busy_timeout = 5000;")
+    _set_default_pragmas!(sqlite_db)
 
     collections_map = try
         _validate_database(sqlite_db)
@@ -80,9 +116,11 @@ function DatabaseSQLite(
         rethrow(e)
     end
 
-    db = DatabaseSQLite(
+    db = DatabaseSQLite(;
         sqlite_db,
+        database_path,
         collections_map,
+        read_only,
     )
     return db
 end
@@ -123,6 +161,29 @@ function _is_vector_relation(
     return haskey(collection.vector_relations, attribute_id)
 end
 
+function _is_time_series(
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute_id::String,
+)
+    collection = _get_collection(db, collection_id)
+    return haskey(collection.time_series, attribute_id)
+end
+
+function _is_time_series_group(
+    db::DatabaseSQLite,
+    collection_id::String,
+    group_id::String,
+)
+    collection = _get_collection(db, collection_id)
+    for (_, attribute) in collection.time_series
+        if attribute.group_id == group_id
+            return true
+        end
+    end
+    return false
+end
+
 function _is_time_series_file(
     db::DatabaseSQLite,
     collection_id::String,
@@ -157,6 +218,8 @@ function _get_attribute(
         return collection.scalar_relations[attribute_id]
     elseif _is_vector_relation(db, collection_id, attribute_id)
         return collection.vector_relations[attribute_id]
+    elseif _is_time_series(db, collection_id, attribute_id)
+        return collection.time_series[attribute_id]
     elseif _is_time_series_file(db, collection_id, attribute_id)
         return collection.time_series_files[attribute_id]
     else
@@ -206,6 +269,7 @@ function _attribute_exists(
            _is_vector_parameter(db, collection_id, attribute_id) ||
            _is_scalar_relation(db, collection_id, attribute_id) ||
            _is_vector_relation(db, collection_id, attribute_id) ||
+           _is_time_series(db, collection_id, attribute_id) ||
            _is_time_series_file(db, collection_id, attribute_id)
 end
 
@@ -240,8 +304,27 @@ function _map_of_groups_to_vector_attributes(
     return map_of_groups_to_vector_attributes
 end
 
+function _attributes_in_time_series_group(
+    db::DatabaseSQLite,
+    collection_id::String,
+    group_id::String,
+)
+    collection = _get_collection(db, collection_id)
+    attributes_in_time_series_group = Vector{String}(undef, 0)
+    for (_, attribute) in collection.time_series
+        if attribute.group_id == group_id
+            push!(attributes_in_time_series_group, attribute.id)
+        end
+    end
+    return attributes_in_time_series_group
+end
+
 function _vectors_group_table_name(collection_id::String, group::String)
     return string(collection_id, "_vector_", group)
+end
+
+function _time_series_group_table_name(collection_id::String, group::String)
+    return string(collection_id, "_time_series_", group)
 end
 
 function _is_collection_id(name::String)
@@ -251,6 +334,10 @@ end
 
 function _is_collection_vector_table_name(name::String, collection_id::String)
     return startswith(name, "$(collection_id)_vector_")
+end
+
+function _is_collection_time_series_table_name(name::String, collection_id::String)
+    return startswith(name, "$(collection_id)_time_series_") && !endswith(name, "_time_series_files")
 end
 
 _get_collection_ids(db::DatabaseSQLite) = collect(keys(db.collections_map))

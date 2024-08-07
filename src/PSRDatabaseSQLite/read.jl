@@ -3,8 +3,21 @@ const READ_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
     ScalarRelation => "read_scalar_relations",
     VectorParameter => "read_vector_parameters",
     VectorRelation => "read_vector_relations",
+    TimeSeries => "read_time_series_row",
     TimeSeriesFile => "read_time_series_file",
 )
+
+function number_of_elements(db::DatabaseSQLite, collection_id::String)::Int
+    query = "SELECT COUNT(*) FROM $collection_id"
+    result = DBInterface.execute(db.sqlite_db, query)
+    for row in result
+        return row[1]
+    end
+end
+
+function _collection_has_any_data(db::DatabaseSQLite, collection_id::String)::Bool
+    return number_of_elements(db, collection_id) > 0
+end
 
 function _get_id(
     db::DatabaseSQLite,
@@ -41,7 +54,7 @@ function read_scalar_parameters(
     attribute = _get_attribute(db, collection_id, attribute_id)
     table = _table_where_is_located(attribute)
 
-    query = "SELECT $attribute_id FROM $table ORDER BY rowid"
+    query = "SELECT $attribute_id FROM $table ORDER BY id"
     df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
     results = df[!, 1]
     results = _treat_query_result(results, attribute, default)
@@ -62,9 +75,7 @@ function read_scalar_parameter(
         :read,
     )
 
-    attribute = _get_attribute(db, collection_id, attribute_id)
-    table = _table_where_is_located(attribute)
-    id = _get_id(db, table, label)
+    id = _get_id(db, collection_id, label)
 
     return read_scalar_parameter(db, collection_id, attribute_id, id; default)
 end
@@ -146,6 +157,27 @@ function _query_vector(
     return results
 end
 
+function end_date_query(db::DatabaseSQLite, attribute::Attribute)
+    # First checks if the date or dimension value is within the range of the data.
+    # Then it queries the closest date before the provided date.
+    # If there is no date query the data with date 0 (which will probably return no data.)
+    end_date_query = "SELECT MAX(DATE(date_time)) FROM $(attribute.table_where_is_located)"
+    end_date = DBInterface.execute(db.sqlite_db, end_date_query) |> DataFrame
+    if isempty(end_date)
+        return DateTime(0)
+    end
+    return DateTime(end_date[!, 1][1])
+end
+
+function closest_date_query(db::DatabaseSQLite, attribute::Attribute, dim_value::DateTime)
+    closest_date_query_earlier = "SELECT DISTINCT date_time FROM $(attribute.table_where_is_located) WHERE $(attribute.id) IS NOT NULL AND DATE(date_time) <= DATE('$(dim_value)') ORDER BY DATE(date_time) DESC LIMIT 1"
+    closest_date = DBInterface.execute(db.sqlite_db, closest_date_query_earlier) |> DataFrame
+    if isempty(closest_date)
+        return DateTime(0)
+    end
+    return DateTime(closest_date[!, 1][1])
+end
+
 """
 TODO
 """
@@ -164,7 +196,7 @@ function read_scalar_relations(
     names_in_collection_to = read_scalar_parameters(db, collection_to, "label")
     num_elements = length(names_in_collection_to)
     replace_dict = Dict{Any, String}(zip(collect(1:num_elements), names_in_collection_to))
-    push!(replace_dict, _opensql_default_value_for_type(Int) => "")
+    push!(replace_dict, _psrdatabasesqlite_null_value(Int) => "")
     return replace(map_of_elements, replace_dict...)
 end
 
@@ -201,7 +233,7 @@ function _get_scalar_relation_map(
     )
     attribute = _get_attribute(db, collection_from, attribute_on_collection_from)
 
-    query = "SELECT $(attribute.id) FROM $(attribute.table_where_is_located) ORDER BY rowid"
+    query = "SELECT $(attribute.id) FROM $(attribute.table_where_is_located)"
     df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
     results = df[!, 1]
     num_results = length(results)
@@ -209,7 +241,7 @@ function _get_scalar_relation_map(
     ids_in_collection_to = read_scalar_parameters(db, collection_to, "id")
     for i in 1:num_results
         if ismissing(results[i])
-            map_of_indexes[i] = _opensql_default_value_for_type(Int)
+            map_of_indexes[i] = _psrdatabasesqlite_null_value(Int)
         else
             map_of_indexes[i] = findfirst(isequal(results[i]), ids_in_collection_to)
         end
@@ -233,7 +265,7 @@ function read_vector_relations(
     names_in_collection_to = read_scalar_parameters(db, collection_to, "label")
     num_elements = length(names_in_collection_to)
     replace_dict = Dict{Any, String}(zip(collect(1:num_elements), names_in_collection_to))
-    push!(replace_dict, _opensql_default_value_for_type(Int) => "")
+    push!(replace_dict, _psrdatabasesqlite_null_value(Int) => "")
 
     map_with_labels = Vector{Vector{String}}(undef, length(map_of_vector_with_indexes))
 
@@ -300,7 +332,7 @@ function _get_vector_relation_map(
         if isnothing(index_of_id_collection_to)
             push!(
                 map_of_vector_with_indexes[index_of_id],
-                _opensql_default_value_for_type(Int),
+                _psrdatabasesqlite_null_value(Int),
             )
         else
             push!(map_of_vector_with_indexes[index_of_id], index_of_id_collection_to)
@@ -324,7 +356,7 @@ function read_time_series_file(
     attribute = _get_attribute(db, collection_id, attribute_id)
     table = attribute.table_where_is_located
 
-    query = "SELECT $(attribute.id) FROM $table ORDER BY rowid"
+    query = "SELECT $(attribute.id) FROM $table"
     df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
     result = df[!, 1]
     if isempty(result)
@@ -340,6 +372,74 @@ function read_time_series_file(
     end
 end
 
+function read_time_series_row(
+    db,
+    collection_id::String,
+    attribute_id::String;
+    date_time::DateTime,
+)
+    _throw_if_attribute_is_not_time_series(
+        db,
+        collection_id,
+        attribute_id,
+        :read,
+    )
+    @assert _is_read_only(db) "Time series mapping only works in read only databases"
+
+    collection_attribute = _collection_attribute(collection_id, attribute_id)
+    attribute = _get_attribute(db, collection_id, attribute_id)
+
+    T = attribute.type
+
+    if !(_collection_has_any_data(db, collection_id))
+        return Vector{T}(undef, 0)
+    end
+    if !haskey(db._time_controller.cache, collection_attribute)
+        db._time_controller.cache[collection_attribute] = _start_time_controller_cache(db, attribute, date_time, T)
+    end
+    cache = db._time_controller.cache[collection_attribute]
+    # If we don`t need to update anything we just return the data
+    if _no_need_to_query_any_id(cache, date_time)
+        cache.last_date_requested = date_time
+        return cache.data
+    end
+    # If we need to update the cache we update the dates and the data
+    _update_time_controller_cache!(cache, db, attribute, date_time)
+    return cache.data
+end
+
+function _read_time_series_table(
+    db::DatabaseSQLite,
+    attribute::Attribute,
+    id::Int,
+)
+    query = string("SELECT ", join(attribute.dimension_names, ",", ", "), ", ", attribute.id)
+    query *= " FROM $(attribute.table_where_is_located) WHERE id = '$id'"
+    return DBInterface.execute(db.sqlite_db, query) |> DataFrame
+end
+
+function read_time_series_table(
+    db::DatabaseSQLite,
+    collection_id::String,
+    attribute_id::String,
+    label::String,
+)
+    _throw_if_attribute_is_not_time_series(
+        db,
+        collection_id,
+        attribute_id,
+        :read,
+    )
+    attribute = _get_attribute(db, collection_id, attribute_id)
+    id = _get_id(db, collection_id, label)
+
+    return _read_time_series_table(
+        db,
+        attribute,
+        id,
+    )
+end
+
 function _treat_query_result(
     query_results::Vector{Missing},
     attribute::Attribute,
@@ -347,7 +447,7 @@ function _treat_query_result(
 )
     type_of_attribute = _type(attribute)
     default = if isnothing(default)
-        _opensql_default_value_for_type(type_of_attribute)
+        _psrdatabasesqlite_null_value(type_of_attribute)
     else
         default
     end
@@ -361,7 +461,7 @@ function _treat_query_result(
 ) where {T <: Union{Int64, Float64}}
     type_of_attribute = _type(attribute)
     default = if isnothing(default)
-        _opensql_default_value_for_type(type_of_attribute)
+        _psrdatabasesqlite_null_value(type_of_attribute)
     else
         if isa(default, type_of_attribute)
             default
@@ -386,7 +486,7 @@ function _treat_query_result(
 )
     type_of_attribute = _type(attribute)
     default = if isnothing(default)
-        _opensql_default_value_for_type(type_of_attribute)
+        _psrdatabasesqlite_null_value(type_of_attribute)
     else
         if isa(default, type_of_attribute)
             default
@@ -414,10 +514,10 @@ _treat_query_result(
     ::Union{Nothing, Any},
 ) where {T <: Union{Int64, Float64}} = results
 
-_opensql_default_value_for_type(::Type{Float64}) = NaN
-_opensql_default_value_for_type(::Type{Int64}) = typemin(Int64)
-_opensql_default_value_for_type(::Type{String}) = ""
-_opensql_default_value_for_type(::Type{DateTime}) = typemin(DateTime)
+_psrdatabasesqlite_null_value(::Type{Float64}) = NaN
+_psrdatabasesqlite_null_value(::Type{Int64}) = typemin(Int64)
+_psrdatabasesqlite_null_value(::Type{String}) = ""
+_psrdatabasesqlite_null_value(::Type{DateTime}) = typemin(DateTime)
 
 function _is_null_in_db(value::Float64)
     return isnan(value)

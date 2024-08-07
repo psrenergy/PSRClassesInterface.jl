@@ -3,6 +3,7 @@ module TestRead
 using PSRClassesInterface.PSRDatabaseSQLite
 using SQLite
 using Dates
+using DataFrames
 using Test
 
 function test_read_parameters()

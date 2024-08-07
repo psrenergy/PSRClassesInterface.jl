@@ -60,7 +60,7 @@ CREATE TABLE Plant_vector_cost_relation (
     PRIMARY KEY (id, vector_index)
 ) STRICT;
 
-CREATE TABLE Plant_timeseriesfiles (
+CREATE TABLE Plant_time_series_files (
     generation TEXT,
     cost TEXT
 ) STRICT;

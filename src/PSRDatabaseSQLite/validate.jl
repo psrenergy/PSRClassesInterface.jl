@@ -1,6 +1,6 @@
 # just for reference this are the main regexes
 # the functions not commented implement combinations of them
-# with other reserved words such as vector, relation and timeseries.
+# with other reserved words such as vector, relation and time_series.
 # _regex_table_name() = Regex("(?:[A-Z][a-z]*)+")
 # _regex_column_name() = Regex("[a-z][a-z0-9]*(?:_{1}[a-z0-9]+)*")
 
@@ -18,8 +18,15 @@ _is_valid_table_vector_name(table::String) =
         ),
     )
 
-_is_valid_table_timeseries_name(table::String) =
-    !isnothing(match(r"^(?:[A-Z][a-z]*)+_timeseriesfiles", table))
+_is_valid_time_series_name(table::String) =
+    !isnothing(
+        match(
+            r"^(?:[A-Z][a-z]*)+_time_series_(?!files$)[a-z][a-z0-9]*(?:_{1}[a-z0-9]+)*$",
+            table,
+        ),
+    )
+
+_is_valid_table_time_series_files_name(table::String) = !isnothing(match(r"^(?:[A-Z][a-z]*)+_time_series_files", table))
 
 _is_valid_time_series_attribute_value(value::String) =
     !isnothing(
@@ -67,7 +74,23 @@ function _validate_table(db::SQLite.DB, table::String)
     return num_errors
 end
 
-function _validate_timeseries_table(db::SQLite.DB, table::String)
+function _validate_time_series_table(db::SQLite.DB, table::String)
+    attributes = column_names(db, table)
+    num_errors = 0
+    if !("id" in attributes)
+        @error("Table $table is a time_series table and does not have an \"id\" column.")
+        num_errors += 1
+    end
+    if !("date_time" in attributes)
+        @error(
+            "Table $table is a time_series table and does not have an \"date_time\" column.",
+        )
+        num_errors += 1
+    end
+    return num_errors
+end
+
+function _validate_time_series_files_table(db::SQLite.DB, table::String)
     attributes = column_names(db, table)
     num_errors = 0
     if ("id" in attributes)
@@ -116,7 +139,6 @@ function _validate_database(db::SQLite.DB)
         psr_database_sqlite_error("Database does not have a \"Configuration\" table.")
     end
     _validate_database_pragmas(db)
-    _set_default_pragmas!(db)
     num_errors = 0
     for table in tables
         if table == "sqlite_sequence"
@@ -124,8 +146,10 @@ function _validate_database(db::SQLite.DB)
         end
         if _is_valid_table_name(table)
             num_errors += _validate_table(db, table)
-        elseif _is_valid_table_timeseries_name(table)
-            num_errors += _validate_timeseries_table(db, table)
+        elseif _is_valid_table_time_series_files_name(table)
+            num_errors += _validate_time_series_files_table(db, table)
+        elseif _is_valid_time_series_name(table)
+            num_errors += _validate_time_series_table(db, table)
         elseif _is_valid_table_vector_name(table)
             num_errors += _validate_vector_table(db, table)
         else
@@ -134,7 +158,8 @@ function _validate_database(db::SQLite.DB)
                 Valid table name formats are:
                 - Collections: NameOfCollection
                 - Vector attributes: NameOfCollection_vector_group_id
-                - Time series: NameOfCollection_timeseriesfiles
+                - Time series: NameOfCollection_time_series_group_id
+                - Time series files: NameOfCollection_time_series_files
                 """)
             num_errors += 1
         end
@@ -245,6 +270,26 @@ function _throw_if_attribute_is_not_vector_relation(
     return nothing
 end
 
+function _throw_if_attribute_is_not_time_series(
+    db::DatabaseSQLite,
+    collection::String,
+    attribute::String,
+    action::Symbol,
+)
+    _throw_if_collection_or_attribute_do_not_exist(db, collection, attribute)
+
+    if !_is_time_series(db, collection, attribute)
+        correct_composity_type =
+            _attribute_composite_type(db, collection, attribute)
+        string_of_composite_types = _string_for_composite_types(correct_composity_type)
+        correct_method_to_use = _get_correct_method_to_use(correct_composity_type, action)
+        psr_database_sqlite_error(
+            "Attribute \"$attribute\" is not a time series. It is a $string_of_composite_types. Use `$correct_method_to_use` instead.",
+        )
+    end
+    return nothing
+end
+
 function _throw_if_attribute_is_not_time_series_file(
     db::DatabaseSQLite,
     collection::String,
@@ -272,8 +317,8 @@ function _throw_if_not_scalar_attribute(
 )
     _throw_if_collection_or_attribute_do_not_exist(db, collection, attribute)
 
-    if _is_vector_parameter(db, collection, attribute) ||
-       _is_vector_relation(db, collection, attribute)
+    if !_is_scalar_parameter(db, collection, attribute) &&
+       !_is_scalar_relation(db, collection, attribute)
         psr_database_sqlite_error(
             "Attribute \"$attribute\" is not a scalar attribute. You must input a vector for this attribute.",
         )
@@ -299,19 +344,58 @@ function _throw_if_not_vector_attribute(
     return nothing
 end
 
-function _throw_if_relation_does_not_exist(
-    collection_from::String,
-    collection_to::String,
-    relation_type::String,
+function _throw_if_not_time_series_group(
+    db::DatabaseSQLite,
+    collection::String,
+    group::String,
 )
-    if !_scalar_relation_exists(collection_from, collection_to, relation_type) &&
-       !_vector_relation_exists(collection_from, collection_to, relation_type)
+    if !_is_time_series_group(db, collection, group)
         psr_database_sqlite_error(
-            "relation `$relation_type` between $collection_from and $collection_to does not exist. \n" *
-            "This is the list of relations that exist: " *
-            "$(_show_existing_relation_types(_list_of_relation_types(collection_from, collection_to)))",
+            "Group \"$group\" is not a time series group. ",
         )
     end
+    return nothing
+end
+
+function _throw_if_data_does_not_match_group(
+    db::DatabaseSQLite,
+    collection_id::String,
+    group::String,
+    df::DataFrame,
+)
+    collection = _get_collection(db, collection_id)
+    dimensions_in_df = []
+    attributes_in_df = []
+
+    for column in names(df)
+        if column in keys(collection.time_series)
+            # should be an attribute
+            push!(attributes_in_df, column)
+        else
+            # should be a dimension
+            push!(dimensions_in_df, column)
+        end
+    end
+
+    # validate if the attributes belong to the same group and if the dimensions are valid for this group
+    for attribute_id in attributes_in_df
+        attribute = _get_attribute(db, collection_id, attribute_id)
+        if attribute.group_id != group
+            psr_database_sqlite_error(
+                "Attribute \"$attribute_id\" is not in the time series group \"$group\".",
+            )
+        end
+    end
+
+    for dimension in dimensions_in_df
+        if !(dimension in collection.time_series[attributes_in_df[1]].dimension_names)
+            psr_database_sqlite_error(
+                "The dimension \"$dimension\" is not defined in the time series group \"$group\".",
+            )
+        end
+    end
+
+    return nothing
 end
 
 function _throw_if_is_time_series_file(
@@ -343,8 +427,8 @@ function _validate_attribute_types!(
     db::DatabaseSQLite,
     collection_id::String,
     label_or_id::Union{Integer, String},
-    dict_scalar_attributes,
-    dict_vector_attributes,
+    dict_scalar_attributes::AbstractDict,
+    dict_vector_attributes::AbstractDict,
 )
     for (key, value) in dict_scalar_attributes
         attribute = _get_attribute(db, collection_id, string(key))
@@ -417,19 +501,19 @@ function _validate_vector_relation_type(
     end
 end
 
-function _set_default_pragmas!(db::SQLite.DB)
-    _set_foreign_keys_on!(db)
-    return nothing
-end
-
-function _set_foreign_keys_on!(db::SQLite.DB)
-    # https://www.sqlite.org/foreignkeys.html#fk_enable
-    # Foreign keys are enabled per connection, they are not something 
-    # that can be stored in the database itself like user_version.
-    # This is needed to ensure that the foreign keys are enabled
-    # behaviours like cascade delete and update are enabled.
-    DBInterface.execute(db, "PRAGMA foreign_keys = ON;")
-    return nothing
+function _validate_time_series_dimensions(
+    collection_id::String,
+    attribute::Attribute,
+    dimensions...,
+)
+    for dim_name in keys(dimensions...)
+        if !(string(dim_name) in attribute.dimension_names)
+            psr_database_sqlite_error(
+                "The dimension \"$dim_name\" is not defined in the time series attribute \"$(attribute.id)\" of collection \"$collection_id\". " *
+                "The available dimensions are: $(attribute.dimension_names).",
+            )
+        end
+    end
 end
 
 function _validate_database_pragmas(db::SQLite.DB)

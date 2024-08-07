@@ -3,6 +3,7 @@ module TestCreate
 using PSRClassesInterface.PSRDatabaseSQLite
 using SQLite
 using Dates
+using DataFrames
 using Test
 
 function test_create_parameters()
@@ -255,6 +256,71 @@ function test_create_vectors_with_relations()
         factor_input = [],
         product_output = ["Sugarcane"],
         factor_output = [1.0],
+    )
+
+    PSRDatabaseSQLite.close!(db)
+    GC.gc()
+    GC.gc()
+    rm(db_path)
+    @test true
+    return nothing
+end
+
+function test_create_time_series()
+    path_schema = joinpath(@__DIR__, "test_create_time_series.sql")
+    db_path = joinpath(@__DIR__, "test_create_time_series.sqlite")
+    db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
+
+    PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
+
+    for i in 1:3
+        df_time_series_group1 = DataFrame(;
+            date_time = [DateTime(2000), DateTime(2001)],
+            some_vector1 = [1.0, 2.0] .* i,
+            some_vector2 = [2.0, 3.0] .* i,
+        )
+        df_time_series_group2 = DataFrame(;
+            date_time = [DateTime(2000), DateTime(2000), DateTime(2001), DateTime(2001)],
+            block = [1, 2, 1, 2],
+            some_vector3 = [1.0, missing, 3.0, 4.0] .* i,
+        )
+        df_time_series_group3 = DataFrame(;
+            date_time = [
+                DateTime(2000),
+                DateTime(2000),
+                DateTime(2000),
+                DateTime(2000),
+                DateTime(2001),
+                DateTime(2001),
+                DateTime(2001),
+                DateTime(2009),
+            ],
+            block = [1, 1, 1, 1, 2, 2, 2, 2],
+            segment = [1, 2, 3, 4, 1, 2, 3, 4],
+            some_vector5 = [1.0, 2.0, 3.0, 4.0, 1, 2, 3, 4] .* i,
+            some_vector6 = [1.0, 2.0, 3.0, 4.0, 1, 2, 3, 4] .* i,
+        )
+        PSRDatabaseSQLite.create_element!(
+            db,
+            "Resource";
+            label = "Resource $i",
+            group1 = df_time_series_group1,
+            group2 = df_time_series_group2,
+            group3 = df_time_series_group3,
+        )
+    end
+
+    df_time_series_group5 = DataFrame(;
+        date_time = [DateTime(2000), DateTime(2001)],
+        some_vector1 = [1.0, 2.0],
+        some_vector2 = [2.0, 3.0],
+    )
+
+    @test_throws PSRDatabaseSQLite.DatabaseException PSRDatabaseSQLite.create_element!(
+        db,
+        "Resource";
+        label = "Resource 4",
+        group5 = df_time_series_group5,
     )
 
     PSRDatabaseSQLite.close!(db)
