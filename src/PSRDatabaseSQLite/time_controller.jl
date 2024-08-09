@@ -45,11 +45,44 @@ function _update_time_controller_cache!(
 )
     _update_time_controller_cache_dates!(cache, db, attribute, date_time)
 
-    for (i, id) in enumerate(cache._collection_ids)
-        cache.data[i] =
-            _request_time_series_data_for_time_controller_cache(db, attribute, id, cache.closest_previous_date_with_data[i])
-    end
+    # for (i, id) in enumerate(cache._collection_ids)
+    #     cache.data[i] =
+    #         _request_time_series_data_for_time_controller_cache(db, attribute, id, cache.closest_previous_date_with_data[i])
+    # end
 
+    _request_time_series_data_for_time_controller_cache(cache, db, attribute, cache._collection_ids, cache.closest_previous_date_with_data)
+
+    return nothing
+end
+
+function _request_time_series_data_for_time_controller_cache(
+    cache::TimeControllerCache,
+    db,
+    attribute::Attribute,
+    ids::Vector{Int},
+    date_times::Vector{DateTime},
+)
+    query = "SELECT id, $(attribute.id) FROM $(attribute.table_where_is_located) WHERE "
+    for (i, id) in enumerate(ids)
+        query *= "(id = $id AND DATETIME(date_time) = DATETIME('$(date_times[i])'))"
+        # query *= "(id = $id AND DATETIME(date_time) = DATETIME('$(DateTime(2000))'))"
+        if i < length(ids)
+            query *= " OR "
+        end
+    end
+    query *= " ORDER BY id;"
+
+    df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
+
+    _psrdatabasesqlite_null_value(attribute.type)
+    for (i, id) in enumerate(cache._collection_ids)
+        index = searchsorted(df.id, id)
+        if isempty(index)
+            cache.data[i] = _psrdatabasesqlite_null_value(attribute.type)
+        else
+            cache.data[i] = df[index[1], 2]
+        end
+    end
     return nothing
 end
 
