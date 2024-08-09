@@ -52,7 +52,7 @@ function _request_time_series_data_for_time_controller_cache(
     query = "SELECT id, $(attribute.id) FROM $(attribute.table_where_is_located) WHERE "
     for (i, id) in enumerate(cache._collection_ids)
         query *= "(id = $id AND DATETIME(date_time) = DATETIME('$(cache.closest_previous_date_with_data[i])'))"
-        if i < length(ids)
+        if i < length(cache._collection_ids)
             query *= " OR "
         end
     end
