@@ -7,10 +7,7 @@ const CollectionAttribute = Tuple{String, String}
 
 # Some comments
 # TODO we can further optimize the time controller with a few strategies
-# 1 - We can try to ask for the data in the same query that we ask for the dates. I just don`t know how to write the good query for that
-# 2 - We can use prepared statements for the queries 
-# 3 - Avoid querying the data for every id in the attribute. Currently we fill the cache of dates before making the query and use it to inform which date each id should query. This is quite inneficient
-# The best way of optimizing it would be to solve 1 and 2.
+# 1 - We can use prepared statements for the queries 
 
 mutable struct TimeControllerCache{T}
     data::Vector{T}
@@ -20,8 +17,6 @@ mutable struct TimeControllerCache{T}
     closest_next_date_with_data::Vector{DateTime}
 
     # Private caches with the closest previous and next dates
-    # _closest_previous_date_with_data = maximum(closest_previous_date_with_data)
-    # _closest_next_date_with_data = minimum(closest_next_date_with_data)
     _closest_global_previous_date_with_data::DateTime
     _closest_global_next_date_with_data::DateTime
 
@@ -44,12 +39,36 @@ function _update_time_controller_cache!(
     date_time::DateTime,
 )
     _update_time_controller_cache_dates!(cache, db, attribute, date_time)
+    _request_time_series_data_for_time_controller_cache(cache, db, attribute)
 
+    return nothing
+end
+
+function _request_time_series_data_for_time_controller_cache(
+    cache::TimeControllerCache,
+    db,
+    attribute::Attribute,
+)
+    query = "SELECT id, $(attribute.id) FROM $(attribute.table_where_is_located) WHERE "
     for (i, id) in enumerate(cache._collection_ids)
-        cache.data[i] =
-            _request_time_series_data_for_time_controller_cache(db, attribute, id, cache.closest_previous_date_with_data[i])
+        query *= "(id = $id AND DATETIME(date_time) = DATETIME('$(cache.closest_previous_date_with_data[i])'))"
+        if i < length(cache._collection_ids)
+            query *= " OR "
+        end
     end
+    query *= " ORDER BY id;"
 
+    df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
+
+    _psrdatabasesqlite_null_value(attribute.type)
+    for (i, id) in enumerate(cache._collection_ids)
+        index = searchsorted(df.id, id)
+        if isempty(index)
+            cache.data[i] = _psrdatabasesqlite_null_value(attribute.type)
+        else
+            cache.data[i] = df[index[1], 2]
+        end
+    end
     return nothing
 end
 
