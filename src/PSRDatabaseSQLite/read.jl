@@ -15,10 +15,6 @@ function number_of_elements(db::DatabaseSQLite, collection_id::String)::Int
     end
 end
 
-function _collection_has_any_data(db::DatabaseSQLite, collection_id::String)::Bool
-    return number_of_elements(db, collection_id) > 0
-end
-
 function _get_id(
     db::DatabaseSQLite,
     collection_id::String,
@@ -391,7 +387,7 @@ function read_time_series_row(
 
     T = attribute.type
 
-    if !(_collection_has_any_data(db, collection_id))
+    if !(_time_controller_collection_has_any_data(db, collection_id))
         return Vector{T}(undef, 0)
     end
     if !haskey(db._time_controller.cache, collection_attribute)
