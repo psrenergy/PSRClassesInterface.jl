@@ -20,16 +20,33 @@ mutable struct TimeControllerCache{T}
     _closest_global_previous_date_with_data::DateTime
     _closest_global_next_date_with_data::DateTime
 
-    # Cache of collection_ids
+    # Cache of collection_ids, these are the ids of elements in a specific collection
     _collection_ids::Vector{Int}
 end
 
 Base.@kwdef mutable struct TimeController
     cache::Dict{CollectionAttribute, TimeControllerCache} = Dict{CollectionAttribute, TimeControllerCache}()
+
+    # Upon initialization the time controller will ask if a certain 
+    # collection has any elements, if the collection has any elements it 
+    # will be added to this cache. This cache will be used to avoid querying
+    # multiple times if a certain collection has any elements.
+    # This relies on the fact that the Time Controller only works in 
+    # read only databases.
+    collection_has_any_data::Dict{String, Bool} = Dict{String, Bool}()
 end
 
 function _collection_attribute(collection_id::String, attribute_id::String)::CollectionAttribute
     return (collection_id, attribute_id)
+end
+
+function _time_controller_collection_has_any_data(db, collection_id::String)::Bool
+    if haskey(db._time_controller.collection_has_any_data, collection_id)
+        return db._time_controller.collection_has_any_data[collection_id]
+    else
+        db._time_controller.collection_has_any_data[collection_id] = number_of_elements(db, collection_id) > 0
+        return db._time_controller.collection_has_any_data[collection_id]
+    end
 end
 
 function _update_time_controller_cache!(
