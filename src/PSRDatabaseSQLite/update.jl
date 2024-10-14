@@ -100,7 +100,7 @@ function _update_vector_parameters!(
             )
         else
             collection = _get_collection(db, collection_id)
-            if keys(collection.vector_parameters) == [attribute_id]
+            if collect(keys(collection.vector_parameters)) == [attribute_id]
                 DBInterface.execute(db.sqlite_db, "BEGIN TRANSACTION")
                 try
                     statement = "DELETE FROM $table_name WHERE id = '$id'"

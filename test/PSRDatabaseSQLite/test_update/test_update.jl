@@ -293,6 +293,13 @@ function test_update_vector_parameters()
         "Toy Case",
         [4.0, 5.0, 6.0],
     )
+    PSRDatabaseSQLite.PSRI.set_vector!(
+        db,
+        "Configuration",
+        "some_value_1",
+        "Toy Case",
+        [7.0, 8.0, 9.0, 10.0],
+    )
 
     PSRDatabaseSQLite.create_element!(
         db,
