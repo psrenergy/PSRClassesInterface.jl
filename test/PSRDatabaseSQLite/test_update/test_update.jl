@@ -284,7 +284,16 @@ function test_update_vector_parameters()
     path_schema = joinpath(@__DIR__, "test_update_vector_parameters.sql")
     db_path = joinpath(@__DIR__, "test_update_vector_parameters.sqlite")
     db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
-    PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0)
+    PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case", value1 = 1.0,
+        some_value_1 = [1.0, 2.0, 3.0])
+    PSRDatabaseSQLite.update_vector_parameters!(
+        db,
+        "Configuration",
+        "some_value_1",
+        "Toy Case",
+        [4.0, 5.0, 6.0],
+    )
+
     PSRDatabaseSQLite.create_element!(
         db,
         "Resource";

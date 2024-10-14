@@ -99,13 +99,32 @@ function _update_vector_parameters!(
                 Dict(Symbol(attribute_id) => vals),
             )
         else
-            # If there are rows in the table we must check that the number of rows is the same as the number of new relations
-            psr_database_sqlite_error(
-                "There is currently a vector of $num_rows_in_query elements in the group $group_id. " *
-                "User is trying to set a vector of length $num_new_elements. This is invalid. " *
-                "If you want to change the number of elements in the group you might have to delete " *
-                "the element and create it again with the new vector.",
-            )
+            collection = _get_collection(db, collection_id)
+            if keys(collection.vector_parameters) == [attribute_id]
+                DBInterface.execute(db.sqlite_db, "BEGIN TRANSACTION")
+                try
+                    statement = "DELETE FROM $table_name WHERE id = '$id'"
+                    DBInterface.execute(db.sqlite_db, statement)
+                    _create_vectors!(
+                        db,
+                        collection_id,
+                        id,
+                        Dict(Symbol(attribute_id) => vals),
+                    )
+                    DBInterface.execute(db.sqlite_db, "COMMIT TRANSACTION")
+                catch e
+                    DBInterface.execute(db.sqlite_db, "ROLLBACK TRANSACTION")
+                    rethrow(e)
+                end
+            else
+                # If there are rows in the table we must check that the number of rows is the same as the number of new relations
+                psr_database_sqlite_error(
+                    "There is currently a vector of $num_rows_in_query elements in the group $group_id. " *
+                    "User is trying to set a vector of length $num_new_elements. This is invalid. " *
+                    "If you want to change the number of elements in the group you might have to delete " *
+                    "the element and create it again with the new vector.",
+                )
+            end
         end
     else
         # Update the elements
