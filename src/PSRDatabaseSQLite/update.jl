@@ -1,7 +1,7 @@
 const UPDATE_METHODS_BY_CLASS_OF_ATTRIBUTE = Dict(
     ScalarParameter => "update_scalar_parameter!",
     ScalarRelation => "set_scalar_relation!",
-    VectorParameter => "update_vector_parameter!",
+    VectorParameter => "update_vector_parameters!",
     VectorRelation => "set_vector_relation!",
     TimeSeries => "update_time_series_row!",
     TimeSeriesFile => "set_time_series_file!",
