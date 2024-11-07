@@ -85,9 +85,7 @@ CREATE TABLE Plant(
 
 ### Vector Attributes
 
-- In case of a vector attribute, a table should be created with its name indicating the name of the Collection and the name of a group of the attribute, separated by `_vector_`, as presented below
-
-<p style="text-align: center;"> COLLECTION_vector_GROUP_OF_ATTRIBUTES</p>
+- In case of a vector attribute, a table should be created with its name indicating the name of the Collection and the name of a group of the attribute, separated by `_vector_`, such as `COLLECTION_vector_GROUP_OF_ATTRIBUTES`.
 
 - The table must contain a Column named `id` and another named `vector_index`.
 - There must be a Column named after the attributes names, which will store the value of the attribute for the specified element `id` and index `vector_index`.
@@ -135,9 +133,7 @@ CREATE TABLE HydroPlant_vector_GaugingStation(
 ### Time Series Files
 
 - All Time Series files for the elements from a Collection should be stored in a Table
-- The Table name should be the same as the name of the Collection followed by `_time_series_files`, as presented below
-
-<p style="text-align: center"> COLLECTION_vector_ATTRIBUTE</p>
+- The Table name should be the same as the name of the Collection followed by `_time_series_files`, such as `COLLECTION_vector_ATTRIBUTE`.
 
 - Each Column of the table should be named after the name of the attribute.
 - Each Column should store the path to the file containing the time series data.
@@ -152,9 +148,7 @@ CREATE TABLE Plant_time_series_files (
 ```
 
 ### Time Series
-- Time Series stored in the database should be stored in a table with the name of the Collection followed by `_time_series_` and the name of the attribute group, as presented below.
-
-<p style="text-align: center"> COLLECTION_time_series_GROUP_OF_ATTRIBUTES</p>
+- Time Series stored in the database should be stored in a table with the name of the Collection followed by `_time_series_` and the name of the attribute group, such a `COLLECTION_time_series_GROUP_OF_ATTRIBUTES`.
 
 Notice that it is quite similar to the vector attributes, but without the `vector_index` column.
 Instead, a mandatory column named `date_time` should be created to store the date of the time series data.
