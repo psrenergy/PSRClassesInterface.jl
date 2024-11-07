@@ -210,7 +210,6 @@ function create_element!(
     catch e
         @error """
                Error creating element in collection \"$collection_id\"
-               error message: $(e.msg)
                """
         rethrow(e)
     end

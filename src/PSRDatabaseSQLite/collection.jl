@@ -428,6 +428,15 @@ function _get_collection_time_series_files_tables(::SQLite.DB, collection_id::St
     return string(collection_id, "_time_series_files")
 end
 
+function _dimensions_of_time_series_group(collection::Collection, group_id::String)
+    time_series = collection.time_series
+    for (_, time_series_attribute) in time_series
+        if time_series_attribute.group_id == group_id
+            return time_series_attribute.dimension_names
+        end
+    end
+end
+
 function _validate_actions_on_foreign_key(
     collection_id::String,
     table_name::String,

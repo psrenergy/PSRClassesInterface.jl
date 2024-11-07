@@ -364,6 +364,7 @@ function _throw_if_data_does_not_match_group(
     df::DataFrame,
 )
     collection = _get_collection(db, collection_id)
+    dimensions_of_group = _dimensions_of_time_series_group(collection, group)
     dimensions_in_df = []
     attributes_in_df = []
 
@@ -371,9 +372,13 @@ function _throw_if_data_does_not_match_group(
         if column in keys(collection.time_series)
             # should be an attribute
             push!(attributes_in_df, column)
-        else
+        elseif column in dimensions_of_group
             # should be a dimension
             push!(dimensions_in_df, column)
+        else
+            psr_database_sqlite_error(
+                "Attribute \"$column\" is not an attribute or dimension of the time series group \"$group\".",
+            )
         end
     end
 
