@@ -145,7 +145,7 @@ function _apply_merge!(parser::Parser, target::String, merge_path::Set{String})
             end
 
             if haskey(data, k)
-                _error(
+                _warning(
                     parser,
                     "Collection '$target' already has attribute '$k' being merged from '$source'",
                 )
