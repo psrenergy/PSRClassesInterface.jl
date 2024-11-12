@@ -585,6 +585,7 @@ function _parse_reference!(
     state::S,
 ) where {S <: Union{PMD_DEF_MODEL, PMD_DEF_CLASS, PMD_MERGE_CLASS}}
     m = match(r"(PARM|VECTOR|VETOR)\s+(REFERENCE)\s+(\S+)\s+(\S+)", line)
+    m1 = match(r"(PARM|VECTOR|VETOR)\s+(REFERENCE)\s+(\S+)", line)
 
     if m !== nothing
         kind = String(m[1])
@@ -610,6 +611,12 @@ function _parse_reference!(
 
         parser.relation_mapper[state.collection][target][attribute] = relation
 
+        return true
+    elseif m1 !== nothing
+        _warning(
+            parser,
+            "Unhandled reference '$(m1[3])' within '$(state.collection)'",
+        )
         return true
     else
         return false
