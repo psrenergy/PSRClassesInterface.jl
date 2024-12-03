@@ -35,6 +35,9 @@ end
         @testset "Write file partially" begin
             @time include("OpenBinary/incomplete_file.jl")
         end
+        @testset "Use header" begin
+            @time include("OpenBinary/use_header.jl")
+        end
     end
     @testset "ReaderMapper" begin
         @time include("reader_mapper.jl")
