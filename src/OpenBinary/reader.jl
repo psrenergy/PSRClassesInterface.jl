@@ -301,6 +301,9 @@ function PSRI.open(
             end
         end
 
+        queried_agents = length(header)
+        agent_names = header
+
         if !allow_empty && isempty(indices)
             if isempty(header)
                 error(
@@ -314,12 +317,13 @@ function PSRI.open(
             end
         end
     else
+        queried_agents = total_agents
         indices = collect(1:total_agents)
     end
 
     data_buffer = zeros(Float32, total_agents)
 
-    data = zeros(Float64, total_agents)
+    data = zeros(Float64, queried_agents)
 
     if initial_stage != Dates.Date(1900, 1, 1)
         _year = initial_year
