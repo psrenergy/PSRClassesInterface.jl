@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Graf Files and Time Series · PSRClassesInterface.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PSRClassesInterface.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../manual/">Manual</a></li><li><span class="tocitem">Files and Structs manual</span><ul><li><a class="tocitem" href="../../file_types/file_diagram/">PSRI Files and Structs 101</a></li><li><a class="tocitem" href="../../file_types/pmd/">PMD</a></li><li><a class="tocitem" href="../../file_types/model_template/">Model Template</a></li><li><a class="tocitem" href="../../file_types/relation_mapper/">Relation Mapper</a></li><li><a class="tocitem" href="../../file_types/psrclasses/">psrclasses.json and Defaults</a></li></ul></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../reading_parameters/">Reading parameters</a></li><li><a class="tocitem" href="../reading_relations/">Reading Relations</a></li><li class="is-active"><a class="tocitem" href>Graf Files and Time Series</a><ul class="internal"><li><a class="tocitem" href="#Time-Series"><span>Time Series</span></a></li><li><a class="tocitem" href="#Graf-files"><span>Graf files</span></a></li><li><a class="tocitem" href="#Graf-file-format"><span>Graf file format</span></a></li><li><a class="tocitem" href="#Writing-a-time-series-into-a-Graf-file"><span>Writing a time series into a Graf file</span></a></li><li><a class="tocitem" href="#Reading-a-time-series-from-a-graf-file"><span>Reading a time series from a graf file</span></a></li><li><a class="tocitem" href="#Using-Graf-files-in-a-study"><span>Using Graf files in a study</span></a></li><li><a class="tocitem" href="#Comparison-between-a-GrafTable-and-a-SeriesTable"><span>Comparison between a GrafTable and a SeriesTable</span></a></li></ul></li><li><a class="tocitem" href="../reading_demands/">Reading Demands</a></li><li><a class="tocitem" href="../modification/">Modifying a Study</a></li><li><a class="tocitem" href="../custom_study/">Customizing a Study</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Graf Files and Time Series</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Graf Files and Time Series</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/psrenergy/PSRClassesInterface.jl/blob/master/docs/src/examples/graf_files.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Graf-Files-and-Time-Series"><a class="docs-heading-anchor" href="#Graf-Files-and-Time-Series">Graf Files and Time Series</a><a id="Graf-Files-and-Time-Series-1"></a><a class="docs-heading-anchor-permalink" href="#Graf-Files-and-Time-Series" title="Permalink"></a></h1><h2 id="Time-Series"><a class="docs-heading-anchor" href="#Time-Series">Time Series</a><a id="Time-Series-1"></a><a class="docs-heading-anchor-permalink" href="#Time-Series" title="Permalink"></a></h2><p>Some attributes in a Study represent a time series indexed by another attribute. Here we will be setting a time series for the attribute <code>EmissionCost</code>, from <code>PSRGasEmission</code>, which is indexed by <code>DateEmissionCost</code>.</p><p>First we create a Dict with <code>EmissionCost</code> and <code>DateEmissionCost</code> data.</p><pre><code class="language-julia hljs">using Dates
+
+series = Dict{String,Vector}(
+    &quot;DateEmissionCost&quot; =&gt; [
+        Dates.Date(&quot;1900-01-01&quot;),
+        Dates.Date(&quot;2013-01-01&quot;),
+        Dates.Date(&quot;2013-02-01&quot;)
+    ],
+    &quot;EmissionCost&quot; =&gt; [0.0,3.0,3.0]
+    )</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Dict{String, Vector} with 2 entries:
+  &quot;DateEmissionCost&quot; =&gt; [Date(&quot;1900-01-01&quot;), Date(&quot;2013-01-01&quot;), Date(&quot;2013-02-…
+  &quot;EmissionCost&quot;     =&gt; [0.0, 3.0, 3.0]</code></pre><p>Then, we save the time series to the study using the function <a href="../../manual/#PSRClassesInterface.set_series!"><code>PSRI.set_series!</code></a>. Notice that when we are saving this time series, we are specifying the element from the collection that has this series, using its index.</p><pre><code class="language- hljs">temp_path = joinpath(tempdir(), &quot;PSRI&quot;)
+
+data = PSRI.create_study(PSRI.OpenInterface(), data_path = temp_path)
+
+PSRI.create_element!(data, &quot;PSRGasEmission&quot;)
+
+PSRI.set_series!(
+    data, 
+    &quot;PSRGasEmission&quot;, 
+    &quot;DateEmissionCost&quot;,
+    1, # element index in collection
+    series
+    )</code></pre><h3 id="Using-a-SeriesTable"><a class="docs-heading-anchor" href="#Using-a-SeriesTable">Using a SeriesTable</a><a id="Using-a-SeriesTable-1"></a><a class="docs-heading-anchor-permalink" href="#Using-a-SeriesTable" title="Permalink"></a></h3><p>We can later retrieve the series for the element in the collection with <a href="../../manual/#PSRClassesInterface.get_series"><code>PSRI.get_series</code></a>, which will return a <code>SeriesTable</code> object. It can be later displayed as a table in your terminal.</p><p>When using this function, we need the collection, the element index and the attribute that indexes the elements.</p><pre><code class="language- hljs">using DataFrames
+series_table = PSRI.get_series(
+    data, 
+    &quot;PSRGasEmission&quot;, 
+    &quot;DateEmissionCost&quot;, 
+    1 # element index in collection
+    )
+
+DataFrame(series_table)</code></pre><h2 id="Graf-files"><a class="docs-heading-anchor" href="#Graf-files">Graf files</a><a id="Graf-files-1"></a><a class="docs-heading-anchor-permalink" href="#Graf-files" title="Permalink"></a></h2><p>The data relative to a Study is usually stored in a JSON file, where an attribute can have its data indexed by time intervals, as presented earlier.</p><p>However, when a time series attribute is multidimensional, it can be too large to be stored in a JSON. For these cases, we save the data in a separate file. We will refer to such file as Graf file. When an attribute has its information in a Graf file, there&#39;s an entry in the regular JSON file specifying it. </p><p>In the following example, each <code>PSRDemand</code> object will have its attribute <code>Duracao</code> data associated with a time series, saved in the files <code>duracao.hdr</code> and <code>duracao.bin</code>. Objects are distinguished by the <code>parmid</code> attribute, which in this case has the <code>AVId</code> value of each <code>PSRDemand</code> element. </p><p>A Graf file stores the values of an attribute for every element in a collection. So for this example, all values for the attribute <code>Duracao</code> will be store in the Graf file.</p><pre><code class="language-json hljs">&quot;PSRGasEmission&quot;: [
+    {
+        &quot;AVId&quot;: &quot;Agent 1&quot;
+        &quot;name&quot;: &quot;psr_name&quot;
+    },
+    {
+        &quot;AVId&quot;: &quot;Agent 2&quot;
+        &quot;name&quot;: &quot;psr_name2&quot;
+    },
+    {
+        &quot;AVId&quot;: &quot;Agent 3&quot;
+        &quot;name&quot;: &quot;psr_name3&quot;
+    }
+],
+&quot;GrafScenarios&quot;: [
+    {
+        &quot;classname&quot;: &quot;PSRDemand&quot;,
+        &quot;parmid&quot;: &quot;AVId&quot;,
+        &quot;vector&quot;: &quot;Duracao&quot;,
+        &quot;binary&quot;: [ &quot;duracao.hdr&quot;, &quot;duracao.bin&quot; ]
+    }
+]</code></pre><h2 id="Graf-file-format"><a class="docs-heading-anchor" href="#Graf-file-format">Graf file format</a><a id="Graf-file-format-1"></a><a class="docs-heading-anchor-permalink" href="#Graf-file-format" title="Permalink"></a></h2><p>A Graf file composed of a header and a table with the following elements:</p><ul><li>Stage </li><li>Scenario </li><li>Block</li><li>Agents (one entry for each agent)</li></ul><p>Each agent represents an element from the collection the graf file is linked to.</p><h3 id="Visual-example-of-a-graf-file"><a class="docs-heading-anchor" href="#Visual-example-of-a-graf-file">Visual example of a graf file</a><a id="Visual-example-of-a-graf-file-1"></a><a class="docs-heading-anchor-permalink" href="#Visual-example-of-a-graf-file" title="Permalink"></a></h3><p>Using the previous example with <code>PSRDemand</code> objects, the <code>Duracao</code> for each object will be displayed in the Agents columns, that will take the name of the <code>AVId</code> attribute, resulting on the following:</p><table><tr><th style="text-align: center"><strong>Stg</strong></th><th style="text-align: center"><strong>Sce</strong></th><th style="text-align: center"><strong>Block</strong></th><th style="text-align: center"><strong>Agent 1</strong></th><th style="text-align: center"><strong>Agent 2</strong></th><th style="text-align: right"><strong>Agent 3</strong></th></tr><tr><td style="text-align: center">1</td><td style="text-align: center">1</td><td style="text-align: center">1</td><td style="text-align: center">1.0</td><td style="text-align: center">5.0</td><td style="text-align: right">10.0</td></tr><tr><td style="text-align: center">1</td><td style="text-align: center">1</td><td style="text-align: center">2</td><td style="text-align: center">1.5</td><td style="text-align: center">6.5</td><td style="text-align: right">11.5</td></tr><tr><td style="text-align: center">1</td><td style="text-align: center">1</td><td style="text-align: center">3</td><td style="text-align: center">2.0</td><td style="text-align: center">7.0</td><td style="text-align: right">12.0</td></tr><tr><td style="text-align: center">...</td><td style="text-align: center">...</td><td style="text-align: center">...</td><td style="text-align: center">...</td><td style="text-align: center">...</td><td style="text-align: right">...</td></tr></table><h3 id="Graf-Header"><a class="docs-heading-anchor" href="#Graf-Header">Graf Header</a><a id="Graf-Header-1"></a><a class="docs-heading-anchor-permalink" href="#Graf-Header" title="Permalink"></a></h3><p>A Graf file header contains data about the time series contents. Some important information are whether the time series varies per block and/or per Scenario, the number of agents, the unit of measurement and on which stage it should start. </p><h2 id="Writing-a-time-series-into-a-Graf-file"><a class="docs-heading-anchor" href="#Writing-a-time-series-into-a-Graf-file">Writing a time series into a Graf file</a><a id="Writing-a-time-series-into-a-Graf-file-1"></a><a class="docs-heading-anchor-permalink" href="#Writing-a-time-series-into-a-Graf-file" title="Permalink"></a></h2><p>In this example we will demonstrate how to save a time series into a csv or binary file.  First, we create a random array which has the data for a time series:</p><pre><code class="language-julia hljs">import PSRClassesInterface
+const PSRI = PSRClassesInterface
+
+#Creates dummy data
+n_blocks = 3
+n_scenarios = 1
+n_stages = 1
+n_agents = 1
+
+time_series_data = rand(Float64, n_agents, n_blocks, n_scenarios, n_stages)</code></pre><p>There are two ways of saving the data to a file, save the data in the file directly or iteratively. To save the data directly use the function <a href="../../manual/#PSRClassesInterface.array_to_file"><code>PSRI.array_to_file</code></a> by calling:</p><pre><code class="language- hljs">FILE_PATH = joinpath(tempdir(), &quot;example&quot;)
+
+PSRI.array_to_file(
+    PSRI.OpenBinary.Writer,
+    FILE_PATH,
+    time_series_data,
+    agents = [&quot;Agent 1&quot;, &quot;Agent 2&quot;, &quot;Agent 3&quot;, &quot;Agent 4&quot;, &quot;Agent 5&quot;],
+    unit = &quot;H&quot;;
+    initial_stage = 3,
+    initial_year = 2006,
+)</code></pre><p>To save the data iteractively use the function <a href="../../manual/#PSRClassesInterface.open"><code>PSRI.open</code></a> to create an <a href="../../manual/#PSRClassesInterface.AbstractWriter"><code>PSRI.AbstractWriter</code></a>. Save the data of each registry to the file using the function <a href="../../manual/#PSRClassesInterface.write_registry"><code>PSRI.write_registry</code></a> and then close the data stream calling the function <a href="../../manual/#PSRClassesInterface.close"><code>PSRI.close</code></a>.</p><pre><code class="language- hljs">iow = PSRI.open(
+    PSRI.OpenBinary.Writer,
+    FILE_PATH,
+    blocks = n_blocks,
+    scenarios = n_scenarios,
+    stages = n_stages,
+    agents = [&quot;Agent 1&quot;, &quot;Agent 2&quot;, &quot;Agent 3&quot;, &quot;Agent 4&quot;, &quot;Agent 5&quot;],
+    unit = &quot;H&quot;,
+    initial_stage = 1,
+    initial_year = 2006,
+)
+
+for stage = 1:n_stages, scenario = 1:n_scenarios, block = 1:n_blocks
+    PSRI.write_registry(
+        iow,
+        time_series_data[:, block, scenario, stage],
+        stage,
+        scenario,
+        block
+    )
+end
+
+PSRI.close(iow)</code></pre><h2 id="Reading-a-time-series-from-a-graf-file"><a class="docs-heading-anchor" href="#Reading-a-time-series-from-a-graf-file">Reading a time series from a graf file</a><a id="Reading-a-time-series-from-a-graf-file-1"></a><a class="docs-heading-anchor-permalink" href="#Reading-a-time-series-from-a-graf-file" title="Permalink"></a></h2><p>A similar logic can be used to read the data from a file. You can read it directly or iteratively. To read the data directly use the function <a href="../../manual/#PSRClassesInterface.file_to_array"><code>PSRI.file_to_array</code></a> or <a href="../../manual/#PSRClassesInterface.file_to_array_and_header"><code>PSRI.file_to_array_and_header</code></a></p><pre><code class="language- hljs">data_from_file = PSRI.file_to_array(
+        PSRI.OpenBinary.Reader, 
+        FILE_PATH;
+        use_header=false
+    )
+
+@assert all(isapprox.(data_from_file, time_series_data, atol=1E-7))
+
+data_from_file_and_header, header = PSRI.file_to_array_and_header(
+        PSRI.OpenBinary.Reader, 
+        FILE_PATH;
+        use_header=false
+    )
+@assert all(isapprox.(data_from_file_and_header, time_series_data, atol=1E-7))</code></pre><p>To choose the agents order set <code>use_header</code> to <code>true</code> and label the agents in <code>header</code>.</p><pre><code class="language- hljs">data_from_file = PSRI.file_to_array(
+        PSRI.OpenBinary.Reader, 
+        FILE_PATH;
+        use_header=true,
+        header=[&quot;Agent 5&quot;, &quot;Agent 2&quot;, &quot;Agent 3&quot;, &quot;Agent 4&quot;, &quot;Agent 1&quot;]
+    )
+@assert all(isapprox.(data_from_file[1, :, :, :], time_series_data[end, :, :, :], atol=1E-7))
+@assert all(isapprox.(data_from_file[end, :, :, :], time_series_data[1, :, :, :], atol=1E-7))</code></pre><p>To read the data iteractively use the function <a href="../../manual/#PSRClassesInterface.open"><code>PSRI.open</code></a> to create an <a href="../../manual/#PSRClassesInterface.AbstractReader"><code>PSRI.AbstractReader</code></a> and read each registry iteratively. At the end you should close the <a href="../../manual/#PSRClassesInterface.AbstractReader"><code>PSRI.AbstractReader</code></a> by calling <a href="../../manual/#PSRClassesInterface.close"><code>PSRI.close</code></a></p><pre><code class="language- hljs">ior = PSRI.open(
+    PSRI.OpenBinary.Reader, 
+    FILE_PATH;
+    use_header = false
+)
+
+data_from_file = zeros(n_agents, n_blocks, n_scenarios, n_stages)
+
+for stage = 1:n_stages, scenario = 1:n_scenarios, block = 1:n_blocks
+    data_from_file[:, block, scenario, stage] = ior.data
+    PSRI.next_registry(ior)
+end
+
+PSRI.close(ior)
+</code></pre><h2 id="Using-Graf-files-in-a-study"><a class="docs-heading-anchor" href="#Using-Graf-files-in-a-study">Using Graf files in a study</a><a id="Using-Graf-files-in-a-study-1"></a><a class="docs-heading-anchor-permalink" href="#Using-Graf-files-in-a-study" title="Permalink"></a></h2><p>As presented earlier, an attribute for a collection can have its data stored in a Graf file, all that being specified in the <code>GrafScenarios</code> entry of the study JSON. </p><p>If you have a Graf file that should be linked to a study, you can use the function <a href="examples/@ref"><code>PSRI.link_series_to_file</code></a> to do so.</p><pre><code class="language- hljs">PSRI.create_element!(data, &quot;PSRDemand&quot;, &quot;AVId&quot; =&gt; &quot;Agent 1&quot;)
+PSRI.create_element!(data, &quot;PSRDemand&quot;, &quot;AVId&quot; =&gt; &quot;Agent 2&quot;)
+PSRI.create_element!(data, &quot;PSRDemand&quot;, &quot;AVId&quot; =&gt; &quot;Agent 3&quot;)
+PSRI.create_element!(data, &quot;PSRDemand&quot;, &quot;AVId&quot; =&gt; &quot;Agent 4&quot;)
+PSRI.create_element!(data, &quot;PSRDemand&quot;, &quot;AVId&quot; =&gt; &quot;Agent 5&quot;)
+
+PSRI.link_series_to_file(
+        data, 
+        &quot;PSRDemand&quot;, 
+        &quot;Duracao&quot;, 
+        &quot;AVId&quot;,
+        FILE_PATH
+    )</code></pre><h3 id="Using-a-GrafTable"><a class="docs-heading-anchor" href="#Using-a-GrafTable">Using a GrafTable</a><a id="Using-a-GrafTable-1"></a><a class="docs-heading-anchor-permalink" href="#Using-a-GrafTable" title="Permalink"></a></h3><p>We can retrieve the data stored in a Graf file using the <a href="examples/@ref"><code>PSRI.get_graf_series</code></a> function. This function returns a <code>GrafTable</code> object. </p><p>When using this function, we need the collection and its attribute that is linked to a Graf file.</p><pre><code class="language- hljs">graf_table = PSRI.get_graf_series(
+        data,
+        &quot;PSRDemand&quot;,
+        &quot;Duracao&quot;;
+        use_header = false
+    )</code></pre><p>Once you have a GrafTable object, you can display it as a table in your terminal</p><pre><code class="language- hljs">using DataFrames
+
+DataFrame(graf_table)</code></pre><h3 id="Vector-from-graf-file"><a class="docs-heading-anchor" href="#Vector-from-graf-file">Vector from graf file</a><a id="Vector-from-graf-file-1"></a><a class="docs-heading-anchor-permalink" href="#Vector-from-graf-file" title="Permalink"></a></h3><p>You can get a vector that corresponds to a row in a Graf file with the values for the agents correspoding to the current <code>stage</code>, <code>scenario</code> and <code>block</code>.</p><p>For that, we will have to use the function <a href="../../manual/#PSRClassesInterface.mapped_vector"><code>PSRI.mapped_vector</code></a>. </p><pre><code class="language- hljs">vec = PSRI.mapped_vector(
+        data, 
+        &quot;PSRDemand&quot;, 
+        &quot;Duracao&quot;,
+        Float64
+    )</code></pre><p>The parameters that were used to retrieve the row value in the Graf table can be changed with the following functions:</p><ul><li><a href="../../manual/#PSRClassesInterface.go_to_stage"><code>PSRI.go_to_stage</code></a></li><li><a href="examples/@ref"><code>PSRI.go_to_scenario</code></a></li><li><a href="examples/@ref"><code>PSRI.go_to_block</code></a></li></ul><p>These methods don&#39;t automatically update the vector. For that, we use the function <a href="../../manual/#PSRClassesInterface.update_vectors!"><code>PSRI.update_vectors!</code></a>, which update all vectors from our Study.</p><pre><code class="language- hljs">PSRI.update_vectors!(data)</code></pre><p>However, it might be interesting to update only one or a group of vectors. To be able to do that, we will have to set a filter tag when we create them.</p><pre><code class="language- hljs">vec2 = PSRI.mapped_vector(
+        data, 
+        &quot;PSRDemand&quot;, 
+        &quot;Duracao&quot;,
+        Float64,
+        filters = [&quot;test_filter&quot;]
+    )</code></pre><p>Then, when we run:</p><pre><code class="language- hljs">PSRI.update_vectors!(data, &quot;test_filter&quot;)</code></pre><h2 id="Comparison-between-a-GrafTable-and-a-SeriesTable"><a class="docs-heading-anchor" href="#Comparison-between-a-GrafTable-and-a-SeriesTable">Comparison between a GrafTable and a SeriesTable</a><a id="Comparison-between-a-GrafTable-and-a-SeriesTable-1"></a><a class="docs-heading-anchor-permalink" href="#Comparison-between-a-GrafTable-and-a-SeriesTable" title="Permalink"></a></h2><p>In this section we have introduced some new concepts about table-like types. That being said, let&#39;s review the main differences between GrafTables and SeriesTables:</p><ul><li>SeriesTable<ul><li>Is linked to a single element from a collection</li><li>It can have time series of different attributes that are indexed to a single attribute (all belonging to the same element)</li></ul></li><li>GrafTable<ul><li>Is linked to the whole collection. So for an attribute, every element in the collection will have an entry in the graf file</li><li>It has the time series for only one attribute</li></ul></li></ul></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../reading_relations/">« Reading Relations</a><a class="docs-footer-nextpage" href="../reading_demands/">Reading Demands »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Friday 4 August 2023 15:42">Friday 4 August 2023</span>. Using Julia version 1.9.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
