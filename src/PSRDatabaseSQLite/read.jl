@@ -436,6 +436,19 @@ function read_time_series_table(
     )
 end
 
+function _treat_date_time_from_query_result(
+    date_time::String,
+)
+    regex = r"([0-9]{4}-[0-9]{2}-[0-9]{2}) (.*)"
+    m = match(regex, date_time)
+
+    if isnothing(m)
+        return date_time
+    else
+        return m[1] * "T" * m[2]
+    end
+end
+
 function _treat_query_result(
     query_results::Vector{Missing},
     attribute::Attribute,
@@ -498,7 +511,8 @@ function _treat_query_result(
             if isa(default, String)
                 final_results[i] = query_results[i]
             else
-                final_results[i] = DateTime(query_results[i])
+                date_time = _treat_date_time_from_query_result(query_results[i])
+                final_results[i] = DateTime(date_time)
             end
         end
     end
