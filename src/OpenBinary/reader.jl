@@ -282,6 +282,7 @@ function PSRI.open(
         error("'name_length' must be a positive integer, not $(name_length)")
     end
 
+    indices = nothing
     if use_header
         if length(header) > total_agents
             error(
@@ -321,7 +322,7 @@ function PSRI.open(
 
     data_buffer = zeros(Float32, total_agents)
 
-    data = zeros(Float64, total_agents)
+    data = zeros(Float64, length(indices))
 
     if initial_stage != Dates.Date(1900, 1, 1)
         _year = initial_year
