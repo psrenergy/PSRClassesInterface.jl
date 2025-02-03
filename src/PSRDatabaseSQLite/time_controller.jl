@@ -67,13 +67,16 @@ function _request_time_series_data_for_time_controller_cache(
     attribute::Attribute,
 )
     query = "SELECT id, $(attribute.id) FROM $(attribute.table_where_is_located) WHERE "
+    set = ""
     for (i, id) in enumerate(cache._collection_ids)
-        query *= "(id = $id AND DATETIME(date_time) = DATETIME('$(cache.closest_previous_date_with_data[i])'))"
+        current_set = "($id, DATETIME('$(cache.closest_previous_date_with_data[i])'))"
         if i < length(cache._collection_ids)
-            query *= " OR "
+            set *= "$current_set, "
+        else
+            set *= "$current_set"
         end
     end
-    query *= " ORDER BY id;"
+    query *= "(id, DATETIME(date_time)) in ($set) ORDER BY id;"
 
     df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
 
