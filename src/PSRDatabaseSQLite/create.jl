@@ -293,12 +293,16 @@ function _replace_vector_relation_labels_with_ids!(
 )
     for (key, value) in vector_attributes
         if _is_vector_relation(db, collection_id, string(key)) &&
-           isa(value, Vector{String})
+           isa(value, Union{Vector{String}, Vector{Missing}, Vector{Union{Missing, String}}})
             vector_relation = _get_attribute(db, collection_id, string(key))
             collection_to = vector_relation.relation_collection
-            vec_of_ids = zeros(Int, length(value))
-            for i in eachindex(value)
-                vec_of_ids[i] = _get_id(db, collection_to, value[i])
+            vec_of_ids = zeros(Union{Missing, Int}, length(value))
+            for (i, v) in enumerate(value)
+                if ismissing(v)
+                    vec_of_ids[i] = missing
+                else
+                    vec_of_ids[i] = _get_id(db, collection_to, v)
+                end
             end
             vector_attributes[key] = vec_of_ids
         end

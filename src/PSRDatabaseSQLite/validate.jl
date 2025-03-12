@@ -485,7 +485,7 @@ function _validate_vector_parameter_type(
     label_or_id::Union{Integer, String},
     values::Vector{<:Any},
 )
-    if !isa(values, Vector{attribute.type})
+    if !isa(values, Union{Vector{attribute.type}, Vector{Missing}, Vector{Union{Missing, attribute.type}}})
         psr_database_sqlite_error(
             "The value of the attribute \"$(attribute.id)\" in element \"$label_or_id\" " *
             "of collection \"$(attribute.parent_collection)\" should be of type Vector{$(attribute.type)}. User inputed $(typeof(values)): $values.",
@@ -498,7 +498,7 @@ function _validate_vector_relation_type(
     label_or_id::Union{Integer, String},
     values::Vector{<:Any},
 )
-    if !isa(values, Vector{String}) && !isa(values, Vector{Int64})
+    if !isa(values, Union{Vector{String}, Vector{Missing}, Vector{Union{Missing, String}}}) && !isa(values, Union{Vector{Int64}, Vector{Missing}, Vector{Union{Missing, Int64}}})
         psr_database_sqlite_error(
             "The value of the attribute \"$(attribute.id)\" in element \"$label_or_id\" " *
             "of collection \"$(attribute.parent_collection)\" should be of type Vector{String} or Vector{Int64}. User inputed $(typeof(values)): $values.",

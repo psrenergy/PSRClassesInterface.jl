@@ -188,7 +188,7 @@ function set_vector_relation!(
     collection_from::String,
     collection_to::String,
     label_collection_from::String,
-    labels_collection_to::Vector{String},
+    labels_collection_to::Union{Vector{String}, Vector{Missing}, Vector{Union{Missing, String}}},
     relation_type::String,
 )
     attribute_id = lowercase(collection_to) * "_" * relation_type
@@ -199,9 +199,13 @@ function set_vector_relation!(
         :update,
     )
     id_collection_from = _get_id(db, collection_from, label_collection_from)
-    ids_collection_to = Vector{Int}(undef, length(labels_collection_to))
+    ids_collection_to = Vector{Union{Missing, Int}}(undef, length(labels_collection_to))
     for (i, label) in enumerate(labels_collection_to)
-        ids_collection_to[i] = _get_id(db, collection_to, label)
+        if ismissing(label)
+            ids_collection_to[i] = label
+        else
+            ids_collection_to[i] = _get_id(db, collection_to, label)
+        end
     end
     set_vector_relation!(
         db,
@@ -219,7 +223,7 @@ function set_vector_relation!(
     collection_from::String,
     collection_to::String,
     id_collection_from::Integer,
-    ids_collection_to::Vector{<:Integer},
+    ids_collection_to::Union{Vector{Int}, Vector{Missing}, Vector{Union{Missing, Int}}},
     relation_type::String,
 )
     if collection_from == collection_to && id_collection_from in ids_collection_to
@@ -258,10 +262,12 @@ function set_vector_relation!(
     else
         # Update the elements
         for (i, id_collection_to) in enumerate(ids_collection_to)
-            DBInterface.execute(
-                db.sqlite_db,
-                "UPDATE $table_name SET $attribute_id = '$id_collection_to' WHERE id = '$id_collection_from' AND vector_index = '$i'",
-            )
+            if !ismissing(id_collection_to)
+                DBInterface.execute(
+                    db.sqlite_db,
+                    "UPDATE $table_name SET $attribute_id = '$id_collection_to' WHERE id = '$id_collection_from' AND vector_index = '$i'",
+                )
+            end
         end
     end
     return nothing
