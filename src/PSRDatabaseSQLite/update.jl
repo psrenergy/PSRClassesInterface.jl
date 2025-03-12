@@ -199,9 +199,11 @@ function set_vector_relation!(
         :update,
     )
     id_collection_from = _get_id(db, collection_from, label_collection_from)
-    ids_collection_to = Vector{Int}(undef, length(labels_collection_to))
+    ids_collection_to = fill(_psrdatabasesqlite_null_value(Int), length(labels_collection_to))
     for (i, label) in enumerate(labels_collection_to)
-        ids_collection_to[i] = _get_id(db, collection_to, label)
+        if !_is_null_in_db(label)
+            ids_collection_to[i] = _get_id(db, collection_to, label)
+        end
     end
     set_vector_relation!(
         db,
@@ -258,10 +260,12 @@ function set_vector_relation!(
     else
         # Update the elements
         for (i, id_collection_to) in enumerate(ids_collection_to)
-            DBInterface.execute(
-                db.sqlite_db,
-                "UPDATE $table_name SET $attribute_id = '$id_collection_to' WHERE id = '$id_collection_from' AND vector_index = '$i'",
-            )
+            if !_is_null_in_db(id_collection_to)
+                DBInterface.execute(
+                    db.sqlite_db,
+                    "UPDATE $table_name SET $attribute_id = '$id_collection_to' WHERE id = '$id_collection_from' AND vector_index = '$i'",
+                )
+            end
         end
     end
     return nothing

@@ -32,7 +32,7 @@ function _insert_vectors_from_df(
     for row in eachrow(df)
         query = "INSERT INTO $table_name ($cols) VALUES ("
         for (i, value) in enumerate(row)
-            if ismissing(value)
+            if ismissing(value) || _is_null_in_db(value)
                 query *= "NULL, "
             else
                 query *= "\'$value\', "
@@ -42,6 +42,7 @@ function _insert_vectors_from_df(
                 query *= ")"
             end
         end
+        @show query
         DBInterface.execute(db.sqlite_db, query)
     end
     return nothing
@@ -296,9 +297,11 @@ function _replace_vector_relation_labels_with_ids!(
            isa(value, Vector{String})
             vector_relation = _get_attribute(db, collection_id, string(key))
             collection_to = vector_relation.relation_collection
-            vec_of_ids = zeros(Int, length(value))
-            for i in eachindex(value)
-                vec_of_ids[i] = _get_id(db, collection_to, value[i])
+            vec_of_ids = fill(typemin(Int), length(value))
+            for (i, v) in enumerate(value)
+                if !_is_null_in_db(v)
+                    vec_of_ids[i] = _get_id(db, collection_to, v)
+                end
             end
             vector_attributes[key] = vec_of_ids
         end
