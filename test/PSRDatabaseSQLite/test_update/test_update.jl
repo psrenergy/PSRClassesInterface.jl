@@ -419,6 +419,80 @@ function test_update_time_series()
     return rm(db_path)
 end
 
+function test_update_vector_with_empty_relations_id()
+    path_schema = joinpath(dirname(@__DIR__), "test_create", "test_create_vectors_with_empty_relations.sql")
+    db_path = joinpath(@__DIR__, "test_update_vectors_with_empty_relations.sqlite")
+    db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
+
+    PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case")
+
+    PSRDatabaseSQLite.create_element!(db, "Process"; label = "Blast Furnace")
+    PSRDatabaseSQLite.create_element!(db, "Process"; label = "Basic Oxygen Furnace")
+    PSRDatabaseSQLite.create_element!(db, "Process"; label = "Electric Arc Furnace")
+
+    PSRDatabaseSQLite.create_element!(
+        db,
+        "Plant";
+        label = "Steel Plant",
+        process_id = ["Blast Furnace", "Basic Oxygen Furnace", "Electric Arc Furnace"],
+        process_capacity = [100.0, 200.0, 300.0],
+        process_is_candidate = [0, 0, 1],
+    )
+
+    PSRDatabaseSQLite.set_vector_relation!(
+        db,
+        "Plant",
+        "Process",
+        1,
+        [typemin(Int), typemin(Int), 2],
+        "substitute",
+    )
+
+    PSRDatabaseSQLite.close!(db)
+    GC.gc()
+    GC.gc()
+    rm(db_path)
+    @test true
+    return nothing
+end
+
+function test_update_vector_with_empty_relations_string()
+    path_schema = joinpath(dirname(@__DIR__), "test_create", "test_create_vectors_with_empty_relations.sql")
+    db_path = joinpath(@__DIR__, "test_update_vectors_with_empty_relations.sqlite")
+    db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
+
+    PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case")
+
+    PSRDatabaseSQLite.create_element!(db, "Process"; label = "Blast Furnace")
+    PSRDatabaseSQLite.create_element!(db, "Process"; label = "Basic Oxygen Furnace")
+    PSRDatabaseSQLite.create_element!(db, "Process"; label = "Electric Arc Furnace")
+
+    PSRDatabaseSQLite.create_element!(
+        db,
+        "Plant";
+        label = "Steel Plant",
+        process_id = ["Blast Furnace", "Basic Oxygen Furnace", "Electric Arc Furnace"],
+        process_capacity = [100.0, 200.0, 300.0],
+        process_is_candidate = [0, 0, 1],
+    )
+
+    PSRDatabaseSQLite.set_vector_relation!(
+        db,
+        "Plant",
+        "Process",
+        "Steel Plant",
+        ["", "", "Basic Oxygen Furnace"],
+        "substitute",
+    )
+
+    PSRDatabaseSQLite.close!(db)
+    GC.gc()
+    GC.gc()
+    rm(db_path)
+    @test true
+    return nothing
+end
+
 function runtests()
     Base.GC.gc()
     Base.GC.gc()
