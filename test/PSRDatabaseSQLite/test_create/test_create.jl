@@ -331,6 +331,64 @@ function test_create_time_series()
     return nothing
 end
 
+function test_create_vector_with_empty_relations_id()
+    path_schema = joinpath(@__DIR__, "test_create_vectors_with_empty_relations.sql")
+    db_path = joinpath(@__DIR__, "test_create_vectors_with_empty_relations.sqlite")
+    db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
+
+    PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case")
+
+    PSRDatabaseSQLite.create_element!(db, "Process"; label = "Blast Furnace")
+    PSRDatabaseSQLite.create_element!(db, "Process"; label = "Basic Oxygen Furnace")
+    PSRDatabaseSQLite.create_element!(db, "Process"; label = "Electric Arc Furnace")
+
+    PSRDatabaseSQLite.create_element!(
+        db,
+        "Plant";
+        label = "Steel Plant",
+        process_id = ["Blast Furnace", "Basic Oxygen Furnace", "Electric Arc Furnace"],
+        process_capacity = [100.0, 200.0, 300.0],
+        process_is_candidate = [0, 0, 1],
+        process_substitute = [typemin(Int), typemin(Int), 2],
+    )
+
+    PSRDatabaseSQLite.close!(db)
+    GC.gc()
+    GC.gc()
+    rm(db_path)
+    @test true
+    return nothing
+end
+
+function test_create_vector_with_empty_relations_string()
+    path_schema = joinpath(@__DIR__, "test_create_vectors_with_empty_relations.sql")
+    db_path = joinpath(@__DIR__, "test_create_vectors_with_empty_relations.sqlite")
+    db = PSRDatabaseSQLite.create_empty_db_from_schema(db_path, path_schema; force = true)
+
+    PSRDatabaseSQLite.create_element!(db, "Configuration"; label = "Toy Case")
+
+    PSRDatabaseSQLite.create_element!(db, "Process"; label = "Blast Furnace")
+    PSRDatabaseSQLite.create_element!(db, "Process"; label = "Basic Oxygen Furnace")
+    PSRDatabaseSQLite.create_element!(db, "Process"; label = "Electric Arc Furnace")
+
+    PSRDatabaseSQLite.create_element!(
+        db,
+        "Plant";
+        label = "Steel Plant",
+        process_id = ["Blast Furnace", "Basic Oxygen Furnace", "Electric Arc Furnace"],
+        process_capacity = [100.0, 200.0, 300.0],
+        process_is_candidate = [0, 0, 1],
+        process_substitute = ["", "", "Basic Oxygen Furnace"],
+    )
+
+    PSRDatabaseSQLite.close!(db)
+    GC.gc()
+    GC.gc()
+    rm(db_path)
+    @test true
+    return nothing
+end
+
 function runtests()
     Base.GC.gc()
     Base.GC.gc()
