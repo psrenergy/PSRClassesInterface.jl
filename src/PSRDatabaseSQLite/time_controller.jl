@@ -10,7 +10,7 @@ struct TimeSeriesCache{T}
     function TimeSeriesCache{T}(
         dates::Vector{DateTime},
         data::Vector{T},
-    ) where T
+    ) where {T}
         if length(data) != length(dates)
             throw(ArgumentError("The length of data and dates must be the same"))
         end
@@ -70,7 +70,7 @@ end
 function search_attribute_id_in_cache(
     time_series_cache::TimeSeriesCache{T},
     date_time::DateTime,
-) where T
+) where {T}
     index = findlast(x -> x <= date_time, time_series_cache.dates)
     if index === nothing
         return _psrdatabasesqlite_null_value(T)
