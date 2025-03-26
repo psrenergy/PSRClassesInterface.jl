@@ -31,9 +31,6 @@ function _get_id(
     return result
 end
 
-"""
-TODO
-"""
 function read_scalar_parameters(
     db::DatabaseSQLite,
     collection_id::String,
@@ -387,21 +384,15 @@ function read_time_series_row(
 
     T = attribute.type
 
-    if !(_time_controller_collection_has_any_data(db, collection_id))
+    if _time_controller_collection_is_empty(db, collection_id)
         return Vector{T}(undef, 0)
     end
     if !haskey(db._time_controller.cache, collection_attribute)
         db._time_controller.cache[collection_attribute] = _start_time_controller_cache(db, attribute, date_time, T)
     end
     cache = db._time_controller.cache[collection_attribute]
-    # If we don`t need to update anything we just return the data
-    if _no_need_to_query_any_id(cache, date_time)
-        cache.last_date_requested = date_time
-        return cache.data
-    end
-    # If we need to update the cache we update the dates and the data
-    _update_time_controller_cache!(cache, db, attribute, date_time)
-    return cache.data
+    data = query_data_in_time_controller(cache, date_time)
+    return data
 end
 
 function _read_time_series_table(

@@ -1,161 +1,81 @@
-abstract type TimeSeriesRequestStatus end
-
-struct TimeSeriesDidNotChange <: TimeSeriesRequestStatus end
-struct TimeSeriesChanged <: TimeSeriesRequestStatus end
-
 const CollectionAttribute = Tuple{String, String}
 
-# Some comments
-# TODO we can further optimize the time controller with a few strategies
-# 1 - We can use prepared statements for the queries 
-
-mutable struct TimeControllerCache{T}
+# This implementation makes an indexation for every collection, attribute and id.
+# For every one of those indexes it will store a cache with a range of dates and the data 
+# corresponding to those dates.
+struct TimeSeriesCache{T}
+    dates::Vector{DateTime}
     data::Vector{T}
-    # Control of dates requested per element in a given pair collection attribute
-    closest_previous_date_with_data::Vector{DateTime}
-    last_date_requested::DateTime
-    closest_next_date_with_data::Vector{DateTime}
 
-    # Private caches with the closest previous and next dates
-    _closest_global_previous_date_with_data::DateTime
-    _closest_global_next_date_with_data::DateTime
+    function TimeSeriesCache{T}(
+        dates::Vector{DateTime},
+        data::Vector{T},
+    ) where {T}
+        if length(data) != length(dates)
+            throw(ArgumentError("The length of data and dates must be the same"))
+        end
+        return new{T}(dates, data)
+    end
+end
 
-    # Cache of collection_ids, these are the ids of elements in a specific collection
-    _collection_ids::Vector{Int}
+mutable struct AttributeTimeSeriesCache{T}
+    ids::Vector{Int}
+    time_series_cache::Vector{TimeSeriesCache{T}}
+    last_resquested_date::DateTime
+    cached_data::Vector{T}
 end
 
 Base.@kwdef mutable struct TimeController
-    cache::Dict{CollectionAttribute, TimeControllerCache} = Dict{CollectionAttribute, TimeControllerCache}()
+    cache::Dict{CollectionAttribute, AttributeTimeSeriesCache} = Dict{CollectionAttribute, AttributeTimeSeriesCache}()
 
     # Upon initialization the time controller will ask if a certain 
-    # collection has any elements, if the collection has any elements it 
+    # collection is empty, if the collection is empty it 
     # will be added to this cache. This cache will be used to avoid querying
-    # multiple times if a certain collection has any elements.
+    # multiple times if a certain collection is empty.
     # This relies on the fact that the Time Controller only works in 
     # read only databases.
-    collection_has_any_data::Dict{String, Bool} = Dict{String, Bool}()
+    collection_is_empty::Dict{String, Bool} = Dict{String, Bool}()
 end
 
 function _collection_attribute(collection_id::String, attribute_id::String)::CollectionAttribute
     return (collection_id, attribute_id)
 end
 
-function _time_controller_collection_has_any_data(db, collection_id::String)::Bool
-    if haskey(db._time_controller.collection_has_any_data, collection_id)
-        return db._time_controller.collection_has_any_data[collection_id]
+function _time_controller_collection_is_empty(db, collection_id::String)::Bool
+    if haskey(db._time_controller.collection_is_empty, collection_id)
+        return db._time_controller.collection_is_empty[collection_id]
     else
-        db._time_controller.collection_has_any_data[collection_id] = number_of_elements(db, collection_id) > 0
-        return db._time_controller.collection_has_any_data[collection_id]
+        db._time_controller.collection_is_empty[collection_id] = number_of_elements(db, collection_id) == 0
+        return db._time_controller.collection_is_empty[collection_id]
     end
 end
 
-function _update_time_controller_cache!(
-    cache::TimeControllerCache,
-    db,
-    attribute::Attribute,
+function query_data_in_time_controller(
+    attribute_cache::AttributeTimeSeriesCache,
     date_time::DateTime,
 )
-    _update_time_controller_cache_dates!(cache, db, attribute, date_time)
-    _request_time_series_data_for_time_controller_cache(cache, db, attribute)
+    if date_time == attribute_cache.last_resquested_date
+        return attribute_cache.cached_data
+    end
 
-    return nothing
+    for (i, id) in enumerate(attribute_cache.ids)
+        time_series_cache = attribute_cache.time_series_cache[i]
+        attribute_cache.cached_data[i] = search_attribute_id_in_cache(time_series_cache, date_time)
+    end
+
+    attribute_cache.last_resquested_date = date_time
+    return attribute_cache.cached_data
 end
 
-function _request_time_series_data_for_time_controller_cache(
-    cache::TimeControllerCache,
-    db,
-    attribute::Attribute,
-)
-    query = "SELECT id, $(attribute.id) FROM $(attribute.table_where_is_located) WHERE "
-    set = ""
-    for (i, id) in enumerate(cache._collection_ids)
-        current_set = "($id, DATETIME('$(cache.closest_previous_date_with_data[i])'))"
-        if i < length(cache._collection_ids)
-            set *= "$current_set, "
-        else
-            set *= "$current_set"
-        end
-    end
-    query *= "(id, DATETIME(date_time)) in ($set) ORDER BY id;"
-
-    df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
-
-    _psrdatabasesqlite_null_value(attribute.type)
-    for (i, id) in enumerate(cache._collection_ids)
-        index = searchsorted(df.id, id)
-        if isempty(index)
-            cache.data[i] = _psrdatabasesqlite_null_value(attribute.type)
-        else
-            cache.data[i] = df[index[1], 2]
-        end
-    end
-    return nothing
-end
-
-function _request_time_series_data_for_time_controller_cache(
-    db,
-    attribute::Attribute,
-    id::Int,
+function search_attribute_id_in_cache(
+    time_series_cache::TimeSeriesCache{T},
     date_time::DateTime,
-)
-    query = """
-    SELECT $(attribute.id)
-    FROM $(attribute.table_where_is_located)
-    WHERE id = $id AND DATETIME(date_time) = DATETIME('$date_time')
-    """
-    result = DBInterface.execute(db.sqlite_db, query)
-
-    T = attribute.type
-
-    for row in result
-        return T(row[1])
+) where {T}
+    index = findlast(x -> x <= date_time, time_series_cache.dates)
+    if index === nothing
+        return _psrdatabasesqlite_null_value(T)
     end
-    return _psrdatabasesqlite_null_value(T)
-end
-
-function _update_time_controller_cache_dates!(
-    cache::TimeControllerCache,
-    db,
-    attribute::Attribute,
-    date_time::DateTime,
-)
-    cache.last_date_requested = date_time
-    query = """
-    SELECT 
-        id, 
-        MAX(CASE WHEN DATE(date_time) <= DATE('$date_time') AND $(attribute.id) IS NOT NULL THEN DATE(date_time) ELSE NULL END) AS closest_previous_date_with_data,
-        MIN(CASE WHEN DATE(date_time) > DATE('$date_time')  AND $(attribute.id) IS NOT NULL THEN DATE(date_time) ELSE NULL END) AS closest_next_date_with_data
-    FROM $(attribute.table_where_is_located)
-    GROUP BY id
-    ORDER BY id
-    """
-    result = DBInterface.execute(db.sqlite_db, query)
-    for (i, row) in enumerate(result)
-        id = row[1]
-        @assert id == cache._collection_ids[i] "The id in the database is different from the one in the cache"
-        closest_previous_date_with_data = row[2]
-        closest_next_date_with_data = row[3]
-        if ismissing(closest_previous_date_with_data)
-            cache.closest_previous_date_with_data[i] = typemin(DateTime)
-        else
-            cache.closest_previous_date_with_data[i] = DateTime(closest_previous_date_with_data)
-        end
-        if ismissing(closest_next_date_with_data)
-            cache.closest_next_date_with_data[i] = typemax(DateTime)
-        else
-            cache.closest_next_date_with_data[i] = DateTime(closest_next_date_with_data)
-        end
-    end
-    cache._closest_global_previous_date_with_data = maximum(cache.closest_previous_date_with_data)
-    cache._closest_global_next_date_with_data = minimum(cache.closest_next_date_with_data)
-    return cache
-end
-
-function _no_need_to_query_any_id(
-    cache::TimeControllerCache,
-    date_time::DateTime,
-)::Bool
-    return cache._closest_global_previous_date_with_data <= date_time < cache._closest_global_next_date_with_data
+    return time_series_cache.data[index]
 end
 
 function _start_time_controller_cache(
@@ -165,23 +85,34 @@ function _start_time_controller_cache(
     ::Type{T},
 ) where {T}
     _collection_ids = read_scalar_parameters(db, attribute.parent_collection, "id")
-    data = fill(_psrdatabasesqlite_null_value(T), length(_collection_ids))
-    closest_previous_date_with_data = fill(typemin(DateTime), length(_collection_ids))
-    closest_next_date_with_data = fill(typemax(DateTime), length(_collection_ids))
-    _closest_global_previous_date_with_data = maximum(closest_previous_date_with_data)
-    _closest_global_next_date_with_data = minimum(closest_next_date_with_data)
 
-    cache = TimeControllerCache{T}(
-        data,
-        closest_previous_date_with_data,
-        date_time,
-        closest_next_date_with_data,
-        _closest_global_previous_date_with_data,
-        _closest_global_next_date_with_data,
+    attribute_time_series_cache = AttributeTimeSeriesCache{T}(
         _collection_ids,
+        Vector{TimeSeriesCache{T}}(undef, length(_collection_ids)),
+        DateTime(-100000),
+        fill(_psrdatabasesqlite_null_value(T), length(_collection_ids)),
     )
+    # Query the attribute and all of its dimension
+    query = string("SELECT ", join(attribute.dimension_names, ",", ", "), ", ", "id", ", ", attribute.id)
+    query *= " FROM $(attribute.table_where_is_located)"
+    df = DBInterface.execute(db.sqlite_db, query) |> DataFrame
+    for (i, id) in enumerate(_collection_ids)
+        filtered_df = filter(row -> row.id == id, df)
+        dates = Vector{DateTime}(undef, 0)
+        data = Vector{T}(undef, 0)
+        for (j, row) in enumerate(eachrow(filtered_df))
+            if ismissing(row[attribute.id])
+                continue
+            end
+            push!(dates, DateTime(row.date_time))
+            push!(data, row[attribute.id])
+        end
+        time_series_cache = TimeSeriesCache{T}(
+            dates,
+            data,
+        )
+        attribute_time_series_cache.time_series_cache[i] = time_series_cache
+    end
 
-    _update_time_controller_cache!(cache, db, attribute, date_time)
-
-    return cache
+    return attribute_time_series_cache
 end
