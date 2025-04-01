@@ -75,7 +75,6 @@ function DatabaseSQLite_from_migrations(
     collections_map = try
         current_version = get_user_version(sqlite_db)
         most_recent_version = get_last_user_version(path_migrations)
-        # before applying the migrations we should make a backup of the database
         apply_migrations!(
             sqlite_db,
             path_migrations,
