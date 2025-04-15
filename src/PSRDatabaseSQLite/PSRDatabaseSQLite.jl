@@ -29,6 +29,6 @@ include("delete.jl")
 include("validate.jl")
 include("migrations.jl")
 include("psri_study_interface.jl")
-include("docstringer.jl")
+include("docstrings.jl")
 
 end # module DatabaseSQLite
