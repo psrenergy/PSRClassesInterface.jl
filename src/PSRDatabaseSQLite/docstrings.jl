@@ -178,75 +178,86 @@ function _generate_time_series_docstrings(
 end
 
 function collection_docstring(
-    collection::PSRDatabaseSQLite.Collection;
-    model_database_folder::String = "",
+    model_folder::String,
+    collection::String;
     ignore_id::Bool = true,
 )
-    attribute_toml_map = if model_database_folder != ""
-        toml_path = joinpath(model_database_folder, "ui", _snake_case(collection.id) * ".toml")
-        _get_collection_toml(collection, toml_path)
-    else
-        Dict()
+    docstring = ""
+
+    mktempdir() do temp_folder
+        study = PSRDatabaseSQLite.create_empty_db_from_migrations(
+            joinpath(temp_folder, "study.db"),
+            joinpath(model_folder, "migrations"),
+        )
+
+        collection = study.collections_map[collection]
+
+        toml_path = joinpath(model_folder, "ui", _snake_case(collection.id) * ".toml")
+        attribute_toml_map = _get_collection_toml(collection, toml_path)
+
+        enum_toml_map = _get_enum_toml(collection, joinpath(model_folder, "ui", "enum.toml"))
+
+        required_arguments = ""
+        optional_arguments = ""
+        time_series_arguments = ""
+
+        scalar_required, scalar_optional = _generate_scalar_docstrings(
+            collection.scalar_parameters,
+            attribute_toml_map,
+            enum_toml_map;
+            ignore_id = ignore_id,
+        )
+        required_arguments *= scalar_required
+        optional_arguments *= scalar_optional
+
+        scalar_relation_required, scalar_relation_optional = _generate_scalar_docstrings(
+            collection.scalar_relations,
+            attribute_toml_map,
+            enum_toml_map;
+            ignore_id = ignore_id,
+        )
+        required_arguments *= scalar_relation_required
+        optional_arguments *= scalar_relation_optional
+
+        vector_required, vector_optional = _generate_vector_docstrings(
+            collection.vector_parameters,
+            attribute_toml_map,
+            enum_toml_map;
+            ignore_id = ignore_id,
+        )
+        required_arguments *= vector_required
+        optional_arguments *= vector_optional
+
+        time_series_groups = _get_time_series_groups_map(
+            collection.time_series,
+        )
+
+        for group in keys(time_series_groups)
+            required_arguments *= "- `$(group)::DataFrames.DataFrame: A dataframe containing time series attributes (described below).`\n"
+        end
+
+        time_series_arguments = _generate_time_series_docstrings(
+            time_series_groups,
+            attribute_toml_map,
+            enum_toml_map,
+        )
+
+        docstring *= """
+        Required arguments:
+        $required_arguments \n
+        Optional arguments:
+        $optional_arguments
+
+        --- 
+
+        ** Time Series Attributes **
+
+        $time_series_arguments
+        """
+
+        PSRDatabaseSQLite.close!(study)
+        return rm(study.database_path; force = true)
     end
 
-    enum_toml_map = _get_enum_toml(collection, joinpath(model_database_folder, "ui", "enum.toml"))
-
-    required_arguments = ""
-    optional_arguments = ""
-    time_series_arguments = ""
-
-    scalar_required, scalar_optional = _generate_scalar_docstrings(
-        collection.scalar_parameters,
-        attribute_toml_map,
-        enum_toml_map;
-        ignore_id = ignore_id,
-    )
-    required_arguments *= scalar_required
-    optional_arguments *= scalar_optional
-
-    scalar_relation_required, scalar_relation_optional = _generate_scalar_docstrings(
-        collection.scalar_relations,
-        attribute_toml_map,
-        enum_toml_map;
-        ignore_id = ignore_id,
-    )
-    required_arguments *= scalar_relation_required
-    optional_arguments *= scalar_relation_optional
-
-    vector_required, vector_optional = _generate_vector_docstrings(
-        collection.vector_parameters,
-        attribute_toml_map,
-        enum_toml_map;
-        ignore_id = ignore_id,
-    )
-    required_arguments *= vector_required
-    optional_arguments *= vector_optional
-
-    time_series_groups = _get_time_series_groups_map(
-        collection.time_series,
-    )
-
-    for group in keys(time_series_groups)
-        required_arguments *= "- `$(group)::DataFrames.DataFrame: A dataframe containing time series attributes (described below).`\n"
-    end
-
-    time_series_arguments = _generate_time_series_docstrings(
-        time_series_groups,
-        attribute_toml_map,
-        enum_toml_map,
-    )
-
-    docstring = """
-    Required arguments:
-    $required_arguments \n
-    Optional arguments:
-    $optional_arguments
-
-    --- 
-
-    ** Time Series Attributes **
-
-    $time_series_arguments
-    """
     return docstring
 end
