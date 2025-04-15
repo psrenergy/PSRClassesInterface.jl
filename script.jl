@@ -31,7 +31,7 @@ study = PSRDatabaseSQLite.load_db(database_path, joinpath(model_database_folder,
 #     for attribute in toml_reader["attribute"]
 #         toml_map[attribute["id"]] = attribute
 #     end
-    
+
 #     for attribute_group in toml_reader["attribute_group"]
 #         toml_map[attribute_group["id"]] = attribute_group
 #     end
@@ -51,7 +51,7 @@ study = PSRDatabaseSQLite.load_db(database_path, joinpath(model_database_folder,
 #     else
 #         Dict()
 #     end
-    
+
 #     required_arguments = ""
 #     optional_arguments = ""
 

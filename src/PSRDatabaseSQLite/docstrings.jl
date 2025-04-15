@@ -3,23 +3,49 @@ using TOML
 function _snake_case(string)
     string = replace(string, r"[\-\.\s]" => "_")
     words = lowercase.(split(string, r"(?=[A-Z])"))
-    return join([i==1 ? word : "_$word" for (i,word) in enumerate(words)])
+    return join([i == 1 ? word : "_$word" for (i, word) in enumerate(words)])
 end
 
-function _get_parameter_metadata(parameter::String, toml_map::Dict{Any, Any})
+function _get_parameter_metadata(parameter::PSRDatabaseSQLite.Attribute, toml_map::Dict{Any, Any}, enum_map)
     metadata = ""
-    if haskey(toml_map, parameter)
-        if haskey(toml_map[parameter], "tooltip")
-            tooltip = toml_map[parameter]["tooltip"]["en"]
+    if haskey(toml_map, parameter.id)
+        if haskey(toml_map[parameter.id], "tooltip")
+            tooltip = if typeof(toml_map[parameter.id]["tooltip"]) == String
+                toml_map[parameter.id]["tooltip"]
+            else
+                toml_map[parameter.id]["tooltip"]["en"]
+            end
             if !ismissing(tooltip)
-                metadata *= " $tooltip" 
+                metadata *= " $tooltip"
             end
         end
-        if haskey(toml_map[parameter], "unit")
-            unit = toml_map[parameter]["unit"]
+        if haskey(toml_map[parameter.id], "unit")
+            unit = if typeof(toml_map[parameter.id]["unit"]) == String
+                toml_map[parameter.id]["unit"]
+            else
+                toml_map[parameter.id]["unit"]["en"]
+            end
             if !ismissing(unit)
                 metadata *= " `[$unit]`"
             end
+        end
+        if haskey(toml_map[parameter.id], "enum")
+            metadata *= "\n"
+            for enum_value in enum_map[toml_map[parameter.id]["enum"]]
+                value = if typeof(enum_value["label"]) == String
+                    enum_value["label"]
+                else
+                    enum_value["label"]["en"]
+                end
+                metadata *= "   - `$(enum_value["id"])` [$(value)]"
+                if !ismissing(parameter.default_value) && (parameter.default_value == enum_value["id"])
+                    metadata *= " (default) \n"
+                else
+                    metadata *= "\n"
+                end
+            end
+        elseif !ismissing(parameter.default_value)
+            metadata *= " (default `$(parameter.default_value)`)"
         end
     end
     if isempty(metadata)
@@ -37,7 +63,7 @@ function _get_collection_toml(collection::PSRDatabaseSQLite.Collection, toml_pat
     for attribute in toml_reader["attribute"]
         toml_map[attribute["id"]] = attribute
     end
-    
+
     for attribute_group in toml_reader["attribute_group"]
         toml_map[attribute_group["id"]] = attribute_group
     end
@@ -45,10 +71,19 @@ function _get_collection_toml(collection::PSRDatabaseSQLite.Collection, toml_pat
     return toml_map
 end
 
+function _get_enum_toml(collection::PSRDatabaseSQLite.Collection, toml_path::String)
+    if isfile(toml_path)
+        toml_reader = TOML.parsefile(toml_path)
+        return toml_reader
+    end
+    return Dict()
+end
+
 function _generate_scalar_docstrings(
-    parameters::OrderedCollections.OrderedDict{String, <: PSRClassesInterface.PSRDatabaseSQLite.ScalarAttribute},
-    toml_map::Dict{Any, Any};
-    ignore_id::Bool = true
+    parameters::OrderedCollections.OrderedDict{String, <:PSRClassesInterface.PSRDatabaseSQLite.ScalarAttribute},
+    toml_map::Dict{Any, Any},
+    enum_map::Dict{String, Any};
+    ignore_id::Bool = true,
 )
     required_arguments = ""
     optional_arguments = ""
@@ -59,27 +94,22 @@ function _generate_scalar_docstrings(
         end
         if parameter.not_null
             entry = "- `$(parameter.id)::$(parameter.type)`"
-            entry *= _get_parameter_metadata(parameter.id, toml_map)
-            if !ismissing(parameter.default_value)
-                entry *= " (default: `$(parameter.default_value)`)"
-            end
-            required_arguments *= entry * ". \n"
-        else 
+            entry *= _get_parameter_metadata(parameter, toml_map, enum_map)
+            required_arguments *= entry
+        else
             entry = "- `$(parameter.id)::$(parameter.type)`"
-            entry *= _get_parameter_metadata(parameter.id, toml_map)
-            if !ismissing(parameter.default_value)
-                entry *= " (default: `$(parameter.default_value)`)"
-            end
-            optional_arguments *= entry * ". \n"
+            entry *= _get_parameter_metadata(parameter, toml_map, enum_map)
+            optional_arguments *= entry
         end
     end
     return required_arguments, optional_arguments
 end
 
 function _generate_vector_docstrings(
-    parameters::OrderedCollections.OrderedDict{String, <: PSRClassesInterface.PSRDatabaseSQLite.VectorAttribute},
-    toml_map::Dict{Any, Any};
-    ignore_id::Bool = true
+    parameters::OrderedCollections.OrderedDict{String, <:PSRClassesInterface.PSRDatabaseSQLite.VectorAttribute},
+    toml_map::Dict{Any, Any},
+    enum_map;
+    ignore_id::Bool = true,
 )
     required_arguments = ""
     optional_arguments = ""
@@ -90,25 +120,19 @@ function _generate_vector_docstrings(
         end
         if parameter.not_null
             entry = "- `$(parameter.id)::Vector{$(parameter.type)}`"
-            entry *= _get_parameter_metadata(parameter.id, toml_map)
-            if !ismissing(parameter.default_value)
-                entry *= " (default: `$(parameter.default_value)`)"
-            end
-            required_arguments *= entry * ". \n"
-        else 
+            entry *= _get_parameter_metadata(parameter, toml_map, enum_map)
+            required_arguments *= entry * " \n"
+        else
             entry = "- `$(parameter.id)::Vector{$(parameter.type)}`"
-            entry *= _get_parameter_metadata(parameter.id, toml_map)
-            if !ismissing(parameter.default_value)
-                entry *= " (default: `$(parameter.default_value)`)"
-            end
-            optional_arguments *= entry * ". \n"
+            entry *= _get_parameter_metadata(parameter, toml_map, enum_map)
+            optional_arguments *= entry * " \n"
         end
     end
     return required_arguments, optional_arguments
 end
 
 function _get_time_series_groups_map(
-    parameters::OrderedCollections.OrderedDict{String, <: PSRClassesInterface.PSRDatabaseSQLite.TimeSeries},
+    parameters::OrderedCollections.OrderedDict{String, <:PSRClassesInterface.PSRDatabaseSQLite.TimeSeries},
 )
     groups_map = Dict()
     for (key, parameter) in parameters
@@ -123,10 +147,10 @@ function _get_time_series_groups_map(
     return groups_map
 end
 
-
 function _generate_time_series_docstrings(
     time_series_groups::Dict{Any, Any},
-    toml_map::Dict{Any, Any};
+    toml_map::Dict{Any, Any},
+    enum_map,
 )
     arguments = ""
 
@@ -134,68 +158,71 @@ function _generate_time_series_docstrings(
         entry = "Group `$(key)`:\n"
         for dimension in group["dimensions"]
             if dimension == "date_time"
-                entry *= "- `date_time::Vector{DateTime}`: date and time of the time series. \n"
+                entry *= "- `date_time::Vector{DateTime}`: date and time of the time series \n"
             else
-                entry *= "- `$(dimension)::Vector{Int64}`: dimension of the time series. \n"
+                entry *= "- `$(dimension)::Vector{Int64}`: dimension of the time series \n"
             end
         end
         for parameter in group["parameters"]
             entry *= "- `$(parameter.id)::Vector{$(parameter.type)}`"
-            entry *= _get_parameter_metadata(parameter.id, toml_map)
+            entry *= _get_parameter_metadata(parameter, toml_map, enum_map)
             if !ismissing(parameter.default_value)
                 entry *= " (default: `$(parameter.default_value)`)"
             end
-            entry *= ". \n"
+            entry *= " \n"
         end
-        arguments *= entry * "\n"
+        arguments *= entry
     end
     return arguments
 end
 
-function parameters_docstring(
-    collection::PSRDatabaseSQLite.Collection; 
+function collection_docstring(
+    collection::PSRDatabaseSQLite.Collection;
     model_database_folder::String = "",
-    ignore_id::Bool = true
-    )
-
-    toml_map = if model_database_folder != ""
+    ignore_id::Bool = true,
+)
+    attribute_toml_map = if model_database_folder != ""
         toml_path = joinpath(model_database_folder, "ui", _snake_case(collection.id) * ".toml")
         _get_collection_toml(collection, toml_path)
     else
         Dict()
     end
-    
+
+    enum_toml_map = _get_enum_toml(collection, joinpath(model_database_folder, "ui", "enum.toml"))
+
     required_arguments = ""
     optional_arguments = ""
     time_series_arguments = ""
 
-
     scalar_required, scalar_optional = _generate_scalar_docstrings(
         collection.scalar_parameters,
-        toml_map;
-        ignore_id = ignore_id
+        attribute_toml_map,
+        enum_toml_map;
+        ignore_id = ignore_id,
     )
     required_arguments *= scalar_required
     optional_arguments *= scalar_optional
 
     scalar_relation_required, scalar_relation_optional = _generate_scalar_docstrings(
         collection.scalar_relations,
-        toml_map;
-        ignore_id = ignore_id
+        attribute_toml_map,
+        enum_toml_map;
+        ignore_id = ignore_id,
     )
     required_arguments *= scalar_relation_required
     optional_arguments *= scalar_relation_optional
 
     vector_required, vector_optional = _generate_vector_docstrings(
         collection.vector_parameters,
-        toml_map;
-        ignore_id = ignore_id
+        attribute_toml_map,
+        enum_toml_map;
+        ignore_id = ignore_id,
     )
     required_arguments *= vector_required
     optional_arguments *= vector_optional
 
     time_series_groups = _get_time_series_groups_map(
-        collection.time_series
+        collection.time_series,
     )
 
     for group in keys(time_series_groups)
@@ -204,10 +231,9 @@ function parameters_docstring(
 
     time_series_arguments = _generate_time_series_docstrings(
         time_series_groups,
-        toml_map;
+        attribute_toml_map,
+        enum_toml_map,
     )
-    
-
 
     docstring = """
     Required arguments:
@@ -221,5 +247,5 @@ function parameters_docstring(
 
     $time_series_arguments
     """
-    return println(docstring)
+    return docstring
 end
