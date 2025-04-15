@@ -45,7 +45,9 @@ function _get_parameter_metadata(parameter::PSRDatabaseSQLite.Attribute, toml_ma
                 end
             end
         elseif !ismissing(parameter.default_value)
-            metadata *= " (default `$(parameter.default_value)`)"
+            metadata *= " (default `$(parameter.default_value)`) \n"
+        else
+            metadata *= "\n"
         end
     end
     if isempty(metadata)
@@ -169,7 +171,6 @@ function _generate_time_series_docstrings(
             if !ismissing(parameter.default_value)
                 entry *= " (default: `$(parameter.default_value)`)"
             end
-            entry *= " \n"
         end
         arguments *= entry
     end
