@@ -39,13 +39,13 @@ function _get_parameter_metadata(parameter::PSRDatabaseSQLite.Attribute, toml_ma
                 end
                 metadata *= "   - `$(enum_value["id"])` [$(value)]"
                 if !ismissing(parameter.default_value) && (parameter.default_value == enum_value["id"])
-                    metadata *= " (default) \n"
+                    metadata *= " <default> \n"
                 else
                     metadata *= "\n"
                 end
             end
         elseif !ismissing(parameter.default_value)
-            metadata *= " (default `$(parameter.default_value)`) \n"
+            metadata *= " <default `$(parameter.default_value)`> \n"
         else
             metadata *= "\n"
         end
@@ -239,6 +239,13 @@ function collection_docstring(
         required_arguments *= vector_required
         optional_arguments *= vector_optional
 
+        if length(required_arguments) > 0
+            required_arguments = "Required arguments:\n" * required_arguments
+        end
+        if length(optional_arguments) > 0
+            optional_arguments = "Optional arguments:\n" * optional_arguments
+        end
+
         time_series_groups = _get_time_series_groups_map(
             collection.time_series,
         )
@@ -254,9 +261,7 @@ function collection_docstring(
         )
 
         docstring *= """
-        Required arguments:
         $required_arguments
-        Optional arguments:
         $optional_arguments
         $time_series_arguments
         """
