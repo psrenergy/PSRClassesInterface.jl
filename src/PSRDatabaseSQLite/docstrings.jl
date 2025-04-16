@@ -174,6 +174,15 @@ function _generate_time_series_docstrings(
         end
         arguments *= entry
     end
+    if length(arguments) > 0
+        divider = """
+        ---
+
+        ** Time Series Attributes **
+        """
+        arguments = divider * arguments
+    end
+
     return arguments
 end
 
@@ -244,14 +253,9 @@ function collection_docstring(
 
         docstring *= """
         Required arguments:
-        $required_arguments \n
+        $required_arguments
         Optional arguments:
         $optional_arguments
-
-        --- 
-
-        ** Time Series Attributes **
-
         $time_series_arguments
         """
 
