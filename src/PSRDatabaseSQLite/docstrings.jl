@@ -197,7 +197,7 @@ function collection_docstring(
 
     mktempdir() do temp_folder
         study = PSRDatabaseSQLite.create_empty_db_from_migrations(
-            joinpath(temp_folder, "study.db"),
+            joinpath(temp_folder, "$(collection)_study.db"),
             joinpath(model_folder, "migrations"),
         )
 
