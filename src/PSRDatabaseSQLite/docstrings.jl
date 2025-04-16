@@ -66,8 +66,10 @@ function _get_collection_toml(collection::PSRDatabaseSQLite.Collection, toml_pat
         toml_map[attribute["id"]] = attribute
     end
 
-    for attribute_group in toml_reader["attribute_group"]
-        toml_map[attribute_group["id"]] = attribute_group
+    if haskey(toml_reader, "attribute_group")
+        for attribute_group in toml_reader["attribute_group"]
+            toml_map[attribute_group["id"]] = attribute_group
+        end
     end
 
     return toml_map
