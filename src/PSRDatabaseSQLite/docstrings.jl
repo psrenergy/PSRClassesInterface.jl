@@ -181,6 +181,7 @@ function _generate_time_series_docstrings(
         ---
 
         ** Time Series Attributes **
+        
         """
         arguments = divider * arguments
     end
