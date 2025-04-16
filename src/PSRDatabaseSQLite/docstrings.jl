@@ -180,7 +180,7 @@ function _generate_time_series_docstrings(
         divider = """
         ---
 
-        ** Time Series Attributes **\n
+        **Time Series Attributes**\n
         """
         arguments = divider * arguments
     end
