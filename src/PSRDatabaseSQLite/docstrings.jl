@@ -99,11 +99,11 @@ function _generate_scalar_docstrings(
         if parameter.not_null
             entry = "- `$(parameter.id)::$(parameter.type)`"
             entry *= _get_parameter_metadata(parameter, toml_map, enum_map)
-            required_arguments *= entry
+            required_arguments *= entry * " \n"
         else
             entry = "- `$(parameter.id)::$(parameter.type)`"
             entry *= _get_parameter_metadata(parameter, toml_map, enum_map)
-            optional_arguments *= entry
+            optional_arguments *= entry * " \n"
         end
     end
     return required_arguments, optional_arguments
