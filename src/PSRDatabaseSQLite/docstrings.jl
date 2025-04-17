@@ -204,7 +204,7 @@ function collection_docstring(
     docstring = ""
 
     mktempdir() do temp_folder
-        study = PSRDatabaseSQLite.create_empty_db_from_migrations(
+        study = create_empty_db_from_migrations(
             joinpath(temp_folder, "$(collection)_study.db"),
             joinpath(model_folder, "migrations"),
         )
@@ -273,7 +273,7 @@ function collection_docstring(
         $time_series_arguments
         """
 
-        PSRDatabaseSQLite.close!(study)
+        close!(study)
         return rm(study.database_path; force = true)
     end
 
