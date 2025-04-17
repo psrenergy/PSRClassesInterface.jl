@@ -261,6 +261,15 @@ function collection_docstring(
         required_arguments *= vector_required
         optional_arguments *= vector_optional
 
+        vector_relation_required, vector_relation_optional = _generate_docstrings(
+            collection.vector_relations,
+            attribute_toml_map,
+            enum_toml_map;
+            ignore_id = ignore_id,
+        )
+        required_arguments *= vector_relation_required
+        optional_arguments *= vector_relation_optional
+
         if length(required_arguments) > 0
             required_arguments = "Required arguments:\n" * required_arguments
         end
@@ -282,11 +291,7 @@ function collection_docstring(
             enum_toml_map,
         )
 
-        docstring *= """
-        $required_arguments
-        $optional_arguments
-        $time_series_arguments
-        """
+        docstring *= "$(required_arguments)$(optional_arguments)$(time_series_arguments)"
 
         close!(study)
         return rm(study.database_path; force = true)
