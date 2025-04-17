@@ -1,12 +1,18 @@
 using TOML
 
-function _snake_case(string)
+struct GroupMap
+    group_id::String
+    parameters::Vector{TimeSeries{<:Number}}
+    dimensions::Vector{String}
+end
+
+function _snake_case(string::String)
     string = replace(string, r"[\-\.\s]" => "_")
     words = lowercase.(split(string, r"(?=[A-Z])"))
     return join([i == 1 ? word : "_$word" for (i, word) in enumerate(words)])
 end
 
-function _get_parameter_metadata(parameter::PSRDatabaseSQLite.Attribute, toml_map::Dict{Any, Any}, enum_map)
+function _get_parameter_metadata(parameter::Attribute, toml_map::Dict{Any, Any}, enum_map::Dict{String, Any})
     metadata = ""
     if haskey(toml_map, parameter.id)
         if haskey(toml_map[parameter.id], "tooltip")
@@ -57,7 +63,7 @@ function _get_parameter_metadata(parameter::PSRDatabaseSQLite.Attribute, toml_ma
     end
 end
 
-function _get_collection_toml(collection::PSRDatabaseSQLite.Collection, toml_path::String)
+function _get_collection_toml(collection::Collection, toml_path::String)
     toml_map = Dict()
 
     toml_reader = TOML.parsefile(toml_path)
@@ -75,7 +81,7 @@ function _get_collection_toml(collection::PSRDatabaseSQLite.Collection, toml_pat
     return toml_map
 end
 
-function _get_enum_toml(collection::PSRDatabaseSQLite.Collection, toml_path::String)
+function _get_enum_toml(collection::Collection, toml_path::String)
     if isfile(toml_path)
         toml_reader = TOML.parsefile(toml_path)
         return toml_reader
@@ -83,8 +89,63 @@ function _get_enum_toml(collection::PSRDatabaseSQLite.Collection, toml_path::Str
     return Dict()
 end
 
-function _generate_scalar_docstrings(
-    parameters::OrderedCollections.OrderedDict{String, <:PSRClassesInterface.PSRDatabaseSQLite.ScalarAttribute},
+function _get_time_series_groups_map(
+    parameters::OrderedDict{String, <:TimeSeries},
+)
+    groups_map = Dict{String, GroupMap}()
+    for (key, parameter) in parameters
+        if haskey(groups_map, parameter.group_id)
+            push!(groups_map[parameter.group_id].parameters, parameter)
+        else
+            groups_map[parameter.group_id] = GroupMap(
+                parameter.group_id,
+                [parameter],
+                parameter.dimension_names,
+            )
+        end
+    end
+    return groups_map
+end
+
+function _generate_docstrings(
+    time_series_groups::Dict{String, GroupMap},
+    toml_map::Dict{Any, Any},
+    enum_map::Dict{String, Any},
+)
+    arguments = ""
+
+    for (key, group) in time_series_groups
+        entry = "Group `$(key)`:\n"
+        for dimension in group.dimensions
+            if dimension == "date_time"
+                entry *= "- `date_time::Vector{DateTime}`: date and time of the time series \n"
+            else
+                entry *= "- `$(dimension)::Vector{Int64}`: dimension of the time series \n"
+            end
+        end
+        for parameter in group.parameters
+            entry *= "- `$(parameter.id)::Vector{$(parameter.type)}`"
+            entry *= _get_parameter_metadata(parameter, toml_map, enum_map)
+            if !ismissing(parameter.default_value)
+                entry *= " (default: `$(parameter.default_value)`)"
+            end
+        end
+        arguments *= entry
+    end
+    if length(arguments) > 0
+        divider = """
+        ---
+
+        **Time Series Attributes**\n
+        """
+        arguments = divider * arguments
+    end
+
+    return arguments
+end
+
+function _generate_docstrings(
+    parameters::OrderedDict{String, <:ScalarAttribute},
     toml_map::Dict{Any, Any},
     enum_map::Dict{String, Any};
     ignore_id::Bool = true,
@@ -109,10 +170,10 @@ function _generate_scalar_docstrings(
     return required_arguments, optional_arguments
 end
 
-function _generate_vector_docstrings(
-    parameters::OrderedCollections.OrderedDict{String, <:PSRClassesInterface.PSRDatabaseSQLite.VectorAttribute},
+function _generate_docstrings(
+    parameters::OrderedDict{String, <:VectorAttribute},
     toml_map::Dict{Any, Any},
-    enum_map;
+    enum_map::Dict{String, Any};
     ignore_id::Bool = true,
 )
     required_arguments = ""
@@ -135,59 +196,6 @@ function _generate_vector_docstrings(
     return required_arguments, optional_arguments
 end
 
-function _get_time_series_groups_map(
-    parameters::OrderedCollections.OrderedDict{String, <:PSRClassesInterface.PSRDatabaseSQLite.TimeSeries},
-)
-    groups_map = Dict()
-    for (key, parameter) in parameters
-        if haskey(groups_map, parameter.group_id)
-            push!(groups_map[parameter.group_id]["parameters"], parameter)
-        else
-            groups_map[parameter.group_id] = Dict{String, Vector{Any}}()
-            groups_map[parameter.group_id]["parameters"] = [parameter]
-            groups_map[parameter.group_id]["dimensions"] = parameter.dimension_names
-        end
-    end
-    return groups_map
-end
-
-function _generate_time_series_docstrings(
-    time_series_groups::Dict{Any, Any},
-    toml_map::Dict{Any, Any},
-    enum_map,
-)
-    arguments = ""
-
-    for (key, group) in time_series_groups
-        entry = "Group `$(key)`:\n"
-        for dimension in group["dimensions"]
-            if dimension == "date_time"
-                entry *= "- `date_time::Vector{DateTime}`: date and time of the time series \n"
-            else
-                entry *= "- `$(dimension)::Vector{Int64}`: dimension of the time series \n"
-            end
-        end
-        for parameter in group["parameters"]
-            entry *= "- `$(parameter.id)::Vector{$(parameter.type)}`"
-            entry *= _get_parameter_metadata(parameter, toml_map, enum_map)
-            if !ismissing(parameter.default_value)
-                entry *= " (default: `$(parameter.default_value)`)"
-            end
-        end
-        arguments *= entry
-    end
-    if length(arguments) > 0
-        divider = """
-        ---
-
-        **Time Series Attributes**\n
-        """
-        arguments = divider * arguments
-    end
-
-    return arguments
-end
-
 function collection_docstring(
     model_folder::String,
     collection::String;
@@ -207,12 +215,11 @@ function collection_docstring(
         attribute_toml_map = _get_collection_toml(collection, toml_path)
 
         enum_toml_map = _get_enum_toml(collection, joinpath(model_folder, "ui", "enum.toml"))
-
         required_arguments = ""
         optional_arguments = ""
         time_series_arguments = ""
 
-        scalar_required, scalar_optional = _generate_scalar_docstrings(
+        scalar_required, scalar_optional = _generate_docstrings(
             collection.scalar_parameters,
             attribute_toml_map,
             enum_toml_map;
@@ -221,7 +228,7 @@ function collection_docstring(
         required_arguments *= scalar_required
         optional_arguments *= scalar_optional
 
-        scalar_relation_required, scalar_relation_optional = _generate_scalar_docstrings(
+        scalar_relation_required, scalar_relation_optional = _generate_docstrings(
             collection.scalar_relations,
             attribute_toml_map,
             enum_toml_map;
@@ -230,7 +237,7 @@ function collection_docstring(
         required_arguments *= scalar_relation_required
         optional_arguments *= scalar_relation_optional
 
-        vector_required, vector_optional = _generate_vector_docstrings(
+        vector_required, vector_optional = _generate_docstrings(
             collection.vector_parameters,
             attribute_toml_map,
             enum_toml_map;
@@ -254,7 +261,7 @@ function collection_docstring(
             required_arguments *= "- `$(group)::DataFrames.DataFrame: A dataframe containing time series attributes (described below).`\n"
         end
 
-        time_series_arguments = _generate_time_series_docstrings(
+        time_series_arguments = _generate_docstrings(
             time_series_groups,
             attribute_toml_map,
             enum_toml_map,
