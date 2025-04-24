@@ -51,13 +51,13 @@ function _get_parameter_metadata(parameter::Attribute, toml_map::Dict{Any, Any},
                 end
             end
         elseif !ismissing(parameter.default_value)
-            metadata *= " <default `$(parameter.default_value)`> \n"
+            metadata *= " <default `$(parameter.default_value)`>"
         else
             metadata *= "\n"
         end
     end
     if isempty(metadata)
-        return ""
+        return "\n"
     else
         return ":$metadata"
     end
@@ -196,6 +196,21 @@ function _generate_docstrings(
     return required_arguments, optional_arguments
 end
 
+function _generate_docstrings(
+    parameters::OrderedDict{String, TimeSeriesFile},
+    toml_map::Dict{Any, Any},
+    enum_map::Dict{String, Any};
+)
+    arguments = ""
+
+    for (key, parameter) in parameters
+        entry = "- `$(parameter.id)::$(parameter.type)`"
+        entry *= _get_parameter_metadata(parameter, toml_map, enum_map)
+        arguments *= entry * " \n"
+    end
+    return arguments
+end
+
 function collection_docstring(
     model_folder::String,
     collection::String;
@@ -246,6 +261,15 @@ function collection_docstring(
         required_arguments *= vector_required
         optional_arguments *= vector_optional
 
+        vector_relation_required, vector_relation_optional = _generate_docstrings(
+            collection.vector_relations,
+            attribute_toml_map,
+            enum_toml_map;
+            ignore_id = ignore_id,
+        )
+        required_arguments *= vector_relation_required
+        optional_arguments *= vector_relation_optional
+
         if length(required_arguments) > 0
             required_arguments = "Required arguments:\n" * required_arguments
         end
@@ -267,11 +291,48 @@ function collection_docstring(
             enum_toml_map,
         )
 
-        docstring *= """
-        $required_arguments
-        $optional_arguments
-        $time_series_arguments
-        """
+        docstring *= "$(required_arguments)$(optional_arguments)$(time_series_arguments)"
+
+        close!(study)
+        return rm(study.database_path; force = true)
+    end
+
+    return docstring
+end
+
+function time_series_files_docstrings(
+    model_folder::String,
+    ignore_id::Bool = true,
+)
+    docstring = ""
+
+    mktempdir() do temp_folder
+        study = create_empty_db_from_migrations(
+            joinpath(temp_folder, "time_series_files_study.db"),
+            joinpath(model_folder, "migrations"),
+        )
+
+        for (key, collection) in study.collections_map
+            toml_path = joinpath(model_folder, "ui", _snake_case(collection.id) * ".toml")
+            attribute_toml_map = _get_collection_toml(collection, toml_path)
+
+            enum_toml_map = _get_enum_toml(collection, joinpath(model_folder, "ui", "enum.toml"))
+
+            if length(collection.time_series_files) == 0
+                continue
+            end
+            collection_docstring = "Collection: `$(key)`\n"
+
+            arguments = _generate_docstrings(
+                collection.time_series_files,
+                attribute_toml_map,
+                enum_toml_map,
+            )
+
+            collection_docstring *= arguments
+            collection_docstring *= "\n"
+            docstring *= collection_docstring
+        end
 
         close!(study)
         return rm(study.database_path; force = true)
