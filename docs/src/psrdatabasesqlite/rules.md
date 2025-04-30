@@ -119,7 +119,7 @@ CREATE TABLE ThermalPlant_vector_some_group(
 A vector relation with another collection should be stored in a table of vector groups and be defined the same way as a vector attribute. To tell that it is a relation with another collection, the name of the relational attribute should be the name of the target collection followed by the relation type defined as `_relation_type`, i.e. `gaugingstation_id` indicated that the collection HydroPlant has an `id` relation with the collection GaugingStation. If the name of the attribute was `gaugingstation_one_to_one`, it would indicate that the collection HydroPlant has a relation `one_to_one` with the collection GaugingStation.
 
 ```sql
-CREATE TABLE HydroPlant_vector_GaugingStation(
+CREATE TABLE HydroPlant_vector_gauging_station(
     id INTEGER,
     vector_index INTEGER NOT NULL,
     conversion_factor REAL NOT NULL,
