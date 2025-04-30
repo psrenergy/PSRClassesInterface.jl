@@ -125,6 +125,7 @@ CREATE TABLE HydroPlant_vector_gauging_station(
     conversion_factor REAL NOT NULL,
     gaugingstation_id INTEGER,
     FOREIGN KEY (gaugingstation_id) REFERENCES GaugingStation(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (id) REFERENCES HydroPlant(id) ON UPDATE CASCADE ON DELETE CASCADE,
     PRIMARY KEY (id, vector_index)
 ) STRICT;
 
