@@ -353,7 +353,7 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
         )
 
         if !haskey(parser.data_struct, collection)
-            _warning(
+            _error(
                 parser,
                 "Class '$collection not found. Consider changing pmd load order.'",
             )
