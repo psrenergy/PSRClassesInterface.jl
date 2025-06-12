@@ -191,6 +191,11 @@ function _apply_tag!(
             parser,
             "Unhandled '$tag' tag for '$(attribute)' within '$(collection)' definition",
         )
+    elseif tag == "@addyear_fullmodification"
+        _warning(
+            parser,
+            "Unhandled '$tag' tag for '$(attribute)' within '$(collection)' definition",
+        )
     else
         _syntax_error(
             parser,
@@ -348,10 +353,11 @@ function _parse_line!(parser::Parser, line::AbstractString, ::PMD_IDLE)
         )
 
         if !haskey(parser.data_struct, collection)
-            _error(
+            _warning(
                 parser,
-                "Class '$collection no found. Consider changing pmd load order.'",
+                "Class '$collection not found. Consider changing pmd load order.'",
             )
+            return nothing
         end
 
         _push_state!(parser, PMD_MERGE_CLASS(collection))
