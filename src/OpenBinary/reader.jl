@@ -302,7 +302,7 @@ function PSRI.open(
         end
 
         queried_agents = length(header)
-        agent_names = header
+        agent_names = deepcopy(header)
 
         if !allow_empty && isempty(indices)
             if isempty(header)
