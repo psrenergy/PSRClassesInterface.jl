@@ -425,7 +425,7 @@ PSRI.max_stages(graf::Reader) = graf.stage_total - graf.relative_stage_skip
 PSRI.max_scenarios(graf::Reader) = graf.scenario_total
 PSRI.max_blocks(graf::Reader) = graf.block_total
 PSRI.max_blocks_current(graf::Reader) = graf.block_total_current
-PSRI.max_blocks_stage(graf::Reader, t::Integer) = Int(graf.blocks_per_stage[t])
+PSRI.max_blocks_stage(graf::Reader, t::Integer) = Int(graf.blocks_per_stage[t+graf.relative_stage_skip])
 PSRI.max_agents(graf::Reader) = length(graf.indices)
 
 PSRI.stage_type(graf::Reader) = graf.stage_type
@@ -455,7 +455,7 @@ function PSRI.goto(graf::Reader, t::Integer, s::Integer = 1, b::Integer = 1)
 
     if t != graf.stage_current
         block_total_current = if graf.stage_type == PSRI.STAGE_MONTH
-            PSRI.blocks_in_stage(graf, t)
+            PSRI.blocks_in_stage(graf, tt)
         else
             graf.block_total
         end
