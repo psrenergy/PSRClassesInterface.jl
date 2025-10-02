@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Migration Examples · PSRClassesInterface.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PSRClassesInterface.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../manual/">Manual</a></li><li><span class="tocitem">OpenStudy Files and Structs</span><ul><li><a class="tocitem" href="../../openstudy_files/file_diagram/">OpenStudy Files and Structs 101</a></li><li><a class="tocitem" href="../../openstudy_files/pmd/">PMD</a></li><li><a class="tocitem" href="../../openstudy_files/model_template/">Model Template</a></li><li><a class="tocitem" href="../../openstudy_files/relation_mapper/">Relation Mapper</a></li><li><a class="tocitem" href="../../openstudy_files/psrclasses/">psrclasses.json and Defaults</a></li></ul></li><li><span class="tocitem">PSRDatabaseSQLite Overview</span><ul><li><a class="tocitem" href="../../psrdatabasesqlite/introduction/">SQLite 101</a></li><li><a class="tocitem" href="../../psrdatabasesqlite/rules/">PSRDatabaseSQLite</a></li><li><a class="tocitem" href="../../psrdatabasesqlite/time_series/">Time Series</a></li></ul></li><li><span class="tocitem">OpenStudy and OpenBinary Examples</span><ul><li><a class="tocitem" href="../../examples/reading_parameters/">Reading parameters</a></li><li><a class="tocitem" href="../../examples/reading_relations/">Reading Relations</a></li><li><a class="tocitem" href="../../examples/graf_files/">Graf Files and Time Series</a></li><li><a class="tocitem" href="../../examples/reading_demands/">Reading Demands</a></li><li><a class="tocitem" href="../../examples/modification/">Modifying a Study</a></li><li><a class="tocitem" href="../../examples/custom_study/">Customizing a Study</a></li></ul></li><li><span class="tocitem">PSRDatabaseSQLite Examples</span><ul><li class="is-active"><a class="tocitem" href>Migration Examples</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">PSRDatabaseSQLite Examples</a></li><li class="is-active"><a href>Migration Examples</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Migration Examples</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/psrenergy/PSRClassesInterface.jl/blob/master/docs/src/sqlite_examples/migrations.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Migration-Examples"><a class="docs-heading-anchor" href="#Migration-Examples">Migration Examples</a><a id="Migration-Examples-1"></a><a class="docs-heading-anchor-permalink" href="#Migration-Examples" title="Permalink"></a></h1><p>Migrations are a way to manage the evolution of the database schema over time. As mentioned in the documentation for <a href="sqlite_examples/&quot;../psrdatabasesqlite/rules.md&quot;">PSRDatabaseSQLite</a>, migrations are defined by two separate <code>.sql</code> files that are stored in the <code>migrations</code> directory of the model. The first file is the <code>up</code> migration and it is used to update the database schema to a new version. The second file is the <code>down</code> migration and it is used to revert the changes made by the <code>up</code> migration. Migrations are stored in directories in the model and they have a specific naming convention. The name of the migration folder should be the number of the version (e.g. <code>/migrations/1/</code>).</p><p>In this section, we will provide some examples of migrations. First, let us start with the first migration, the one that creates the initial database schema.</p><h3 id="Adding-two-tables-to-the-database"><a class="docs-heading-anchor" href="#Adding-two-tables-to-the-database">Adding two tables to the database</a><a id="Adding-two-tables-to-the-database-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-two-tables-to-the-database" title="Permalink"></a></h3><pre><code class="language-sql hljs">PRAGMA user_version = 1; -- Set the database version to 1
+PRAGMA foreign_keys = ON; -- Enable foreign keys to enforce referential integrity
+
+-- Create the Configuration table
+CREATE TABLE Configuration (
+    id INTEGER PRIMARY KEY,
+    label TEXT UNIQUE NOT NULL,
+    value TEXT NOT NULL
+) ;
+
+-- Create Plant table
+CREATE TABLE Plant (
+    id INTEGER PRIMARY KEY,
+    label TEXT UNIQUE NOT NULL,
+    capacity REAL NOT NULL,
+    bus_name TEXT NOT NULL
+) ;</code></pre><p>This schema is the <code>up.sql</code> migration for version 1. It creates two tables, <code>Configuration</code> and <code>Plant</code>. Now we have to create the <code>down.sql</code> migration for version 1. This migration should drop the tables created in the <code>up.sql</code> migration.</p><pre><code class="language-sql hljs">PRAGMA user_version = 0; -- Set the database version to 0
+-- Drop the Configuration table
+DROP TABLE Configuration;
+-- Drop the Plant table
+DROP TABLE Plant;</code></pre><h3 id="Adding-a-new-column"><a class="docs-heading-anchor" href="#Adding-a-new-column">Adding a new column</a><a id="Adding-a-new-column-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-a-new-column" title="Permalink"></a></h3><p>Now let us create a migration that adds a new column to the <code>Configuration</code> and <code>Plant</code> tables.</p><pre><code class="language-sql hljs">PRAGMA user_version = 2; -- Set the database version to 2
+PRAGMA foreign_keys = ON; -- Enable foreign keys to enforce referential integrity
+
+-- Add the description column to the Configuration table
+ALTER TABLE Configuration ADD COLUMN description TEXT;
+
+-- Add the type column to the Plant table
+ALTER TABLE Plant ADD COLUMN type INTEGER NOT NULL DEFAULT 0;</code></pre><p>This is the <code>up.sql</code> migration for version 2. The <code>down.sql</code> migration should remove the column added in the <code>up.sql</code> migration.</p><pre><code class="language-sql hljs">PRAGMA user_version = 1; -- Set the database version to 1
+
+-- Remove the description column from the Configuration table
+ALTER TABLE Configuration DROP COLUMN description;
+
+-- Remove the type column from the Plant table
+ALTER TABLE Plant DROP COLUMN type;</code></pre><h3 id="Renaming-a-table"><a class="docs-heading-anchor" href="#Renaming-a-table">Renaming a table</a><a id="Renaming-a-table-1"></a><a class="docs-heading-anchor-permalink" href="#Renaming-a-table" title="Permalink"></a></h3><p>Let us create a migration that renames the <code>Plant</code> table to <code>PowerPlant</code>.</p><pre><code class="language-sql hljs">PRAGMA user_version = 3; -- Set the database version to 3
+PRAGMA foreign_keys = ON; -- Enable foreign keys to enforce referential integrity
+
+-- Rename the Plant table to PowerPlant
+ALTER TABLE Plant RENAME TO PowerPlant;</code></pre><p>This is the <code>up.sql</code> migration for version 3. The <code>down.sql</code> migration should rename the <code>PowerPlant</code> table back to <code>Plant</code>.</p><pre><code class="language-sql hljs">PRAGMA user_version = 2; -- Set the database version to 2
+
+-- Rename the PowerPlant table to Plant
+ALTER TABLE PowerPlant RENAME TO Plant;</code></pre><h3 id="Adding-a-foreign-key-constraint"><a class="docs-heading-anchor" href="#Adding-a-foreign-key-constraint">Adding a foreign key constraint</a><a id="Adding-a-foreign-key-constraint-1"></a><a class="docs-heading-anchor-permalink" href="#Adding-a-foreign-key-constraint" title="Permalink"></a></h3><p>Let us create a migration that adds a foreign key constraint to the <code>PowerPlant</code> table. First, we need to create a new table, <code>Resource</code>, that will be referenced by the <code>PowerPlant</code> table.</p><p>Adding a foreign key constraint, however, is not as trivial as adding a column or renaming a table. We need to follow these steps:</p><ol><li>Disable foreign key constraints</li><li>Start a transaction</li><li>Create an auxiliary <code>new_PowerPlant</code> table with the new column and the foreign key constraint</li><li>Copy the data from the <code>PowerPlant</code> table to the <code>new_PowerPlant</code> table</li><li>Drop the <code>PowerPlant</code> table</li><li>Rename the <code>new_PowerPlant</code> table to <code>PowerPlant</code></li><li>Check if any foreign key constraints were violatet with <code>PRAGMA foreign_key_check</code></li><li>Commit the transaction</li><li>Enable foreign key constraints </li></ol><pre><code class="language-sql hljs">PRAGMA user_version = 4; -- Set the database version to 4
+PRAGMA foreign_keys = ON; -- Enable foreign keys to enforce referential integrity
+
+-- Create the Resource table
+CREATE TABLE Resource (
+    id INTEGER PRIMARY KEY,
+    label TEXT UNIQUE NOT NULL
+) ;
+
+-- Disable foreign key constraints
+PRAGMA foreign_keys = OFF;
+
+-- Start a transaction
+BEGIN TRANSACTION;
+
+-- Create the new PowerPlant table
+CREATE TABLE new_PowerPlant (
+    id INTEGER PRIMARY KEY,
+    label TEXT UNIQUE NOT NULL,
+    capacity REAL NOT NULL,
+    bus_name TEXT NOT NULL,
+    type INTEGER NOT NULL DEFAULT 0,
+    resource_id INTEGER,
+    FOREIGN KEY (resource_id) REFERENCES Resource(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ;
+
+-- Copy the data from the PowerPlant table to the new PowerPlant table
+INSERT INTO new_PowerPlant (id, label, capacity, bus_name, type)
+SELECT id, label, capacity, bus_name, type FROM PowerPlant;
+
+-- Drop the PowerPlant table
+DROP TABLE PowerPlant;
+
+-- Rename the new PowerPlant table to PowerPlant
+ALTER TABLE new_PowerPlant RENAME TO PowerPlant;
+
+-- Check if any foreign key constraints were violated
+PRAGMA foreign_key_check;
+
+-- Commit the transaction
+COMMIT;
+
+-- Enable foreign key constraints
+PRAGMA foreign_keys = ON;</code></pre><p>Now, the <code>down.sql</code> migration should revert the changes made by the <code>up.sql</code> migration.</p><pre><code class="language-sql hljs">PRAGMA user_version = 3; -- Set the database version to 3
+
+-- Disable foreign key constraints
+PRAGMA foreign_keys = OFF;
+
+-- Start a transaction
+BEGIN TRANSACTION;
+
+-- Create the new PowerPlant table
+CREATE TABLE new_PowerPlant (
+    id INTEGER PRIMARY KEY,
+    label TEXT UNIQUE NOT NULL,
+    capacity REAL NOT NULL,
+    bus_name TEXT NOT NULL,
+    type INTEGER NOT NULL DEFAULT 0
+) ;
+
+-- Copy the data from the PowerPlant table to the new PowerPlant table
+INSERT INTO new_PowerPlant (id, label, capacity, bus_name, type)
+SELECT id, label, capacity, bus_name, type FROM PowerPlant;
+
+-- Drop the PowerPlant table
+DROP TABLE PowerPlant;
+
+-- Rename the new PowerPlant table to PowerPlant
+ALTER TABLE new_PowerPlant RENAME TO PowerPlant;
+
+-- Check if any foreign key constraints were violated
+PRAGMA foreign_key_check;
+
+-- Commit the transaction
+COMMIT;
+
+-- Enable foreign key constraints
+PRAGMA foreign_keys = ON;
+
+-- Drop the Resource table
+DROP TABLE Resource;</code></pre><h3 id="Dividing-a-table-into-two-tables"><a class="docs-heading-anchor" href="#Dividing-a-table-into-two-tables">Dividing a table into two tables</a><a id="Dividing-a-table-into-two-tables-1"></a><a class="docs-heading-anchor-permalink" href="#Dividing-a-table-into-two-tables" title="Permalink"></a></h3><p>Let us create a migration that divides the <code>PowerPlant</code> table into two tables, <code>HydroPlant</code> and <code>ThermalPlant</code>.  <code>HydroPlant</code> corresponds to the rows with <code>type = 0</code> and <code>ThermalPlant</code> corresponds to the rows with <code>type = 1</code>.</p><pre><code class="language-sql hljs">PRAGMA user_version = 5; -- Set the database version to 5
+
+
+
+PRAGMA foreign_keys = OFF;
+BEGIN TRANSACTION;
+
+-- Create the HydroPlant table
+CREATE TABLE HydroPlant (
+    id INTEGER PRIMARY KEY,
+    label TEXT UNIQUE NOT NULL,
+    capacity REAL NOT NULL,
+    bus_name TEXT NOT NULL,
+    resource_id INTEGER,
+    FOREIGN KEY (resource_id) REFERENCES Resource(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ;
+
+-- Create the ThermalPlant table
+CREATE TABLE ThermalPlant (
+    id INTEGER PRIMARY KEY,
+    label TEXT UNIQUE NOT NULL,
+    capacity REAL NOT NULL,
+    bus_name TEXT NOT NULL,
+    resource_id INTEGER,
+    FOREIGN KEY (resource_id) REFERENCES Resource(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ;
+
+-- Fill the HydroPlant table
+INSERT INTO HydroPlant (id, label, capacity, bus_name, resource_id)
+SELECT id, label, capacity, bus_name, resource_id FROM PowerPlant WHERE type = 0;
+
+-- Fill the ThermalPlant table
+INSERT INTO ThermalPlant (id, label, capacity, bus_name, resource_id)
+SELECT id, label, capacity, bus_name, resource_id FROM PowerPlant WHERE type = 1;
+
+-- Drop the PowerPlant table
+DROP TABLE PowerPlant;
+
+PRAGMA foreign_key_check;
+COMMIT;
+PRAGMA foreign_keys = ON;
+</code></pre><p>This is the <code>up.sql</code> migration for version 5. The <code>down.sql</code> migration should revert the changes made by the <code>up.sql</code> migration.</p><pre><code class="language-sql hljs">PRAGMA user_version = 4; -- Set the database version to 4
+PRAGMA foreign_keys = ON; -- Enable foreign keys to enforce referential integrity
+
+-- Create the PowerPlant table
+CREATE TABLE PowerPlant (
+    id INTEGER PRIMARY KEY,
+    label TEXT UNIQUE NOT NULL,
+    capacity REAL NOT NULL,
+    type INTEGER NOT NULL DEFAULT 0,
+    bus_name TEXT NOT NULL,
+    resource_id INTEGER,
+    FOREIGN KEY (resource_id) REFERENCES Resource(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ;
+
+-- Fill the PowerPlant table
+INSERT INTO PowerPlant (id, label, capacity, bus_name, type, resource_id)
+SELECT id, label, capacity, bus_name, 0, resource_id FROM HydroPlant;
+
+INSERT INTO PowerPlant (id, label, capacity, bus_name, type, resource_id)
+SELECT id, label, capacity, bus_name, 1, resource_id FROM ThermalPlant;
+
+-- Drop the HydroPlant table
+DROP TABLE HydroPlant;
+
+-- Drop the ThermalPlant table
+DROP TABLE ThermalPlant;</code></pre><h3 id="Create-a-table-with-data-from-another-table"><a class="docs-heading-anchor" href="#Create-a-table-with-data-from-another-table">Create a table with data from another table</a><a id="Create-a-table-with-data-from-another-table-1"></a><a class="docs-heading-anchor-permalink" href="#Create-a-table-with-data-from-another-table" title="Permalink"></a></h3><p>Let us create a migration that adds a new Table <code>Bus</code> with data from the <code>HydroPlant</code> and <code>ThermalPlant</code> tables. These tables already have a column <code>bus_name</code> that will be used to fill the <code>Bus</code> table. After creating the <code>Bus</code> table, we will remove the <code>bus_name</code> column from the <code>HydroPlant</code> and <code>ThermalPlant</code> tables. Moreover, the <code>bus_name</code> column in the <code>PowerPlant</code> table will be replaced by a <code>bus_id</code> column that references the <code>Bus</code> table.</p><pre><code class="language-sql hljs">PRAGMA user_version = 6; -- Set the database version to 6
+PRAGMA foreign_keys = ON; -- Enable foreign keys to enforce referential integrity
+
+-- Create the Bus table
+CREATE TABLE Bus (
+    id INTEGER PRIMARY KEY,
+    label TEXT UNIQUE NOT NULL
+) ;
+
+-- Fill the Bus table
+INSERT INTO Bus (label)
+SELECT DISTINCT bus_name FROM HydroPlant;
+
+INSERT INTO Bus (label)
+SELECT DISTINCT bus_name FROM ThermalPlant;
+
+PRAGMA foreign_keys = OFF;
+BEGIN TRANSACTION;
+
+-- Add foreign key 
+CREATE TABLE new_HydroPlant (
+    id INTEGER PRIMARY KEY,
+    label TEXT UNIQUE NOT NULL,
+    capacity REAL NOT NULL,
+    resource_id INTEGER,
+    bus_id INTEGER,
+    FOREIGN KEY (resource_id) REFERENCES Resource(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (bus_id) REFERENCES Bus(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ;
+
+CREATE TABLE new_ThermalPlant (
+    id INTEGER PRIMARY KEY,
+    label TEXT UNIQUE NOT NULL,
+    capacity REAL NOT NULL,
+    resource_id INTEGER,
+    bus_id INTEGER,
+    FOREIGN KEY (resource_id) REFERENCES Resource(id) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (bus_id) REFERENCES Bus(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ;
+
+-- Copy the data from the HydroPlant table to the new HydroPlant table
+INSERT INTO new_HydroPlant (id, label, capacity, resource_id)
+SELECT id, label, capacity, resource_id FROM HydroPlant;
+
+-- Copy the data from the ThermalPlant table to the new ThermalPlant table
+INSERT INTO new_ThermalPlant (id, label, capacity, resource_id)
+SELECT id, label, capacity, resource_id FROM ThermalPlant;
+
+-- Add data for the bus_id column
+UPDATE new_HydroPlant SET bus_id = (SELECT Bus.id FROM Bus
+INNER JOIN HydroPlant ON Bus.label = HydroPlant.bus_name AND 
+HydroPlant.id = new_HydroPlant.id
+);
+UPDATE new_ThermalPlant SET bus_id = (SELECT Bus.id FROM Bus
+INNER JOIN ThermalPlant ON Bus.label = ThermalPlant.bus_name AND
+ThermalPlant.id = new_ThermalPlant.id
+);
+
+-- Drop tables
+DROP TABLE HydroPlant;
+DROP TABLE ThermalPlant;
+
+-- Rename tables
+ALTER TABLE new_HydroPlant RENAME TO HydroPlant;
+ALTER TABLE new_ThermalPlant RENAME TO ThermalPlant;
+
+PRAGMA foreign_key_check;
+COMMIT;
+PRAGMA foreign_keys = ON;</code></pre><p>This is the <code>up.sql</code> migration for version 6. The <code>down.sql</code> migration should revert the changes made by the <code>up.sql</code> migration.</p><pre><code class="language-sql hljs">PRAGMA user_version = 5; -- Set the database version to 5
+
+
+PRAGMA foreign_keys = OFF;
+BEGIN TRANSACTION;
+
+-- Create auxiliary tables
+CREATE TABLE new_HydroPlant (
+    id INTEGER PRIMARY KEY,
+    label TEXT UNIQUE NOT NULL,
+    capacity REAL NOT NULL,
+    resource_id INTEGER,
+    bus_name TEXT,
+    FOREIGN KEY (resource_id) REFERENCES Resource(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ;
+
+CREATE TABLE new_ThermalPlant (
+    id INTEGER PRIMARY KEY,
+    label TEXT UNIQUE NOT NULL,
+    capacity REAL NOT NULL,
+    resource_id INTEGER,
+    bus_name TEXT,
+    FOREIGN KEY (resource_id) REFERENCES Resource(id) ON UPDATE CASCADE ON DELETE CASCADE
+) ;
+
+-- Copy the data from the HydroPlant table to the new HydroPlant table
+INSERT INTO new_HydroPlant (id, label, capacity, resource_id)
+SELECT id, label, capacity, resource_id FROM HydroPlant;
+
+-- Copy the data from the ThermalPlant table to the new ThermalPlant table
+INSERT INTO new_ThermalPlant (id, label, capacity, resource_id)
+SELECT id, label, capacity, resource_id FROM ThermalPlant;
+
+-- Add data for the bus_name column
+UPDATE new_HydroPlant SET bus_name = (SELECT Bus.label FROM Bus
+INNER JOIN HydroPlant ON Bus.id = HydroPlant.bus_id AND 
+HydroPlant.id = new_HydroPlant.id
+);
+
+UPDATE new_ThermalPlant SET bus_name = (SELECT Bus.label FROM Bus
+INNER JOIN ThermalPlant ON Bus.id = ThermalPlant.bus_id AND
+ThermalPlant.id = new_ThermalPlant.id
+);
+
+-- Drop tables
+DROP TABLE HydroPlant;
+DROP TABLE ThermalPlant;
+
+-- Rename tables
+ALTER TABLE new_HydroPlant RENAME TO HydroPlant;
+ALTER TABLE new_ThermalPlant RENAME TO ThermalPlant;
+
+-- Drop the Bus table
+DROP TABLE Bus;
+
+PRAGMA foreign_key_check;
+COMMIT;
+PRAGMA foreign_keys = ON;</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../../examples/custom_study/">« Customizing a Study</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Wednesday 30 April 2025 18:48">Wednesday 30 April 2025</span>. Using Julia version 1.11.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

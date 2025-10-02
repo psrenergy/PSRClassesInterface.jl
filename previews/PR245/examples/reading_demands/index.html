@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Reading Demands · PSRClassesInterface.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">PSRClassesInterface.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../manual/">Manual</a></li><li><span class="tocitem">OpenStudy Files and Structs</span><ul><li><a class="tocitem" href="../../openstudy_files/file_diagram/">OpenStudy Files and Structs 101</a></li><li><a class="tocitem" href="../../openstudy_files/pmd/">PMD</a></li><li><a class="tocitem" href="../../openstudy_files/model_template/">Model Template</a></li><li><a class="tocitem" href="../../openstudy_files/relation_mapper/">Relation Mapper</a></li><li><a class="tocitem" href="../../openstudy_files/psrclasses/">psrclasses.json and Defaults</a></li></ul></li><li><span class="tocitem">PSRDatabaseSQLite Overview</span><ul><li><a class="tocitem" href="../../psrdatabasesqlite/introduction/">SQLite 101</a></li><li><a class="tocitem" href="../../psrdatabasesqlite/rules/">PSRDatabaseSQLite</a></li><li><a class="tocitem" href="../../psrdatabasesqlite/time_series/">Time Series</a></li></ul></li><li><span class="tocitem">OpenStudy and OpenBinary Examples</span><ul><li><a class="tocitem" href="../reading_parameters/">Reading parameters</a></li><li><a class="tocitem" href="../reading_relations/">Reading Relations</a></li><li><a class="tocitem" href="../graf_files/">Graf Files and Time Series</a></li><li class="is-active"><a class="tocitem" href>Reading Demands</a><ul class="internal"><li><a class="tocitem" href="#Determining-elasticity-and-value-of-demands"><span>Determining elasticity and value of demands</span></a></li><li><a class="tocitem" href="#Determining-demands-values-of-each-bus"><span>Determining demands values of each bus</span></a></li><li><a class="tocitem" href="#Calculating-the-energy-prices-of-each-thermal-plant"><span>Calculating the energy prices of each thermal plant</span></a></li></ul></li><li><a class="tocitem" href="../modification/">Modifying a Study</a></li><li><a class="tocitem" href="../custom_study/">Customizing a Study</a></li></ul></li><li><span class="tocitem">PSRDatabaseSQLite Examples</span><ul><li><a class="tocitem" href="../../sqlite_examples/migrations/">Migration Examples</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">OpenStudy and OpenBinary Examples</a></li><li class="is-active"><a href>Reading Demands</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Reading Demands</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/psrenergy/PSRClassesInterface.jl/blob/master/docs/src/examples/reading_demands.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Reading-Demands"><a class="docs-heading-anchor" href="#Reading-Demands">Reading Demands</a><a id="Reading-Demands-1"></a><a class="docs-heading-anchor-permalink" href="#Reading-Demands" title="Permalink"></a></h1><h2 id="Determining-elasticity-and-value-of-demands"><a class="docs-heading-anchor" href="#Determining-elasticity-and-value-of-demands">Determining elasticity and value of demands</a><a id="Determining-elasticity-and-value-of-demands-1"></a><a class="docs-heading-anchor-permalink" href="#Determining-elasticity-and-value-of-demands" title="Permalink"></a></h2><p>In this example we will read demand segments, obtain the value of demands, discover wheter each demand is elastic or inelastic, and then obtain the sums of demands by elasticity. The first step is to read the study data:</p><pre><code class="language-julia hljs">using PSRClassesInterface
+const PSRI = PSRClassesInterface
+
+PATH_CASE_EXAMPLE_DEM = joinpath(pathof(PSRI) |&gt; dirname |&gt; dirname, &quot;test&quot;, &quot;data&quot;, &quot;case1&quot;)
+
+data = PSRI.load_study(
+    PSRI.OpenInterface(),
+    data_path = PATH_CASE_EXAMPLE_DEM
+)</code></pre><p>Whereas the demand varies according to the stage, we must specify the stage by calling <code>go_to_stage</code>:</p><pre><code class="language-julia hljs">target_stage = 1
+PSRI.go_to_stage(data,target_stage)</code></pre><p>Now, we can read the demand segments and the map between demands and demand segments, and then obtain the value of each demand:</p><pre><code class="language-julia hljs">dem_seg = PSRI.mapped_vector(data, &quot;PSRDemandSegment&quot;, &quot;Demanda&quot;, Float64, &quot;block&quot;)
+
+seg2dem = PSRI.get_map(data, &quot;PSRDemandSegment&quot;, &quot;PSRDemand&quot;, relation_type = PSRI.PMD.RELATION_1_TO_1)
+
+dem_size = PSRI.max_elements(data, &quot;PSRDemand&quot;)
+
+demand_values = zeros(dem_size)
+
+for demand = 1:dem_size
+    demand_values[demand] = sum(dem_seg[i] for i = 1:length(dem_seg) if seg2dem[i] == demand)
+end
+
+demand_values</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">1-element Vector{Float64}:
+ 0.38948</code></pre><p>We can discover the elasticity of each demand by calling <code>get_parms</code> with the parameter <code>Elastico</code>:</p><pre><code class="language-julia hljs">demands_elasticity = PSRI.get_parms(data, &quot;PSRDemand&quot;, &quot;Elastico&quot;, Int32)</code></pre><p>If <code>demands_elasticity[i] == 0</code> it means that the demand at index <code>i</code> is inelastic, and elastic if <code>demands_elasticity[i] == 1</code>. We can now obtain the total demands of each elasticity:</p><pre><code class="language- hljs">total_elastic_demand = 0.0
+total_inelastic_demand = 0.0
+
+for i = 1:dem_size
+    if demands_elasticity[i] == 0
+        total_inelastic_demand += demand_values[i]
+    else
+        total_elastic_demand += demand_values[i]
+    end
+end</code></pre><h2 id="Determining-demands-values-of-each-bus"><a class="docs-heading-anchor" href="#Determining-demands-values-of-each-bus">Determining demands values of each bus</a><a id="Determining-demands-values-of-each-bus-1"></a><a class="docs-heading-anchor-permalink" href="#Determining-demands-values-of-each-bus" title="Permalink"></a></h2><p>Now we have the values of the demands, we can obtain the values of demand for each bus.  Each demand has a set of loads, which define how much of this demand corresponds to each bus.  We can begin by reading the loads and its relations with demands and buses:</p><pre><code class="language-julia hljs">loads = PSRI.mapped_vector(data, &quot;PSRLoad&quot;, &quot;P&quot;, Float64, &quot;block&quot;)
+lod2dem = PSRI.get_map(data, &quot;PSRLoad&quot;, &quot;PSRDemand&quot;, relation_type = PSRI.PMD.RELATION_1_TO_1)
+lod2bus = PSRI.get_map(data, &quot;PSRLoad&quot;, &quot;PSRBus&quot;, relation_type = PSRI.PMD.RELATION_1_TO_1)</code></pre><p>The values of the loads are weights in a kind of a weighted arithmetic mean of the buses for each demand. But the loads of each demand don&#39;t add up to 1, so they need to be normalized to represent fractions of the total:</p><pre><code class="language-julia hljs">total_lod_bydem = zeros(dem_size)
+lod_size = PSRI.max_elements(data, &quot;PSRLoad&quot;)
+
+for i in 1:lod_size
+    total_lod_bydem[lod2dem[i]] += loads[i]
+end
+
+for i in 1:lod_size
+    if total_lod_bydem[lod2dem[i]] &gt; 0.0
+        loads[i] = loads[i]/total_lod_bydem[lod2dem[i]]
+    else
+        loads[i] = 0.0
+    end
+end
+
+loads</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">85-element Vector{Float64}:
+ 0.011461318051575926
+ 0.005730659025787963
+ 0.011461318051575926
+ 0.005730659025787963
+ 0.011461318051575926
+ 0.005730659025787963
+ 0.011461318051575926
+ 0.005730659025787963
+ 0.011461318051575926
+ 0.005730659025787963
+ ⋮
+ 0.011461318051575926
+ 0.011461318051575926
+ 0.011461318051575926
+ 0.011461318051575926
+ 0.011461318051575926
+ 0.005730659025787963
+ 0.005730659025787963
+ 0.011461318051575926
+ 0.005730659025787963</code></pre><p>Now we know the fraction of each demand that corresponds to each bus, and can easily define the total demand by bus:</p><pre><code class="language-julia hljs">bus_size = PSRI.max_elements(data, &quot;PSRBus&quot;)
+
+dem_bybus = zeros(bus_size)
+
+for lod = 1:lod_size
+    fraction = loads[lod]
+    dem = lod2dem[lod]
+    bus = lod2bus[lod]
+    dem_bybus[bus] += demand_values[dem]*fraction
+end
+
+dem_bybus</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">129-element Vector{Float64}:
+ 0.004463954154727791
+ 0.0022319770773638957
+ 0.0
+ 0.004463954154727791
+ 0.0022319770773638957
+ 0.004463954154727791
+ 0.0022319770773638957
+ 0.0
+ 0.004463954154727791
+ 0.0022319770773638957
+ ⋮
+ 0.0
+ 0.0
+ 0.0
+ 0.0
+ 0.0
+ 0.0
+ 0.0
+ 0.0
+ 0.0</code></pre><h2 id="Calculating-the-energy-prices-of-each-thermal-plant"><a class="docs-heading-anchor" href="#Calculating-the-energy-prices-of-each-thermal-plant">Calculating the energy prices of each thermal plant</a><a id="Calculating-the-energy-prices-of-each-thermal-plant-1"></a><a class="docs-heading-anchor-permalink" href="#Calculating-the-energy-prices-of-each-thermal-plant" title="Permalink"></a></h2><p>The energy prices in a thermal plant deppends on the  the price of the fuel used, the specific consumption of this fuel and Operation and Maintenance cost. Again, we begin by reading the data:</p><pre><code class="language-julia hljs">import PSRClassesInterface
+const PSRI = PSRClassesInterface
+
+PATH_CASE_EXAMPLE_THER_PRICES = joinpath(pathof(PSRI) |&gt; dirname |&gt; dirname, &quot;test&quot;, &quot;data&quot;, &quot;case1&quot;)
+
+data = PSRI.load_study(
+    PSRI.OpenInterface(),
+    data_path = PATH_CASE_EXAMPLE_THER_PRICES
+)</code></pre><p>We discover the necessary infos of the thermal plants indirectly through <code>PSRFuelConsumption</code>:</p><pre><code class="language-julia hljs">fuelcons2ther = PSRI.get_map(data,&quot;PSRFuelConsumption&quot;, &quot;PSRThermalPlant&quot;; relation_type = PSRI.PMD.RELATION_1_TO_1)
+
+ther_size = PSRI.max_elements(data, &quot;PSRThermalPlant&quot;)
+fuelcons_size = PSRI.max_elements(data, &quot;PSRFuelConsumption&quot;)
+ther2fuelcons = [[fc for fc = 1:fuelcons_size if fuelcons2ther[fc] == t] for t = 1:ther_size]</code></pre><p>Next, we get the O&amp;M cost, the specific consumption and the relation with fuels of our fuels consumptions. Then we get the cost of each fuel. After calling <code>mapped_vector</code> we must call <code>update_vectors!</code>.</p><pre><code class="language-julia hljs">om_cost = PSRI.mapped_vector(data, &quot;PSRFuelConsumption&quot;, &quot;O&amp;MCost&quot;, Float64)
+spec_consum = PSRI.mapped_vector(data, &quot;PSRFuelConsumption&quot;, &quot;CEsp&quot;, Float64, &quot;segment&quot;, &quot;block&quot;)
+fuelcons2fuel = PSRI.get_map(data, &quot;PSRFuelConsumption&quot;, &quot;PSRFuel&quot;; relation_type = PSRI.PMD.RELATION_1_TO_1)
+fuel_cost = PSRI.mapped_vector(data, &quot;PSRFuel&quot;, &quot;Custo&quot;, Float64)
+
+PSRI.update_vectors!(data)</code></pre><p>Now we can calculate the price of the energy unity of each fuel consumption for each thermal plant:</p><pre><code class="language-julia hljs">ther_prices = [zeros(0) for _ = 1:ther_size]
+for ther = 1:ther_size
+    n_fuelcons = length(ther2fuelcons[ther])
+    prices = zeros(n_fuelcons)
+    for i = 1:n_fuelcons
+        fuelcons = ther2fuelcons[ther][i]
+        fuel = fuelcons2fuel[fuelcons]
+        prices[i] = om_cost[fuelcons] + spec_consum[fuelcons]*fuel_cost[fuel]
+    end
+    ther_prices[ther] = prices
+end
+ther_prices</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">5-element Vector{Vector{Float64}}:
+ [100.0]
+ [20.0]
+ [40.0]
+ [60.0]
+ [80.0]</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../graf_files/">« Graf Files and Time Series</a><a class="docs-footer-nextpage" href="../modification/">Modifying a Study »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.25 on <span class="colophon-date" title="Wednesday 20 August 2025 21:50">Wednesday 20 August 2025</span>. Using Julia version 1.11.6.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
