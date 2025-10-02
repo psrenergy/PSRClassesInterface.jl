@@ -196,6 +196,11 @@ function _apply_tag!(
             parser,
             "Unhandled '$tag' tag for '$(attribute)' within '$(collection)' definition",
         )
+    elseif tag == "@all_horizon"
+        _warning(
+            parser,
+            "Unhandled '$tag' tag for '$(attribute)' within '$(collection)' definition",
+        )
     else
         _syntax_error(
             parser,
