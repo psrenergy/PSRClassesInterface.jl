@@ -76,7 +76,7 @@ end
 # TODO
 # in-place operations have the first argument as the data that will be modified.
 function load_model_template!(path::AbstractString, model_template::ModelTemplate)
-    raw_struct = JSON.parsefile(path)
+    raw_struct = JSON.parsefile(path; dicttype=Dict{String, Any})
 
     for item in raw_struct
         collection = item["classname"]

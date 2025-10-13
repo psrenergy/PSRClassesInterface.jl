@@ -207,7 +207,7 @@ function _load_json_data!(
 )
     if data_ctime[] != ctime(path)
         data_ctime[] = ctime(path)
-        copy!(data, JSON.parsefile(path))
+        copy!(data, JSON.parsefile(path; dicttype=Dict{String, Any}))
     end
 
     return data

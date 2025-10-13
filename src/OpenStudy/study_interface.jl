@@ -22,7 +22,7 @@ function PSRI.create_study(
     study_defaults = Dict{String, Any}()
 
     if !isnothing(defaults_path)
-        merge!(study_defaults, JSON.parsefile(defaults_path))
+        merge!(study_defaults, JSON.parsefile(defaults_path; dicttype=Dict{String, Any}))
         PSRI.merge_defaults!(study_defaults, defaults)
     end
 
@@ -191,7 +191,7 @@ function PSRI.load_study(
         error("No Model definition (.pmd) file found")
     end
 
-    raw_data = JSON.parsefile(PATH_JSON)
+    raw_data = JSON.parsefile(PATH_JSON; dicttype=Dict{String, Any})
 
     if !haskey(raw_data, study_collection)
         error("Study collection '$study_collection' is missing")
