@@ -419,7 +419,7 @@ function load_json_struct!(data::Data, path::String)
         error("Invalid JSON file path '$path'")
     end
 
-    raw_struct = JSON.parsefile(path)
+    raw_struct = JSON.parsefile(path; dicttype=Dict{String, Any})
 
     for (collection, attr_list) in raw_struct
         if !haskey(data.data_struct, collection)

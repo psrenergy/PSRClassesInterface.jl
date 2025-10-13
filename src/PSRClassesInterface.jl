@@ -14,7 +14,7 @@ const JSON_METADATA_PATH = joinpath(@__DIR__, "json_metadata")
 
 const PSRCLASSES_DEFAULTS_PATH = joinpath(JSON_METADATA_PATH, "psrclasses.default.json")
 const PSRCLASSES_DEFAULTS_CTIME = [ctime(PSRCLASSES_DEFAULTS_PATH)]
-const PSRCLASSES_DEFAULTS = JSON.parsefile(PSRCLASSES_DEFAULTS_PATH)
+const PSRCLASSES_DEFAULTS = JSON.parsefile(PSRCLASSES_DEFAULTS_PATH; dicttype=Dict{String, Any})
 
 # submodules
 

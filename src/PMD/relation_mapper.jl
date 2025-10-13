@@ -67,7 +67,7 @@ end
 const RelationMapper = Dict{String, Dict{String, Dict{String, Relation}}}
 
 function load_relations_struct!(path::AbstractString, relation_mapper::RelationMapper)
-    raw_struct = JSON.parsefile(path)
+    raw_struct = JSON.parsefile(path; dicttype=Dict{String, Any})
 
     for (source, targets) in raw_struct
         relation_mapper[source] = Dict{String, Dict{String, Relation}}()
