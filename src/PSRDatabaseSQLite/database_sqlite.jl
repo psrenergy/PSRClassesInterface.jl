@@ -240,6 +240,8 @@ function _string_for_composite_types(composite_type::Type)
         return "vector parameter"
     elseif composite_type <: VectorRelation
         return "vector relation"
+    elseif composite_type <: TimeSeries
+        return "time series"
     elseif composite_type <: TimeSeriesFile
         return "time series file"
     else
